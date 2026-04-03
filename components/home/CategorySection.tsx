@@ -5,19 +5,38 @@ import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
 import { categories } from "@/lib/mock-data";
 import Link from "next/link";
+import {
+  Layers,
+  Shirt,
+  Wind,
+  ShoppingBag,
+  Gift,
+  Armchair,
+  LayoutGrid
+} from "lucide-react";
 
-const categoryEmojis: Record<string, string> = {
-  silk: "silk",
-  cotton: "cotton",
-  gi: "GI",
-  province: "map",
+const getCategoryIcon = (id: string, color: string) => {
+  const props = { size: 30, color, strokeWidth: 1.5 };
+  switch (id) {
+    case "fabric": return <Layers {...props} />;
+    case "clothing": return <Shirt {...props} />;
+    case "scarf": return <Wind {...props} />;
+    case "bag": return <ShoppingBag {...props} />;
+    case "premium": return <Gift {...props} />;
+    case "decor": return <Armchair {...props} />;
+    case "others": return <LayoutGrid {...props} />;
+    default: return <LayoutGrid {...props} />;
+  }
 };
 
-const categoryColors: Record<string, { bg: string; border: string }> = {
-  silk: { bg: "#FDF8EE", border: "#E8D9B5" },
-  cotton: { bg: "#F0F4F8", border: "#C8D6E0" },
-  gi: { bg: "#FFF8E8", border: "#E8D49B" },
-  province: { bg: "#F0EDE8", border: "#D6CFC4" },
+const categoryStyles: Record<string, { bg: string; iconColor: string }> = {
+  fabric: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
+  clothing: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
+  scarf: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
+  bag: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
+  premium: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
+  decor: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
+  others: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
 };
 
 export default function CategorySection() {
@@ -27,14 +46,14 @@ export default function CategorySection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.35, duration: 0.5 }}
-      sx={{ py: 1, px: 2.5 }}
+      sx={{ py: 2, px: 2.5 }}
     >
       <Box
         sx={{
           display: "flex",
-          alignItems: "baseline",
-          gap: 1,
-          mb: 1.5,
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
         }}
       >
         <Typography
@@ -42,124 +61,93 @@ export default function CategorySection() {
             fontFamily: '"Noto Serif Thai", serif',
             fontWeight: 700,
             fontSize: "1.1rem",
-            color: "#1B2A4A",
+            color: "#333",
           }}
         >
-          {"หมวดหมู่"}
+          หมวดหมู่
         </Typography>
-        <Box
+        <Typography
+          component={Link}
+          href="/categories"
           sx={{
-            width: 24,
-            height: 2,
-            bgcolor: "#C5A55A",
-            borderRadius: 1,
+            fontFamily: '"Inter", sans-serif',
+            fontSize: "0.85rem",
+            color: "#091751ff",
+            textDecoration: "none",
+            fontWeight: 500,
           }}
-        />
+        >
+          ดูทั้งหมด
+        </Typography>
       </Box>
 
+      {/* Horizontal Scrollable Container */}
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr 1fr",
-          gap: 1,
+          display: "flex",
+          gap: 2.5,
+          overflowX: "auto",
+          pb: 1.5, // Space for drop shadow
+          pt: 0.5,
+          px: 0.5,
+          mx: -0.5,
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+          msOverflowStyle: "none",
+          scrollbarWidth: "none",
         }}
       >
         {categories.map((cat, index) => {
-          const colors = categoryColors[cat.id] || {
-            bg: "#F0EBE3",
-            border: "#E5DFD6",
-          };
+          const style = categoryStyles[cat.id] || categoryStyles.others;
           return (
             <Link
               key={cat.id}
-              href="/explore"
-              style={{ textDecoration: "none" }}
+              href={`/explore?category=${cat.id}`}
+              style={{ textDecoration: "none", flexShrink: 0 }}
             >
               <Box
                 component={motion.div}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + index * 0.06 }}
-                whileTap={{ scale: 0.93 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + index * 0.05 }}
+                whileTap={{ scale: 0.95 }}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: colors.bg,
-                  border: `1.5px solid ${colors.border}`,
-                  borderRadius: "14px",
-                  py: 1.5,
-                  px: 0.5,
+                  width: "64px",
+                  gap: 1.2,
                   cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 4px 12px rgba(27,42,74,0.08)",
-                  },
                 }}
               >
-                {cat.id === "gi" ? (
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      bgcolor: "#C5A55A",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontFamily: '"Playfair Display", serif',
-                        fontWeight: 800,
-                        fontSize: "0.65rem",
-                        color: "#FFFFFF",
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      GI
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      bgcolor: "#1B2A4A",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: "0.7rem",
-                        color: "#FFFFFF",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {cat.icon === "silk"
-                        ? "S"
-                        : cat.icon === "cotton"
-                          ? "C"
-                          : "P"}
-                    </Typography>
-                  </Box>
-                )}
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "18px",
+                    bgcolor: style.bg,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      transform: "translateY(-3px)",
+                      boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
+                    },
+                  }}
+                >
+                  {getCategoryIcon(cat.id, style.iconColor)}
+                </Box>
                 <Typography
                   sx={{
                     fontFamily: '"Noto Serif Thai", serif',
                     fontWeight: 500,
-                    fontSize: "0.7rem",
-                    color: "#1B2A4A",
+                    fontSize: "0.75rem",
+                    color: "#555",
                     textAlign: "center",
                     lineHeight: 1.2,
+                    wordBreak: "break-word",
                   }}
                 >
                   {cat.name}

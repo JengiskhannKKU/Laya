@@ -379,7 +379,8 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                     }}
                     onClick={() => setShowRegionPopup(false)}
                   >
-                    <motion.div
+                    <Box
+                      component={motion.div}
                       initial={{ scale: 0.9 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0.9 }}
@@ -403,7 +404,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                       <Typography sx={{ color: "#6B7280", lineHeight: 1.7 }}>
                         {regions.find(r => r.id === selectedRegionForPopup)?.story}
                       </Typography>
-                    </motion.div>
+                    </Box>
                   </Box>
                 </motion.div>
               )}

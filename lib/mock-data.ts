@@ -68,10 +68,13 @@ export const banners: Banner[] = [
 ];
 
 export const categories: Category[] = [
-  { id: "silk", name: "ผ้าไหม", icon: "silk" },
-  { id: "cotton", name: "ผ้าฝ้าย", icon: "cotton" },
-  { id: "gi", name: "GI", icon: "gi" },
-  { id: "province", name: "ตามจังหวัด", icon: "province" },
+  { id: "fabric", name: "ผ้าผืน", icon: "fabric" },
+  { id: "clothing", name: "เสื้อผ้า", icon: "clothing" },
+  { id: "scarf", name: "ผ้าพันคอ", icon: "scarf" },
+  { id: "bag", name: "กระเป๋า", icon: "bag" },
+  { id: "premium", name: "ของฝากพรีเมียม", icon: "premium" },
+  { id: "decor", name: "ของตกแต่งบ้าน", icon: "decor" },
+  { id: "others", name: "อื่นๆ", icon: "others" },
 ];
 
 export const products: Product[] = [
