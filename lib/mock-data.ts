@@ -39,6 +39,18 @@ export interface Product {
   passport?: PassportData;
 }
 
+export interface CustomPatternData {
+  selectedPatterns?: string[];
+  colors?: string[];
+  weaveType?: string;
+  region?: string;
+  requiresGI?: boolean;
+  complexity?: number;
+  mood?: string;
+  promptText?: string;
+  patternStyle?: string;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -116,6 +128,61 @@ export const products: Product[] = [
       verifiedDate: "2024-11-25",
     },
   },
+  {
+    id: "m1",
+    name: "product1",
+    community: "SILK BRAND",
+    province: "กรุงเทพมหานคร",
+    price: 8500,
+    priceUnit: "เมตร",
+    rating: 5.0,
+    reviewCount: 45,
+    images: ["/SILQ1.jpg"],
+    hasGI: true,
+    productionTime: "พร้อมส่ง",
+    availableLength: 10,
+    fabricType: "ผ้าไหม",
+    story: "ผ้าไหมทอมือแบรนด์ระดับพรีเมียม SILQ คัดสรรเส้นไหมคุณภาพเยี่ยม ทอด้วยความประณีตระดับงานศิลป์ชิ้นเอก",
+    weaverName: "SILQ Artisan",
+    certificateId: "SILQ-2024-001",
+  },
+  {
+    id: "m2",
+    name: "Red Product2",
+    community: "SILK BRAND",
+    province: "กรุงเทพมหานคร",
+    price: 9200,
+    priceUnit: "เมตร",
+    rating: 4.9,
+    reviewCount: 32,
+    images: ["/SILQ2.jpg"],
+    hasGI: true,
+    productionTime: "พร้อมส่ง",
+    availableLength: 5,
+    fabricType: "ผ้าไหม",
+    story: "ผ้าไหมแพรวาดีไซน์ล้ำสมัยจาก SILQ ผสมผสานลวดลายดั้งเดิมและความโมเดิร์นได้อย่างลงตัว",
+    weaverName: "SILQ Artisan",
+    certificateId: "SILQ-2024-002",
+  },
+  {
+    id: "m3",
+    name: "ผ้าไหมมัดหมี่ SILQ (Classic)",
+    community: "แบรนด์ SILQ",
+    province: "กรุงเทพมหานคร",
+    price: 7800,
+    priceUnit: "เมตร",
+    rating: 4.8,
+    reviewCount: 56,
+    images: ["/SILQ3.jpg"],
+    hasGI: false,
+    productionTime: "พร้อมส่ง",
+    availableLength: 15,
+    fabricType: "ผ้าไหม",
+    story: "มัดหมี่ลายคลาสสิก เนื้อผ้าเงางาม น้ำหนักเบา ทิ้งตัวสวย เหมาะสำหรับสวมใส่ออกงานสำคัญ",
+    weaverName: "SILQ Artisan",
+    certificateId: "SILQ-2024-003",
+  },
+
   {
     id: "2",
     name: "ผ้ามัดหมี่ลายนาคราช",
@@ -268,6 +335,42 @@ export const products: Product[] = [
       verifiedDate: "2024-11-02",
     },
   },
+  {
+    id: "bag1",
+    name: "พวงกุญแจผ้าทอ LAYA (Small)",
+    community: "ชุมชนหริภุญชัย",
+    province: "ลำพูน",
+    price: 1250,
+    priceUnit: "ชิ้น",
+    rating: 4.9,
+    reviewCount: 34,
+    images: ["/bag1.png"],
+    hasGI: false,
+    productionTime: "พร้อมส่ง",
+    availableLength: 100,
+    fabricType: "ผ้าทอมือ",
+    story: "พวงกุญแจผ้าทอมือขนาดเล็ก ตัดเย็บจากเศษผ้าไหมพรีเมียมของชุมชน ดีไซน์ทันสมัยพกพาสะดวก",
+    weaverName: "กลุ่มสตรีหริภุญชัย",
+    certificateId: "LAYA-BAG-001",
+  },
+  {
+    id: "bag2",
+    name: "กระเป๋าถือลายวิจิตร (Classic Tote)",
+    community: "ชุมชนหริภุญชัย",
+    province: "ลำพูน",
+    price: 4500,
+    priceUnit: "ชิ้น",
+    rating: 5.0,
+    reviewCount: 12,
+    images: ["/bag2.png"],
+    hasGI: true,
+    productionTime: "พร้อมส่ง",
+    availableLength: 5,
+    fabricType: "ผ้าไหม",
+    story: "กระเป๋าถือทรง Tote ใบใหญ่ ทอด้วยลวดลายวิจิตรบรรจง แข็งแรงทนทาน จุของได้เยอะ เหมาะสำหรับใช้งานในชีวิตประจำวัน",
+    weaverName: "แม่สมศรี แก้วมณี",
+    certificateId: "LAYA-BAG-002",
+  },
 ];
 
 export interface Community {
@@ -306,6 +409,100 @@ export const communities: Community[] = [
   },
 ];
 
+export interface Weaver {
+  id: string;
+  name: string;
+  community: string;
+  province: string;
+  rating: number;
+  reviewCount: number;
+  avatar?: string;
+  techniques: string[];
+  complexityLimit: number; // 1-10
+  colorsInStock: string[]; // Hex or Names
+  experienceYears: number;
+  isGI: boolean;
+  basePrice: number;
+  leadTimeDays: number;
+  status: "available" | "busy" | "waiting";
+  recentWorks: string[]; // Image URLs
+}
+
+export const weavers: Weaver[] = [
+  {
+    id: "w1",
+    name: "แม่สมจิตร ใจดี",
+    community: "ชุมชนหริภุญชัย",
+    province: "ลำพูน",
+    rating: 4.9,
+    reviewCount: 84,
+    avatar: "https://images.unsplash.com/photo-1582213726893-edc10ff67df0?auto=format&fit=crop&w=300&h=300",
+    techniques: ["ยกดอก", "ผ้าไหม", "ฝ้าย"],
+    complexityLimit: 9,
+    colorsInStock: ["#1B2A4A", "#CFA055", "#4B0082", "#800000"],
+    experienceYears: 32,
+    isGI: true,
+    basePrice: 3500,
+    leadTimeDays: 12,
+    status: "available",
+    recentWorks: ["/images/fabric1.jpg", "/images/fabric2.jpg"],
+  },
+  {
+    id: "w2",
+    name: "แม่ประนอม สีทอง",
+    community: "กลุ่มทอผ้าบ้านเขว้า",
+    province: "ชัยภูมิ",
+    rating: 4.7,
+    reviewCount: 52,
+    avatar: "https://images.unsplash.com/photo-1540914129656-4987d176cfde?auto=format&fit=crop&w=300&h=300",
+    techniques: ["มัดหมี่", "ขิด"],
+    complexityLimit: 7,
+    colorsInStock: ["#1B2A4A", "#FFFFFF", "#CFA055"], 
+    experienceYears: 18,
+    isGI: false,
+    basePrice: 2800,
+    leadTimeDays: 15,
+    status: "available",
+    recentWorks: ["/images/fabric2.jpg"],
+  },
+  {
+    id: "w3",
+    name: "ป้าบุญส่ง ดวงดี",
+    community: "กลุ่มทอผ้าครามสกลนคร",
+    province: "สกลนคร",
+    rating: 4.8,
+    reviewCount: 120,
+    avatar: "บ",
+    techniques: ["ทอพื้น", "มัดหมี่", "ย้อมคราม"],
+    complexityLimit: 6,
+    colorsInStock: ["#1B2A4A", "#FFFFFF"],
+    experienceYears: 25,
+    isGI: true,
+    basePrice: 1800,
+    leadTimeDays: 7,
+    status: "available",
+    recentWorks: ["/images/fabric4.jpg"],
+  },
+  {
+    id: "w4",
+    name: "คุณน้านภา ทอรัก",
+    community: "กลุ่มทอผ้าแพรวาคำเขื่อนแก้ว",
+    province: "กาฬสินธุ์",
+    rating: 5.0,
+    reviewCount: 42,
+    avatar: "น",
+    techniques: ["ขิด", "แพรวา"],
+    complexityLimit: 10,
+    colorsInStock: ["#1B2A4A", "#800000", "#CFA055", "#000000"],
+    experienceYears: 40,
+    isGI: true,
+    basePrice: 5500,
+    leadTimeDays: 25,
+    status: "available",
+    recentWorks: ["/images/fabric5.jpg"],
+  }
+];
+
 export const matchResults = [
   {
     id: "1",
@@ -329,3 +526,4 @@ export const matchResults = [
     estimatedTime: "10-14 วัน",
   },
 ];
+

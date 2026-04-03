@@ -6,13 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
-import type { CustomPatternData } from "./CustomGenerator";
+import { type CustomPatternData } from "@/lib/mock-data";
 
 interface MockupPreviewProps {
   patternData: CustomPatternData;
+  onStartMatching: () => void;
 }
 
-export default function MockupPreview({ patternData }: MockupPreviewProps) {
+export default function MockupPreview({ patternData, onStartMatching }: MockupPreviewProps) {
   const [tabValue, setTabValue] = useState(0);
 
   // Using a beautiful LAYA placeholder as the "generated" pattern
@@ -33,13 +34,13 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
           Your Pattern ✨
         </Typography>
         <Typography
-           sx={{
+          sx={{
             fontFamily: '"Noto Serif Thai", serif',
             fontSize: "0.85rem",
             color: "#6B7280",
           }}
         >
-          {patternData.promptText 
+          {patternData.promptText
             ? "ลายผ้าที่สร้างจาก Prompt ของคุณ"
             : `แรงบันดาลใจจากสไตล์ ${patternData.patternStyle || "ดั้งเดิม"} โทนสี ${patternData.colors?.[0] || ""}`}
         </Typography>
@@ -97,7 +98,7 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
                 }}
               />
             )}
-            
+
             {tabValue === 1 && (
               <Box
                 key="shirt"
@@ -114,7 +115,7 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
                 }}
               >
                 {/* Simulated T-Shirt Mask */}
-                 <Box
+                <Box
                   sx={{
                     width: 220,
                     height: 280,
@@ -135,7 +136,7 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
               </Box>
             )}
 
-             {tabValue === 2 && (
+            {tabValue === 2 && (
               <Box
                 key="poster"
                 component={motion.div}
@@ -151,12 +152,12 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
                   p: 3,
                 }}
               >
-                 <Box sx={{ width: "100%", height: "100%", bgcolor: "white", p: 1, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-                    <Box sx={{ width: "100%", height: "80%", backgroundImage: `url(${generatedImage})`, backgroundSize: "cover" }} />
-                    <Typography sx={{ textAlign: "center", mt: 1, fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
-                      LAYA EXCLUSIVE
-                    </Typography>
-                 </Box>
+                <Box sx={{ width: "100%", height: "100%", bgcolor: "white", p: 1, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+                  <Box sx={{ width: "100%", height: "80%", backgroundImage: `url(${generatedImage})`, backgroundSize: "cover" }} />
+                  <Typography sx={{ textAlign: "center", mt: 1, fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
+                    LAYA EXCLUSIVE
+                  </Typography>
+                </Box>
               </Box>
             )}
           </AnimatePresence>
@@ -165,7 +166,7 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
 
       {/* Action Buttons */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-         <Button
+        <Button
           variant="contained"
           startIcon={<EngineeringRoundedIcon />}
           sx={{
@@ -177,8 +178,9 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
             borderRadius: 3,
             "&:hover": { bgcolor: "#B89545" },
           }}
+          onClick={onStartMatching}
         >
-          สั่งทอกับชุมชน (Send to Weaver)
+          Weaver Matching
         </Button>
         <Box sx={{ display: "flex", gap: 1.5 }}>
           <Button

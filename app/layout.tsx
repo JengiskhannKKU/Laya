@@ -55,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${playfair.variable} ${notoSerifThai.variable}`}>
+    <html lang="th" className={`${playfair.variable} ${notoSerifThai.variable}`} suppressHydrationWarning>
       <body
         style={{
           fontFamily: "var(--font-noto-serif-thai), 'Playfair Display', serif",
