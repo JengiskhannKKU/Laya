@@ -8,6 +8,7 @@ import ExploreRoundedIcon from "@mui/icons-material/ExploreRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import { motion } from "framer-motion";
 
 const navItems = [
@@ -16,7 +17,9 @@ const navItems = [
   { label: "Custom", icon: <StarRoundedIcon />, path: "/custom" },
   { label: "Orders", icon: <LocalShippingRoundedIcon />, path: "/orders" },
   { label: "Profile", icon: <PersonRoundedIcon />, path: "/profile" },
+  { label: "Try-On", icon: <CameraAltRoundedIcon />, path: "/tryon" },
 ];
+
 
 export default function AppBottomNav() {
   const pathname = usePathname();
