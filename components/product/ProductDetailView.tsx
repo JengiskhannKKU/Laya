@@ -12,6 +12,7 @@ import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRound
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import ViewInArRoundedIcon from "@mui/icons-material/ViewInArRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -347,6 +348,80 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             {showFullStory ? "ย่อ" : "อ่านเพิ่มเติม"}
           </Button>
         </Box>
+      </Box>
+
+      {/* Digital Passport Button */}
+      <Box
+        component={motion.div}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        sx={{ px: 2.5, pb: 2 }}
+      >
+        <Link href={`/passport/${product.id}`} style={{ textDecoration: "none" }}>
+          <Box
+            component={motion.div}
+            whileTap={{ scale: 0.98 }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              p: 1.8,
+              borderRadius: "14px",
+              border: "1.5px solid rgba(197,165,90,0.35)",
+              bgcolor: "rgba(197,165,90,0.06)",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                bgcolor: "rgba(197,165,90,0.12)",
+                borderColor: "#C5A55A",
+              },
+            }}
+          >
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: "10px",
+                background: "linear-gradient(135deg, #1B2A4A 0%, #2A3F6B 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <DescriptionRoundedIcon sx={{ fontSize: 20, color: "#C5A55A" }} />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Noto Serif Thai", serif',
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  color: "#1B2A4A",
+                }}
+              >
+                {"ดูพาสปอร์ตผ้าดิจิทัล"}
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: '"Noto Serif Thai", serif',
+                  fontSize: "0.65rem",
+                  color: "#9CA3AF",
+                }}
+              >
+                {"ข้อมูลแหล่งที่มา วัสดุ ขั้นตอนการผลิต"}
+              </Typography>
+            </Box>
+            <ArrowBackIosNewRoundedIcon
+              sx={{
+                fontSize: 14,
+                color: "#C5A55A",
+                transform: "rotate(180deg)",
+              }}
+            />
+          </Box>
+        </Link>
       </Box>
 
       {/* Bottom Action Bar */}

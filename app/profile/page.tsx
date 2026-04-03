@@ -13,27 +13,32 @@ import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
+import Link from "next/link";
 
 const menuItems = [
   {
     icon: <FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />,
     label: "รายการโปรด",
     subtitle: "3 รายการ",
+    href: "/explore",
   },
   {
     icon: <DescriptionRoundedIcon sx={{ fontSize: 20 }} />,
     label: "Digital Textile Passport",
     subtitle: "2 ใบรับรอง",
+    href: "/passports",
   },
   {
     icon: <SettingsRoundedIcon sx={{ fontSize: 20 }} />,
     label: "ตั้งค่า",
     subtitle: "",
+    href: "",
   },
   {
     icon: <HelpOutlineRoundedIcon sx={{ fontSize: 20 }} />,
     label: "ช่วยเหลือ",
     subtitle: "",
+    href: "",
   },
 ];
 
@@ -172,53 +177,64 @@ export default function ProfilePage() {
             mb: 3,
           }}
         >
-          {menuItems.map((item, index) => (
-            <Box key={item.label}>
-              <Box
-                component={motion.div}
-                whileTap={{ bgcolor: "rgba(0,0,0,0.02)" }}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  px: 2,
-                  py: 1.8,
-                  cursor: "pointer",
-                }}
-              >
-                <Box sx={{ color: "#1B2A4A" }}>{item.icon}</Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
-                      fontSize: "0.9rem",
-                      color: "#1B2A4A",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {item.label}
-                  </Typography>
-                  {item.subtitle && (
+          {menuItems.map((item, index) => {
+            const menuContent = (
+              <Box key={item.label}>
+                <Box
+                  component={motion.div}
+                  whileTap={{ bgcolor: "rgba(0,0,0,0.02)" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    px: 2,
+                    py: 1.8,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Box sx={{ color: "#1B2A4A" }}>{item.icon}</Box>
+                  <Box sx={{ flex: 1 }}>
                     <Typography
                       sx={{
                         fontFamily: '"Noto Serif Thai", serif',
-                        fontSize: "0.7rem",
-                        color: "#9CA3AF",
+                        fontSize: "0.9rem",
+                        color: "#1B2A4A",
+                        fontWeight: 500,
                       }}
                     >
-                      {item.subtitle}
+                      {item.label}
                     </Typography>
-                  )}
+                    {item.subtitle && (
+                      <Typography
+                        sx={{
+                          fontFamily: '"Noto Serif Thai", serif',
+                          fontSize: "0.7rem",
+                          color: "#9CA3AF",
+                        }}
+                      >
+                        {item.subtitle}
+                      </Typography>
+                    )}
+                  </Box>
+                  <ChevronRightRoundedIcon
+                    sx={{ color: "#D1D5DB", fontSize: 20 }}
+                  />
                 </Box>
-                <ChevronRightRoundedIcon
-                  sx={{ color: "#D1D5DB", fontSize: 20 }}
-                />
+                {index < menuItems.length - 1 && (
+                  <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
+                )}
               </Box>
-              {index < menuItems.length - 1 && (
-                <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-              )}
-            </Box>
-          ))}
+            );
+
+            if (item.href) {
+              return (
+                <Link key={item.label} href={item.href} style={{ textDecoration: "none" }}>
+                  {menuContent}
+                </Link>
+              );
+            }
+            return menuContent;
+          })}
         </Box>
 
         {/* Logout */}
