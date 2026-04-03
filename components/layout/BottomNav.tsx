@@ -37,6 +37,7 @@ export default function AppBottomNav() {
         zIndex: 1200,
         maxWidth: 430,
         mx: "auto",
+        width: "100%",
       }}
     >
       {/* Floating Custom button */}
