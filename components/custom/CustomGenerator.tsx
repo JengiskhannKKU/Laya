@@ -19,6 +19,7 @@ export interface CustomPatternData {
   colors?: string[];
   weaveType?: string;
   region?: string;
+  requiresGI?: boolean;
   complexity?: number;
   mood?: string;
   promptText?: string;

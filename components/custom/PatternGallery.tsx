@@ -33,29 +33,100 @@ const CATEGORIES = [
 
 const PATTERN_DATA: PatternItem[] = [
   // 1. Floral
-  { id: "p1", name: "ลายดอกแก้ว", province: "สระแก้ว", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#e6f0e6", iconType: "flower" },
-  { id: "p2", name: "ลายหมี่สร้อยดอกหมาก", province: "มหาสารคาม", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fbeef5", iconType: "flower" },
+  { id: "p1", name: "ลายดอกแก้ว", province: "สุรินทร์", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p2", name: "ลายดอกแก้วน้อย", province: "สุรินทร์", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p3", name: "ลายดอกดาวเรือง", province: "ขอนแก่น", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p4", name: "ลายดอกชบา", province: "ทั่วไป", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p5", name: "ลายดอกกระจอน", province: "ร้อยเอ็ด", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p6", name: "ลายข้าวหลามดอกแก้ว", province: "มหาสารคาม", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p7", name: "ลายหมี่สร้อยดอกหมาก", province: "มหาสารคาม", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p8", name: "ลายพันธุ์ไม้", province: "ทั่วไป", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+  { id: "p9", name: "ลายสาคู", province: "ภาคใต้", categoryId: "floral", categoryName: "ดอกไม้", placeholderColor: "#fdf4f6", iconType: "flower" },
+
   // 2. Animal
-  { id: "p3", name: "ลายนาคเกี้ยว", province: "หนองคาย", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fff4e6", iconType: "animal" },
-  { id: "p4", name: "ลายแมงมุม", province: "ขอนแก่น", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#e6e6f0", iconType: "animal" },
+  { id: "p10", name: "ลายงูเหลือม", province: "สุรินทร์", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p11", name: "ลายแมงมุม", province: "ขอนแก่น", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p12", name: "ลายแมงงอด", province: "ชัยภูมิ", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p13", name: "ลายนาคเกี้ยว", province: "หนองคาย", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p14", name: "ลายโคมหานาคเกี้ยว", province: "อุดรธานี", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p15", name: "ลายขอนาค", province: "หนองบัวลำภู", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p16", name: "ลายหางกระรอก", province: "นครราชสีมา", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p17", name: "ลายปูจ๋า", province: "ทั่วไป", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p18", name: "ลายปูทูลกระหม่อน", province: "มหาสารคาม", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+  { id: "p19", name: "ลายกระรอก / กะเนียว", province: "สุรินทร์", categoryId: "animal", categoryName: "สัตว์", placeholderColor: "#fdf8ec", iconType: "animal" },
+
   // 3. Geo
-  { id: "p5", name: "ลายตาคั่น", province: "ทั่วไป", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#f0f0f0", iconType: "geo" },
-  { id: "p6", name: "ลายข้าวหลามตัด", province: "สุรินทร์", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#e6f0fa", iconType: "geo" },
+  { id: "p20", name: "ลายตาคั่น", province: "ทั่วไป", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p21", name: "ลายข้าวหลามตัด", province: "ทั่วไป", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p22", name: "ลายโซ่ตาข่าย", province: "อีสาน", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p23", name: "ลายฟันหวีไส้กงสามสิบ", province: "ขอนแก่น", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p24", name: "ลายฟันหวีกงสิบสาม", province: "ขอนแก่น", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p25", name: "ลายกุญแจ", province: "ทั่วไป", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p26", name: "โสร่งลายตาราง", province: "ภาคใต้", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p27", name: "ลายไข่เขมร", province: "สุรินทร์", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+  { id: "p28", name: "ลายเกล็ดเต่า", province: "กาฬสินธุ์", categoryId: "geo", categoryName: "เรขาคณิต", placeholderColor: "#eff3f8", iconType: "geo" },
+
   // 4. Trad Core
-  { id: "p7", name: "ลายกงห้าวง", province: "ร้อยเอ็ด", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#fef0e6", iconType: "circle" },
-  { id: "p8", name: "ลายกงเจ็ดสาย", province: "กาฬสินธุ์", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#f0e6fa", iconType: "circle" },
+  { id: "p29", name: "ลายกงห้าวง", province: "ร้อยเอ็ด", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p30", name: "ลายกงเจ็ดสาย", province: "กาฬสินธุ์", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p31", name: "ลายกงสองคองสาม", province: "อีสาน", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p32", name: "ลายกงเก้าหมากจับ", province: "อีสาน", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p33", name: "ลายกงเก้าโคมห้า", province: "ขอนแก่น", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p34", name: "ลายกงเก้าไส้หมากจับ", province: "มหาสารคาม", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p35", name: "ลายกงเจ็ด หมากจับ", province: "กาฬสินธุ์", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p36", name: "ลายกงเจ็ดไส้ขันหมากเบ็ง", province: "สกลนคร", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p37", name: "ลายกงเจ็ดสองคอง", province: "ชัยภูมิ", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+  { id: "p38", name: "ลายหมากจับกง", province: "อุบลราชธานี", categoryId: "trad", categoryName: "ดั้งเดิม", placeholderColor: "#faf1ed", iconType: "circle" },
+
   // 5. Mudmee
-  { id: "p9", name: "ลายหมี่ขอกระดูก", province: "บุรีรัมย์", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#fae6e6", iconType: "abstract" },
-  { id: "p10", name: "ลายหมี่ตาคั่น", province: "อุดรธานี", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#e6fae6", iconType: "geo" },
+  { id: "p39", name: "ลายหมี่กาหลง", province: "ขอนแก่น", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p40", name: "ลายหมี่ขอกระดูก", province: "บุรีรัมย์", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p41", name: "ลายหมี่ตาคั่น", province: "อุดรธานี", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p42", name: "ลายหมี่ตาลายซ้อนพร้าว", province: "อีสาน", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p43", name: "ลายหมี่ฟองน้ำ", province: "ชัยภูมิ", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p44", name: "ลายหมี่สาว", province: "สุรินทร์", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p45", name: "ลายหมี่ไก่", province: "มหาสารคาม", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p46", name: "ลายหมี่ตาในตัว", province: "ทั่วไป", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p47", name: "ลายหมี่โอบเต็ง", province: "บุรีรัมย์", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p48", name: "ลายหมี่ขอเขมร", province: "สุรินทร์", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p49", name: "ลายหมี่ขอพระเทพ", province: "ทั่วประเทศ", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+  { id: "p50", name: "ลายหมี่จั่วหน้านางโอบเต็ง", province: "นครราชสีมา", categoryId: "mudmee", categoryName: "มัดหมี่", placeholderColor: "#f3f0fc", iconType: "abstract" },
+
   // 6. Royal
-  { id: "p11", name: "ลายขอชาววัง", province: "สุโขทัย", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#fafae6", iconType: "flow" },
+  { id: "p51", name: "ลายขอชาววัง", province: "สุโขทัย", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#faf6df", iconType: "flow" },
+  { id: "p52", name: "ลายขอปลาหมึก", province: "ภาคกลาง", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#faf6df", iconType: "flow" },
+  { id: "p53", name: "ลายหน้านางน้อย", province: "อยุธยา", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#faf6df", iconType: "flow" },
+  { id: "p54", name: "ลายหน้านางลายจี้เพชร", province: "ชาววัง", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#faf6df", iconType: "flow" },
+  { id: "p55", name: "ลายกนกเชิงเทียนหน้านาง", province: "เพชรบุรี", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#faf6df", iconType: "flow" },
+  { id: "p56", name: "ลายช่อเชิงเทียน", province: "ภาคกลาง", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#faf6df", iconType: "flow" },
+  { id: "p57", name: "ลายฉัตรกงเก้า กงห้า", province: "อีสาน", categoryId: "royal", categoryName: "ประณีต", placeholderColor: "#faf6df", iconType: "flow" },
+
   // 7. Flow
-  { id: "p12", name: "ลายขอเกี่ยว", province: "แพร่", categoryId: "flow", categoryName: "ต่อเนื่อง", placeholderColor: "#e6fafa", iconType: "flow" },
+  { id: "p58", name: "ลายขอเกี่ยว", province: "แพร่", categoryId: "flow", categoryName: "ต่อเนื่อง", placeholderColor: "#e6f8f8", iconType: "flow" },
+  { id: "p59", name: "ลายขอบันไดลิง", province: "ล้านนา", categoryId: "flow", categoryName: "ต่อเนื่อง", placeholderColor: "#e6f8f8", iconType: "flow" },
+  { id: "p60", name: "ลายขอทบ", province: "น่าน", categoryId: "flow", categoryName: "ต่อเนื่อง", placeholderColor: "#e6f8f8", iconType: "flow" },
+  { id: "p61", name: "ลายขอเอส", province: "ทั่วไป", categoryId: "flow", categoryName: "ต่อเนื่อง", placeholderColor: "#e6f8f8", iconType: "flow" },
+  { id: "p62", name: "ลายขาเปีย", province: "ภาคเหนือ", categoryId: "flow", categoryName: "ต่อเนื่อง", placeholderColor: "#e6f8f8", iconType: "flow" },
+  { id: "p63", name: "ลายโซ่ตาข่าย", province: "อีสาน", categoryId: "flow", categoryName: "ต่อเนื่อง", placeholderColor: "#e6f8f8", iconType: "geo" },
+
   // 8. Ceremony
-  { id: "p13", name: "ลายขันหมากเบ็ง", province: "สกลนคร", categoryId: "ceremony", categoryName: "พิธี", placeholderColor: "#fae6fa", iconType: "abstract" },
+  { id: "p64", name: "ลายขันหมากเบ็ง", province: "สกลนคร", categoryId: "ceremony", categoryName: "พิธี", placeholderColor: "#f7eff8", iconType: "abstract" },
+  { id: "p65", name: "ลายหมากบก / โคมห้า", province: "อุบลราชธานี", categoryId: "ceremony", categoryName: "พิธี", placeholderColor: "#f7eff8", iconType: "abstract" },
+  { id: "p66", name: "ลายโคมเก้า", province: "นครพนม", categoryId: "ceremony", categoryName: "พิธี", placeholderColor: "#f7eff8", iconType: "abstract" },
+  { id: "p67", name: "ลายเข็มขัดนาค", province: "หนองคาย", categoryId: "ceremony", categoryName: "พิธี", placeholderColor: "#f7eff8", iconType: "animal" },
+  { id: "p68", name: "ลายสร้อยเพชรสาม", province: "อีสานเหนือ", categoryId: "ceremony", categoryName: "พิธี", placeholderColor: "#f7eff8", iconType: "abstract" },
+
   // 9. Local
-  { id: "p14", name: "ลายทิวไหมตีนจก", province: "ราชบุรี", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#f5f5f5", iconType: "geo" },
-  { id: "p15", name: "ลายโฮล", province: "สุรินทร์", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#fff0f5", iconType: "geo" },
+  { id: "p69", name: "ลายหมากบก", province: "อีสาน", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p70", name: "ลายตีนขิด", province: "ลับแล", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p71", name: "ลายทิวไหมตีนจก", province: "ราชบุรี", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p72", name: "ลายบักพริก", province: "อีสาน", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p73", name: "ลายลาวดาวกระจาย", province: "อุทัยธานี", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p74", name: "ลายโฮล", province: "สุรินทร์", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p75", name: "ลายสมอ / สะมอ", province: "สุรินทร์", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p76", name: "ลายอันลุยซีม", province: "สุรินทร์", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p77", name: "ลายอัมปรม", province: "สุรินทร์", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
+  { id: "p78", name: "ลายละเบิก", province: "สุรินทร์", categoryId: "local", categoryName: "พื้นบ้าน", placeholderColor: "#edf6ec", iconType: "geo" },
 ];
 
 // Simple SVG generator for placeholders
@@ -234,10 +305,12 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
       {/* 4. Bottom Selection Tray */}
       <Box
         sx={{
-          position: "absolute",
+          position: "fixed",
           bottom: 0,
-          left: 0,
-          right: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "100%",
+          maxWidth: 430,
           bgcolor: "#FFFFFF",
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
