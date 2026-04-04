@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Box, Typography, TextField, Button, CircularProgress, Chip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import type { CustomPatternData } from "./CustomGenerator";
+import { type CustomPatternData } from "@/lib/mock-data";
 
 interface PromptWizardProps {
   onGenerate: (data: CustomPatternData) => void;

@@ -84,7 +84,7 @@ export const categories: Category[] = [
   { id: "clothing", name: "เสื้อผ้า", icon: "clothing" },
   { id: "scarf", name: "ผ้าพันคอ", icon: "scarf" },
   { id: "bag", name: "กระเป๋า", icon: "bag" },
-  { id: "premium", name: "ของฝากพรีเมียม", icon: "premium" },
+  { id: "premium", name: "ของฝาก", icon: "premium" },
   { id: "decor", name: "ของตกแต่งบ้าน", icon: "decor" },
   { id: "others", name: "อื่นๆ", icon: "others" },
 ];
@@ -457,7 +457,7 @@ export const weavers: Weaver[] = [
     avatar: "https://images.unsplash.com/photo-1540914129656-4987d176cfde?auto=format&fit=crop&w=300&h=300",
     techniques: ["มัดหมี่", "ขิด"],
     complexityLimit: 7,
-    colorsInStock: ["#1B2A4A", "#FFFFFF", "#CFA055"], 
+    colorsInStock: ["#1B2A4A", "#FFFFFF", "#CFA055"],
     experienceYears: 18,
     isGI: false,
     basePrice: 2800,

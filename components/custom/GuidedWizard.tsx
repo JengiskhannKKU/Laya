@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Box, Typography, Button, LinearProgress, Slider, Chip } from "@mui/material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { motion, AnimatePresence } from "framer-motion";
-import type { CustomPatternData } from "./CustomGenerator";
+import { type CustomPatternData } from "@/lib/mock-data";
 import PatternGallery from "./PatternGallery";
 
 interface GuidedWizardProps {
