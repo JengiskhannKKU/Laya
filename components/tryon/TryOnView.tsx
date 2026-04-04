@@ -14,7 +14,7 @@ const LANDMARKS = {
   RIGHT_HIP: 24,
   LEFT_HIP: 23,
 } as const;
-type LandmarkMode = keyof typeof LANDMARKS;
+type LandmarkMode = keyof typeof LANDMARKS | "BODY";
 
 interface PoseLandmark {
   x: number;
@@ -126,14 +126,32 @@ export default function TryOnView({
           modelUrl,
           (gltf) => {
             const model = gltf.scene;
-            model.visible = false;
+            model.visible = true; // MUST be true because the wrapper controls visibility now!
+            
             // Auto-scale: fit into a ~1-unit bounding box
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+
+            // Re-center X and Z to the middle.
+            model.position.x += (model.position.x - center.x);
+            model.position.z += (model.position.z - center.z);
+
+            // For Y, instead of centering perfectly, we want the "collar/shoulder" area to be the pivot zero point!
+            // The top of the dress is box.max.y. The collar area is roughly 5% down from the top.
+            const shoulderY = box.max.y - (size.y * 0.05);
+            model.position.y += (model.position.y - shoulderY);
+
+            const wrapper = new THREE.Group();
+            wrapper.visible = false;
+            wrapper.add(model);
+
             const maxDim = Math.max(size.x, size.y, size.z);
-            model.scale.setScalar(1.2 / maxDim);
-            scene.add(model);
-            meshRef.current = model as unknown as THREE.Object3D as any;
+            const scaleFactor = defaultMode === "BODY" ? 8.5 : 1.2;
+            wrapper.scale.setScalar(scaleFactor / maxDim);
+
+            scene.add(wrapper);
+            meshRef.current = wrapper as unknown as THREE.Object3D as any;
             setModelLabel(modelName ?? modelUrl.split("/").pop() ?? "Model");
             resolve();
           },
@@ -184,24 +202,60 @@ export default function TryOnView({
     const mode = modeRef.current;
 
     if (landmarks) {
-      const lm = landmarks[LANDMARKS[mode]];
-      const vis = lm?.visibility ?? 0;
-      if (lm && vis > 0.25) {
-        // MediaPipe uses mirrored coords — x=0 is right side of screen
-        // We mirror video, so flip x back: screenX = 1 - lm.x
-        const ndcX = (1 - lm.x) * 2 - 1;
-        const ndcY = -(lm.y * 2 - 1); // y=0 at top → NDC y=1 at top
+      if (mode === "BODY") {
+        const ls = landmarks[11];
+        const rs = landmarks[12];
+        const lh = landmarks[23];
+        const rh = landmarks[24];
+        if (ls && rs && lh && rh && ls.visibility && rs.visibility && ls.visibility > 0.5) {
+          const cx = (ls.x + rs.x) / 2;
+          // Track the height exactly on the shoulder line, maybe 5% lower for the collarbone
+          const cy = (ls.y + rs.y) / 2 + 0.05;
+          const ndcX = cx * 2 - 1;
+          const ndcY = -(cy * 2 - 1);
+          ndcRef.current.set(ndcX, ndcY);
+          raycasterRef.current.setFromCamera(ndcRef.current, camera);
+          raycasterRef.current.ray.at(5, targetVecRef.current);
+          
+          // Push it up slightly so the collar actually sits on the shoulders instead of the mid-chest
+          targetVecRef.current.y += 0.8;
 
-        ndcRef.current.set(ndcX, ndcY);
-        raycasterRef.current.setFromCamera(ndcRef.current, camera);
-        raycasterRef.current.ray.at(5, targetVecRef.current);
-        mesh.position.lerp(targetVecRef.current, 0.25);
-        mesh.rotation.y += 0.015;
-        mesh.visible = true;
-        setConfidence(Math.round(vis * 100));
+          mesh.position.lerp(targetVecRef.current, 0.4);
+          // Calculate how far the shoulders are leaning
+          const x_diff = ls.x - rs.x; 
+          const y_diff = -(ls.y - rs.y); // Negative because MediaPipe Y grows downward
+          const shoulderTilt = Math.atan2(y_diff, x_diff);
+
+          // Zero out Y rotation so it rigidly stays forward, but apply the real-time spine tilt!
+          mesh.rotation.y = 0;
+          mesh.rotation.z = shoulderTilt;
+          
+          mesh.visible = true;
+          setConfidence(Math.round(ls.visibility * 100));
+        } else {
+          mesh.visible = false;
+          setConfidence(0);
+        }
       } else {
-        mesh.visible = false;
-        setConfidence(0);
+        const lm = landmarks[LANDMARKS[mode as keyof typeof LANDMARKS]];
+        const vis = lm?.visibility ?? 0;
+        if (lm && vis > 0.25) {
+          // MediaPipe uses mirrored coords — x=0 is right side of screen
+          // We mirror video, so flip x back: screenX = 1 - lm.x
+          const ndcX = (1 - lm.x) * 2 - 1;
+          const ndcY = -(lm.y * 2 - 1); // y=0 at top → NDC y=1 at top
+
+          ndcRef.current.set(ndcX, ndcY);
+          raycasterRef.current.setFromCamera(ndcRef.current, camera);
+          raycasterRef.current.ray.at(5, targetVecRef.current);
+          mesh.position.lerp(targetVecRef.current, 0.25);
+          mesh.rotation.y += 0.015;
+          mesh.visible = true;
+          setConfidence(Math.round(vis * 100));
+        } else {
+          mesh.visible = false;
+          setConfidence(0);
+        }
       }
     } else {
       mesh.visible = false;
@@ -607,32 +661,7 @@ export default function TryOnView({
           alignItems: "center",
         }}
       >
-        {/* Landmark mode selector */}
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", justifyContent: "center" }}>
-          {(Object.keys(LANDMARKS) as LandmarkMode[]).map((key) => (
-            <button
-              key={key}
-              id={`mode-btn-${key}`}
-              onClick={() => switchMode(key)}
-              style={{
-                fontFamily: "'Noto Serif Thai', serif",
-                fontSize: "0.62rem",
-                padding: "5px 11px",
-                borderRadius: 18,
-                border: `1.5px solid ${modeState === key ? "#C5A55A" : "rgba(255,255,255,0.18)"}`,
-                background: modeState === key
-                  ? "rgba(197,165,90,0.22)"
-                  : "rgba(255,255,255,0.04)",
-                color: modeState === key ? "#C5A55A" : "rgba(255,255,255,0.55)",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                letterSpacing: 0.3,
-              }}
-            >
-              {key.replace(/_/g, " ")}
-            </button>
-          ))}
-        </div>
+        {/* Landmark mode selector removed to enforce full-body scaling for dresses */}
 
         {/* Start / Stop button */}
         <button

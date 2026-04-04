@@ -16,11 +16,11 @@ export default function TryOnContainer() {
   const [mode, setMode] = useState<"preview" | "ar">("preview");
 
   const product: ProductInfo = {
-    name: "กระเป๋าผ้าไหมหริภุญชัย ลายกินรี",
+    name: "ชุดไทยลายผ้าไหม",
     price: 3500,
     image: "/fabric1.jpg", 
-    modelUrl: "/models/bag_1.glb",
-    defaultMode: "RIGHT_WRIST",
+    modelUrl: "/models/Thai_dress_1.glb",
+    defaultMode: "BODY",
   };
 
   if (mode === "ar") {
@@ -96,7 +96,7 @@ export default function TryOnContainer() {
           position: "relative"
         }}>
           {/* We don't have a real image of the 3D model, so we show a stylized box/icon */}
-          <div style={{ fontSize: "5rem", opacity: 0.8 }}>🛍️</div>
+          <div style={{ fontSize: "5rem", opacity: 0.8 }}>👗</div>
           <div style={{
             position: "absolute",
             bottom: 12, left: 14,

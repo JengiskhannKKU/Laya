@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
-import type { CustomPatternData } from "./CustomGenerator";
+import { type CustomPatternData } from "./CustomGenerator";
+import ModelViewerWidget from "@/components/ar/ModelViewer";
 
 interface MockupPreviewProps {
   patternData: CustomPatternData;
@@ -77,6 +78,7 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
           <Tab label="ผืนผ้า" />
           <Tab label="เสื้อผ้า" />
           <Tab label="โปสเตอร์" />
+          <Tab label="ลองชุด AR" />
         </Tabs>
 
         <Box sx={{ height: 320, position: "relative", borderRadius: 3, overflow: "hidden", bgcolor: "#FAF6F0" }}>
@@ -157,6 +159,25 @@ export default function MockupPreview({ patternData }: MockupPreviewProps) {
                       LAYA EXCLUSIVE
                     </Typography>
                  </Box>
+              </Box>
+            )}
+
+            {tabValue === 3 && (
+              <Box
+                key="ar3d"
+                component={motion.div}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ModelViewerWidget src="/models/Thai_dress_1.glb" />
               </Box>
             )}
           </AnimatePresence>

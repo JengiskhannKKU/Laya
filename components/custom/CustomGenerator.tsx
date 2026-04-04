@@ -22,6 +22,9 @@ export interface CustomPatternData {
   complexity?: number;
   mood?: string;
   promptText?: string;
+  patternStyle?: string;
+  generatedImageUrl?: string;
+  isMock?: boolean;
 }
 
 export default function CustomGenerator() {
