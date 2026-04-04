@@ -15,9 +15,10 @@ import { weavers, type Weaver, type CustomPatternData } from "@/lib/mock-data";
 interface WeaverMatchingViewProps {
   patternData: CustomPatternData;
   onSelectWeaver: (weaver: Weaver) => void;
+  onBack?: () => void;
 }
 
-export default function WeaverMatchingView({ patternData, onSelectWeaver }: WeaverMatchingViewProps) {
+export default function WeaverMatchingView({ patternData, onSelectWeaver, onBack }: WeaverMatchingViewProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [activeFilter, setActiveFilter] = useState("ทั้งหมด");
 
@@ -28,21 +29,28 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver }: Weav
   }, []);
 
   const matchedWeavers = useMemo(() => {
+    // Normalize complexity from 0-100 scale to 1-10 scale
+    const normalizedComplexity = (patternData.complexity || 50) / 10;
+
     // 1. Must-match filtering
-    const filtered = weavers.filter(weaver => {
-      // Must match technique
+    let filtered = weavers.filter(weaver => {
+      // Must match technique (check if patternData.weaveType includes the technique keyword)
       const techniqueMatch = !patternData.weaveType || 
-        weaver.techniques.some(t => t.toLowerCase() === patternData.weaveType?.toLowerCase());
+        weaver.techniques.some(t => patternData.weaveType?.toLowerCase().includes(t.toLowerCase()));
       
-      // Must match complexity (simple heuristic)
-      const complexityMatch = !patternData.complexity || 
-        weaver.complexityLimit >= (patternData.complexity || 0);
+      // Must match complexity (weaver's limit should handle the pattern's request)
+      const complexityMatch = weaver.complexityLimit >= normalizedComplexity;
 
       // Must have at least some overlapping colors (Relaxed for prototype, but can be strict)
       // For this demo, we'll allow all but show the "Thread Status"
       
       return techniqueMatch && complexityMatch;
     });
+
+    if (filtered.length === 0) {
+       // Fallback for mockup: if no weavers match the exact combination, just show all weavers
+       filtered = weavers;
+    }
 
     // 2. Scoring
     const scored = filtered.map(weaver => {
@@ -51,8 +59,8 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver }: Weav
       // Technique compatibility (100% if matched)
       const techniqueScore = 100;
       
-      // Complexity score (closeness to limit)
-      const complexityScore = Math.min(100, Math.round(((patternData.complexity || 8) / weaver.complexityLimit) * 100));
+      // Complexity score
+      const complexityScore = Math.round(Math.min(100, Math.max(60, 100 - Math.abs(weaver.complexityLimit - normalizedComplexity) * 5)));
       
       // Color score (based on colors in stock)
       const patternColors = patternData.colors || [];
@@ -124,14 +132,16 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver }: Weav
       <Box sx={{ p: 2, bgcolor: "#FFFFFF", borderBottom: "1px solid #E5DFD6" }}>
         <Box sx={{ display: "flex", gap: 2, p: 1.5, bgcolor: "#FAF6F0", borderRadius: "16px", border: "1px solid #E5DFD6" }}>
           <Box sx={{ width: 80, height: 80, borderRadius: "12px", bgcolor: "#FFFFFF", p: 0.5, border: "1px solid #E5DFD6", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-            <Box sx={{ width: "100%", height: "100%", backgroundImage: "url(/images/fabric1.jpg)", backgroundSize: "cover", borderRadius: "8px" }} />
+            <Box sx={{ width: "100%", height: "100%", backgroundImage: `url(${patternData.generatedImageUrl || "/images/fabric1.jpg"})`, backgroundSize: "cover", borderRadius: "8px" }} />
           </Box>
           <Box>
             <Typography sx={{ fontWeight: 700, color: "#1B2A4A", fontSize: "1rem" }}>Your Pattern</Typography>
-            <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>ดั้งเดิม • โทนม่วงเข้ม • ซับซ้อนสูง</Typography>
+            <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>
+              {patternData.mood || 'ดั้งเดิม'} • {(patternData.colors || []).join(" + ") || "หลากสี"} • ซับซ้อน {patternData.complexity || 50}
+            </Typography>
             <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>
-              {["ยกดอก", "กรมท่า + ม่วง", "Intricate"].map(tag => (
-                <Chip key={tag} label={tag} size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#E5DFD6", color: "#6B7280" }} />
+              {[patternData.weaveType || "ลายทอ", ...(patternData.colors || []).slice(0, 1), (patternData.complexity || 50) >= 75 ? "Intricate" : "Standard"].map((tag, idx) => (
+                <Chip key={`${tag}-${idx}`} label={tag} size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#E5DFD6", color: "#6B7280" }} />
               ))}
             </Box>
           </Box>

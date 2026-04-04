@@ -54,9 +54,7 @@ export default function CustomGenerator() {
     ].filter(Boolean).join(" ");
 
     try {
-      // Call Express backend directly to avoid Next.js 30s proxy timeout
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await fetch(`${backendUrl}/api/nanobanana/generate`, {
+      const res = await fetch("/api/nanobanana/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
@@ -184,8 +182,9 @@ export default function CustomGenerator() {
           {currentMode === "matching" && (
             <WeaverMatchingView 
               key="matching" 
-              patternData={patternData} 
+              patternData={patternData!} 
               onSelectWeaver={handleSelectWeaver}
+              onBack={() => setCurrentMode("preview")}
             />
           )}
           {currentMode === "confirm_request" && selectedWeaver && (
