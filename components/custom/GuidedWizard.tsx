@@ -54,19 +54,19 @@ const WEAVE_TYPES = [
 
 const REGION_TYPES = [
   { name: "ล้านนา (Lanna)", image: "https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&q=80&w=400", color: "#4f6b55" },
-  { name: "อีสาน (Isan)", image: "https://images.unsplash.com/photo-1581630138927-142a78184439?auto=format&fit=crop&q=80&w=400", color: "#8b5a2b" },
+  { name: "อีสาน (Isan)", image: "/images/Isan.png", color: "#8b5a2b" },
   { name: "ภาคใต้ (South)", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=400", color: "#2E5B7C" },
-  { name: "ภาคกลาง (Central)", image: "https://images.unsplash.com/photo-1548107712-42da01948496?auto=format&fit=crop&q=80&w=400", color: "#C89F53" },
+  { name: "ภาคกลาง (Central)", image: "/images/Central.png", color: "#C89F53" },
 ];
 
 const MOOD_TYPES = [
   { name: "งานแต่ง / พิธี", image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=400", color: "#f8e1e7" },
   { name: "ทางการ", image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=400", color: "#d1c4e9" },
-  { name: "ลำลอง", image: "https://images.unsplash.com/photo-1434389678369-182cb1477759?auto=format&fit=crop&q=80&w=400", color: "#b3e5fc" },
+  { name: "ลำลอง", image: "/images/lumlong.png", color: "#b3e5fc" },
   { name: "แฟชั่น", image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=400", color: "#ffccbc" },
   { name: "ของขวัญ", image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&q=80&w=400", color: "#c8e6c9" },
   { name: "ของแต่งบ้าน", image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=400", color: "#fff9c4" },
-  { name: "พรีเมียม", image: "https://images.unsplash.com/photo-1600725514690-394dd38b0ab3?auto=format&fit=crop&q=80&w=400", color: "#cfd8dc" },
+  { name: "พรีเมียม", image: "/images/premier.png", color: "#cfd8dc" },
 ];
 
 export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
