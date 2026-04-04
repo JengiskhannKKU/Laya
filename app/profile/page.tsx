@@ -187,8 +187,6 @@ export default function ProfilePage() {
             const menuContent = (
               <Box key={item.label}>
                 <Box
-                  component={motion.div}
-                  whileTap={{ bgcolor: "rgba(0,0,0,0.02)" }}
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -196,6 +194,7 @@ export default function ProfilePage() {
                     px: 2,
                     py: 1.8,
                     cursor: "pointer",
+                    "&:active": { bgcolor: "rgba(0,0,0,0.02)" }
                   }}
                 >
                   <Box sx={{ color: "#1B2A4A" }}>{item.icon}</Box>
@@ -245,11 +244,6 @@ export default function ProfilePage() {
 
         {/* Logout */}
         <Box
-          component={motion.div}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          whileTap={{ scale: 0.98 }}
           sx={{
             display: "flex",
             alignItems: "center",

@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 
 const router = Router();
 
-const NB_BASE = "https://api.nanobananaapi.ai/api/v1/nanobanana";
+const NB_BASE = "https://api.kie.ai/api/v1/gpt4o-image";
 const API_KEY = process.env.NANO_BANANA_API_KEY ?? "";
 
 /** Patterns that indicate credits/quota exhaustion in API responses */
@@ -44,8 +44,8 @@ async function pollTask(taskId: string, maxWait = 30_000, interval = 3_000): Pro
     if (data.successFlag === 1 || data.successFlag === true) {
       if (!data.response) throw new Error("Task successful but no response field found");
       const respObj = typeof data.response === "string" ? JSON.parse(data.response) : data.response;
-
-      const url =
+      const url = 
+        respObj?.resultUrls?.[0] ||
         respObj?.resultImageUrl ||
         respObj?.results_urls?.[0] ||
         respObj?.imageUrl ||
@@ -87,8 +87,8 @@ router.post("/generate", async (req: Request, res: Response) => {
   }
 
   try {
-    // 1. Submit generation task
-    const submitRes = await fetch(`${NB_BASE}/generate-2`, {
+    // 1. Submit task
+    const submitRes = await fetch(`${NB_BASE}/generate`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${API_KEY}`,
@@ -96,9 +96,7 @@ router.post("/generate", async (req: Request, res: Response) => {
       },
       body: JSON.stringify({
         prompt,
-        imageUrls,
-        aspectRatio: "1:1",
-        resolution: "1K",
+        size: "1:1"
       }),
     });
 

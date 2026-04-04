@@ -28,21 +28,28 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver }: Weav
   }, []);
 
   const matchedWeavers = useMemo(() => {
+    // Normalize complexity from 0-100 scale to 1-10 scale
+    const normalizedComplexity = (patternData.complexity || 50) / 10;
+
     // 1. Must-match filtering
-    const filtered = weavers.filter(weaver => {
-      // Must match technique
+    let filtered = weavers.filter(weaver => {
+      // Must match technique (check if patternData.weaveType includes the technique keyword)
       const techniqueMatch = !patternData.weaveType || 
-        weaver.techniques.some(t => t.toLowerCase() === patternData.weaveType?.toLowerCase());
+        weaver.techniques.some(t => patternData.weaveType?.toLowerCase().includes(t.toLowerCase()));
       
-      // Must match complexity (simple heuristic)
-      const complexityMatch = !patternData.complexity || 
-        weaver.complexityLimit >= (patternData.complexity || 0);
+      // Must match complexity (weaver's limit should handle the pattern's request)
+      const complexityMatch = weaver.complexityLimit >= normalizedComplexity;
 
       // Must have at least some overlapping colors (Relaxed for prototype, but can be strict)
       // For this demo, we'll allow all but show the "Thread Status"
       
       return techniqueMatch && complexityMatch;
     });
+
+    if (filtered.length === 0) {
+       // Fallback for mockup: if no weavers match the exact combination, just show all weavers
+       filtered = weavers;
+    }
 
     // 2. Scoring
     const scored = filtered.map(weaver => {
@@ -51,8 +58,8 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver }: Weav
       // Technique compatibility (100% if matched)
       const techniqueScore = 100;
       
-      // Complexity score (closeness to limit)
-      const complexityScore = Math.min(100, Math.round(((patternData.complexity || 8) / weaver.complexityLimit) * 100));
+      // Complexity score
+      const complexityScore = Math.round(Math.min(100, Math.max(60, 100 - Math.abs(weaver.complexityLimit - normalizedComplexity) * 5)));
       
       // Color score (based on colors in stock)
       const patternColors = patternData.colors || [];
