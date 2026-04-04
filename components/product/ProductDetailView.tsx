@@ -22,10 +22,13 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUncheckedRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import QrCodeScannerRoundedIcon from "@mui/icons-material/QrCodeScannerRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/mock-data";
+import TraceabilityView from "./TraceabilityView";
+import DigitalCertificateView from "./DigitalCertificateView";
 
 const AVAILABLE_COLORS = [
   { id: "navy", name: "กรมท่า", hex: "#1C243B" },
@@ -42,17 +45,49 @@ const PRESETS = [2, 5, 10, 20];
 const FORMATS = ["ผ้าผืน (ม้วน)", "ผ้าพับ", "ตัดแบ่ง"];
 const EDGE_FINISHES = ["ไม่เย็บริม", "เย็บริมทั้งสองข้าง"];
 
-interface ProductDetailViewProps {
-  product: Product;
-}
-
-export default function ProductDetailView({ product }: ProductDetailViewProps) {
+export default function ProductDetailView({ product }: { product: Product }) {
   const [currentImage, setCurrentImage] = useState(0);
+  const [activeView, setActiveView] = useState<"detail" | "traceability" | "certificate">("detail");
+  const [isPressing, setIsPressing] = useState(false);
+  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [selectedColor, setSelectedColor] = useState(AVAILABLE_COLORS[0]);
   const [quantity, setQuantity] = useState(5);
   const [format, setFormat] = useState(FORMATS[0]);
   const [edgeFinish, setEdgeFinish] = useState(EDGE_FINISHES[0]);
   const [notes, setNotes] = useState("");
+
+  const handlePressStart = () => {
+    setIsPressing(true);
+    const timer = setTimeout(() => {
+      setActiveView("traceability");
+      setIsPressing(false);
+    }, 800); // 800ms long press
+    setPressTimer(timer);
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimer) clearTimeout(pressTimer);
+    setIsPressing(false);
+  };
+
+  if (activeView === "traceability") {
+    return (
+      <TraceabilityView
+        product={product}
+        onBack={() => setActiveView("detail")}
+        onViewCertificate={() => setActiveView("certificate")}
+      />
+    );
+  }
+
+  if (activeView === "certificate") {
+    return (
+      <DigitalCertificateView
+        product={product}
+        onBack={() => setActiveView("traceability")}
+      />
+    );
+  }
 
   const totalPrice = product.price * quantity;
 
@@ -70,7 +105,18 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     >
       {/* Top Image Section */}
       <Box sx={{ position: "relative" }}>
-        <Box sx={{ position: "relative", width: "100%", height: 380 }}>
+        <Box
+          sx={{
+            height: 480,
+            width: "100%",
+            position: "relative",
+            overflow: "hidden",
+            touchAction: "none", // Prevent scrolling while pressing
+          }}
+          onPointerDown={handlePressStart}
+          onPointerUp={handlePressEnd}
+          onPointerLeave={handlePressEnd}
+        >
           {/* Main Image */}
           <AnimatePresence mode="wait">
             <motion.div
@@ -207,8 +253,31 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ px: 2.5, pt: 3 }}>
+      <Box sx={{ px: 2.5, pt: 1, pb: 3 }}>
         
+        {/* Prominent Story Button at the Top */}
+        <Button
+          onClick={() => setActiveView("traceability")}
+          fullWidth
+          variant="contained"
+          startIcon={<QrCodeScannerRoundedIcon />}
+          sx={{
+            py: 1.5,
+            mb: 3,
+            borderRadius: "16px",
+            bgcolor: "#1B2A4A",
+            color: "#FFFFFF",
+            fontWeight: 700,
+            fontSize: "0.95rem",
+            textTransform: "none",
+            boxShadow: "0 4px 15px rgba(27,42,74,0.15)",
+            border: "1px solid rgba(216, 188, 130, 0.3)",
+            "&:hover": { bgcolor: "#0F1A30" }
+          }}
+        >
+          เรื่องราวของผ้าผืนนี้
+        </Button>
+
         {/* Title Block */}
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <Box>
@@ -403,7 +472,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: y => 1.5, rowGap: 1.5 }}>
             <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>สี</Typography></Box>
             <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{selectedColor.name}</Typography></Box>
-            
+
             <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>รูปแบบ</Typography></Box>
             <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{format}</Typography></Box>
 
@@ -418,7 +487,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <Typography sx={{ fontWeight: 700, color: "#1B2A4A" }}>ราคารวม</Typography>
             <Box sx={{ textAlign: "right" }}>
               <Typography sx={{ fontWeight: 700, fontSize: "1.2rem", color: "#D3A14A" }}>
-                {totalPrice.toLocaleString()} 
+                {totalPrice.toLocaleString()}
               </Typography>
               <Typography sx={{ fontSize: "0.8rem", color: "#D3A14A" }}>บาท</Typography>
             </Box>
@@ -455,17 +524,17 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
             ตรงกับ:
           </Typography>
-          
+
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {[
               { id: "bag1", name: "พวงกุญแจผ้าทอ LAYA", img: "/bag1.png", price: 1250, variant: "Blue Signature" },
               { id: "bag2", name: "กระเป๋าถือลายวิจิตร", img: "/bag2.png", price: 4500, variant: "Navy Blue", soldOut: true }
             ].map((item, idx) => (
               <Box key={idx} sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: "12px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5, opacity: item.soldOut ? 0.6 : 1 }}>
-                <Checkbox 
-                  size="small" 
+                <Checkbox
+                  size="small"
                   disabled={item.soldOut}
-                  sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#CBA258" } }} 
+                  sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#CBA258" } }}
                 />
                 <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", border: "1px solid #F0F0F0" }}>
                   <Image src={item.img} alt={item.name} fill style={{ objectFit: "cover" }} />
@@ -476,11 +545,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     <Select
                       value={item.variant}
                       disabled={item.soldOut}
-                      sx={{ 
-                        borderRadius: "8px", 
-                        fontSize: "0.75rem", 
+                      sx={{
+                        borderRadius: "8px",
+                        fontSize: "0.75rem",
                         height: 32,
-                        "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5DFD6" } 
+                        "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5DFD6" }
                       }}
                     >
                       <MenuItem value={item.variant} sx={{ fontSize: "0.75rem" }}>{item.variant}</MenuItem>
@@ -530,6 +599,10 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             </Box>
           </Box>
         )}
+
+        <Box sx={{ mt: 4, mb: 1, display: "flex", flexDirection: "column", gap: 1.5 }}>
+          {/* Moved to the top for prominence */}
+        </Box>
 
         {/* Trust Checklist Tags */}
         <Box sx={{ mt: 4, mb: 4, display: "flex", flexDirection: "column", gap: 1.5 }}>

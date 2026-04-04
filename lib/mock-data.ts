@@ -4,6 +4,8 @@ export interface ProductionStep {
   description: string;
   date: string;
   icon: "fiber" | "dye" | "weave" | "inspect" | "finish" | "ship";
+  videoUrl?: string;
+  isCompleted?: boolean;
 }
 
 export interface Review {
@@ -131,12 +133,10 @@ export const products: Product[] = [
       weavingTechnique: "ทอยกดอก",
       weavingDetails: "เทคนิคทอยกดอกด้วยกี่ทอมือแบบโบราณ ใช้ตะกรอยกลายกินรี ต้องใช้ความชำนาญสูง",
       productionSteps: [
-        { step: 1, title: "เตรียมเส้นไหม", description: "สาวไหม ฟอก ย้อมสี ทำเส้นยืนและเส้นพุ่ง", date: "2024-11-01", icon: "fiber" },
-        { step: 2, title: "ย้อมสีธรรมชาติ", description: "ย้อมครั่งสีแดง แก่นขนุนสีเหลือง มะเกลือสีดำ", date: "2024-11-05", icon: "dye" },
-        { step: 3, title: "ทอยกดอก", description: "ทอด้วยกี่พื้นบ้าน ยกลายกินรีตามแบบโบราณ", date: "2024-11-10", icon: "weave" },
-        { step: 4, title: "ตรวจสอบคุณภาพ", description: "ตรวจลาย ความสม่ำเสมอของเนื้อผ้า และสีย้อม", date: "2024-11-22", icon: "inspect" },
-        { step: 5, title: "ตกแต่งสำเร็จ", description: "ซักทำความสะอาด รีดเรียบ พับเก็บ", date: "2024-11-24", icon: "finish" },
-        { step: 6, title: "พร้อมจัดส่ง", description: "บรรจุในกล่องผ้าไหมพร้อมใบรับรอง", date: "2024-11-25", icon: "ship" },
+        { step: 1, title: "เลี้ยงไหม & สาวไหม", description: "คัดสรรเส้นไหมน้อยจากธรรมชาติในชุมชน", date: "เฟสที่ 1", icon: "fiber", isCompleted: true, videoUrl: "https://www.youtube.com/watch?v=CI0k1HknnrQ" },
+        { step: 2, title: "ย้อมสีธรรมชาติ", description: "สกัดสีจากเนื้อไม้ ใบ และรากพืชท้องถิ่น", date: "เฟสที่ 2", icon: "dye", isCompleted: true, videoUrl: "https://www.youtube.com/embed/6SMsxWn3yWc" },
+        { step: 3, title: "ทอดอกด้วยมือ", description: "เทคนิคยกลายดอกอันวิจิตรโดยช่างฝีมือ", date: "เฟสที่ 3", icon: "weave", isCompleted: true, videoUrl: "https://www.youtube.com/embed/JOSBieFNMcs" },
+        { step: 4, title: "ตรวจสอบคุณภาพ & ประทับตรา", description: "ความภาคภูมิใจในมาตรฐานผ้าไหมไทย", date: "เฟสที่ 4", icon: "inspect", isCompleted: true, videoUrl: "https://www.youtube.com/watch?v=PXsKVPeApQo" },
       ],
       carbonFootprint: "low",
       certifications: ["GI ลำพูน", "OTOP 5 ดาว", "มาตรฐานผ้าไหมไทย"],
@@ -460,6 +460,11 @@ export interface Weaver {
   leadTimeDays: number;
   status: "available" | "busy" | "waiting";
   recentWorks: string[]; // Image URLs
+  // Added for Traceability
+  specialty?: string;
+  experience?: string;
+  location?: string;
+  photo?: string;
 }
 
 export const weavers: Weaver[] = [
@@ -480,6 +485,10 @@ export const weavers: Weaver[] = [
     leadTimeDays: 12,
     status: "available",
     recentWorks: ["/images/fabric1.jpg", "/images/fabric2.jpg"],
+    specialty: "ยกลายกินรี, ทอผ้าไหมยกดอกพระธาตุ",
+    experience: "32 ปี (สืบทอดจากยายและแม่)",
+    location: "ชุมชนหริภุญชัย จ.ลำพูน",
+    photo: "https://images.unsplash.com/photo-1582213726893-edc10ff67df0?auto=format&fit=crop&w=300&h=300",
   },
   {
     id: "w2",
