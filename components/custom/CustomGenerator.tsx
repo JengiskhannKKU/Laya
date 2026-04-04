@@ -184,8 +184,9 @@ export default function CustomGenerator() {
           {currentMode === "matching" && (
             <WeaverMatchingView 
               key="matching" 
-              patternData={patternData} 
+              patternData={patternData!} 
               onSelectWeaver={handleSelectWeaver}
+              onBack={() => setCurrentMode("preview")}
             />
           )}
           {currentMode === "confirm_request" && selectedWeaver && (
