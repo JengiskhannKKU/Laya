@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 const NB_BASE = "https://api.kie.ai/api/v1/gpt4o-image";
 const API_KEY = process.env.NANO_BANANA_API_KEY ?? "";
 
@@ -23,7 +26,7 @@ class CreditsExhaustedError extends Error {
   constructor() { super("API key out of credits"); }
 }
 
-async function pollTask(taskId: string, maxWait = 30_000, interval = 3_000): Promise<string> {
+async function pollTask(taskId: string, maxWait = 55_000, interval = 3_000): Promise<string> {
   const deadline = Date.now() + maxWait;
   while (Date.now() < deadline) {
     const res = await fetch(`${NB_BASE}/record-info?taskId=${taskId}`, {
