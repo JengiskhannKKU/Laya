@@ -131,14 +131,16 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver }: Weav
       <Box sx={{ p: 2, bgcolor: "#FFFFFF", borderBottom: "1px solid #E5DFD6" }}>
         <Box sx={{ display: "flex", gap: 2, p: 1.5, bgcolor: "#FAF6F0", borderRadius: "16px", border: "1px solid #E5DFD6" }}>
           <Box sx={{ width: 80, height: 80, borderRadius: "12px", bgcolor: "#FFFFFF", p: 0.5, border: "1px solid #E5DFD6", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-            <Box sx={{ width: "100%", height: "100%", backgroundImage: "url(/images/fabric1.jpg)", backgroundSize: "cover", borderRadius: "8px" }} />
+            <Box sx={{ width: "100%", height: "100%", backgroundImage: `url(${patternData.generatedImageUrl || "/images/fabric1.jpg"})`, backgroundSize: "cover", borderRadius: "8px" }} />
           </Box>
           <Box>
             <Typography sx={{ fontWeight: 700, color: "#1B2A4A", fontSize: "1rem" }}>Your Pattern</Typography>
-            <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>ดั้งเดิม • โทนม่วงเข้ม • ซับซ้อนสูง</Typography>
+            <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>
+              {patternData.mood || 'ดั้งเดิม'} • {(patternData.colors || []).join(" + ") || "หลากสี"} • ซับซ้อน {patternData.complexity || 50}
+            </Typography>
             <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>
-              {["ยกดอก", "กรมท่า + ม่วง", "Intricate"].map(tag => (
-                <Chip key={tag} label={tag} size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#E5DFD6", color: "#6B7280" }} />
+              {[patternData.weaveType || "ลายทอ", ...(patternData.colors || []).slice(0, 1), (patternData.complexity || 50) >= 75 ? "Intricate" : "Standard"].map((tag, idx) => (
+                <Chip key={`${tag}-${idx}`} label={tag} size="small" sx={{ height: 20, fontSize: "0.65rem", bgcolor: "#E5DFD6", color: "#6B7280" }} />
               ))}
             </Box>
           </Box>
