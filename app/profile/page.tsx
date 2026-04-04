@@ -13,9 +13,15 @@ import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
+import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import Link from "next/link";
 
 const menuItems = [
+  {
+    icon: <ShoppingBagRoundedIcon sx={{ fontSize: 20 }} />,
+    label: "Order",
+    href: "/orders",
+  },
   {
     icon: <FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />,
     label: "รายการโปรด",
