@@ -42,10 +42,10 @@ const WEAVER_COLORS = [
   { name: "บานเย็น", hex: "#ff1493" },
 ];
 const WEAVE_TYPES = [
-  { name: "มัดหมี่ (Mudmee)", image: "https://images.unsplash.com/photo-1605307775924-f7b539bf3378?auto=format&fit=crop&q=80&w=400", color: "#e8d5c4" },
-  { name: "ขิด (Khit)", image: "https://images.unsplash.com/photo-1598114144365-680072044238?auto=format&fit=crop&q=80&w=400", color: "#d5e8c4" },
-  { name: "ยกดอก (Yok Dok)", image: "https://images.unsplash.com/photo-1620023473212-0082f808f512?auto=format&fit=crop&q=80&w=400", color: "#e8c4c4" },
-  { name: "จก (Jok)", image: "https://images.unsplash.com/photo-1580252199616-fd00078de34b?auto=format&fit=crop&q=80&w=400", color: "#c4d5e8" },
+  { name: "มัดหมี่ (Mudmee)", image: "/patterns/weave_mudmee.png", color: "#e8d5c4" },
+  { name: "ขิด (Khit)", image: "/patterns/weave_khit.png", color: "#d5e8c4" },
+  { name: "ยกดอก (Yok Dok)", image: "/patterns/weave_yokdok.png", color: "#e8c4c4" },
+  { name: "จก (Jok)", image: "/patterns/weave_jok.png", color: "#c4d5e8" },
 ];
 
 const REGION_TYPES = [

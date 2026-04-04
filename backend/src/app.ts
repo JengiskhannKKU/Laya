@@ -11,6 +11,7 @@ import bannersRouter from "./routes/banners";
 import communitiesRouter from "./routes/communities";
 import ordersRouter from "./routes/orders";
 import aiRouter from "./routes/ai";
+import nanobananaRouter from "./routes/nanobanana";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/banners", bannersRouter);
 app.use("/api/communities", communitiesRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/ai", aiRouter);
+app.use("/api/nanobanana", nanobananaRouter);
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

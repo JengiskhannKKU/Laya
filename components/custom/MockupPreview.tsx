@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Typography, Button, Tabs, Tab, IconButton } from "@mui/material";
+import { Box, Typography, Button, Tabs, Tab, IconButton, Alert } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
@@ -16,11 +16,19 @@ interface MockupPreviewProps {
 export default function MockupPreview({ patternData, onStartMatching }: MockupPreviewProps) {
   const [tabValue, setTabValue] = useState(0);
 
-  // Using a beautiful LAYA placeholder as the "generated" pattern
-  const generatedImage = "/images/fabric1.jpg";
+  // Use AI-generated image from Nano Banana 2, fallback to placeholder
+  const generatedImage = patternData.generatedImageUrl ?? "/images/fabric1.jpg";
+  const isAIGenerated = !!patternData.generatedImageUrl && !patternData.isMock;
+
 
   return (
     <Box sx={{ pt: 2, display: "flex", flexDirection: "column", height: "100%", gap: 3 }}>
+      {patternData.isMock && (
+        <Alert severity="warning" sx={{ mb: -1, borderRadius: 2 }}>
+          API key out of credits! Displaying a placeholder mock fabric for demo purposes.
+        </Alert>
+      )}
+
       <Box>
         <Typography
           sx={{

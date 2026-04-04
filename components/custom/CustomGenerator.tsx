@@ -29,20 +29,47 @@ export default function CustomGenerator() {
     setCurrentMode(mode);
   };
 
-  const handleStartGeneration = (data: CustomPatternData) => {
-    setPatternData({
+  const handleStartGeneration = async (data: CustomPatternData) => {
+    const merged: CustomPatternData = {
       ...data,
-      // Default technical stats if missing
       weaveType: data.weaveType || "ยกดอก",
-      complexity: data.complexity || 8,
-      colors: data.colors || ["#1B2A4A", "#CFA055", "#800000"]
-    });
+      complexity: data.complexity || 50,
+      colors: data.colors || ["#1B2A4A", "#CFA055", "#800000"],
+    };
+    setPatternData(merged);
     setCurrentMode("generating");
-    
-    // Simulate generation delay
-    setTimeout(() => {
+
+    // Build a rich prompt from the wizard selections
+    const patternNames = (merged.selectedPatterns ?? []).join(" blended with ");
+    const complexityLabel = (merged.complexity ?? 50) > 70 ? "highly intricate" : (merged.complexity ?? 50) > 40 ? "medium complexity" : "simple";
+    const prompt = [
+      `Seamless Thai silk textile pattern, pixel art style,`,
+      patternNames ? `motifs: ${patternNames},` : "",
+      merged.weaveType ? `weave technique: ${merged.weaveType},` : "",
+      merged.region ? `regional style: ${merged.region},` : "",
+      merged.mood ? `occasion: ${merged.mood},` : "",
+      `${complexityLabel} design,`,
+      `traditional Thai colors, rich gold and deep jewel tones,`,
+      `crisp repeating tile, no text, no watermark`,
+    ].filter(Boolean).join(" ");
+
+    try {
+      // Call Express backend directly to avoid Next.js 30s proxy timeout
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/nanobanana/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const json = await res.json() as { imageUrl?: string; error?: string; mock?: boolean };
+      if (!res.ok || json.error) throw new Error(json.error ?? "Generation failed");
+      setPatternData((prev: any) => ({ ...prev, generatedImageUrl: json.imageUrl, isMock: json.mock }));
+    } catch (err: any) {
+      console.error("[CustomGenerator] generation error:", err.message);
+      // Fall through to preview even on error — MockupPreview will show a fallback
+    } finally {
       setCurrentMode("preview");
-    }, 4000); 
+    }
   };
 
   const handleStartMatching = () => {
