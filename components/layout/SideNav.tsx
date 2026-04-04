@@ -8,12 +8,13 @@ import ExploreRoundedIcon from "@mui/icons-material/ExploreRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import MapRoundedIcon from "@mui/icons-material/MapRounded";
 
 const navItems = [
   { label: "Home", icon: <HomeRoundedIcon />, path: "/" },
   { label: "Explore", icon: <ExploreRoundedIcon />, path: "/explore" },
   { label: "Custom", icon: <StarRoundedIcon />, path: "/custom" },
-  { label: "Orders", icon: <LocalShippingRoundedIcon />, path: "/orders" },
+  { label: "Map", icon: <MapRoundedIcon />, path: "/map" },
   { label: "Profile", icon: <PersonRoundedIcon />, path: "/profile" },
 ];
 
