@@ -15,9 +15,10 @@ import { weavers, type Weaver, type CustomPatternData } from "@/lib/mock-data";
 interface WeaverMatchingViewProps {
   patternData: CustomPatternData;
   onSelectWeaver: (weaver: Weaver) => void;
+  onBack?: () => void;
 }
 
-export default function WeaverMatchingView({ patternData, onSelectWeaver }: WeaverMatchingViewProps) {
+export default function WeaverMatchingView({ patternData, onSelectWeaver, onBack }: WeaverMatchingViewProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [activeFilter, setActiveFilter] = useState("ทั้งหมด");
 
