@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, Avatar, Button, Stepper, Step, StepLabel, StepContent, StepConnector, stepConnectorClasses, styled } from "@mui/material";
+import { Box, Typography, Avatar, Button, Stepper, Step, StepLabel, StepContent, StepConnector, stepConnectorClasses, styled, Chip } from "@mui/material";
 import { motion } from "framer-motion";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { type Weaver, type CustomPatternData } from "@/lib/mock-data";

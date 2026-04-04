@@ -6,6 +6,16 @@ export interface ProductionStep {
   icon: "fiber" | "dye" | "weave" | "inspect" | "finish" | "ship";
 }
 
+export interface Review {
+  id: string;
+  userName: string;
+  avatar: string;
+  rating: number;
+  date: string;
+  comment: string;
+  images?: string[];
+}
+
 export interface PassportData {
   materials: string[];
   dyeType: string;
@@ -37,6 +47,8 @@ export interface Product {
   weaverName: string;
   certificateId: string;
   passport?: PassportData;
+  reviews?: Review[];
+  soldCount?: number;
 }
 
 export interface CustomPatternData {
@@ -51,6 +63,7 @@ export interface CustomPatternData {
   patternStyle?: string;
   generatedImageUrl?: string;   // result from Nano Banana 2 API
   isMock?: boolean;             // true if Nano Banana ran out of credits
+  dyeType?: 'natural' | 'chemical';
 }
 
 export interface Category {
@@ -97,10 +110,11 @@ export const products: Product[] = [
     name: "ผ้ายกลายกินรีหริภุญชัย",
     community: "ชุมชนหริภุญชัย",
     province: "ลำพูน",
-    price: 3500,
-    priceUnit: "เมตร",
+    price: 1800,
+    priceUnit: "บาท / เมตร",
     rating: 4.8,
-    reviewCount: 120,
+    reviewCount: 124,
+    soldCount: 530,
     images: ["/images/fabric1.jpg", "/images/fabric2.jpg", "/images/fabric3.jpg"],
     hasGI: true,
     productionTime: "12-15 วัน",
@@ -129,6 +143,24 @@ export const products: Product[] = [
       blockchainHash: "0x7a3b...f92e",
       verifiedDate: "2024-11-25",
     },
+    reviews: [
+      {
+        id: "r1",
+        userName: "คุณกนกวรรณ ม.",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150",
+        rating: 5,
+        date: "20 พ.ย. 2567",
+        comment: "ผ้าสวยมากค่ะ ลายละเอียดตรงตามที่สั่งเลย ย้อมสีธรรมชาติสวยมาก ส่งงานตรงเวลา แอดมินดูแลดีค่ะ",
+      },
+      {
+        id: "r2",
+        userName: "คุณผู้ไม่ประสงค์ออกนาม",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150",
+        rating: 4.5,
+        date: "15 พ.ย. 2567",
+        comment: "งานฝีมือประณีตมากครับ เนื้อไหมมีความเงางามสมกับเป็นผ้าไหมแท้ 100% การจัดส่งก็ห่อมาอย่างดีประทับใจมาก",
+      }
+    ]
   },
   {
     id: "m1",

@@ -9,6 +9,11 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import LoopRoundedIcon from "@mui/icons-material/LoopRounded";
+import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
+import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
+import HourglassEmptyRoundedIcon from "@mui/icons-material/HourglassEmptyRounded";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
 import Image from "next/image";
 
 const orders = [
@@ -52,8 +57,13 @@ const orders = [
   },
 ];
 
-const statusIcons: Record<string, React.ReactNode> = {
+const statusIcons: Record<string, React.ReactElement> = {
+  "ส่งคำขอแล้ว": <CloudUploadRoundedIcon sx={{ fontSize: 14 }} />,
+  "แอดมินประสานงาน": <SupportAgentRoundedIcon sx={{ fontSize: 14 }} />,
+  "รอชุมชนยืนยัน": <HourglassEmptyRoundedIcon sx={{ fontSize: 14 }} />,
+  "เริ่มผลิต": <PlayArrowRoundedIcon sx={{ fontSize: 14 }} />,
   "กำลังทอ": <LoopRoundedIcon sx={{ fontSize: 14 }} />,
+  "ตรวจสอบคุณภาพ": <AssignmentTurnedInRoundedIcon sx={{ fontSize: 14 }} />,
   "จัดส่งแล้ว": <LocalShippingRoundedIcon sx={{ fontSize: 14 }} />,
   "เสร็จแล้ว": <CheckCircleRoundedIcon sx={{ fontSize: 14 }} />,
 };

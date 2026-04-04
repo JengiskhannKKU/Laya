@@ -12,15 +12,15 @@ interface ModeSelectionProps {
 }
 
 const PIXEL_PATTERNS = [
-  { id: 1, name: "ลายดอกบัว",    category: "ลายดอก",       src: "/patterns/lotus.png",     origin: "เชียงใหม่" },
-  { id: 2, name: "ลายนาค",       category: "ลายสัตว์",     src: "/patterns/naga.png",      origin: "ลำพูน" },
-  { id: 3, name: "ลายเพชร",      category: "ลายเรขาคณิต",  src: "/patterns/diamond.png",   origin: "น่าน" },
-  { id: 4, name: "ลายหงส์",      category: "ลายสัตว์",     src: "/patterns/swan.png",      origin: "อุบลราชธานี" },
-  { id: 5, name: "ลายขอ",        category: "ลายเรขาคณิต",  src: "/patterns/hook.png",      origin: "ขอนแก่น" },
-  { id: 6, name: "ลายช้าง",      category: "ลายสัตว์",     src: "/patterns/elephant.png",  origin: "เชียงราย" },
-  { id: 7, name: "ลายซิกแซก",    category: "ลายเรขาคณิต",  src: "/patterns/zigzag.png",    origin: "แพร่" },
-  { id: 8, name: "ลายกินนร",     category: "ลายโบราณ",     src: "/patterns/kinnara.png",   origin: "สุโขทัย" },
-  { id: 9, name: "ลายใบไม้",     category: "ลายพฤกษา",     src: "/patterns/leaf.png",      origin: "นครราชสีมา" },
+  { id: 1, name: "ลายดอกบัว", category: "ลายดอก", src: "/patterns/lotus.png", origin: "เชียงใหม่" },
+  { id: 2, name: "ลายนาค", category: "ลายสัตว์", src: "/patterns/naga.png", origin: "ลำพูน" },
+  { id: 3, name: "ลายเพชร", category: "ลายเรขาคณิต", src: "/patterns/diamond.png", origin: "น่าน" },
+  { id: 4, name: "ลายหงส์", category: "ลายสัตว์", src: "/patterns/swan.png", origin: "อุบลราชธานี" },
+  { id: 5, name: "ลายขอ", category: "ลายเรขาคณิต", src: "/patterns/hook.png", origin: "ขอนแก่น" },
+  { id: 6, name: "ลายช้าง", category: "ลายสัตว์", src: "/patterns/elephant.png", origin: "เชียงราย" },
+  { id: 7, name: "ลายซิกแซก", category: "ลายเรขาคณิต", src: "/patterns/zigzag.png", origin: "แพร่" },
+  { id: 8, name: "ลายกินนร", category: "ลายโบราณ", src: "/patterns/kinnara.png", origin: "สุโขทัย" },
+  { id: 9, name: "ลายใบไม้", category: "ลายพฤกษา", src: "/patterns/leaf.png", origin: "นครราชสีมา" },
   { id: 10, name: "ลายดาวล้อมเดือน", category: "ลายโบราณ", src: "/patterns/star_moon.png", origin: "สุโขทัย" },
 ];
 
@@ -48,7 +48,7 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
       {/* ── Pattern Gallery ── */}
       <Box>
         <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.78rem", color: "#6B7280", mb: 1.2, fontWeight: 600 }}>
-          🎨 ลายผ้าไทย Pixel Art ({PIXEL_PATTERNS.length} ลาย)
+          🎨 ตัวอย่างลายผ้าไทย Pixel Art ({PIXEL_PATTERNS.length} ลาย)
         </Typography>
         <Box sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1 }}>
           {PIXEL_PATTERNS.map((p, i) => (

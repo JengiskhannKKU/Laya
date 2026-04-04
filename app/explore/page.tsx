@@ -17,7 +17,7 @@ import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
 import ViewListRoundedIcon from "@mui/icons-material/ViewListRounded";
 
-const filters = ["ทั้งหมด", "ผ้าไหม", "ผ้าฝ้าย", "GI", "ราคาต่ำ-สูง"];
+const filters = ["ทั้งหมด", "ผ้าผืน", "เสื้อผ้า", "ผ้าพันคอ", "กระเป๋า", "ของฝาก"];
 
 export default function ExplorePage() {
   const [activeFilter, setActiveFilter] = useState(0);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
+import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Rating from "@mui/material/Rating";
@@ -222,6 +223,14 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>
                 ({product.rating}) {product.reviewCount} รีวิว
               </Typography>
+              {product.soldCount !== undefined && (
+                <>
+                  <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mx: 0.5 }}>|</Typography>
+                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>
+                    ขายแล้ว {(product.soldCount >= 1000 ? (product.soldCount / 1000).toFixed(1) + "k" : product.soldCount)} ชิ้น
+                  </Typography>
+                </>
+              )}
             </Box>
           </Box>
           {product.hasGI && (
@@ -488,6 +497,40 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           </Box>
         </Box>
 
+        {/* Reviews Section */}
+        {product.reviews && product.reviews.length > 0 && (
+          <Box sx={{ mt: 5, mb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+              <Typography sx={{ fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+                รีวิวจากผู้สั่งซื้อ ({product.reviewCount})
+              </Typography>
+              <Typography sx={{ fontSize: "0.8rem", color: "#CBA258", fontWeight: 600, cursor: "pointer" }}>
+                ดูทั้งหมด ›
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {product.reviews.map((review) => (
+                <Box key={review.id} sx={{ bgcolor: "#FDF8F0", p: 2, borderRadius: "12px", border: "1px solid #EBE3D5" }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Avatar src={review.avatar} alt={review.userName} sx={{ width: 32, height: 32 }} />
+                      <Box>
+                        <Typography sx={{ fontSize: "0.85rem", fontWeight: 600, color: "#1B2A4A" }}>{review.userName}</Typography>
+                        <Typography sx={{ fontSize: "0.65rem", color: "#9CA3AF" }}>{review.date}</Typography>
+                      </Box>
+                    </Box>
+                    <Rating value={review.rating} precision={0.5} readOnly size="small" sx={{ "& .MuiRating-iconFilled": { color: "#C5A55A" } }} />
+                  </Box>
+                  <Typography sx={{ fontSize: "0.8rem", color: "#4A4A4A", mt: 1, lineHeight: 1.6 }}>
+                    {review.comment}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+
         {/* Trust Checklist Tags */}
         <Box sx={{ mt: 4, mb: 4, display: "flex", flexDirection: "column", gap: 1.5 }}>
           {[
@@ -525,21 +568,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       >
         <Box sx={{ display: "flex", gap: 1.5 }}>
           <Button
-            startIcon={<SearchRoundedIcon />}
-            sx={{
-              flex: 1,
-              bgcolor: "#1B2A4A",
-              color: "#FFFFFF",
-              borderRadius: "24px",
-              py: 1.5,
-              fontWeight: 600,
-              fontSize: "0.9rem",
-              "&:hover": { bgcolor: "#0F1A30" }
-            }}
-          >
-            ดูภาพจำลอง
-          </Button>
-          <Button
             sx={{
               flex: 1,
               bgcolor: "#D3A14A",
@@ -547,7 +575,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               borderRadius: "24px",
               py: 1.5,
               fontWeight: 600,
-              fontSize: "0.9rem",
+              fontSize: "1rem",
               "&:hover": { bgcolor: "#C19036" }
             }}
           >

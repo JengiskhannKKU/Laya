@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Typography, Button, LinearProgress, Slider, Chip } from "@mui/material";
+import { Box, Typography, Button, LinearProgress, Slider, Chip, Stack } from "@mui/material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import LocalFloristRoundedIcon from "@mui/icons-material/LocalFloristRounded";
+import ScienceRoundedIcon from "@mui/icons-material/ScienceRounded";
 import { motion, AnimatePresence } from "framer-motion";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { type CustomPatternData } from "@/lib/mock-data";
 import PatternGallery from "./PatternGallery";
 
@@ -13,6 +16,7 @@ interface GuidedWizardProps {
 
 const steps = [
   "Pattern Style",
+  "Dye Type",
   "Color Palette",
   "Weave Type",
   "Region",
@@ -50,9 +54,9 @@ const WEAVE_TYPES = [
 
 const REGION_TYPES = [
   { name: "ล้านนา (Lanna)", image: "https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&q=80&w=400", color: "#4f6b55" },
-  { name: "อีสาน (Isan)", image: "https://images.unsplash.com/photo-1604107147774-67dd88b8e3ea?auto=format&fit=crop&q=80&w=400", color: "#8b5a2b" },
-  { name: "ภาคใต้ (South)", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=400", color: "#2e5b7c" },
-  { name: "ภาคกลาง (Central)", image: "https://images.unsplash.com/photo-1583307525389-98ee3b0a701a?auto=format&fit=crop&q=80&w=400", color: "#c89f53" },
+  { name: "อีสาน (Isan)", image: "https://images.unsplash.com/photo-1581630138927-142a78184439?auto=format&fit=crop&q=80&w=400", color: "#8b5a2b" },
+  { name: "ภาคใต้ (South)", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=400", color: "#2E5B7C" },
+  { name: "ภาคกลาง (Central)", image: "https://images.unsplash.com/photo-1548107712-42da01948496?auto=format&fit=crop&q=80&w=400", color: "#C89F53" },
 ];
 
 const MOOD_TYPES = [
@@ -107,12 +111,13 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
   const canProceed = () => {
     switch (activeStep) {
       case 0: return (patternData.selectedPatterns?.length ?? 0) > 0;
-      case 1: return (patternData.colors?.length ?? 0) > 0;
-      case 2: return !!patternData.weaveType;
-      case 3: return !!patternData.region;
-      case 4: return true;
-      case 5: return !!patternData.mood;
-      case 6: return true;
+      case 1: return !!patternData.dyeType;
+      case 2: return (patternData.colors?.length ?? 0) > 0;
+      case 3: return !!patternData.weaveType;
+      case 4: return !!patternData.region;
+      case 5: return true;
+      case 6: return !!patternData.mood;
+      case 7: return true;
       default: return false;
     }
   };
@@ -128,12 +133,96 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
           />
         );
 
-      case 1: // Color Palette
+      case 1: // Dye Type Selection (New)
         return (
-          <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+          <motion.div key="step-dye" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
-              สีที่ช่างมีพร้อมทอ ({WEAVER_COLORS.length} สี)
+              ประเภทการย้อม (Dye Type)
             </Typography>
+            
+            <Stack spacing={2}>
+              {/* Natural Dye Option */}
+              <Box
+                onClick={() => updateData("dyeType", "natural")}
+                sx={{
+                  p: 2.5,
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  border: patternData.dyeType === "natural" ? "2px solid #1B2A4A" : "1px solid #E5DFD6",
+                  bgcolor: patternData.dyeType === "natural" ? "#F5F8F5" : "white",
+                  transition: "all 0.2s",
+                  display: "flex",
+                  gap: 2,
+                  position: "relative"
+                }}
+              >
+                <Box sx={{ width: 48, height: 48, borderRadius: 3, bgcolor: "rgba(75, 115, 85, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <LocalFloristRoundedIcon sx={{ color: "#4B7355" }} />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography sx={{ fontWeight: 700, color: "#1B2A4A" }}>ย้อมสีธรรมชาติ (Natural Dye)</Typography>
+                    <Chip label="Traditional" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "#E9F2E9", color: "#4B7355", fontWeight: 700 }} />
+                  </Box>
+                  <Typography sx={{ fontSize: "0.78rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
+                    ภูมิปัญญาชาวบ้าน สีออร์แกนิก ปลอดภัยต่อผิว
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.72rem", color: "#8B5A2B", mt: 1, fontWeight: 600, fontStyle: "italic" }}>
+                    ⚠️ สีอาจมีความคลาดเคลื่อนเล็กน้อยตามล็อตการย้อมและวัตถุดิบธรรมชาติในแต่ละฤดูกาล
+                  </Typography>
+                </Box>
+                {patternData.dyeType === "natural" && <CheckCircleRoundedIcon sx={{ color: "#1B2A4A", position: "absolute", top: 12, right: 12 }} />}
+              </Box>
+
+              {/* Chemical Dye Option */}
+              <Box
+                onClick={() => updateData("dyeType", "chemical")}
+                sx={{
+                  p: 2.5,
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  border: patternData.dyeType === "chemical" ? "2px solid #1B2A4A" : "1px solid #E5DFD6",
+                  bgcolor: patternData.dyeType === "chemical" ? "#F5F7FA" : "white",
+                  transition: "all 0.2s",
+                  display: "flex",
+                  gap: 2,
+                  position: "relative"
+                }}
+              >
+                <Box sx={{ width: 48, height: 48, borderRadius: 3, bgcolor: "rgba(27, 42, 74, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <ScienceRoundedIcon sx={{ color: "#1B2A4A" }} />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography sx={{ fontWeight: 700, color: "#1B2A4A" }}>ย้อมสีเคมี (Chemical Dye)</Typography>
+                    <Chip label="Precision" size="small" sx={{ height: 18, fontSize: "0.65rem", bgcolor: "#EDF2F7", color: "#1B2A4A", fontWeight: 700 }} />
+                  </Box>
+                  <Typography sx={{ fontSize: "0.78rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
+                    สีมาตรฐานอุตสาหกรรม ติดทน สีฉูดฉาดโดดเด่น
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.72rem", color: "#4B7355", mt: 1, fontWeight: 600 }}>
+                    ✨ สีแม่นยำ ตรงตามที่คุณเลือก 100%
+                  </Typography>
+                </Box>
+                {patternData.dyeType === "chemical" && <CheckCircleRoundedIcon sx={{ color: "#1B2A4A", position: "absolute", top: 12, right: 12 }} />}
+              </Box>
+            </Stack>
+          </motion.div>
+        );
+
+      case 2: // Color Palette
+        return (
+          <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
+                สีที่ช่างมีพร้อมทอ ({WEAVER_COLORS.length} สี)
+              </Typography>
+              <Chip 
+                label={patternData.dyeType === "natural" ? "Natural Guaranteed" : "Precision Color"} 
+                size="small" 
+                sx={{ bgcolor: patternData.dyeType === "natural" ? "#E9F2E9" : "#EDF2F7", color: patternData.dyeType === "natural" ? "#4B7355" : "#1B2A4A", fontWeight: 700 }}
+              />
+            </Box>
 
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 2, mb: 4, justifyItems: "center" }}>
               {WEAVER_COLORS.map((color) => {
@@ -215,9 +304,9 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
           </motion.div>
         );
 
-      case 2: // Weave Type
+      case 3: // Weave Type
         return (
-          <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               เทคนิคการทอ (Weave Type)
             </Typography>
@@ -276,9 +365,9 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
           </motion.div>
         );
 
-      case 3: // Region
+      case 4: // Region
         return (
-          <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               สไตล์การทอผ้าไทย
             </Typography>
@@ -336,35 +425,67 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
           </motion.div>
         );
 
-      case 4: // Complexity Slider
+      case 5: // Complexity Selection
         return (
-          <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 4 }}>
-              ความละเอียด / ความซับซ้อน
+          <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 3 }}>
+              ระดับความซับซ้อนของลวดลาย
             </Typography>
-            <Box sx={{ px: 2 }}>
-              <Slider
-                value={patternData.complexity}
-                onChange={(_, v) => updateData("complexity", v)}
-                min={0}
-                max={100}
-                sx={{
-                  color: "#C5A55A",
-                  "& .MuiSlider-thumb": { border: "2px solid #FFF" },
-                }}
-              />
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-                <Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>Simple</Typography>
-                <Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>{patternData.complexity}%</Typography>
-                <Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>Intricate</Typography>
-              </Box>
-            </Box>
+            
+            <Stack spacing={1.5}>
+              {[
+                { label: "เรียบง่าย", value: 25 },
+                { label: "ปานกลาง", value: 50 },
+                { label: "ซับซ้อน", value: 75 },
+                { label: "วิจิตรประณีต", value: 100 },
+              ].map((opt) => (
+                <Box
+                  key={opt.value}
+                  onClick={() => updateData("complexity", opt.value)}
+                  sx={{
+                    p: 2,
+                    borderRadius: 3,
+                    border: patternData.complexity === opt.value ? "2px solid #1B2A4A" : "1px solid #E5DFD6",
+                    bgcolor: patternData.complexity === opt.value ? "#F5F7FA" : "white",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "6px",
+                      border: "2px solid",
+                      borderColor: patternData.complexity === opt.value ? "#1B2A4A" : "#D1D5DB",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      bgcolor: patternData.complexity === opt.value ? "#1B2A4A" : "transparent",
+                    }}
+                  >
+                    {patternData.complexity === opt.value && <CheckRoundedIcon sx={{ color: "white", fontSize: 16 }} />}
+                  </Box>
+                  <Typography sx={{ 
+                    fontFamily: '"Noto Serif Thai", serif', 
+                    fontWeight: patternData.complexity === opt.value ? 700 : 400,
+                    color: "#1B2A4A",
+                    fontSize: "0.95rem"
+                  }}>
+                    {opt.label}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
           </motion.div>
         );
 
-      case 5: // Mood
+      case 6: // Mood
         return (
-          <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               อารมณ์ / การใช้งาน
             </Typography>
@@ -420,9 +541,9 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
           </motion.div>
         );
 
-      case 6: // Summary
+      case 7: // Summary
         return (
-          <motion.div key="step6" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+          <motion.div key="step7" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 3 }}>
               🧠 สรุปแบบลายผ้าของคุณ
             </Typography>
@@ -434,6 +555,10 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                     <Chip key={p} label={p} size="small" sx={{ bgcolor: "rgba(197,165,90,0.1)", color: "#1B2A4A", fontWeight: 600 }} />
                   ))}
                 </Box>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mb: 0.5 }}>Dyeing Type</Typography>
+                <Chip label={patternData.dyeType === "natural" ? "Natural Dye (สีธรรมชาติ)" : "Chemical Dye (สีเคมี)"} size="small" sx={{ bgcolor: "rgba(197,165,90,0.1)", color: "#1B2A4A", fontWeight: 600 }} />
               </Box>
               <Box>
                 <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mb: 0.5 }}>Color</Typography>
@@ -450,6 +575,19 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
               <Box>
                 <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mb: 0.5 }}>Mood</Typography>
                 <Chip label={patternData.mood} size="small" sx={{ bgcolor: "rgba(197,165,90,0.1)", color: "#1B2A4A", fontWeight: 600 }} />
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mb: 0.5 }}>Complexity</Typography>
+                <Chip 
+                  label={
+                    patternData.complexity === 25 ? "เรียบง่าย" :
+                    patternData.complexity === 50 ? "ปานกลาง" :
+                    patternData.complexity === 75 ? "ซับซ้อน" :
+                    patternData.complexity === 100 ? "วิจิตรประณีต" : "ปานกลาง"
+                  } 
+                  size="small" 
+                  sx={{ bgcolor: "rgba(197,165,90,0.1)", color: "#1B2A4A", fontWeight: 600 }} 
+                />
               </Box>
             </Box>
           </motion.div>

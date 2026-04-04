@@ -412,7 +412,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
           </motion.div>
         );
 
-      case 4: // Complexity
+      case 4: // Complexity Selection
         return (
           <motion.div
             key="step4"
@@ -420,36 +420,58 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-              ความซับซ้อน (Complexity)
+            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 1 }}>
+              ระดับความซับซ้อนของลวดลาย
             </Typography>
             <Typography variant="body2" sx={{ color: "#6B7280", mb: 3 }}>
-              เลือกระดับความซับซ้อนของลาย
+              เลือกระดับความซับซ้อนที่ต้องการ
             </Typography>
-            <Box sx={{ px: 2 }}>
-              <Slider
-                value={selections.complexity}
-                onChange={(_, v) => setSelections({ ...selections, complexity: v as number })}
-                min={0}
-                max={100}
-                marks={[
-                  { value: 0, label: "Simple" },
-                  { value: 100, label: "Intricate" },
-                ]}
-                sx={{
-                  color: "#C5A55A",
-                  "& .MuiSlider-thumb": {
-                    bgcolor: "#C5A55A",
-                  },
-                  "& .MuiSlider-track": {
-                    bgcolor: "#C5A55A",
-                  },
-                }}
-              />
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-                <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>ลายเรียบง่าย</Typography>
-                <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>ลายซับซ้อน</Typography>
-              </Box>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              {[
+                { label: "เรียบง่าย", value: 25 },
+                { label: "ปานกลาง", value: 50 },
+                { label: "ซับซ้อน", value: 75 },
+                { label: "วิจิตรประณีต", value: 100 },
+              ].map((opt) => (
+                <Box
+                  key={opt.value}
+                  onClick={() => setSelections({ ...selections, complexity: opt.value })}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    border: selections.complexity === opt.value ? "2px solid #1B2A4A" : "1px solid #E5DFD6",
+                    bgcolor: selections.complexity === opt.value ? "#FDF8EF" : "#FFFFFF",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "6px",
+                      border: "2px solid",
+                      borderColor: selections.complexity === opt.value ? "#1B2A4A" : "#D1D5DB",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      bgcolor: selections.complexity === opt.value ? "#1B2A4A" : "transparent",
+                    }}
+                  >
+                    {selections.complexity === opt.value && <CheckRoundedIcon sx={{ color: "white", fontSize: 16 }} />}
+                  </Box>
+                  <Typography sx={{ 
+                    fontWeight: selections.complexity === opt.value ? 700 : 400,
+                    color: "#1B2A4A" 
+                  }}>
+                    {opt.label}
+                  </Typography>
+                </Box>
+              ))}
             </Box>
           </motion.div>
         );
@@ -526,7 +548,12 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                 <Chip label={`Mood: ${getMoodName()}`} size="small" sx={{ bgcolor: "#FDF8EF", color: "#A68A3A" }} />
               </Box>
               <Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>
-                Complexity: {selections.complexity}%
+                Complexity: {
+                  selections.complexity === 25 ? "เรียบง่าย" :
+                  selections.complexity === 50 ? "ปานกลาง" :
+                  selections.complexity === 75 ? "ซับซ้อน" :
+                  selections.complexity === 100 ? "วิจิตรประณีต" : "ปานกลาง"
+                }
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
