@@ -49,6 +49,8 @@ export interface CustomPatternData {
   mood?: string;
   promptText?: string;
   patternStyle?: string;
+  generatedImageUrl?: string;   // result from Nano Banana 2 API
+  isMock?: boolean;             // true if Nano Banana ran out of credits
 }
 
 export interface Category {
