@@ -186,15 +186,81 @@ function FabricSwatch({ colors, image, size = 48 }: { colors: string[]; image?: 
 }
 
 // ─────────────────────────────────────────────
+// Image Lightbox (full screen zoom)
+// ─────────────────────────────────────────────
+function ImageLightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center animate-[fadeIn_0.2s_ease]"
+      style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(8px)", zIndex: 2000 }}
+      onClick={onClose}
+    >
+      {/* ปุ่มปิด — ใหญ่พอสำหรับนิ้ว + safe area */}
+      <button
+        className="absolute z-10 flex items-center justify-center rounded-full"
+        style={{
+          top: "max(20px, env(safe-area-inset-top, 20px))",
+          right: "max(16px, env(safe-area-inset-right, 16px))",
+          width: 48,
+          height: 48,
+          background: "rgba(255,255,255,0.18)",
+          backdropFilter: "blur(4px)",
+        }}
+        onClick={onClose}
+      >
+        <X size={22} color="#fff" />
+      </button>
+      <img
+        src={src}
+        alt={alt}
+        className="rounded-2xl shadow-2xl animate-[scaleIn_0.2s_ease]"
+        style={{
+          objectFit: "contain",
+          maxWidth: "92vw",
+          maxHeight: "80dvh",
+          display: "block",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
+      <p
+        className="absolute left-0 right-0 text-center text-xs px-4"
+        style={{
+          bottom: "max(24px, env(safe-area-inset-bottom, 24px))",
+          color: "rgba(255,255,255,0.55)",
+        }}
+      >
+        {alt}
+      </p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Province Detail Bottom Sheet
 // ─────────────────────────────────────────────
 function ProvinceSheet({ province, onClose }: { province: Province; onClose: () => void }) {
   const region = REGIONS[province.region];
   const [c1, c2, c3] = province.colors;
-  const patId = `detail_${province.id}`;
-  
+
   const [isExpanded, setIsExpanded] = useState(false);
+  const [storyExpanded, setStoryExpanded] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [dragStartY, setDragStartY] = useState<number | null>(null);
+
+  // 🔒 Lock body overflow เท่านั้น (ไม่ lock touchAction เพราะจะบล็อก scroll ใน sheet)
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    const prevPosition = document.body.style.position;
+    document.body.style.overflow = "hidden";
+    // iOS Safari: ต้อง fixed body ด้วย
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.position = prevPosition;
+      document.body.style.width = "";
+    };
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setDragStartY(e.touches[0].clientY);
@@ -202,96 +268,185 @@ function ProvinceSheet({ province, onClose }: { province: Province; onClose: () 
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (dragStartY === null) return;
-    
-    const currentY = e.touches[0].clientY;
-    const deltaY = currentY - dragStartY;
-    
-    // Prevent default scrolling when swiping the handle
-    if (Math.abs(deltaY) > 10) {
-      e.preventDefault();
-    }
+    const deltaY = e.touches[0].clientY - dragStartY;
+    if (Math.abs(deltaY) > 10) e.preventDefault();
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (dragStartY === null) return;
-    
-    const endY = e.changedTouches[0].clientY;
-    const deltaY = endY - dragStartY;
+    const deltaY = e.changedTouches[0].clientY - dragStartY;
     const threshold = 80;
-    
     if (deltaY < -threshold) {
-      // Swiped up - expand
       setIsExpanded(true);
     } else if (deltaY > threshold) {
-      // Swiped down - close if already at bottom or collapse if expanded
-      if (isExpanded) {
-        setIsExpanded(false);
-      } else {
-        onClose();
-      }
+      if (isExpanded) setIsExpanded(false);
+      else onClose();
     }
-    
     setDragStartY(null);
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end"
-      onClick={onClose}
-      style={{ background: "rgba(27,42,74,0.5)", backdropFilter: "blur(2px)" }}
-    >
-      <div
-        className="w-full rounded-t-3xl p-6 pb-10 animate-[slideUp_0.3s_ease] overflow-y-auto transition-all duration-300"
-        style={{ background: "#FAF6F0", maxHeight: isExpanded ? "95vh" : "70vh" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div 
-          className="w-10 h-1 rounded-full mx-auto mb-5 touch-none" 
-          style={{ background: "#E5DFD6" }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+    <>
+      {lightboxOpen && province.image && (
+        <ImageLightbox
+          src={province.image}
+          alt={`ผ้า${province.fabric} จ.${province.name}`}
+          onClose={() => setLightboxOpen(false)}
         />
+      )}
 
-        {/* Fabric preview banner - using actual image */}
-        <div className="w-full h-28 rounded-2xl mb-5 overflow-hidden"
+      <div
+        className="fixed inset-0 flex items-end"
+        onClick={onClose}
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+        style={{
+          background: "rgba(27,42,74,0.5)",
+          backdropFilter: "blur(2px)",
+          // ต้องสูงกว่า BottomNav (zIndex: 1200)
+          zIndex: 1300,
+        }}
+      >
+        <div
+          className="w-full rounded-t-3xl animate-[slideUp_0.3s_ease] transition-all duration-300"
           style={{
-            backgroundImage: province.image ? `url(${province.image})` : `linear-gradient(135deg, ${c1}, ${c2})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}>
-        </div>
-
-        <div className="flex items-start justify-between mb-1">
-          <div>
-            <h2 className="text-2xl font-bold" style={{ color: "#1B2A4A", fontFamily: "var(--font-playfair)" }}>
-              {province.name}
-            </h2>
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ background: region.color + "20", color: region.color }}>
-              {region.label}
-            </span>
+            background: "#FAF6F0",
+            maxHeight: isExpanded ? "96dvh" : "75dvh",
+            overflowY: "auto",
+            touchAction: "pan-y",
+            overscrollBehavior: "contain",
+            WebkitOverflowScrolling: "touch",
+            paddingLeft: "env(safe-area-inset-left, 0px)",
+            paddingRight: "env(safe-area-inset-right, 0px)",
+            // 80px = BottomNav height, 24px extra breathing room
+            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 104px)",
+          } as React.CSSProperties}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {/* Drag handle — พื้นที่กดกว้างขึ้น */}
+          <div
+            className="touch-none flex justify-center pt-4 pb-2 cursor-grab"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="w-10 h-1 rounded-full" style={{ background: "#E5DFD6" }} />
           </div>
-          <button onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "#F0EBE3" }}>
-            <X size={16} color="#1B2A4A" />
-          </button>
+
+          <div className="px-5">
+            {/* Fabric image — click to zoom */}
+            <button
+              className="w-full rounded-2xl mb-4 overflow-hidden relative group focus:outline-none"
+              style={{
+                height: "clamp(120px, 30vw, 160px)",
+                backgroundImage: province.image ? `url(${province.image})` : `linear-gradient(135deg, ${c1}, ${c2})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                display: "block",
+              }}
+              onClick={() => province.image && setLightboxOpen(true)}
+              aria-label="ขยายภาพ"
+            >
+              {province.image && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200"
+                  style={{ background: "rgba(0,0,0,0.32)" }}
+                >
+                  <div
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold"
+                    style={{ background: "rgba(255,255,255,0.18)", color: "#fff", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.25)" }}
+                  >
+                    🔍 <span>ขยายภาพ</span>
+                  </div>
+                </div>
+              )}
+            </button>
+
+            {/* Province name + close */}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1 min-w-0 pr-3">
+                <h2 className="text-xl font-bold leading-tight" style={{ color: "#1B2A4A", fontFamily: "var(--font-playfair)" }}>
+                  {province.name}
+                </h2>
+                <span
+                  className="inline-block text-xs px-2 py-0.5 rounded-full font-medium mt-1"
+                  style={{ background: region.color + "20", color: region.color }}
+                >
+                  {region.label}
+                </span>
+              </div>
+              {/* ปุ่มปิด 44px touch target */}
+              <button
+                onClick={onClose}
+                className="flex-shrink-0 flex items-center justify-center rounded-full"
+                style={{ width: 44, height: 44, background: "#F0EBE3" }}
+              >
+                <X size={18} color="#1B2A4A" />
+              </button>
+            </div>
+
+            {/* Fabric name */}
+            <div className="p-3.5 rounded-2xl mb-1" style={{ background: "#F0EBE3" }}>
+              <p className="text-[11px] font-semibold mb-0.5 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>ลายผ้าเอกลักษณ์ประจำจังหวัด</p>
+              <p className="text-sm font-bold leading-snug" style={{ color: "#1B2A4A" }}>{province.fabric}</p>
+            </div>
+          </div>
+
+          {/* Story section with read-more */}
+          {province.story && (
+            <div className="mt-3 mx-5 rounded-2xl overflow-hidden" style={{ background: "#F0EBE3" }}>
+              <div className="p-4">
+                <p className="text-[11px] font-semibold mb-2 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>เรื่องราว</p>
+                <p className="text-sm leading-[1.75]" style={{ color: "#374151" }}>
+                  {storyExpanded
+                    ? province.story.history
+                    : province.story.history.slice(0, 100) + (province.story.history.length > 100 ? "..." : "")}
+                </p>
+              </div>
+
+              {/* Expanded sections */}
+              {storyExpanded && (
+                <div className="border-t space-y-0" style={{ borderColor: "#E5DFD6" }}>
+                  <div className="px-4 pt-4 pb-3">
+                    <p className="text-[11px] font-semibold mb-1.5 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>การจดทะเบียน</p>
+                    <p className="text-sm leading-[1.75]" style={{ color: "#374151" }}>{province.story.registration}</p>
+                  </div>
+                  <div className="border-t px-4 pt-4 pb-3" style={{ borderColor: "#E5DFD6" }}>
+                    <p className="text-[11px] font-semibold mb-1.5 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>กรรมวิธีการทอ</p>
+                    <p className="text-sm leading-[1.75]" style={{ color: "#374151" }}>{province.story.weaving}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Read more / less — 48px touch target */}
+              {(province.story.history.length > 100 || storyExpanded) && (
+                <button
+                  className="w-full flex items-center justify-center gap-2 active:bg-[#E8E0D5] transition-colors"
+                  style={{ borderTop: "1px solid #E5DFD6", minHeight: 48 }}
+                  onClick={() => setStoryExpanded(!storyExpanded)}
+                >
+                  <span className="text-sm font-semibold" style={{ color: "#8B4513" }}>
+                    {storyExpanded ? "ย่อเรื่องราว" : "อ่านเพิ่มเติม"}
+                  </span>
+                  <span
+                    style={{
+                      color: "#8B4513",
+                      display: "inline-block",
+                      fontSize: 14,
+                      transition: "transform 0.2s",
+                      transform: storyExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                    }}
+                  >
+                    ▾
+                  </span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
-
-        <div className="mt-4 p-4 rounded-2xl" style={{ background: "#F0EBE3" }}>
-          <p className="text-xs font-semibold mb-1" style={{ color: "#6B7280" }}>ลายผ้าเอกลักษณ์ประจำจังหวัด</p>
-          <p className="text-base font-bold" style={{ color: "#1B2A4A" }}>{province.fabric}</p>
-        </div>
-
-        <div className="mt-4 p-4 rounded-2xl" style={{ background: "#F0EBE3" }}>
-          <p className="text-xs font-semibold mb-1" style={{ color: "#6B7280" }}>เรื่องราว</p>
-          <p className="text-base font-bold" style={{ color: "#1B2A4A" }}>{province.story?.history}</p>
-        </div>
-
-
       </div>
-    </div>
+    </>
   );
 }
 
@@ -674,8 +829,12 @@ export default function MapPage() {
 
       <style>{`
         @keyframes slideUp { from { transform:translateY(100%);opacity:0 } to { transform:translateY(0);opacity:1 } }
+        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes scaleIn { from { transform:scale(0.88);opacity:0 } to { transform:scale(1);opacity:1 } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* ป้องกัน overscroll ตอน sheet เปิด */
+        body:has(.province-sheet-open) { overflow: hidden; touch-action: none; }
       `}</style>
     </MobileLayout>
   );
