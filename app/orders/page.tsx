@@ -46,7 +46,7 @@ const orders = [
     statusColor: "#2D8F5C",
     statusBg: "rgba(45,143,92,0.1)",
     date: "5 ม.ค. 2567",
-    total: "4,500 บาท",
+    total: "850 บาท",
     progress: 100,
     steps: [
       { label: "รอชุมชนยืนยัน", done: true },

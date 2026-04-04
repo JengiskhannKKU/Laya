@@ -51,6 +51,10 @@ export interface Product {
   passport?: PassportData;
   reviews?: Review[];
   soldCount?: number;
+  isCustomizable?: boolean;
+  relatedProductIds?: string[];
+  tags?: string[];
+  typeLabel?: string;
 }
 
 export interface CustomPatternData {
@@ -107,6 +111,49 @@ export const categories: Category[] = [
 ];
 
 export const products: Product[] = [
+  {
+    id: "teenager2",
+    name: "กระเป๋าสตางค์ผ้าไหม 'วัยรุ่นเดอะ' Wallet",
+    community: "กลุ่มคนรุ่นใหม่หริภุญชัย",
+    province: "ลำพูน",
+    price: 850,
+    priceUnit: "บาท",
+    rating: 4.8,
+    reviewCount: 120,
+    images: ["/teenager1.png"],
+    hasGI: false,
+    productionTime: "พร้อมส่ง",
+    availableLength: 50,
+    fabricType: "ผ้าไหม",
+    story: "กระเป๋าสตางค์ใบสั้นพกพาสะดวก เข้าเซ็ตกับชุด Contemporary Set",
+    weaverName: "กลุ่ม Young Weaver ลำพูน",
+    certificateId: "LAYA-YNG-002",
+    isCustomizable: false,
+    relatedProductIds: ["teenager3"],
+    typeLabel: "กระเป๋า",
+    tags: ["ขนาดพกพา", "ช่องใส่บัตร 8 ช่อง", "ซับในหนังแท้", "ไหมมัดหมี่แท้"],
+  },
+  {
+    id: "teenager3",
+    name: "พวงกุญแจวัยรุ่น Mini Pouch",
+    community: "กลุ่มคนรุ่นใหม่หริภุญชัย",
+    province: "ลำพูน",
+    price: 150,
+    priceUnit: "ชิ้น",
+    rating: 4.7,
+    reviewCount: 38,
+    images: ["/teenager3.png"],
+    hasGI: false,
+    productionTime: "พร้อมส่ง",
+    availableLength: 30,
+    fabricType: "ผ้าไหม",
+    story: "กระเป๋าขนาดมินิสำหรับใส่อุปกรณ์ขนาดเล็ก พกพาสะดวก ดีไซน์เข้าชุดวัยรุ่นเดอะ",
+    weaverName: "กลุ่ม Young Weaver ลำพูน",
+    certificateId: "LAYA-YNG-003",
+    isCustomizable: false,
+    typeLabel: "กระเป๋า",
+    tags: ["ขนาดมินิ", "ใส่อุปกรณ์เสริม", "ไหมมัดหมี่", "พกพาสะดวก"],
+  },
   {
     id: "1",
     name: "ผ้ายกลายกินรีหริภุญชัย",
@@ -332,6 +379,39 @@ export const products: Product[] = [
     },
   },
   {
+    id: "teenager1",
+    name: "ชุดเซ็ตผ้าไหม 'วัยรุ่นเดอะ' Contemporary Set",
+    community: "กลุ่มคนรุ่นใหม่หริภุญชัย",
+    province: "ลำพูน",
+    price: 3200,
+    priceUnit: "ชุด",
+    rating: 4.9,
+    reviewCount: 45,
+    soldCount: 128,
+    images: ["/teenager1.png"],
+    hasGI: true,
+    productionTime: "พร้อมส่ง",
+    availableLength: 10,
+    fabricType: "ผ้าไหมผสมฝ้าย",
+    story: "การนำผ้าไหมไทยมาตีความใหม่ในรูปแบบสตรีทแวร์ ที่สวมใส่ได้จริงในชีวิตประจำวัน ทรง Oversize ที่เข้ากับยุคสมัยแต่ยังคงกลิ่นอายความประณีตของผ้าทอหริภุญชัย",
+    weaverName: "กลุ่ม Young Weaver ลำพูน",
+    certificateId: "LAYA-YNG-001",
+    isCustomizable: false,
+    relatedProductIds: ["bag2", "teenager3"],
+    typeLabel: "ชุดเซ็ต",
+    tags: ["ดีไซน์ใหม่ 2024", "ผ้าหนานุ่ม", "สวมใส่สบาย", "Unisex Detail"],
+    reviews: [
+      {
+        id: "tr1",
+        userName: "น้องพราว",
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150",
+        rating: 5,
+        date: "2 วันที่แล้ว",
+        comment: "ใส่สบายมากค่ะ ไม่ร้อนเลย ลายสวยแบบตะโกน!",
+      }
+    ]
+  },
+  {
     id: "5",
     name: "ผ้าจกลายดอกพิกุล",
     community: "กลุ่มทอผ้าจกราชบุรี",
@@ -389,14 +469,14 @@ export const products: Product[] = [
   },
   {
     id: "bag2",
-    name: "กระเป๋าถือลายวิจิตร (Classic Tote)",
-    community: "ชุมชนหริภุญชัย",
+    name: "พวงกุญแจผ้าทอ LAYA (Small) ",
+    community: "กลุ่มคนรุ่นใหม่หริภุญชัย",
     province: "ลำพูน",
-    price: 4500,
+    price: 150,
     priceUnit: "ชิ้น",
     rating: 5.0,
     reviewCount: 12,
-    images: ["/bag2.png"],
+    images: ["/teenager2.png"],
     hasGI: true,
     productionTime: "พร้อมส่ง",
     availableLength: 5,
@@ -405,6 +485,7 @@ export const products: Product[] = [
     weaverName: "แม่สมศรี แก้วมณี",
     certificateId: "LAYA-BAG-002",
   },
+
 ];
 
 export interface Community {

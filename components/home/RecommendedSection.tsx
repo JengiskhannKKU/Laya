@@ -85,7 +85,7 @@ export default function RecommendedSection() {
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {products.slice(0, 4).map((product, index) => (
+        {products.slice(0, 5).map((product, index) => (
           <Link
             key={product.id}
             href={`/product/${product.id}`}

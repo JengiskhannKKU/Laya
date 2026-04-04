@@ -26,7 +26,7 @@ import QrCodeScannerRoundedIcon from "@mui/icons-material/QrCodeScannerRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import type { Product } from "@/lib/mock-data";
+import { products, type Product } from "@/lib/mock-data";
 import TraceabilityView from "./TraceabilityView";
 import DigitalCertificateView from "./DigitalCertificateView";
 
@@ -275,7 +275,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
             "&:hover": { bgcolor: "#0F1A30" }
           }}
         >
-          เรื่องราวของผ้าผืนนี้
+          เรื่องราวของ{product.typeLabel || "ผ้า"}{product.typeLabel === "กระเป๋า" ? "ใบ" : "ผืน"}นี้
         </Button>
 
         {/* Title Block */}
@@ -317,21 +317,21 @@ export default function ProductDetailView({ product }: { product: Product }) {
             {product.price.toLocaleString()}
           </Typography>
           <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.3 }}>
-            บาท / เมตร
+            {product.priceUnit}
           </Typography>
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, mt: 2 }}>
-          {[
-            { label: "ผลิต 12-15 วัน" },
-            { label: "พร้อมส่ง 20 เมตร" },
-            { label: "ผ้าไหม 100%" },
-            { label: "ขั้นต่ำ 2 เมตร" }
-          ].map((tag, i) => (
+          {(product.tags || [
+            "ผลิต 12-15 วัน",
+            "พร้อมส่ง 20 เมตร",
+            "ผ้าไหม 100%",
+            "ขั้นต่ำ 2 เมตร"
+          ]).map((tag, i) => (
             <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1, bgcolor: "#FDF8F0", border: "1px solid #EBE3D5", borderRadius: "20px", px: 1.5, py: 0.8 }}>
               <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#CFA055" }} />
               <Typography sx={{ fontSize: "0.8rem", color: "#5A4930", fontWeight: 500 }}>
-                {tag.label}
+                {tag}
               </Typography>
             </Box>
           ))}
@@ -339,160 +339,164 @@ export default function ProductDetailView({ product }: { product: Product }) {
 
         <Divider sx={{ my: 3, borderColor: "rgba(0,0,0,0.06)" }} />
 
-        {/* Color Palette */}
-        <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>
-          สีด้าย (Curated palette)
-        </Typography>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 1 }}>
-          {AVAILABLE_COLORS.map((color) => (
-            <Box
-              key={color.id}
-              onClick={() => setSelectedColor(color)}
-              sx={{
-                width: 32, height: 32, borderRadius: "50%", bgcolor: color.hex, cursor: "pointer",
-                border: selectedColor.id === color.id ? "2px solid #CFA055" : "1px solid rgba(0,0,0,0.1)",
-                boxShadow: selectedColor.id === color.id ? "0 0 0 3px rgba(207, 160, 85, 0.2)" : "none",
-                transform: selectedColor.id === color.id ? "scale(1.1)" : "scale(1)",
-                transition: "all 0.2s"
-              }}
-            />
-          ))}
-        </Box>
-        <Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}>
-          เลือกแล้ว: {selectedColor.name}
-        </Typography>
-
-        <Box sx={{ mt: 3, mb: 1.5 }}>
-          <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>จำนวนเมตร</Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-            {PRESETS.map((val) => (
-              <Button
-                key={val}
-                variant="outlined"
-                onClick={() => setQuantity(val)}
-                sx={{
-                  borderRadius: "20px",
-                  borderColor: quantity === val ? "#1B2A4A" : "#E5DFD6",
-                  color: quantity === val ? "#FFFFFF" : "#1B2A4A",
-                  bgcolor: quantity === val ? "#1B2A4A" : "transparent",
-                  "&:hover": { bgcolor: quantity === val ? "#1B2A4A" : "rgba(0,0,0,0.04)" }
-                }}
-              >
-                {val} ม.
-              </Button>
-            ))}
-            <Button variant="outlined" sx={{ borderRadius: "20px", borderColor: "#E5DFD6", color: "#C5A55A" }}>
-              กำหนดเอง
-            </Button>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "30px", bgcolor: "#FFFFFF" }}>
-              <IconButton onClick={() => setQuantity(Math.max(2, quantity - 1))} size="small" sx={{ p: 1 }}>
-                <RemoveRoundedIcon fontSize="small" />
-              </IconButton>
-              <Typography sx={{ px: 2, fontWeight: 600, color: "#1B2A4A" }}>{quantity} ม.</Typography>
-              <IconButton onClick={() => setQuantity(Math.min(20, quantity + 1))} size="small" sx={{ p: 1 }}>
-                <AddRoundedIcon fontSize="small" />
-              </IconButton>
+        {product.isCustomizable !== false && (
+          <>
+            {/* Color Palette */}
+            <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>
+              สีด้าย (Curated palette)
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 1 }}>
+              {AVAILABLE_COLORS.map((color) => (
+                <Box
+                  key={color.id}
+                  onClick={() => setSelectedColor(color)}
+                  sx={{
+                    width: 32, height: 32, borderRadius: "50%", bgcolor: color.hex, cursor: "pointer",
+                    border: selectedColor.id === color.id ? "2px solid #CFA055" : "1px solid rgba(0,0,0,0.1)",
+                    boxShadow: selectedColor.id === color.id ? "0 0 0 3px rgba(207, 160, 85, 0.2)" : "none",
+                    transform: selectedColor.id === color.id ? "scale(1.1)" : "scale(1)",
+                    transition: "all 0.2s"
+                  }}
+                />
+              ))}
             </Box>
-            <Typography sx={{ fontSize: "0.75rem", color: "#9CA3AF" }}>สูงสุด 20 ม.</Typography>
-          </Box>
-        </Box>
+            <Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}>
+              เลือกแล้ว: {selectedColor.name}
+            </Typography>
 
-        {/* Fabric Format */}
-        <Box sx={{ mt: 3 }}>
-          <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>รูปแบบผ้า</Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {FORMATS.map((f) => (
-              <Button
-                key={f}
-                variant="outlined"
-                onClick={() => setFormat(f)}
-                sx={{
-                  borderRadius: "20px",
-                  borderColor: format === f ? "#CFA055" : "#E5DFD6",
-                  color: format === f ? "#CFA055" : "#1B2A4A",
-                  bgcolor: format === f ? "#FDF8F0" : "transparent",
-                  "&:hover": { bgcolor: "#FDF8F0", borderColor: "#CFA055" }
-                }}
-              >
-                {f}
-              </Button>
-            ))}
-          </Box>
-        </Box>
-
-        {/* Edge Finish */}
-        <Box sx={{ mt: 3 }}>
-          <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>การตกแต่งริมผ้า</Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {EDGE_FINISHES.map((e) => (
-              <Button
-                key={e}
-                variant="outlined"
-                onClick={() => setEdgeFinish(e)}
-                sx={{
-                  borderRadius: "20px",
-                  borderColor: edgeFinish === e ? "#CFA055" : "#E5DFD6",
-                  color: edgeFinish === e ? "#CFA055" : "#1B2A4A",
-                  bgcolor: edgeFinish === e ? "#FDF8F0" : "transparent",
-                  "&:hover": { bgcolor: "#FDF8F0", borderColor: "#CFA055" }
-                }}
-              >
-                {e}
-              </Button>
-            ))}
-          </Box>
-        </Box>
-
-        {/* Notes */}
-        <Box sx={{ mt: 3 }}>
-          <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1 }}>โน๊ตถึงช่าง (ไม่บังคับ)</Typography>
-          <TextField
-            fullWidth
-            multiline
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="เช่น ต้องการลายหนาแน่น / ใช้ทำชุดงานแต่งงาน..."
-            sx={{
-              bgcolor: "#FFFFFF",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "12px",
-                "& fieldset": { borderColor: "#E5DFD6" },
-                "&:hover fieldset": { borderColor: "#CBA258" },
-                "&.Mui-focused fieldset": { borderColor: "#CBA258" },
-              }
-            }}
-          />
-        </Box>
-
-        {/* Summary Box */}
-        <Box sx={{ mt: 4, bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, border: "1px solid #E5DFD6", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: y => 1.5, rowGap: 1.5 }}>
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>สี</Typography></Box>
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{selectedColor.name}</Typography></Box>
-
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>รูปแบบ</Typography></Box>
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{format}</Typography></Box>
-
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>ริมผ้า</Typography></Box>
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{edgeFinish}</Typography></Box>
-
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>จำนวน</Typography></Box>
-            <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{quantity} เมตร</Typography></Box>
-          </Box>
-          <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Typography sx={{ fontWeight: 700, color: "#1B2A4A" }}>ราคารวม</Typography>
-            <Box sx={{ textAlign: "right" }}>
-              <Typography sx={{ fontWeight: 700, fontSize: "1.2rem", color: "#D3A14A" }}>
-                {totalPrice.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: "0.8rem", color: "#D3A14A" }}>บาท</Typography>
+            <Box sx={{ mt: 3, mb: 1.5 }}>
+              <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>จำนวนเมตร</Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                {PRESETS.map((val) => (
+                  <Button
+                    key={val}
+                    variant="outlined"
+                    onClick={() => setQuantity(val)}
+                    sx={{
+                      borderRadius: "20px",
+                      borderColor: quantity === val ? "#1B2A4A" : "#E5DFD6",
+                      color: quantity === val ? "#FFFFFF" : "#1B2A4A",
+                      bgcolor: quantity === val ? "#1B2A4A" : "transparent",
+                      "&:hover": { bgcolor: quantity === val ? "#1B2A4A" : "rgba(0,0,0,0.04)" }
+                    }}
+                  >
+                    {val} ม.
+                  </Button>
+                ))}
+                <Button variant="outlined" sx={{ borderRadius: "20px", borderColor: "#E5DFD6", color: "#C5A55A" }}>
+                  กำหนดเอง
+                </Button>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "30px", bgcolor: "#FFFFFF" }}>
+                  <IconButton onClick={() => setQuantity(Math.max(2, quantity - 1))} size="small" sx={{ p: 1 }}>
+                    <RemoveRoundedIcon fontSize="small" />
+                  </IconButton>
+                  <Typography sx={{ px: 2, fontWeight: 600, color: "#1B2A4A" }}>{quantity} ม.</Typography>
+                  <IconButton onClick={() => setQuantity(Math.min(20, quantity + 1))} size="small" sx={{ p: 1 }}>
+                    <AddRoundedIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                <Typography sx={{ fontSize: "0.75rem", color: "#9CA3AF" }}>สูงสุด 20 ม.</Typography>
+              </Box>
             </Box>
-          </Box>
-        </Box>
+
+            {/* Fabric Format */}
+            <Box sx={{ mt: 3 }}>
+              <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>รูปแบบผ้า</Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {FORMATS.map((f) => (
+                  <Button
+                    key={f}
+                    variant="outlined"
+                    onClick={() => setFormat(f)}
+                    sx={{
+                      borderRadius: "20px",
+                      borderColor: format === f ? "#CFA055" : "#E5DFD6",
+                      color: format === f ? "#CFA055" : "#1B2A4A",
+                      bgcolor: format === f ? "#FDF8F0" : "transparent",
+                      "&:hover": { bgcolor: "#FDF8F0", borderColor: "#CFA055" }
+                    }}
+                  >
+                    {f}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
+
+            {/* Edge Finish */}
+            <Box sx={{ mt: 3 }}>
+              <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1.5 }}>การตกแต่งริมผ้า</Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {EDGE_FINISHES.map((e) => (
+                  <Button
+                    key={e}
+                    variant="outlined"
+                    onClick={() => setEdgeFinish(e)}
+                    sx={{
+                      borderRadius: "20px",
+                      borderColor: edgeFinish === e ? "#CFA055" : "#E5DFD6",
+                      color: edgeFinish === e ? "#CFA055" : "#1B2A4A",
+                      bgcolor: edgeFinish === e ? "#FDF8F0" : "transparent",
+                      "&:hover": { bgcolor: "#FDF8F0", borderColor: "#CFA055" }
+                    }}
+                  >
+                    {e}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
+
+            {/* Notes */}
+            <Box sx={{ mt: 3 }}>
+              <Typography sx={{ fontSize: "0.85rem", color: "#6B7280", mb: 1 }}>โน๊ตถึงช่าง (ไม่บังคับ)</Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="เช่น ต้องการลายหนาแน่น / ใช้ทำชุดงานแต่งงาน..."
+                sx={{
+                  bgcolor: "#FFFFFF",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                    "& fieldset": { borderColor: "#E5DFD6" },
+                    "&:hover fieldset": { borderColor: "#CBA258" },
+                    "&.Mui-focused fieldset": { borderColor: "#CBA258" },
+                  }
+                }}
+              />
+            </Box>
+
+            {/* Summary Box */}
+            <Box sx={{ mt: 4, bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, border: "1px solid #E5DFD6", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, rowGap: 1.5 }}>
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>สี</Typography></Box>
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{selectedColor.name}</Typography></Box>
+
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>รูปแบบ</Typography></Box>
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{format}</Typography></Box>
+
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>ริมผ้า</Typography></Box>
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{edgeFinish}</Typography></Box>
+
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>จำนวน</Typography></Box>
+                <Box><Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600, textAlign: "right" }}>{quantity} เมตร</Typography></Box>
+              </Box>
+              <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography sx={{ fontWeight: 700, color: "#1B2A4A" }}>ราคารวม</Typography>
+                <Box sx={{ textAlign: "right" }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: "1.2rem", color: "#D3A14A" }}>
+                    {totalPrice.toLocaleString()}
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.8rem", color: "#D3A14A" }}>บาท</Typography>
+                </Box>
+              </Box>
+            </Box>
+          </>
+        )}
 
         {/* Weaver Box */}
         <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 2, bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
@@ -509,7 +513,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
         {/* Story Section */}
         <Box sx={{ mt: 4 }}>
           <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A", mb: 1 }}>
-            เรื่องราวของผืนผ้า
+            เรื่องราวของ{product.typeLabel || "ผ้า"}{product.typeLabel === "กระเป๋า" ? "ใบ" : "ผืน"}นี้
           </Typography>
           <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7 }}>
             {product.story}
@@ -519,49 +523,38 @@ export default function ProductDetailView({ product }: { product: Product }) {
           </Typography>
         </Box>
 
-        {/* Recommended Add-ons (Image 4 Reference) */}
+        {/* Recommended Add-ons */}
         <Box sx={{ mt: 5, mb: 4 }}>
           <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
             ตรงกับ:
           </Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {[
-              { id: "bag1", name: "พวงกุญแจผ้าทอ LAYA", img: "/bag1.png", price: 1250, variant: "Blue Signature" },
-              { id: "bag2", name: "กระเป๋าถือลายวิจิตร", img: "/bag2.png", price: 4500, variant: "Navy Blue", soldOut: true }
-            ].map((item, idx) => (
-              <Box key={idx} sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: "12px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5, opacity: item.soldOut ? 0.6 : 1 }}>
-                <Checkbox
-                  size="small"
-                  disabled={item.soldOut}
-                  sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#CBA258" } }}
-                />
-                <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", border: "1px solid #F0F0F0" }}>
-                  <Image src={item.img} alt={item.name} fill style={{ objectFit: "cover" }} />
+            {(product.relatedProductIds && product.relatedProductIds.length > 0 
+              ? product.relatedProductIds.map(id => products.find(p => p.id === id)).filter(Boolean)
+              : [products.find(p => p.id === "bag2")]
+            ).map((item, idx) => (
+              item && (
+                <Box key={idx} sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: "12px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5, opacity: (item as any).soldOut ? 0.6 : 1 }}>
+                  <Checkbox
+                    size="small"
+                    disabled={(item as any).soldOut}
+                    sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#CBA258" } }}
+                  />
+                  <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", border: "1px solid #F0F0F0" }}>
+                    <Image src={item.images[0]} alt={item.name} fill style={{ objectFit: "cover" }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{item.name}</Typography>
+                    <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{item.fabricType}</Typography>
+                  </Box>
+                  <Box sx={{ textAlign: "right" }}>
+                    <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: (item as any).soldOut ? "#9CA3AF" : "#1B2A4A" }}>
+                      {(item as any).soldOut ? "ขายหมดแล้ว" : `${item.price.toLocaleString()} ฿ THB`}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{item.name}</Typography>
-                  <FormControl size="small" sx={{ mt: 0.5, minWidth: 100 }}>
-                    <Select
-                      value={item.variant}
-                      disabled={item.soldOut}
-                      sx={{
-                        borderRadius: "8px",
-                        fontSize: "0.75rem",
-                        height: 32,
-                        "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5DFD6" }
-                      }}
-                    >
-                      <MenuItem value={item.variant} sx={{ fontSize: "0.75rem" }}>{item.variant}</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-                <Box sx={{ textAlign: "right" }}>
-                  <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: item.soldOut ? "#9CA3AF" : "#1B2A4A" }}>
-                    {item.soldOut ? "ขายหมดแล้ว" : `${item.price.toLocaleString()} ฿ THB`}
-                  </Typography>
-                </Box>
-              </Box>
+              )
             ))}
           </Box>
         </Box>
@@ -652,7 +645,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
               "&:hover": { bgcolor: "#C19036" }
             }}
           >
-            สั่งทำเลย ›
+            {product.isCustomizable === false ? "สั่งซื้อเลย ›" : "สั่งทำเลย ›"}
           </Button>
         </Box>
       </Box>
