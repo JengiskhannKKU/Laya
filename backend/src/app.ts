@@ -22,14 +22,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (e.g., curl, Postman) in dev
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS blocked: ${origin}`));
-      }
-    },
+    origin: true,
     credentials: true,
   })
 );
