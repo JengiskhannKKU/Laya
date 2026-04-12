@@ -651,3 +651,229 @@ export const matchResults = [
   },
 ];
 
+export interface CartItem {
+  id: string;
+  productId: string;
+  product: Product;
+  quantity: number;
+  savedForLater: boolean;
+  selectedColor?: string;
+  selectedFormat?: string;
+}
+
+export const initialMockCartItems: CartItem[] = [
+  {
+    id: "cart_item_1",
+    productId: products[2].id, // ผ้าฝ้ายย้อมคราม
+    product: products[2],
+    quantity: 2,
+    savedForLater: false,
+    selectedColor: "น้ำเงินคราม",
+    selectedFormat: "ผ้าผืน"
+  },
+  {
+    id: "cart_item_2",
+    productId: products[3].id, // ผ้าไหมแพรวา
+    product: products[3],
+    quantity: 1,
+    savedForLater: false,
+    selectedColor: "แดง",
+    selectedFormat: "ตัดแบ่ง"
+  },
+  {
+    id: "cart_item_3",
+    productId: products[1].id, // ผ้ามัดหมี่ลายนาคราช
+    product: products[1],
+    quantity: 1,
+    savedForLater: true,
+  }
+];
+
+export interface Address {
+  id: string;
+  recipientName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  subdistrict: string;
+  district: string;
+  province: string;
+  postalCode: string;
+  isDefault: boolean;
+}
+
+export const mockAddresses: Address[] = [
+  {
+    id: "addr_1",
+    recipientName: "สมหมาย รักผ้าไทย",
+    phone: "0812345678",
+    addressLine1: "123/45 หมู่บ้านสุขสันต์",
+    addressLine2: "ซอย 5",
+    subdistrict: "คลองเตย",
+    district: "คลองเตย",
+    province: "กรุงเทพมหานคร",
+    postalCode: "10110",
+    isDefault: true,
+  },
+  {
+    id: "addr_2",
+    recipientName: "สมหมาย รักผ้าไทย (ที่ทำงาน)",
+    phone: "0812345678",
+    addressLine1: "บริษัท ทอผ้า จำกัด",
+    addressLine2: "อาคารวิทยะ ชั้น 12",
+    subdistrict: "ปทุมวัน",
+    district: "ปทุมวัน",
+    province: "กรุงเทพมหานคร",
+    postalCode: "10330",
+    isDefault: false,
+  }
+];
+
+export interface ShippingOption {
+  id: string;
+  name: string;
+  estimatedDays: string;
+  cost: number;
+}
+
+export const mockShippingOptions: ShippingOption[] = [
+  {
+    id: "ship_1",
+    name: "Kerry Express",
+    estimatedDays: "1-2 วันทำการ",
+    cost: 50,
+  },
+  {
+    id: "ship_2",
+    name: "EMS (ไปรษณีย์ไทย)",
+    estimatedDays: "2-3 วันทำการ",
+    cost: 30,
+  },
+  {
+    id: "ship_3",
+    name: "Same Day Delivery (เฉพาะ กทม.)",
+    estimatedDays: "ภายในวันนี้",
+    cost: 150,
+  }
+];
+
+export type OrderStatus = 'pending' | 'confirmed' | 'producing' | 'shipped' | 'delivered' | 'cancelled';
+
+export interface OrderItem {
+  id: string;
+  product: Product;
+  quantity: number;
+  priceAtPurchase: number;
+  selectedColor?: string;
+  selectedFormat?: string;
+}
+
+export interface Order {
+  id: string;
+  createdAt: string;
+  status: OrderStatus;
+  items: OrderItem[];
+  subtotal: number;
+  shippingCost: number;
+  discount: number;
+  totalPrice: number;
+  shippingAddress: Address;
+  shippingMethod: ShippingOption;
+  paymentMethod: string;
+  paymentStatus: 'paid' | 'pending' | 'failed' | 'refunded';
+  trackingNumber?: string;
+  courierName?: string;
+  estimatedDelivery?: string;
+  note?: string;
+}
+
+export const mockOrders: Order[] = [
+  {
+    id: "ord_1001",
+    createdAt: "2024-11-20T10:30:00Z",
+    status: "delivered",
+    items: [
+      {
+        id: "oi_1001_1",
+        product: products[0], // กระเป๋าสตางค์
+        quantity: 1,
+        priceAtPurchase: 850,
+      }
+    ],
+    subtotal: 850,
+    shippingCost: 50,
+    discount: 0,
+    totalPrice: 900,
+    shippingAddress: mockAddresses[0],
+    shippingMethod: mockShippingOptions[0],
+    paymentMethod: "PromptPay",
+    paymentStatus: "paid",
+    trackingNumber: "KRY123456789",
+    courierName: "Kerry Express",
+    estimatedDelivery: "2024-11-22T00:00:00Z"
+  },
+  {
+    id: "ord_1002",
+    createdAt: "2024-12-01T14:15:00Z",
+    status: "producing",
+    items: [
+      {
+        id: "oi_1002_1",
+        product: products[2], // ผ้านาคราช
+        quantity: 2,
+        priceAtPurchase: 2800,
+      }
+    ],
+    subtotal: 5600,
+    shippingCost: 0, // mock free shipping
+    discount: 500,
+    totalPrice: 5100,
+    shippingAddress: mockAddresses[1],
+    shippingMethod: mockShippingOptions[1],
+    paymentMethod: "Credit Card (***1234)",
+    paymentStatus: "paid",
+    note: "อยากให้ช่วยรีดก่อนส่งค่ะ"
+  },
+  {
+    id: "ord_1003",
+    createdAt: "2024-12-05T09:00:00Z",
+    status: "pending",
+    items: [
+      {
+        id: "oi_1003_1",
+        product: products[3], // ผ้าฝ้าย
+        quantity: 1,
+        priceAtPurchase: 1500,
+      }
+    ],
+    subtotal: 1500,
+    shippingCost: 50,
+    discount: 0,
+    totalPrice: 1550,
+    shippingAddress: mockAddresses[0],
+    shippingMethod: mockShippingOptions[0],
+    paymentMethod: "PromptPay",
+    paymentStatus: "pending"
+  },
+  {
+    id: "ord_1004",
+    createdAt: "2024-12-08T16:20:00Z",
+    status: "cancelled",
+    items: [
+      {
+        id: "oi_1004_1",
+        product: products[4], // แพรวา
+        quantity: 1,
+        priceAtPurchase: 5000,
+      }
+    ],
+    subtotal: 5000,
+    shippingCost: 50,
+    discount: 0,
+    totalPrice: 5050,
+    shippingAddress: mockAddresses[0],
+    shippingMethod: mockShippingOptions[0],
+    paymentMethod: "PromptPay",
+    paymentStatus: "failed"
+  }
+];

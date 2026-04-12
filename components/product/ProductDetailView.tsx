@@ -29,6 +29,7 @@ import Link from "next/link";
 import { products, type Product } from "@/lib/mock-data";
 import TraceabilityView from "./TraceabilityView";
 import DigitalCertificateView from "./DigitalCertificateView";
+import { useAuth } from "@/lib/auth-context";
 
 const AVAILABLE_COLORS = [
   { id: "navy", name: "กรมท่า", hex: "#1C243B" },
@@ -46,6 +47,7 @@ const FORMATS = ["ผ้าผืน (ม้วน)", "ผ้าพับ", "ต
 const EDGE_FINISHES = ["ไม่เย็บริม", "เย็บริมทั้งสองข้าง"];
 
 export default function ProductDetailView({ product }: { product: Product }) {
+  const { user, openAuthModal } = useAuth();
   const [currentImage, setCurrentImage] = useState(0);
   const [activeView, setActiveView] = useState<"detail" | "traceability" | "certificate">("detail");
   const [isPressing, setIsPressing] = useState(false);
@@ -634,6 +636,13 @@ export default function ProductDetailView({ product }: { product: Product }) {
       >
         <Box sx={{ display: "flex", gap: 1.5 }}>
           <Button
+            onClick={() => {
+              if (!user) {
+                openAuthModal();
+              } else {
+                alert("ดำเนินการสั่งซื้อ...");
+              }
+            }}
             sx={{
               flex: 1,
               bgcolor: "#D3A14A",

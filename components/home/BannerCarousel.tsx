@@ -11,6 +11,8 @@ export default function BannerCarousel() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
+  if (!banners || banners.length === 0) return null;
+
   const nextSlide = useCallback(() => {
     setDirection(1);
     setCurrent((prev) => (prev + 1) % banners.length);

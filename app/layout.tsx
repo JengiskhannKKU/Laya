@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Noto_Serif_Thai } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import MuiProvider from "@/components/providers/MuiProvider";
+import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -63,7 +64,9 @@ export default function RootLayout({
           margin: 0,
         }}
       >
-        <MuiProvider>{children}</MuiProvider>
+        <MuiProvider>
+          <AuthProviderWrapper>{children}</AuthProviderWrapper>
+        </MuiProvider>
         <Analytics />
       </body>
     </html>

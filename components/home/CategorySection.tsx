@@ -103,7 +103,7 @@ export default function CategorySection() {
           return (
             <Link
               key={cat.id}
-              href={`/explore?category=${cat.id}`}
+              href={`/community?category=${cat.id}`}
               style={{ textDecoration: "none", flexShrink: 0 }}
             >
               <Box

@@ -26,7 +26,7 @@ const menuItems = [
     icon: <FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />,
     label: "รายการโปรด",
     subtitle: "3 รายการ",
-    href: "/explore",
+    href: "/community",
   },
   {
     icon: <DescriptionRoundedIcon sx={{ fontSize: 20 }} />,

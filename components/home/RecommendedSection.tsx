@@ -50,7 +50,7 @@ export default function RecommendedSection() {
             }}
           />
         </Box>
-        <Link href="/explore" style={{ textDecoration: "none" }}>
+        <Link href="/community" style={{ textDecoration: "none" }}>
           <Box
             sx={{
               display: "flex",
@@ -85,7 +85,7 @@ export default function RecommendedSection() {
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {products.slice(0, 5).map((product, index) => (
+        {products.slice(0, 8).map((product, index) => (
           <Link
             key={product.id}
             href={`/product/${product.id}`}

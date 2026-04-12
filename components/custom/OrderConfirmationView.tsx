@@ -5,6 +5,7 @@ import { Box, Typography, Avatar, TextField, Button, Divider } from "@mui/materi
 import { motion } from "framer-motion";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import { type Weaver, type CustomPatternData } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth-context";
 
 interface OrderConfirmationViewProps {
   patternData: CustomPatternData;
@@ -14,6 +15,7 @@ interface OrderConfirmationViewProps {
 }
 
 export default function OrderConfirmationView({ patternData, selectedWeaver, onConfirm, onCancel }: OrderConfirmationViewProps) {
+  const { user, openAuthModal } = useAuth();
   const [note, setNote] = useState("");
 
   return (
@@ -99,7 +101,13 @@ export default function OrderConfirmationView({ patternData, selectedWeaver, onC
         <Button 
           fullWidth 
           variant="contained" 
-          onClick={() => onConfirm(note)}
+          onClick={() => {
+            if (!user) {
+              openAuthModal();
+            } else {
+              onConfirm(note);
+            }
+          }}
           sx={{ py: 2, borderRadius: "16px", bgcolor: "#1B2A4A", fontWeight: 700, textTransform: "none" }}
         >
           ส่งคำขอทอผ้า ›

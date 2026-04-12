@@ -5,9 +5,15 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import { useAuth } from "@/lib/auth-context";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function HomeHeader() {
+  const { user, openAuthModal, logout } = useAuth();
   return (
     <Box
       component={motion.div}
@@ -23,8 +29,8 @@ export default function HomeHeader() {
         pb: 0.5,
       }}
     >
-      <Box sx={{ width: 40 }} />
-      <Box sx={{ textAlign: "center" }}>
+      <Box sx={{ width: 60 }} />
+      <Box sx={{ textAlign: "center", flex: 1 }}>
         <Typography
           sx={{
             fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
@@ -50,30 +56,20 @@ export default function HomeHeader() {
           Every Pattern Tells a Story
         </Typography>
       </Box>
-      <Badge
-        variant="dot"
-        sx={{
-          "& .MuiBadge-badge": {
-            bgcolor: "#C5A55A",
-            width: 8,
-            height: 8,
-            minWidth: 8,
-          },
-        }}
-      >
-        <IconButton
-          sx={{
-            border: "1.5px solid #E5DFD6",
-            width: 38,
-            height: 38,
-            bgcolor: "#FFFFFF",
-          }}
-        >
-          <NotificationsNoneRoundedIcon
-            sx={{ color: "#1B2A4A", fontSize: 18 }}
-          />
+      <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", justifyContent: "flex-end" }}>
+        <IconButton size="small" sx={{ color: "#1B2A4A" }}>
+          <Badge badgeContent={2} color="error" sx={{ '& .MuiBadge-badge': { backgroundColor: '#C5A55A', color: 'white' } }}>
+            <NotificationsNoneRoundedIcon sx={{ fontSize: 22 }} />
+          </Badge>
         </IconButton>
-      </Badge>
+        <Link href="/cart" passHref>
+          <IconButton size="small" sx={{ color: "#1B2A4A" }}>
+            <Badge badgeContent={1} color="error" sx={{ '& .MuiBadge-badge': { backgroundColor: '#C5A55A', color: 'white' } }}>
+              <ShoppingCartRoundedIcon sx={{ fontSize: 22 }} />
+            </Badge>
+          </IconButton>
+        </Link>
+      </Box>
     </Box>
   );
 }

@@ -1,392 +1,247 @@
 "use client";
-import React from "react";
 
+import { useState, useMemo, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 import Divider from "@mui/material/Divider";
-import { motion } from "framer-motion";
-import MobileLayout from "@/components/layout/MobileLayout";
-import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import LoopRoundedIcon from "@mui/icons-material/LoopRounded";
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
-import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
-import HourglassEmptyRoundedIcon from "@mui/icons-material/HourglassEmptyRounded";
-import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
-import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
+import Skeleton from "@mui/material/Skeleton";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { mockOrders, Order, OrderStatus } from "@/lib/mock-data";
 import Image from "next/image";
+import MobileLayout from "@/components/layout/MobileLayout";
 
-const orders = [
-  {
-    id: "ORD-2024-0312",
-    productName: "ผ้ายกลายกินรีหริภุญชัย",
-    community: "ชุมชนหริภุญชัย",
-    image: "/images/fabric1.jpg",
-    status: "กำลังทอ",
-    statusColor: "#C5A55A",
-    statusBg: "rgba(197,165,90,0.12)",
-    date: "12 ม.ค. 2567",
-    total: "10,500 บาท",
-    progress: 60,
-    steps: [
-      { label: "รอชุมชนยืนยัน", done: true },
-      { label: "เริ่มผลิต", done: true },
-      { label: "กำลังทอ", done: false, active: true },
-      { label: "ตรวจสอบคุณภาพ", done: false },
-      { label: "จัดส่งแล้ว", done: false },
-    ],
-  },
-  {
-    id: "ORD-2024-0298",
-    productName: "ผ้าฝ้ายย้อมคราม",
-    community: "กลุ่มทอผ้าครามสกลนคร",
-    image: "/images/fabric4.jpg",
-    status: "จัดส่งแล้ว",
-    statusColor: "#2D8F5C",
-    statusBg: "rgba(45,143,92,0.1)",
-    date: "5 ม.ค. 2567",
-    total: "850 บาท",
-    progress: 100,
-    steps: [
-      { label: "รอชุมชนยืนยัน", done: true },
-      { label: "เริ่มผลิต", done: true },
-      { label: "กำลังทอ", done: true },
-      { label: "ตรวจสอบคุณภาพ", done: true },
-      { label: "จัดส่งแล้ว", done: true },
-    ],
-  },
-];
-
-const statusIcons: Record<string, React.ReactElement> = {
-  "ส่งคำขอแล้ว": <CloudUploadRoundedIcon sx={{ fontSize: 14 }} />,
-  "แอดมินประสานงาน": <SupportAgentRoundedIcon sx={{ fontSize: 14 }} />,
-  "รอชุมชนยืนยัน": <HourglassEmptyRoundedIcon sx={{ fontSize: 14 }} />,
-  "เริ่มผลิต": <PlayArrowRoundedIcon sx={{ fontSize: 14 }} />,
-  "กำลังทอ": <LoopRoundedIcon sx={{ fontSize: 14 }} />,
-  "ตรวจสอบคุณภาพ": <AssignmentTurnedInRoundedIcon sx={{ fontSize: 14 }} />,
-  "จัดส่งแล้ว": <LocalShippingRoundedIcon sx={{ fontSize: 14 }} />,
-  "เสร็จแล้ว": <CheckCircleRoundedIcon sx={{ fontSize: 14 }} />,
+const statusMapping: Record<OrderStatus, { label: string; color: string; bgcolor: string }> = {
+  pending: { label: "รอยืนยัน", color: "#8E601C", bgcolor: "#FDF8F0" },
+  confirmed: { label: "ยืนยันแล้ว", color: "#1B2A4A", bgcolor: "#E2E8F0" },
+  producing: { label: "กำลังผลิต", color: "#0066CC", bgcolor: "#E6F0FF" },
+  shipped: { label: "จัดส่งแล้ว", color: "#05A546", bgcolor: "#E8F5E9" },
+  delivered: { label: "ได้รับสินค้าแล้ว", color: "#05A546", bgcolor: "#E8F5E9" },
+  cancelled: { label: "ยกเลิกแล้ว", color: "#D32F2F", bgcolor: "#FFEBEE" }
 };
 
-export default function OrdersPage() {
+const filterTabs = [
+  { value: "all", label: "ทั้งหมด" },
+  { value: "pending", label: "รอยืนยัน" },
+  { value: "producing", label: "กำลังผลิต" },
+  { value: "shipped", label: "จัดส่งแล้ว" },
+  { value: "delivered", label: "สำเร็จ" },
+  { value: "cancelled", label: "ยกเลิก" }
+];
+
+export default function OrderListPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+
+  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const tabParam = searchParams.get("status") || "all";
+  
+  const [toastMsg, setToastMsg] = useState("");
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    // Simulate DB fetch
+    setTimeout(() => {
+      setOrders([...mockOrders]);
+      setLoading(false);
+    }, 800);
+  }, [user, router]);
+
+  // Quick stats
+  const total = orders.length;
+  const inProgress = orders.filter(o => o.status === "producing" || o.status === "shipped").length;
+  const completed = orders.filter(o => o.status === "delivered").length;
+
+  const filteredOrders = useMemo(() => {
+    if (tabParam === "all") return orders;
+    return orders.filter(o => o.status === tabParam || (tabParam === 'producing' && o.status === 'confirmed'));
+  }, [orders, tabParam]);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    router.push(`/orders?status=${newValue}`);
+  };
+
+  const handleReorder = (order: Order) => {
+    setToastMsg(`เพิ่ม ${order.items.length} รายการลงในตะกร้าแล้ว`);
+    setTimeout(() => router.push("/cart"), 1500);
+  };
+
+  const handleCancel = (id: string) => {
+    if (confirm("คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำสั่งซื้อนี้?")) {
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: "cancelled" } : o));
+      setToastMsg("ยกเลิกคำสั่งซื้อสำเร็จ");
+    }
+  };
+
+  if (!user) return null;
+
   return (
     <MobileLayout>
-      <Box sx={{ pt: 3, pb: 2 }}>
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
         {/* Header */}
-        <Box
-          component={motion.div}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          sx={{ px: 2.5, mb: 2.5 }}
-        >
-          <Typography
-            sx={{
-              fontFamily: '"Noto Serif Thai", serif',
-              fontWeight: 700,
-              fontSize: "1.3rem",
-              color: "#1B2A4A",
-            }}
-          >
-            {"คำสั่งซื้อของฉัน"}
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: '"Noto Serif Thai", serif',
-              fontSize: "0.75rem",
-              color: "#9CA3AF",
-              mt: 0.3,
-            }}
-          >
-            {"ติดตามสถานะการผลิตและจัดส่ง"}
+        <Box sx={{ px: 2, pt: 4, pb: 2, display: "flex", alignItems: "center", bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10 }}>
+          <IconButton onClick={() => router.push("/profile")} sx={{ color: "#1B2A4A" }}>
+            <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
+            คำสั่งซื้อของฉัน
           </Typography>
         </Box>
 
         {/* Quick Stats */}
-        <Box
-          component={motion.div}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          sx={{
-            display: "flex",
-            gap: 1,
-            px: 2.5,
-            mb: 2.5,
-          }}
-        >
-          {[
-            { label: "ทั้งหมด", count: 2, color: "#1B2A4A" },
-            { label: "กำลังผลิต", count: 1, color: "#C5A55A" },
-            { label: "เสร็จสิ้น", count: 1, color: "#2D8F5C" },
-          ].map((stat) => (
-            <Box
-              key={stat.label}
-              sx={{
-                flex: 1,
-                bgcolor: "#FFFFFF",
-                borderRadius: "14px",
-                border: "1px solid #E5DFD6",
-                p: 1.5,
-                textAlign: "center",
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
-                  fontWeight: 700,
-                  fontSize: "1.2rem",
-                  color: stat.color,
-                  lineHeight: 1,
-                }}
-              >
-                {stat.count}
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
-                  fontSize: "0.62rem",
-                  color: "#9CA3AF",
-                  mt: 0.3,
-                }}
-              >
-                {stat.label}
-              </Typography>
-            </Box>
-          ))}
+        <Box sx={{ display: "flex", px: 2, py: 2, gap: 2, bgcolor: "#FFFFFF", borderBottom: "1px solid #E5DFD6" }}>
+          <Box sx={{ flex: 1, textAlign: "center", borderRight: "1px solid #E5DFD6" }}>
+            <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>{total}</Typography>
+            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>ทั้งหมด</Typography>
+          </Box>
+          <Box sx={{ flex: 1, textAlign: "center", borderRight: "1px solid #E5DFD6" }}>
+            <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#D3A14A" }}>{inProgress}</Typography>
+            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>กำลังดำเนินการ</Typography>
+          </Box>
+          <Box sx={{ flex: 1, textAlign: "center" }}>
+            <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#05A546" }}>{completed}</Typography>
+            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>เสร็จสิ้น</Typography>
+          </Box>
         </Box>
 
-        {/* Order Cards */}
-        <Box sx={{ px: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
-          {orders.map((order, index) => (
-            <Box
-              key={order.id}
-              component={motion.div}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + index * 0.08 }}
-              whileTap={{ scale: 0.99 }}
-              sx={{
-                bgcolor: "#FFFFFF",
-                borderRadius: "18px",
-                border: "1px solid #E5DFD6",
-                overflow: "hidden",
-                boxShadow: "0 2px 10px rgba(27,42,74,0.05)",
-              }}
-            >
-              {/* Order Header with Image */}
-              <Box sx={{ display: "flex", gap: 1.5, p: 1.5, pb: 1 }}>
-                <Box
-                  sx={{
-                    position: "relative",
-                    width: 64,
-                    height: 64,
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Image
-                    src={order.image}
-                    alt={order.productName}
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
-                      fontWeight: 600,
-                      fontSize: "0.88rem",
-                      color: "#1B2A4A",
-                      lineHeight: 1.3,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {order.productName}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
-                      fontSize: "0.68rem",
-                      color: "#9CA3AF",
-                      mt: 0.2,
-                    }}
-                  >
-                    {order.community}
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 0.5 }}>
-                    <Typography
-                      sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
-                        fontSize: "0.6rem",
-                        color: "#9CA3AF",
-                      }}
-                    >
-                      {order.id}
+        {/* Tabs */}
+        <Box sx={{ bgcolor: "#FFFFFF", borderBottom: "1px solid #E5DFD6" }}>
+          <Tabs
+            value={tabParam}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              minHeight: 40,
+              "& .MuiTab-root": {
+                fontFamily: '"Noto Serif Thai", serif',
+                minHeight: 40,
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                color: "#9CA3AF"
+              },
+              "& .Mui-selected": { color: "#1B2A4A" },
+              "& .MuiTabs-indicator": { bgcolor: "#1B2A4A" }
+            }}
+          >
+            {filterTabs.map(tab => (
+              <Tab key={tab.value} label={tab.label} value={tab.value} />
+            ))}
+          </Tabs>
+        </Box>
+
+        {/* Orders List */}
+        <Box sx={{ px: 2, pt: 2, pb: 10 }}>
+          {loading ? (
+            <Box>
+              <Skeleton variant="rounded" height={160} sx={{ mb: 2, borderRadius: "16px" }} />
+              <Skeleton variant="rounded" height={160} sx={{ mb: 2, borderRadius: "16px" }} />
+            </Box>
+          ) : filteredOrders.length === 0 ? (
+            <Box sx={{ py: 10, textAlign: "center" }}>
+              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>ยังไม่มีคำสั่งซื้อในสถานะนี้</Typography>
+              <Button variant="outlined" onClick={() => router.push("/community")} sx={{ mt: 2, borderRadius: "20px", fontFamily: '"Noto Serif Thai", serif' }}>เริ่มช้อปปิ้ง</Button>
+            </Box>
+          ) : (
+            filteredOrders.map(order => {
+              const statusMeta = statusMapping[order.status] || statusMapping.pending;
+              const date = new Date(order.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+
+              return (
+                <Box key={order.id} sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", mb: 2, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6", overflow: "hidden" }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1.5, borderBottom: "1px solid #F3F4F6", bgcolor: "#FAFAFA" }}>
+                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280" }}>
+                      สั่งเมื่อ {date}
                     </Typography>
-                    <Chip
-                      icon={statusIcons[order.status]}
-                      label={order.status}
-                      size="small"
-                      sx={{
-                        bgcolor: order.statusBg,
-                        color: order.statusColor,
-                        fontWeight: 600,
-                        fontFamily: '"Noto Serif Thai", serif',
-                        fontSize: "0.6rem",
-                        borderRadius: "8px",
-                        height: 22,
-                        "& .MuiChip-icon": { color: order.statusColor, fontSize: 13 },
-                        "& .MuiChip-label": { px: 0.6 },
-                      }}
-                    />
+                    <Typography sx={{ px: 1.5, py: 0.3, borderRadius: "12px", fontSize: "0.75rem", fontWeight: 700, bgcolor: statusMeta.bgcolor, color: statusMeta.color }}>
+                      {statusMeta.label}
+                    </Typography>
                   </Box>
-                </Box>
-              </Box>
 
-              {/* Progress Bar */}
-              <Box sx={{ px: 1.5, pt: 0.5, pb: 1 }}>
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: 4,
-                    bgcolor: "#F0EBE3",
-                    borderRadius: 2,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Box
-                    component={motion.div}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${order.progress}%` }}
-                    transition={{ delay: 0.3 + index * 0.1, duration: 0.8, ease: "easeOut" }}
-                    sx={{
-                      height: "100%",
-                      background:
-                        order.progress === 100
-                          ? "linear-gradient(90deg, #2D8F5C 0%, #4CAF80 100%)"
-                          : "linear-gradient(90deg, #C5A55A 0%, #D4BA7A 100%)",
-                      borderRadius: 2,
-                    }}
-                  />
-                </Box>
-              </Box>
-
-              <Divider sx={{ borderColor: "#F0EBE3" }} />
-
-              {/* Timeline */}
-              <Box sx={{ px: 1.5, py: 1.2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  {order.steps.map((step, i) => (
-                    <Box
-                      key={step.label}
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        flex: 1,
-                        position: "relative",
-                      }}
-                    >
-                      {/* Connector line */}
-                      {i > 0 && (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 5,
-                            right: "50%",
-                            width: "100%",
-                            height: 2,
-                            bgcolor: step.done || step.active
-                              ? "#C5A55A"
-                              : "#E5DFD6",
-                            zIndex: 0,
-                          }}
-                        />
-                      )}
-                      <Box
-                        sx={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: "50%",
-                          bgcolor: step.done
-                            ? "#C5A55A"
-                            : step.active
-                              ? "#1B2A4A"
-                              : "#E5DFD6",
-                          border: step.active
-                            ? "2px solid #C5A55A"
-                            : "none",
-                          zIndex: 1,
-                          position: "relative",
-                        }}
-                      />
-                      <Typography
-                        sx={{
-                          fontFamily: '"Noto Serif Thai", serif',
-                          fontSize: "0.48rem",
-                          color: step.done || step.active
-                            ? "#1B2A4A"
-                            : "#9CA3AF",
-                          fontWeight: step.active ? 700 : 400,
-                          mt: 0.5,
-                          textAlign: "center",
-                          lineHeight: 1.2,
-                          maxWidth: 48,
-                        }}
-                      >
-                        {step.label}
+                  {/* Order Items Snapshot (Interactive wrapper linking to detail) */}
+                  <Box sx={{ p: 1.5, cursor: "pointer" }} onClick={() => router.push(`/orders/${order.id}`)}>
+                    {order.items.slice(0, 2).map((item, idx) => (
+                      <Box key={item.id} sx={{ display: "flex", gap: 1.5, mb: idx === 1 ? 0 : 1.5 }}>
+                        <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", bgcolor: "#F0F0F0" }}>
+                          <Image src={item.product.images[0]} alt="" fill style={{ objectFit: "cover" }} />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
+                            {item.product.name}
+                          </Typography>
+                          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
+                            จำนวน: {item.quantity}
+                          </Typography>
+                          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", mt: 0.5 }}>
+                            ฿{item.priceAtPurchase.toLocaleString()}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                    {order.items.length > 2 && (
+                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#9CA3AF", mt: 1, textAlign: "center" }}>
+                        ดูอีก {order.items.length - 2} รายการ...
                       </Typography>
+                    )}
+                  </Box>
+
+                  <Divider sx={{ borderColor: "rgba(0,0,0,0.06)" }} />
+
+                  {/* Bottom Actions */}
+                  <Box sx={{ p: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+                      ยอดรวม: <Box component="span" sx={{ fontWeight: 700, color: "#1B2A4A", fontSize: "1rem" }}>฿{order.totalPrice.toLocaleString()}</Box>
+                    </Typography>
+
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      {order.status === "pending" && (
+                        <Button size="small" variant="outlined" color="error" onClick={() => handleCancel(order.id)} sx={{ borderRadius: "8px", fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", minWidth: 80 }}>
+                          ยกเลิกคำสั่งซื้อ
+                        </Button>
+                      )}
+                      {order.status === "delivered" && (
+                        <>
+                          <Button size="small" variant="outlined" onClick={() => router.push(`/orders/${order.id}?review=true`)} sx={{ borderRadius: "8px", borderColor: "#C5A55A", color: "#C5A55A", fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem" }}>
+                            รีวิว
+                          </Button>
+                          <Button size="small" variant="contained" onClick={() => handleReorder(order)} sx={{ borderRadius: "8px", bgcolor: "#1B2A4A", color: "#FFFFFF", fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem" }}>
+                            ซื้อซ้ำ
+                          </Button>
+                        </>
+                      )}
                     </Box>
-                  ))}
+                  </Box>
+
                 </Box>
-              </Box>
-
-              <Divider sx={{ borderColor: "#F0EBE3" }} />
-
-              {/* Footer */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  px: 1.5,
-                  py: 1,
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
-                    fontSize: "0.65rem",
-                    color: "#9CA3AF",
-                  }}
-                >
-                  {"สั่งเมื่อ"} {order.date}
-                </Typography>
-                <Typography
-                  sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
-                    fontWeight: 700,
-                    fontSize: "0.88rem",
-                    color: "#1B2A4A",
-                  }}
-                >
-                  {order.total}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
+              );
+            })
+          )}
         </Box>
+
+        <Snackbar
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          open={!!toastMsg}
+          autoHideDuration={3000}
+          onClose={() => setToastMsg("")}
+          message={toastMsg}
+          sx={{ bottom: { xs: 80, sm: 24 } }} 
+        />
       </Box>
     </MobileLayout>
   );

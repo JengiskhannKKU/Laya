@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 
 const navItems = [
   { label: "Home", icon: <HomeRoundedIcon />, path: "/" },
-  { label: "Explore", icon: <ExploreRoundedIcon />, path: "/explore" },
+  { label: "community", icon: <ExploreRoundedIcon />, path: "/community" },
   { label: "Custom", icon: <StarRoundedIcon />, path: "/custom" },
   { label: "Map", icon: <MapRoundedIcon />, path: "/map" },
   { label: "Profile", icon: <PersonRoundedIcon />, path: "/profile" },

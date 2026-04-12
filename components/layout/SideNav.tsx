@@ -12,7 +12,7 @@ import MapRoundedIcon from "@mui/icons-material/MapRounded";
 
 const navItems = [
   { label: "Home", icon: <HomeRoundedIcon />, path: "/" },
-  { label: "Explore", icon: <ExploreRoundedIcon />, path: "/explore" },
+  { label: "Explore", icon: <ExploreRoundedIcon />, path: "/community" },
   { label: "Custom", icon: <StarRoundedIcon />, path: "/custom" },
   { label: "Map", icon: <MapRoundedIcon />, path: "/map" },
   { label: "Profile", icon: <PersonRoundedIcon />, path: "/profile" },

@@ -8,6 +8,7 @@ import RecommendedSection from "@/components/home/RecommendedSection";
 import CommunitiesSection from "@/components/home/CommunitiesSection";
 import NewArrivalsSection from "@/components/home/NewArrivalsSection";
 import InspirationSection from "@/components/home/InspirationSection";
+import ExploreSection from "@/components/home/ExploreSection";
 
 export default function HomePage() {
   return (
@@ -21,6 +22,7 @@ export default function HomePage() {
       <CommunitiesSection />
       <NewArrivalsSection />
       <InspirationSection />
+      <ExploreSection />
     </MobileLayout>
   );
 }
