@@ -173,11 +173,12 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
       </Box>
 
       {/* Action Buttons */}
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 1.5 }}>
         <Button
           variant="contained"
           startIcon={<EngineeringRoundedIcon />}
           sx={{
+            flex: { xs: "unset", md: 1 },
             bgcolor: "#C5A55A",
             color: "#1B2A4A",
             fontFamily: '"Noto Serif Thai", serif',
@@ -190,7 +191,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
         >
           Weaver Matching
         </Button>
-        <Box sx={{ display: "flex", gap: 1.5 }}>
+        <Box sx={{ display: "flex", gap: 1.5, flex: { xs: "unset", md: 1 } }}>
           <Button
             variant="outlined"
             startIcon={<DownloadRoundedIcon />}

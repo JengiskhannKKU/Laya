@@ -92,7 +92,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", position: "relative" }}>
       
       {/* 1. Search Bar */}
-      <Box sx={{ px: 2, pb: 1 }}>
+      <Box sx={{ px: { xs: 2, md: 6, lg: 8 }, pb: 1 }}>
         <TextField
           placeholder="ค้นหาลาย..."
           value={search}
@@ -111,7 +111,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
         sx={{
           display: "flex",
           gap: 1,
-          px: 2,
+          px: { xs: 2, md: 6, lg: 8 },
           pb: 2,
           overflowX: "auto",
           "&::-webkit-scrollbar": { display: "none" },
@@ -143,12 +143,12 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
         ))}
       </Box>
 
-      {/* 3. Grid Gallery */}
-      <Box sx={{ px: 2, pb: 20, flex: 1, overflowY: "auto" }}>
+      {/* 3. Grid Gallery (Remove fixed height overflow so it scrolls normally) */}
+      <Box sx={{ px: { xs: 2, md: 6, lg: 8 }, pb: 8, flex: 1 }}>
         <Typography sx={{ textAlign: "center", fontSize: "0.75rem", color: "#9CA3AF", mb: 2 }}>
           {filteredPatterns.length > 0 ? "เลื่อนดูเพิ่มเติม ›" : "ไม่พบลายที่ตรงกับการค้นหา"}
         </Typography>
-        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(5, 1fr)" }, gap: 1.5 }}>
           <AnimatePresence>
             {filteredPatterns.map((pattern) => {
               const isSelected = selectedPatterns.includes(pattern.name);
@@ -227,20 +227,18 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
       {/* 4. Bottom Selection Tray */}
       <Box
         sx={{
-          position: "fixed",
+          position: "sticky",
           bottom: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
           width: "100%",
-          maxWidth: 430,
           bgcolor: "#FFFFFF",
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
+          borderTopLeftRadius: { xs: 24, md: 24 },
+          borderTopRightRadius: { xs: 24, md: 24 },
           boxShadow: "0 -10px 40px rgba(0,0,0,0.08)",
-          p: 3,
-          pt: 2,
-          pb: 4,
+          p: { xs: 3, md: 4 },
+          pt: 3,
+          pb: { xs: 4, md: 8 }, // Give padding on bottom to clear Desktop Login Footer (≈64px)
           zIndex: 10,
+          mt: "auto",
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", mb: 1.5 }}>

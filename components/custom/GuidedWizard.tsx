@@ -224,7 +224,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
               />
             </Box>
 
-            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 2, mb: 4, justifyItems: "center" }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(5, 1fr)", sm: "repeat(6, 1fr)", md: "repeat(9, 1fr)" }, gap: 2, mb: 4, justifyItems: "center" }}>
               {WEAVER_COLORS.map((color) => {
                 const isSelected = patternData.colors?.includes(color.name);
                 return (
@@ -310,7 +310,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               เทคนิคการทอ (Weave Type)
             </Typography>
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 1.5, flex: 1, minHeight: 350, mb: 2 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gridTemplateRows: { xs: "1fr 1fr", md: "1fr" }, gap: 1.5, flex: 1, minHeight: { xs: 350, md: 200 }, mb: 2 }}>
               {WEAVE_TYPES.map((weave) => {
                 const isSelected = patternData.weaveType === weave.name;
                 return (
@@ -371,7 +371,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               สไตล์การทอผ้าไทย
             </Typography>
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 1.5, flex: 1, minHeight: 280, mb: 2 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gridTemplateRows: { xs: "1fr 1fr", md: "1fr" }, gap: 1.5, flex: 1, minHeight: { xs: 280, md: 160 }, mb: 2 }}>
               {REGION_TYPES.map((region) => {
                 const isSelected = patternData.region === region.name;
                 return (
@@ -432,7 +432,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
               ระดับความซับซ้อนของลวดลาย
             </Typography>
             
-            <Stack spacing={1.5}>
+            <Stack spacing={1.5} direction={{ xs: "column", md: "row" }} sx={{ '& > *': { flex: 1 } }}>
               {[
                 { label: "เรียบง่าย", value: 25 },
                 { label: "ปานกลาง", value: 50 },
@@ -489,7 +489,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               อารมณ์ / การใช้งาน
             </Typography>
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, flex: 1, overflowY: "auto", pb: 2, px: 0.5, mx: -0.5, mb: 2 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gap: 1.5, flex: 1, overflowY: "auto", pb: 2, px: 0.5, mx: -0.5, mb: 2 }}>
               {MOOD_TYPES.map((mood) => {
                 const isSelected = patternData.mood === mood.name;
                 return (
@@ -618,7 +618,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
 
       {/* Step Content Area (Adjusted for absolute positioning in PatternGallery) */}
       {activeStep === 0 ? (
-        <Box sx={{ flex: 1, position: "relative", mx: -2 }}>
+        <Box sx={{ flex: 1, position: "relative", mx: { xs: -2, md: -6, lg: -8 } }}>
           {renderStep()}
         </Box>
       ) : (

@@ -103,11 +103,12 @@ export default function CustomGenerator() {
   return (
     <Box
       sx={{
-        maxWidth: 430,
+        maxWidth: { xs: 430, md: 1000 },
+        width: "100%",
         mx: "auto",
         minHeight: "100vh",
         bgcolor: currentMode === "request_success" ? "#1B2A4A" : "#FAF6F0",
-        boxShadow: { xs: "none", sm: "0 0 40px rgba(0,0,0,0.08)" },
+        boxShadow: { xs: "none", sm: "0 0 40px rgba(0,0,0,0.08)", md: "none" },
         position: "relative",
       }}
     >
@@ -118,7 +119,7 @@ export default function CustomGenerator() {
             display: "flex",
             alignItems: "center",
             gap: 1,
-            px: 2,
+            px: { xs: 2, md: 6, lg: 8 },
             pt: 3,
             pb: 1,
           }}
@@ -158,7 +159,7 @@ export default function CustomGenerator() {
       )}
 
       {/* Main Content Area */}
-      <Box sx={{ px: (currentMode === "matching" || currentMode === "confirm_request" || currentMode === "request_success") ? 0 : 2, py: 1, pb: 10 }}>
+      <Box sx={{ px: (currentMode === "matching" || currentMode === "confirm_request" || currentMode === "request_success") ? 0 : { xs: 2, md: 6, lg: 8 }, py: 1, pb: 10 }}>
         <AnimatePresence mode="wait">
           {currentMode === "select" && (
             <ModeSelection key="select" onSelectMode={handleModeSelect} />

@@ -50,7 +50,7 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
         <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.78rem", color: "#6B7280", mb: 1.2, fontWeight: 600 }}>
           🎨 ตัวอย่างลายผ้าไทย Pixel Art ({PIXEL_PATTERNS.length} ลาย)
         </Typography>
-        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(5, 1fr)", md: "repeat(10, 1fr)" }, gap: 1 }}>
           {PIXEL_PATTERNS.map((p, i) => (
             <motion.div
               key={p.id}
@@ -97,6 +97,7 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
       </Box>
 
       {/* ── Mode buttons ── */}
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2.5, width: "100%" }}>
       <Box
         component={motion.div}
         whileHover={{ scale: 1.02 }}
@@ -147,6 +148,7 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
             สำหรับสาย Pro พิมพ์ความต้องการของคุณอย่างอิสระ แล้วให้ AI จัดการให้
           </Typography>
         </Box>
+      </Box>
       </Box>
 
       {/* ── Pattern Preview Bottom Sheet ── */}
