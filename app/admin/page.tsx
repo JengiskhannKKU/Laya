@@ -4,235 +4,140 @@ import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
-import IconButton from "@mui/material/IconButton";
-import Divider from "@mui/material/Divider";
-import Tooltip from "@mui/material/Tooltip";
-import { useRouter, usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import Chip from "@mui/material/Chip";
+import LinearProgress from "@mui/material/LinearProgress";
+import { motion } from "framer-motion";
 import { useAdminTheme } from "@/lib/admin-theme-context";
 
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
-import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
-import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
-import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-
-const navItems = [
-  { label: "Dashboard", icon: <DashboardRoundedIcon />, path: "/admin" },
-  { label: "Products", icon: <Inventory2RoundedIcon />, path: "/admin/products" },
-  { label: "Orders", icon: <ShoppingCartRoundedIcon />, path: "/admin/orders" },
-  { label: "Weavers", icon: <PeopleRoundedIcon />, path: "/admin/weavers" },
-];
-
 export default function AdminDashboardPage() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { mode, toggleMode, c } = useAdminTheme();
-
-  const t = "all 0.3s ease"; // transition shorthand
-
-  return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      {/* ── Sidebar ── */}
-      <AnimatePresence>
-        {(sidebarOpen || typeof window !== "undefined") && (
-          <>
-            {sidebarOpen && (
-              <Box
-                component={motion.div}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSidebarOpen(false)}
-                sx={{ position: "fixed", inset: 0, bgcolor: c.sidebarOverlay, zIndex: 998, display: { md: "none" } }}
-              />
-            )}
-            <Box
-              component={motion.aside}
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              sx={{
-                width: 260,
-                bgcolor: c.bgSidebar,
-                display: { xs: sidebarOpen ? "flex" : "none", md: "flex" },
-                flexDirection: "column",
-                position: { xs: "fixed", md: "sticky" },
-                top: 0, left: 0, height: "100vh", zIndex: 999,
-                borderRight: `1px solid ${c.borderCard}`,
-                overflowY: "auto",
-                transition: t,
-              }}
-            >
-              {/* Brand */}
-              <Box sx={{ px: 3, py: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Box sx={{
-                    width: 36, height: 36, borderRadius: "10px",
-                    background: "linear-gradient(145deg, #C5A55A, #D4BA7A)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1rem", color: "#FFFFFF" }}>L</Typography>
-                  </Box>
-                  <Box>
-                    <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, letterSpacing: 2, transition: t }}>
-                      LAYA
-                    </Typography>
-                    <Typography sx={{ fontSize: "0.6rem", color: c.textMuted, letterSpacing: 1, transition: t }}>
-                      ADMIN PANEL
-                    </Typography>
-                  </Box>
-                </Box>
-                <IconButton onClick={() => setSidebarOpen(false)} sx={{ color: c.textMuted, display: { md: "none" } }}>
-                  <CloseRoundedIcon />
-                </IconButton>
-              </Box>
-
-              <Divider sx={{ borderColor: c.borderDivider, mx: 2 }} />
-
-              {/* Nav Items */}
-              <Box sx={{ px: 2, pt: 3, flex: 1 }}>
-                <Typography sx={{ px: 1, mb: 1.5, fontSize: "0.65rem", color: c.textMuted, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", transition: t }}>
-                  เมนูหลัก
-                </Typography>
-                {navItems.map((item) => {
-                  const isActive = pathname === item.path;
-                  return (
-                    <Box
-                      key={item.path}
-                      component={motion.div}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => { router.push(item.path); setSidebarOpen(false); }}
-                      sx={{
-                        display: "flex", alignItems: "center", gap: 1.5, px: 1.5, py: 1.2, mb: 0.5,
-                        borderRadius: "10px", cursor: "pointer",
-                        bgcolor: isActive ? c.goldSubtle : "transparent",
-                        color: isActive ? c.gold : c.textSecondary,
-                        transition: t,
-                        "&:hover": {
-                          bgcolor: isActive ? c.goldSubtle : c.bgCardHover,
-                          color: isActive ? c.gold : c.textPrimary,
-                        },
-                        "& .MuiSvgIcon-root": { fontSize: 20 },
-                      }}
-                    >
-                      {item.icon}
-                      <Typography sx={{ fontSize: "0.9rem", fontWeight: isActive ? 700 : 500 }}>{item.label}</Typography>
-                      {isActive && <Box sx={{ ml: "auto", width: 6, height: 6, borderRadius: "50%", bgcolor: c.gold }} />}
-                    </Box>
-                  );
-                })}
-              </Box>
-
-              {/* Bottom */}
-              <Box sx={{ px: 2, pb: 3 }}>
-                <Divider sx={{ borderColor: c.borderDivider, mb: 2 }} />
-                <Box
-                  onClick={() => router.push("/")}
-                  sx={{
-                    display: "flex", alignItems: "center", gap: 1.5, px: 1.5, py: 1, borderRadius: "10px",
-                    cursor: "pointer", color: c.textMuted, transition: t,
-                    "&:hover": { bgcolor: c.bgCardHover, color: c.textPrimary },
-                    "& .MuiSvgIcon-root": { fontSize: 20 },
-                  }}
-                >
-                  <HomeRoundedIcon />
-                  <Typography sx={{ fontSize: "0.85rem" }}>กลับหน้าหลัก</Typography>
-                </Box>
-              </Box>
-            </Box>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ── Main ── */}
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        {/* Top Bar */}
-        <Box sx={{
-          px: 3, py: 2, display: "flex", alignItems: "center", justifyContent: "space-between",
-          bgcolor: c.bgTopbar, borderBottom: `1px solid ${c.borderCard}`,
-          position: "sticky", top: 0, zIndex: 50, transition: t,
-        }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton onClick={() => setSidebarOpen(true)} sx={{ color: c.textPrimary, display: { md: "none" } }}>
-              <MenuRoundedIcon />
-            </IconButton>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: t }}>
-              Dashboard
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {/* Theme Toggle */}
-            <Tooltip title={mode === "dark" ? "Light Mode" : "Dark Mode"}>
-              <IconButton
-                onClick={toggleMode}
-                sx={{
-                  color: c.textSecondary,
-                  bgcolor: c.goldSubtle,
-                  width: 36, height: 36,
-                  transition: t,
-                  "&:hover": { bgcolor: c.gold, color: c.textOnGold },
-                }}
-              >
-                {mode === "dark" ? <LightModeRoundedIcon sx={{ fontSize: 20 }} /> : <DarkModeRoundedIcon sx={{ fontSize: 20 }} />}
-              </IconButton>
-            </Tooltip>
-            <IconButton sx={{ color: c.textSecondary }}>
-              <NotificationsRoundedIcon sx={{ fontSize: 22 }} />
-            </IconButton>
-            <Avatar sx={{ width: 32, height: 32, bgcolor: c.gold, fontSize: "0.8rem", fontWeight: 700, color: c.textOnGold }}>A</Avatar>
-          </Box>
-        </Box>
-
-        <Box sx={{ p: { xs: 2, md: 3 }, flex: 1 }}>
-          <AdminDashboardContent />
-        </Box>
-      </Box>
-    </Box>
-  );
+  return <AdminDashboardContent />;
 }
 
 // ════════════════════════════════════════════════════════════════
-// Dashboard Content (Charts + KPIs)
+// Dashboard Content
 // ════════════════════════════════════════════════════════════════
 import {
   mockKPIs, mockDailyRevenue, mockMonthlyRevenue,
   mockCategoryRevenue, mockPaymentMix,
   mockTopProducts, mockTopWeavers, mockAIUsage,
+  mockRevenueBreakdown, mockFabricTypeSales,
+  mockDemandHeatmap, mockTrendInsights,
+  mockUserActivity, mockCustomerFunnel,
+  mockSearchKeywords, mockWishlistData,
+  mockCommunityPerformance, mockProductionInsight,
+  mockSupplyDemandGap,
+  mockAIInsights, mockPredictiveAnalytics, mockRecommendations,
 } from "@/lib/mock-admin-data";
 
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
 import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, Legend,
+  BarChart, Bar, PieChart, Pie, Cell, Legend, LineChart, Line, FunnelChart, Funnel, LabelList,
 } from "recharts";
 
+// ─── Helpers ──────────────────────────────────────────────────
+const SectionTitle = ({ children, emoji }: { children: string; emoji: string }) => {
+  const { c } = useAdminTheme();
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2.5, mt: 1 }}>
+      <Typography sx={{ fontSize: "1.2rem" }}>{emoji}</Typography>
+      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+        {children}
+      </Typography>
+    </Box>
+  );
+};
+
+const CardTitle = ({ children }: { children: string }) => {
+  const { c } = useAdminTheme();
+  return (
+    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
+      {children}
+    </Typography>
+  );
+};
+
+const urgencyColor: Record<string, { color: string; bg: string }> = {
+  critical: { color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
+  high: { color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
+  medium: { color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
+  low: { color: "#22C55E", bg: "rgba(34,197,94,0.15)" },
+};
+
+const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
+  critical: { label: "เร่งด่วน", color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
+  high: { label: "สำคัญ", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
+  medium: { label: "ปานกลาง", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
+};
+
+const recTypeIcons: Record<string, string> = {
+  product: "📦", pricing: "💰", marketing: "📣", stock: "🏭", community: "🤝",
+};
+
+// ════════════════════════════════════════════════════════════════
 function AdminDashboardContent() {
   const [revenueView, setRevenueView] = useState<"daily" | "monthly">("daily");
   const { c } = useAdminTheme();
   const t = "all 0.3s ease";
+  const card = { bgcolor: c.bgCard, borderRadius: "14px", p: 3, border: `1px solid ${c.borderCard}`, transition: t };
+  const cardAnim = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
 
   return (
     <Box>
-      {/* KPI Cards */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* 🔥 AI INSIGHT BOX (Hero Highlight) */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <Box
+        component={motion.div} {...cardAnim}
+        sx={{
+          mb: 3, p: 0, borderRadius: "16px", overflow: "hidden",
+          background: `linear-gradient(135deg, ${c.bgCard} 0%, rgba(197,165,90,0.08) 100%)`,
+          border: `1px solid ${c.gold}33`,
+        }}
+      >
+        <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "center", gap: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
+          <AutoAwesomeRoundedIcon sx={{ color: c.gold, fontSize: 22 }} />
+          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>
+            🧠 AI Insights วันนี้
+          </Typography>
+          <Chip label="LIVE" size="small" sx={{ bgcolor: "rgba(34,197,94,0.2)", color: "#22C55E", fontWeight: 700, fontSize: "0.65rem", height: 20, ml: "auto",
+            animation: "pulse 2s infinite",
+            "@keyframes pulse": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.6 } },
+          }} />
+        </Box>
+        <Box sx={{ px: 3, py: 2, display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "1fr 1fr 1fr" }, gap: 1.5 }}>
+          {mockAIInsights.map((insight, i) => (
+            <Box
+              key={i}
+              component={motion.div}
+              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
+              sx={{
+                display: "flex", alignItems: "flex-start", gap: 1.5, px: 2, py: 1.5,
+                borderRadius: "10px", bgcolor: c.bgCardHover, transition: t,
+                "&:hover": { bgcolor: c.goldSubtle },
+              }}
+            >
+              <Typography sx={{ fontSize: "1.1rem", mt: 0.2 }}>{insight.icon}</Typography>
+              <Typography sx={{ fontSize: "0.8rem", color: c.textSecondary, lineHeight: 1.5 }}>{insight.text}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* 💰 BUSINESS KPIs */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="💰">Business KPIs</SectionTitle>
+
+      {/* KPI Cards (existing) */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr", md: "repeat(6, 1fr)" }, gap: 2, mb: 3 }}>
         {mockKPIs.map((kpi) => (
-          <Box
-            key={kpi.label}
-            component={motion.div}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            sx={{ bgcolor: c.bgCard, borderRadius: "14px", p: 2.5, border: `1px solid ${c.borderCard}`, transition: t }}
-          >
-            <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, mb: 1, transition: t }}>{kpi.label}</Typography>
-            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.4rem", color: c.textPrimary, mb: 0.5, transition: t }}>{kpi.value}</Typography>
+          <Box key={kpi.label} component={motion.div} {...cardAnim} sx={card}>
+            <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, mb: 1 }}>{kpi.label}</Typography>
+            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.4rem", color: c.textPrimary, mb: 0.5 }}>{kpi.value}</Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               {kpi.trend === "up" ? <TrendingUpRoundedIcon sx={{ fontSize: 14, color: "#22C55E" }} /> : <TrendingDownRoundedIcon sx={{ fontSize: 14, color: "#EF4444" }} />}
               <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: kpi.trend === "up" ? "#22C55E" : "#EF4444" }}>
@@ -243,23 +148,31 @@ function AdminDashboardContent() {
         ))}
       </Box>
 
-      {/* Revenue + Category */}
+      {/* Revenue Breakdown Cards */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gap: 2, mb: 3 }}>
+        {[
+          { label: "Laya Commission", value: `฿${(mockRevenueBreakdown.layaCommission / 1000).toFixed(0)}k`, sub: `${mockRevenueBreakdown.commissionRate}% of GMV`, color: c.gold },
+          { label: "Net Revenue", value: `฿${(mockRevenueBreakdown.netRevenue / 1000).toFixed(0)}k`, sub: "หลังหักค่าใช้จ่าย", color: "#22C55E" },
+          { label: "Refunds", value: `฿${(mockRevenueBreakdown.refunds / 1000).toFixed(0)}k`, sub: `${((mockRevenueBreakdown.refunds / mockRevenueBreakdown.totalGMV) * 100).toFixed(1)}% of GMV`, color: "#EF4444" },
+          { label: "Total Orders", value: mockRevenueBreakdown.totalOrders.toLocaleString(), sub: `AOV ฿${mockRevenueBreakdown.avgOrderValue.toLocaleString()}`, color: "#3B82F6" },
+        ].map((item) => (
+          <Box key={item.label} component={motion.div} {...cardAnim} sx={card}>
+            <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, mb: 1 }}>{item.label}</Typography>
+            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.3rem", color: item.color }}>{item.value}</Typography>
+            <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mt: 0.5 }}>{item.sub}</Typography>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Revenue Chart + Category Pie (existing) */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" }, gap: 2, mb: 3 }}>
-        <Box sx={{ bgcolor: c.bgCard, borderRadius: "14px", p: 3, border: `1px solid ${c.borderCard}`, transition: t }}>
+        <Box sx={card}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, transition: t }}>
-              รายรับ (Revenue)
-            </Typography>
+            <CardTitle>รายรับ (Revenue)</CardTitle>
             <Box sx={{ display: "flex", gap: 1 }}>
               {(["daily", "monthly"] as const).map((v) => (
                 <Box key={v} onClick={() => setRevenueView(v)}
-                  sx={{
-                    px: 2, py: 0.5, borderRadius: "8px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
-                    bgcolor: revenueView === v ? c.goldSubtle : "transparent",
-                    color: revenueView === v ? c.gold : c.textMuted,
-                    transition: t,
-                  }}
-                >
+                  sx={{ px: 2, py: 0.5, borderRadius: "8px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, bgcolor: revenueView === v ? c.goldSubtle : "transparent", color: revenueView === v ? c.gold : c.textMuted, transition: t }}>
                   {v === "daily" ? "รายวัน" : "รายเดือน"}
                 </Box>
               ))}
@@ -267,12 +180,7 @@ function AdminDashboardContent() {
           </Box>
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={revenueView === "daily" ? mockDailyRevenue : mockMonthlyRevenue.map(d => ({ date: d.month, revenue: d.revenue }))}>
-              <defs>
-                <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#C5A55A" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#C5A55A" stopOpacity={0} />
-                </linearGradient>
-              </defs>
+              <defs><linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#C5A55A" stopOpacity={0.3} /><stop offset="95%" stopColor="#C5A55A" stopOpacity={0} /></linearGradient></defs>
               <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
               <XAxis dataKey="date" tick={{ fill: c.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: c.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
@@ -281,12 +189,8 @@ function AdminDashboardContent() {
             </AreaChart>
           </ResponsiveContainer>
         </Box>
-
-        {/* Category Pie */}
-        <Box sx={{ bgcolor: c.bgCard, borderRadius: "14px", p: 3, border: `1px solid ${c.borderCard}`, transition: t }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2, transition: t }}>
-            สัดส่วนประเภทสินค้า
-          </Typography>
+        <Box sx={card}>
+          <CardTitle>สัดส่วนประเภทสินค้า</CardTitle>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie data={mockCategoryRevenue} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3}>
@@ -299,10 +203,334 @@ function AdminDashboardContent() {
         </Box>
       </Box>
 
-      {/* AI Usage & Payment Mix */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* 📈 SALES PERFORMANCE */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="📈">Sales Performance</SectionTitle>
+
+      {/* Fabric Type Sales + Demand Heatmap */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
-        <Box sx={{ bgcolor: c.bgCard, borderRadius: "14px", p: 3, border: `1px solid ${c.borderCard}`, transition: t }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2, transition: t }}>AI Pattern Generation</Typography>
+        {/* Fabric Type */}
+        <Box sx={card}>
+          <CardTitle>ยอดขายตามประเภทผ้า</CardTitle>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={mockFabricTypeSales} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
+              <XAxis type="number" tick={{ fill: c.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <YAxis type="category" dataKey="type" tick={{ fill: c.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} width={70} />
+              <RechartsTooltip contentStyle={{ backgroundColor: c.chartTooltipBg, border: "none", borderRadius: "8px", color: c.chartTooltipText, fontSize: 12 }} formatter={(value: number) => [`฿${value.toLocaleString()}`, "รายรับ"]} />
+              <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
+                {mockFabricTypeSales.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+
+        {/* Demand Heatmap */}
+        <Box sx={card}>
+          <CardTitle>🗺️ Demand Heatmap (จังหวัด)</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {mockDemandHeatmap.slice(0, 8).map((pv, i) => (
+              <Box key={pv.province} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: c.textMuted, width: 18, textAlign: "right" }}>{i + 1}</Typography>
+                <Typography noWrap sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, width: 110, flexShrink: 0 }}>{pv.province}</Typography>
+                <Box sx={{ flex: 1, position: "relative" }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={pv.pct * (100 / 26)}
+                    sx={{
+                      height: 14, borderRadius: 7, bgcolor: c.bgStatBox,
+                      "& .MuiLinearProgress-bar": {
+                        borderRadius: 7,
+                        background: `linear-gradient(90deg, ${c.gold}, #D4BA7A)`,
+                      },
+                    }}
+                  />
+                </Box>
+                <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: c.gold, width: 55, textAlign: "right" }}>
+                  ฿{(pv.revenue / 1000).toFixed(0)}k
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* 🎨 TREND INSIGHTS */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="🎨">Trend Insights</SectionTitle>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" }, gap: 2, mb: 3 }}>
+        {/* Trending Colors */}
+        <Box sx={card}>
+          <CardTitle>🎨 สีที่กำลังมา</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {mockTrendInsights.trendingColors.map((cl) => (
+              <Box key={cl.name} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Box sx={{ width: 28, height: 28, borderRadius: "8px", bgcolor: cl.hex, border: `2px solid ${c.borderCard}`, flexShrink: 0 }} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary }}>{cl.name}</Typography>
+                </Box>
+                <Chip label={`+${cl.growth}%`} size="small" sx={{ bgcolor: "rgba(34,197,94,0.15)", color: "#22C55E", fontWeight: 700, fontSize: "0.7rem", height: 22 }} />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Trending Patterns */}
+        <Box sx={card}>
+          <CardTitle>🧶 ลายที่ค้นหาเยอะ</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {mockTrendInsights.trendingPatterns.map((pt, i) => (
+              <Box key={pt.name} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: c.textMuted, width: 18 }}>{i + 1}</Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary }}>{pt.name}</Typography>
+                  <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>{pt.searches.toLocaleString()} searches</Typography>
+                </Box>
+                <Chip label={`+${pt.growth}%`} size="small" sx={{ bgcolor: "rgba(34,197,94,0.15)", color: "#22C55E", fontWeight: 700, fontSize: "0.7rem", height: 22 }} />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Seasonal Trends */}
+        <Box sx={card}>
+          <CardTitle>📅 Seasonal Trends</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {mockTrendInsights.seasonalTrends.map((st) => {
+              const demandColor = st.demand === "สูงมาก" ? "#22C55E" : st.demand === "สูง" ? c.gold : "#3B82F6";
+              return (
+                <Box key={st.season} sx={{ p: 1.5, borderRadius: "10px", bgcolor: c.bgCardHover }}>
+                  <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: c.textPrimary }}>{st.season}</Typography>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
+                    <Typography sx={{ fontSize: "0.75rem", color: c.textSecondary }}>{st.topCategory}</Typography>
+                    <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, color: demandColor }}>{st.demand}</Typography>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* 👥 USER & BEHAVIOR */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="👥">User & Behavior</SectionTitle>
+
+      {/* User Activity KPIs */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(5, 1fr)" }, gap: 2, mb: 3 }}>
+        {[
+          { label: "DAU", value: mockUserActivity.dau.toLocaleString(), icon: "👀" },
+          { label: "MAU", value: mockUserActivity.mau.toLocaleString(), icon: "📊" },
+          { label: "Session Time", value: mockUserActivity.avgSessionTime, icon: "⏱️" },
+          { label: "Bounce Rate", value: `${mockUserActivity.bounceRate}%`, icon: "↩️" },
+          { label: "Returning Users", value: `${mockUserActivity.returningUsers}%`, icon: "🔄" },
+        ].map((item) => (
+          <Box key={item.label} component={motion.div} {...cardAnim} sx={card}>
+            <Typography sx={{ fontSize: "1rem", mb: 0.5 }}>{item.icon}</Typography>
+            <Typography sx={{ fontSize: "0.65rem", color: c.textMuted, fontWeight: 600 }}>{item.label}</Typography>
+            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>{item.value}</Typography>
+          </Box>
+        ))}
+      </Box>
+
+      {/* DAU Chart + Customer Funnel */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
+        {/* DAU Trend */}
+        <Box sx={card}>
+          <CardTitle>👀 Daily Active Users (สัปดาห์นี้)</CardTitle>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={mockUserActivity.dauTrend}>
+              <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
+              <XAxis dataKey="date" tick={{ fill: c.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: c.chartTick, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <RechartsTooltip contentStyle={{ backgroundColor: c.chartTooltipBg, border: "none", borderRadius: "8px", color: c.chartTooltipText, fontSize: 12 }} />
+              <Bar dataKey="users" fill={c.gold} radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+
+        {/* Customer Funnel */}
+        <Box sx={card}>
+          <CardTitle>🛒 Customer Journey Funnel</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {mockCustomerFunnel.map((step, i) => (
+              <Box key={step.stage}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                  <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary }}>{step.stage}</Typography>
+                  <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: c.textSecondary }}>{step.count.toLocaleString()} ({step.pct}%)</Typography>
+                </Box>
+                <LinearProgress variant="determinate" value={step.pct}
+                  sx={{
+                    height: 16, borderRadius: 8, bgcolor: c.bgStatBox,
+                    "& .MuiLinearProgress-bar": { borderRadius: 8, bgcolor: step.color },
+                  }}
+                />
+                {i < mockCustomerFunnel.length - 1 && (
+                  <Typography sx={{ fontSize: "0.65rem", color: "#EF4444", textAlign: "right", mt: 0.3 }}>
+                    ↓ drop {((1 - mockCustomerFunnel[i + 1].count / step.count) * 100).toFixed(0)}%
+                  </Typography>
+                )}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Search Keywords + Wishlist */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
+        {/* Search Keywords */}
+        <Box sx={card}>
+          <CardTitle>🔍 Search Keywords ยอดนิยม</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {mockSearchKeywords.map((kw, i) => (
+              <Box key={kw.keyword} sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 0.8, borderBottom: i < mockSearchKeywords.length - 1 ? `1px solid ${c.borderCard}` : "none" }}>
+                <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: c.textMuted, width: 18 }}>{i + 1}</Typography>
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary }}>&quot;{kw.keyword}&quot;</Typography>
+                </Box>
+                <Typography sx={{ fontSize: "0.75rem", color: c.textMuted, mr: 1 }}>{kw.count.toLocaleString()}</Typography>
+                <Chip label={`+${kw.growth}%`} size="small" sx={{
+                  bgcolor: kw.growth > 30 ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
+                  color: kw.growth > 30 ? "#EF4444" : "#22C55E",
+                  fontWeight: 700, fontSize: "0.65rem", height: 20,
+                }} />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Wishlist vs Purchase */}
+        <Box sx={card}>
+          <CardTitle>❤️ Wishlist vs ซื้อจริง</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {mockWishlistData.map((item, i) => (
+              <Box key={item.name} sx={{ py: 1, borderBottom: i < mockWishlistData.length - 1 ? `1px solid ${c.borderCard}` : "none" }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                  <Typography noWrap sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, maxWidth: "60%" }}>{item.name}</Typography>
+                  <Chip label={`${item.convRate}%`} size="small" sx={{
+                    bgcolor: item.convRate > 30 ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)",
+                    color: item.convRate > 30 ? "#22C55E" : "#F59E0B",
+                    fontWeight: 700, fontSize: "0.65rem", height: 20,
+                  }} />
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>❤️ Save: {item.saves}</Typography>
+                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>🛒 ซื้อ: {item.purchases}</Typography>
+                </Box>
+                <LinearProgress variant="determinate" value={item.convRate}
+                  sx={{ height: 6, borderRadius: 3, mt: 0.8, bgcolor: c.bgStatBox, "& .MuiLinearProgress-bar": { borderRadius: 3, bgcolor: item.convRate > 30 ? "#22C55E" : "#F59E0B" } }}
+                />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* 🏡 SUPPLY SIDE (Community) */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="🏡">Supply Side (ฝั่งชุมชน)</SectionTitle>
+
+      {/* Community Performance */}
+      <Box sx={{ ...card, mb: 3, overflow: "hidden" }}>
+        <CardTitle>🧑‍🌾 Community Performance</CardTitle>
+        {/* Header */}
+        <Box sx={{ display: { xs: "none", md: "grid" }, gridTemplateColumns: "2.5fr 1fr 1fr 0.7fr 0.7fr", gap: 2, px: 1, pb: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
+          {["ชุมชน", "รายรับ", "คำสั่งซื้อ", "ช่างทอ", "Growth"].map((h) => (
+            <Typography key={h} sx={{ fontSize: "0.7rem", fontWeight: 700, color: c.textMuted, textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</Typography>
+          ))}
+        </Box>
+        {mockCommunityPerformance.map((cm, i) => (
+          <Box key={cm.name} component={motion.div} {...cardAnim} transition={{ delay: i * 0.04 }}
+            sx={{ display: { xs: "flex", md: "grid" }, flexDirection: { xs: "column", md: "row" }, gridTemplateColumns: { md: "2.5fr 1fr 1fr 0.7fr 0.7fr" }, gap: { xs: 0.5, md: 2 }, px: 1, py: 1.5, borderBottom: `1px solid ${c.borderCard}`, "&:hover": { bgcolor: c.bgCardHover } }}>
+            <Box>
+              <Typography sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary }}>{cm.name}</Typography>
+              <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>{cm.province}</Typography>
+            </Box>
+            <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.gold }}>฿{(cm.revenue / 1000).toFixed(0)}k</Typography>
+            <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>{cm.orders}</Typography>
+            <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>{cm.weavers} คน</Typography>
+            <Chip label={`${cm.growth > 0 ? "+" : ""}${cm.growth}%`} size="small" sx={{
+              bgcolor: cm.growth > 0 ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+              color: cm.growth > 0 ? "#22C55E" : "#EF4444",
+              fontWeight: 700, fontSize: "0.7rem", height: 22, width: "fit-content",
+            }} />
+          </Box>
+        ))}
+      </Box>
+
+      {/* Production Insight + Supply vs Demand */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
+        {/* Production */}
+        <Box sx={card}>
+          <CardTitle>⏱️ Production vs Sales</CardTitle>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1.5, mb: 2 }}>
+            <Box sx={{ p: 1.5, borderRadius: "10px", bgcolor: c.bgCardHover, textAlign: "center" }}>
+              <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>เฉลี่ยทอ</Typography>
+              <Typography sx={{ fontWeight: 700, color: c.textPrimary, fontSize: "1.1rem" }}>{mockProductionInsight.avgProductionDays} วัน</Typography>
+            </Box>
+            <Box sx={{ p: 1.5, borderRadius: "10px", bgcolor: c.bgCardHover, textAlign: "center" }}>
+              <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>เร็วสุด</Typography>
+              <Typography sx={{ fontWeight: 700, color: "#22C55E", fontSize: "1.1rem" }}>{mockProductionInsight.fastestCommunity.days} วัน</Typography>
+            </Box>
+            <Box sx={{ p: 1.5, borderRadius: "10px", bgcolor: c.bgCardHover, textAlign: "center" }}>
+              <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>Stock Turnover</Typography>
+              <Typography sx={{ fontWeight: 700, color: c.gold, fontSize: "1.1rem" }}>{mockProductionInsight.stockTurnover}x</Typography>
+            </Box>
+          </Box>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={mockProductionInsight.productionByMonth}>
+              <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
+              <XAxis dataKey="month" tick={{ fill: c.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: c.chartTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <RechartsTooltip contentStyle={{ backgroundColor: c.chartTooltipBg, border: "none", borderRadius: "8px", color: c.chartTooltipText, fontSize: 12 }} />
+              <Line type="monotone" dataKey="produced" stroke="#3B82F6" strokeWidth={2} dot={false} name="ผลิต" />
+              <Line type="monotone" dataKey="sold" stroke="#22C55E" strokeWidth={2} dot={false} name="ขาย" />
+              <Legend formatter={(value: string) => <span style={{ color: c.legendText, fontSize: 11 }}>{value}</span>} />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+
+        {/* Supply vs Demand Gap */}
+        <Box sx={card}>
+          <CardTitle>📉 Supply vs Demand Gap</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {mockSupplyDemandGap.map((item) => {
+              const u = urgencyColor[item.urgency] || urgencyColor.medium;
+              const pct = (item.supply / item.demand) * 100;
+              return (
+                <Box key={item.product} sx={{ p: 1.5, borderRadius: "10px", border: `1px solid ${c.borderCard}` }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.8 }}>
+                    <Typography noWrap sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, maxWidth: "60%" }}>{item.product}</Typography>
+                    <Chip label={item.urgency} size="small" sx={{ bgcolor: u.bg, color: u.color, fontWeight: 700, fontSize: "0.65rem", height: 20, textTransform: "capitalize" }} />
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 2, fontSize: "0.7rem", color: c.textMuted, mb: 0.8 }}>
+                    <span>Demand: {item.demand}</span>
+                    <span>Supply: {item.supply}</span>
+                    <span style={{ color: u.color, fontWeight: 700 }}>Gap: {item.gap}</span>
+                  </Box>
+                  <LinearProgress variant="determinate" value={pct}
+                    sx={{ height: 8, borderRadius: 4, bgcolor: c.bgStatBox, "& .MuiLinearProgress-bar": { borderRadius: 4, bgcolor: pct > 70 ? "#22C55E" : pct > 40 ? "#F59E0B" : "#EF4444" } }}
+                  />
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* AI Usage & Payment Mix (existing) */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="🤖">AI & Payments</SectionTitle>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
+        <Box sx={card}>
+          <CardTitle>AI Pattern Generation</CardTitle>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={mockAIUsage}>
               <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
@@ -313,9 +541,8 @@ function AdminDashboardContent() {
             </BarChart>
           </ResponsiveContainer>
         </Box>
-
-        <Box sx={{ bgcolor: c.bgCard, borderRadius: "14px", p: 3, border: `1px solid ${c.borderCard}`, transition: t }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2, transition: t }}>สัดส่วนช่องทางชำระเงิน</Typography>
+        <Box sx={card}>
+          <CardTitle>สัดส่วนช่องทางชำระเงิน</CardTitle>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie data={mockPaymentMix} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} paddingAngle={3}>
@@ -328,45 +555,104 @@ function AdminDashboardContent() {
         </Box>
       </Box>
 
-      {/* Top Products & Top Weavers */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2 }}>
-        <Box sx={{ bgcolor: c.bgCard, borderRadius: "14px", p: 3, border: `1px solid ${c.borderCard}`, transition: t }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2, transition: t }}>สินค้าขายดี</Typography>
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* Top Products & Top Weavers (existing) */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="🏆">Top Performers</SectionTitle>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
+        <Box sx={card}>
+          <CardTitle>สินค้าขายดี</CardTitle>
           {mockTopProducts.map((p, i) => (
             <Box key={p.id} sx={{ display: "flex", alignItems: "center", gap: 2, py: 1.5, borderBottom: i < mockTopProducts.length - 1 ? `1px solid ${c.borderCard}` : "none" }}>
               <Typography sx={{ color: c.textMuted, fontWeight: 700, fontSize: "0.9rem", width: 20 }}>{i + 1}</Typography>
-              <Box sx={{ width: 40, height: 40, borderRadius: "8px", overflow: "hidden", bgcolor: c.bgStatBox, position: "relative" }}>
+              <Box sx={{ width: 40, height: 40, borderRadius: "8px", overflow: "hidden", bgcolor: c.bgStatBox }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography noWrap sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary, transition: t }}>{p.name}</Typography>
-                <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, transition: t }}>{p.community}</Typography>
+                <Typography noWrap sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary }}>{p.name}</Typography>
+                <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>{p.community}</Typography>
               </Box>
               <Box sx={{ textAlign: "right" }}>
                 <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.gold }}>฿{(p.revenue / 1000).toFixed(0)}k</Typography>
-                <Typography sx={{ fontSize: "0.65rem", color: c.textMuted, transition: t }}>{p.unitsSold} sold</Typography>
+                <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>{p.unitsSold} sold</Typography>
               </Box>
             </Box>
           ))}
         </Box>
-
-        <Box sx={{ bgcolor: c.bgCard, borderRadius: "14px", p: 3, border: `1px solid ${c.borderCard}`, transition: t }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2, transition: t }}>ช่างทอยอดเยี่ยม</Typography>
+        <Box sx={card}>
+          <CardTitle>ช่างทอยอดเยี่ยม</CardTitle>
           {mockTopWeavers.map((w, i) => (
             <Box key={w.id} sx={{ display: "flex", alignItems: "center", gap: 2, py: 1.5, borderBottom: i < mockTopWeavers.length - 1 ? `1px solid ${c.borderCard}` : "none" }}>
               <Typography sx={{ color: c.textMuted, fontWeight: 700, fontSize: "0.9rem", width: 20 }}>{i + 1}</Typography>
               <Avatar sx={{ width: 36, height: 36, bgcolor: i === 0 ? c.gold : c.bgStatBox, fontSize: "0.85rem", fontWeight: 700, color: i === 0 ? c.textOnGold : c.textPrimary }}>{w.avatar}</Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography noWrap sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary, transition: t }}>{w.name}</Typography>
-                <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, transition: t }}>{w.province} • ⭐ {w.rating}</Typography>
+                <Typography noWrap sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary }}>{w.name}</Typography>
+                <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>{w.province} • ⭐ {w.rating}</Typography>
               </Box>
               <Box sx={{ textAlign: "right" }}>
                 <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.gold }}>฿{(w.revenue / 1000).toFixed(0)}k</Typography>
-                <Typography sx={{ fontSize: "0.65rem", color: c.textMuted, transition: t }}>{w.completionRate}% complete</Typography>
+                <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>{w.completionRate}% complete</Typography>
               </Box>
             </Box>
           ))}
+        </Box>
+      </Box>
+
+      {/* ═══════════════════════════════════════════════════════════ */}
+      {/* 🎯 SMART DASHBOARD */}
+      {/* ═══════════════════════════════════════════════════════════ */}
+      <SectionTitle emoji="🎯">Smart Dashboard</SectionTitle>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
+        {/* Predictive Analytics */}
+        <Box sx={card}>
+          <CardTitle>📊 Predictive Analytics</CardTitle>
+          <Box sx={{ p: 2, borderRadius: "12px", background: `linear-gradient(135deg, rgba(197,165,90,0.1), rgba(197,165,90,0.03))`, border: `1px solid ${c.gold}33`, mb: 2 }}>
+            <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mb: 0.5 }}>คาดการณ์รายรับเดือนหน้า</Typography>
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+              <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: c.gold }}>
+                ฿{(mockPredictiveAnalytics.nextMonthRevenue.predicted / 1000000).toFixed(1)}M
+              </Typography>
+              <Chip label={`${mockPredictiveAnalytics.nextMonthRevenue.confidence}% confidence`} size="small"
+                sx={{ bgcolor: c.goldSubtle, color: c.gold, fontWeight: 600, fontSize: "0.65rem", height: 20 }} />
+            </Box>
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: c.textPrimary, mb: 0.5 }}>แนวโน้ม Q1/68</Typography>
+            <Typography sx={{ fontSize: "0.8rem", color: c.textSecondary, lineHeight: 1.6, p: 1.5, borderRadius: "8px", bgcolor: c.bgCardHover }}>
+              {mockPredictiveAnalytics.nextQuarterTrend}
+            </Typography>
+          </Box>
+          <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: c.textPrimary, mb: 1 }}>⚠️ Risk Factors</Typography>
+          {mockPredictiveAnalytics.riskFactors.map((risk, i) => (
+            <Box key={i} sx={{ display: "flex", gap: 1, mb: 0.8 }}>
+              <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>•</Typography>
+              <Typography sx={{ fontSize: "0.75rem", color: c.textSecondary, lineHeight: 1.5 }}>{risk}</Typography>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Recommendations */}
+        <Box sx={card}>
+          <CardTitle>💡 AI Recommendations</CardTitle>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {mockRecommendations.map((rec, i) => {
+              const pr = priorityConfig[rec.priority] || priorityConfig.medium;
+              return (
+                <Box key={i} component={motion.div} {...cardAnim} transition={{ delay: i * 0.06 }}
+                  sx={{ p: 2, borderRadius: "12px", border: `1px solid ${c.borderCard}`, "&:hover": { bgcolor: c.bgCardHover }, transition: t }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.8 }}>
+                    <Typography sx={{ fontSize: "1.1rem" }}>{recTypeIcons[rec.type]}</Typography>
+                    <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, flex: 1 }}>{rec.title}</Typography>
+                    <Chip label={pr.label} size="small" sx={{ bgcolor: pr.bg, color: pr.color, fontWeight: 700, fontSize: "0.65rem", height: 20 }} />
+                  </Box>
+                  <Typography sx={{ fontSize: "0.75rem", color: c.textSecondary, lineHeight: 1.5, pl: 3.5 }}>{rec.reason}</Typography>
+                </Box>
+              );
+            })}
+          </Box>
         </Box>
       </Box>
     </Box>

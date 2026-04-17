@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -43,6 +43,16 @@ export default function AdminProductsPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<AdminProduct[]>([...mockAdminProducts]);
+
+  // Load custom products from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("laya-custom-products") || "[]");
+      if (stored.length > 0) {
+        setProducts([...[...stored].reverse(), ...mockAdminProducts]);
+      }
+    } catch { /* ignore parse errors */ }
+  }, []);
   const [toastMsg, setToastMsg] = useState("");
   const [editProduct, setEditProduct] = useState<AdminProduct | null>(null);
 
@@ -57,35 +67,7 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        {/* Top Bar */}
-        <Box sx={{
-          px: 3, py: 2, display: "flex", alignItems: "center", justifyContent: "space-between",
-          bgcolor: c.bgTopbar, borderBottom: `1px solid ${c.borderCard}`,
-          position: "sticky", top: 0, zIndex: 50, transition: tr,
-        }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton onClick={() => router.push("/admin")} sx={{ color: c.textPrimary }}>
-              <ArrowBackRoundedIcon />
-            </IconButton>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: tr }}>
-              จัดการสินค้า
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Tooltip title={mode === "dark" ? "Light Mode" : "Dark Mode"}>
-              <IconButton onClick={toggleMode} sx={{ color: c.textSecondary, bgcolor: c.goldSubtle, width: 36, height: 36, "&:hover": { bgcolor: c.gold, color: c.textOnGold } }}>
-                {mode === "dark" ? <LightModeRoundedIcon sx={{ fontSize: 20 }} /> : <DarkModeRoundedIcon sx={{ fontSize: 20 }} />}
-              </IconButton>
-            </Tooltip>
-            <IconButton sx={{ color: c.textSecondary }}><NotificationsRoundedIcon sx={{ fontSize: 22 }} /></IconButton>
-            <Avatar sx={{ width: 32, height: 32, bgcolor: c.gold, fontSize: "0.8rem", fontWeight: 700, color: c.textOnGold }}>A</Avatar>
-          </Box>
-        </Box>
-
-        {/* Content */}
-        <Box sx={{ p: { xs: 2, md: 3 }, flex: 1 }}>
+    <Box>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 2 }}>
             <Box>
               <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, transition: tr }}>
@@ -95,7 +77,7 @@ export default function AdminProductsPage() {
                 จัดการสินค้า, สต็อก, และราคาจากหน้านี้
               </Typography>
             </Box>
-            <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => setToastMsg("ฟีเจอร์เพิ่มสินค้าใหม่ — กำลังพัฒนา")}
+            <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => router.push("/admin/products/create")}
               sx={{ bgcolor: c.gold, color: c.textOnGold, borderRadius: "10px", fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: c.goldHover } }}>
               เพิ่มสินค้า
             </Button>
@@ -160,8 +142,7 @@ export default function AdminProductsPage() {
               );
             })}
           </Box>
-        </Box>
-      </Box>
+
 
       {/* Edit Dialog */}
       <Dialog open={!!editProduct} onClose={() => setEditProduct(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>

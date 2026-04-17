@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { ArrowLeft, X, Search, ChevronRight } from "lucide-react";
+import { ArrowLeft, X, Search, ChevronRight, ShoppingBag, Users, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { products, weavers, Product, Weaver } from "@/lib/mock-data";
 
 // ─────────────────────────────────────────────
 // Data: 76 provinces + fabric metadata
@@ -711,15 +712,26 @@ function ThailandGeoMap({
 
       {/* Hover label */}
       {hovered && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-xl text-center pointer-events-none"
-          style={{ background: "rgba(27,42,74,0.92)", backdropFilter: "blur(6px)", boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }}>
-          <p className="text-xs font-bold" style={{ color: "#FFD700" }}>
-            {GEO_NAME_MAP[hovered]?.name || hovered}
-          </p>
-          {GEO_NAME_MAP[hovered] && (
-            <p className="text-[10px]" style={{ color: "#C5A55A" }}>
-              {GEO_NAME_MAP[hovered].fabric}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-2 rounded-xl pointer-events-none min-w-[140px] animate-[slideUp_0.2s_ease]"
+          style={{ background: "rgba(27,42,74,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}>
+          <div className="flex justify-between items-center mb-1">
+            <p className="text-sm font-bold font-playfair" style={{ color: "#FFD700" }}>
+              {GEO_NAME_MAP[hovered]?.name || hovered}
             </p>
+            {/* Mock Trend - Randomize or hardcode for demo */}
+            {(hovered === "Chiang Mai" || hovered === "Sakon Nakhon" || hovered === "Lamphun") && (
+              <span className="text-[10px] font-bold bg-[#8B4513] text-[#FFD700] px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                🔥 Hot
+              </span>
+            )}
+          </div>
+          {GEO_NAME_MAP[hovered] && (
+            <div className="flex gap-2 items-center mt-1 pt-1 border-t border-white/10">
+              <div className="w-6 h-6 rounded bg-gray-500 flex-shrink-0" style={{ backgroundImage: `url(${GEO_NAME_MAP[hovered].image})`, backgroundSize: "cover" }} />
+              <p className="text-[10px] font-semibold truncate flex-1" style={{ color: "#C5A55A" }}>
+                ลาย{GEO_NAME_MAP[hovered].fabric}
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -738,6 +750,129 @@ function ThailandGeoMap({
 }
 
 // ─────────────────────────────────────────────
+// Province Detail Panel (Desktop SidePanel / Mobile BottomSheet)
+// ─────────────────────────────────────────────
+function ProvinceDetailPanel({ province, onClose }: { province: Province; onClose: () => void }) {
+  const region = REGIONS[province.region];
+  const [activeTab, setActiveTab] = useState<"products" | "weavers" | "story">("products");
+  
+  // Data Filtering
+  const provinceProducts = useMemo(() => products.filter(p => p.province === province.name), [province]);
+  const provinceWeavers = useMemo(() => weavers.filter(w => w.province === province.name), [province]);
+
+  const renderProducts = () => (
+    <div className="grid grid-cols-2 gap-3 p-4">
+      {provinceProducts.length > 0 ? provinceProducts.map(p => (
+        <div key={p.id} className="bg-white rounded-xl shadow-sm border border-[#E5DFD6] overflow-hidden flex flex-col">
+          <div className="h-32 bg-gray-100" style={{ backgroundImage: `url(${p.images[0]})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+          <div className="p-3 flex-1 flex flex-col">
+            <p className="text-xs font-bold text-[#1B2A4A] line-clamp-2 mb-1">{p.name}</p>
+            <p className="text-[10px] text-[#8B4513] font-semibold mt-auto mb-2">฿{p.price.toLocaleString()}</p>
+            <button className="w-full py-1.5 bg-[#1B2A4A] text-[#C5A55A] text-[10px] font-bold rounded-lg cursor-pointer hover:bg-[#2A3F6A]">
+              สั่งซื้อ
+            </button>
+          </div>
+        </div>
+      )) : (
+        <div className="col-span-2 text-center py-8">
+          <p className="text-xs text-[#9CA3AF]">ยังไม่มีสินค้าที่จัดจำหน่ายจากจังหวัดนี้</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderWeavers = () => (
+    <div className="p-4 flex flex-col gap-3">
+      {provinceWeavers.length > 0 ? provinceWeavers.map(w => (
+        <div key={w.id} className="bg-white rounded-xl p-3 border border-[#E5DFD6] flex gap-3 items-center">
+          <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0" style={{ backgroundImage: `url(${w.avatar})`, backgroundSize: "cover" }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-[#1B2A4A] truncate">{w.name}</p>
+            <p className="text-[10px] text-[#6B7280] truncate">{w.community}</p>
+            <div className="flex gap-1 mt-1">
+              {w.techniques.slice(0, 2).map(t => (
+                <span key={t} className="text-[9px] px-1.5 py-0.5 bg-[#F0EBE3] text-[#8B4513] rounded-md">{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )) : (
+        <div className="text-center py-8">
+          <p className="text-xs text-[#9CA3AF]">กำลังรวบรวมข้อมูลช่างทอในพื้นที่นี้</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStory = () => (
+    <div className="p-4">
+      {province.story ? (
+        <div className="bg-[#FAF6F0] rounded-2xl p-4 border border-[#E5DFD6]">
+          <p className="text-[11px] font-semibold mb-2 uppercase tracking-wide text-[#9CA3AF]">ประวัติและเรื่องราว</p>
+          <p className="text-sm leading-relaxed text-[#374151] mb-4">{province.story.history}</p>
+          
+          <p className="text-[11px] font-semibold mb-2 uppercase tracking-wide text-[#9CA3AF]">กรรมวิธีการทอ</p>
+          <p className="text-sm leading-relaxed text-[#374151]">{province.story.weaving}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <div className="h-full flex flex-col bg-white">
+      {/* Header with Image Background */}
+      <div className="relative h-40 flex-shrink-0" style={{ backgroundImage: province.image ? `url(${province.image})` : `linear-gradient(135deg, ${province.colors[0]}, ${province.colors[1]})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1B2A4A] to-transparent opacity-90" />
+        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white cursor-pointer hover:bg-white/40">
+          <X size={18} />
+        </button>
+        <div className="absolute bottom-4 left-4 right-4">
+          <span className="inline-block text-[10px] px-2 py-0.5 rounded-full font-bold mb-1" style={{ background: region.color, color: "#FFF" }}>{region.label}</span>
+          <h2 className="text-2xl font-bold text-white font-playfair">{province.name}</h2>
+          <p className="text-sm text-[#C5A55A] font-semibold truncate">ลาย{province.fabric}</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-[#E5DFD6] flex-shrink-0">
+        {[
+          { id: "products", label: "สินค้า", icon: ShoppingBag },
+          { id: "weavers", label: "ช่างทอ", icon: Users },
+          { id: "story", label: "เรื่องราว", icon: BookOpen },
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex-1 py-3 flex justify-center items-center gap-1.5 text-xs font-bold transition-colors ${activeTab === tab.id ? "text-[#1B2A4A] border-b-2 border-[#1B2A4A]" : "text-[#9CA3AF]"}`}
+          >
+            <tab.icon size={14} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content scrollable area */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-[100px] md:pb-0">
+        {activeTab === "products" && renderProducts()}
+        {activeTab === "weavers" && renderWeavers()}
+        {activeTab === "story" && renderStory()}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Live Activity Mock Toast
+// ─────────────────────────────────────────────
+const MOCK_ACTIVITIES = [
+  "🟢 มีคนสั่งซื้อผ้าขิดจากสกลนคร",
+  "🟡 กำลังมีคนดูลายผ้าในเชียงใหม่",
+  "🔵 ช่างทอรุ่นใหม่ในลำพูน เพิ่งลงสินค้าใหม่",
+  "🟢 พวงกุญแจผ้าไหม ลำพูน ขายออกแล้ว",
+  "🔥 ลายนาคราช จ.หนองคาย กำลังมาแรง"
+];
+
+// ─────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────
 export default function MapPage() {
@@ -746,86 +881,146 @@ export default function MapPage() {
   const [regionFilter, setRegionFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [view, setView] = useState<"map" | "list">("map");
+  const [liveToast, setLiveToast] = useState<string | null>(null);
+
+  // Filter effect logic for AI matching
+  const [aiFilter, setAiFilter] = useState<string | null>(null);
 
   const filtered = PROVINCES.filter((p) => {
+    // If AI filter active, simulate matching (e.g. pastel colors matching north)
+    if (aiFilter === "pastel" && p.region !== "north") return false;
+    if (aiFilter === "earth" && p.region !== "northeast") return false;
+
     const matchRegion = regionFilter === "all" || p.region === regionFilter;
     const matchSearch = searchQuery === "" || p.name.includes(searchQuery) || p.fabric.includes(searchQuery);
     return matchRegion && matchSearch;
   });
 
+  // Setup Live Activity loop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.5) {
+        const msg = MOCK_ACTIVITIES[Math.floor(Math.random() * MOCK_ACTIVITIES.length)];
+        setLiveToast(msg);
+        setTimeout(() => setLiveToast(null), 4000);
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <MobileLayout>
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => router.back()}
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: "#F0EBE3" }}>
-          <ArrowLeft size={18} color="#1B2A4A" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold" style={{ color: "#1B2A4A", fontFamily: "var(--font-playfair)" }}>
-            แผนที่ผ้าไทย
-          </h1>
-          <p className="text-xs" style={{ color: "#6B7280" }}>
-            ๗๖ จังหวัด ร้อยดวงใจ สืบสานผ้าเอกลักษณ์ไทย
-          </p>
+      <div className="w-full h-full md:h-[calc(100vh-64px)] flex flex-col md:flex-row overflow-hidden relative">
+        
+        {/* LEFT COLUMN: Map & Filters */}
+        <div className="flex-1 flex flex-col h-full relative z-0">
+          {/* Header */}
+          <div className="flex flex-col gap-3 px-4 pt-4 pb-3 flex-shrink-0 bg-[#FAF6F0] z-10 relative">
+            <div className="flex items-center gap-3">
+              <button onClick={() => router.back()} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-white shadow-sm hover:scale-105 transition-transform">
+                <ArrowLeft size={18} color="#1B2A4A" />
+              </button>
+              <div className="flex-1">
+                <h1 className="text-xl font-bold font-playfair text-[#1B2A4A]">Discovery Map</h1>
+                <p className="text-[10px] text-[#6B7280]">Interactive Commerce & AI Matching</p>
+              </div>
+              <div className="flex rounded-xl overflow-hidden border border-[#E5DFD6]">
+                {(["map","list"] as const).map((v) => (
+                  <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-bold transition-colors ${view === v ? "bg-[#1B2A4A] text-[#C5A55A]" : "bg-white text-[#6B7280]"}`}>
+                    {v === "map" ? "แผนที่" : "รายการ"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Smart Filters (AI Matching / Colors) */}
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              <button 
+                onClick={() => setAiFilter(aiFilter === "pastel" ? null : "pastel")}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${aiFilter === "pastel" ? "border-pink-300 bg-pink-50 text-pink-700" : "border-[#E5DFD6] bg-white text-[#6B7280]"}`}
+              >
+                ✨ สไตล์พาสเทล
+              </button>
+              <button 
+                onClick={() => setAiFilter(aiFilter === "earth" ? null : "earth")}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${aiFilter === "earth" ? "border-amber-300 bg-amber-50 text-amber-700" : "border-[#E5DFD6] bg-white text-[#6B7280]"}`}
+              >
+                🍂 เอิร์ธโทน
+              </button>
+              <div className="w-[1px] h-6 bg-[#E5DFD6] mx-1" />
+              <input 
+                type="text" 
+                placeholder="ค้นหา..." 
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 min-w-[120px] bg-white border border-[#E5DFD6] rounded-full px-3 py-1.5 text-xs outline-none" 
+              />
+            </div>
+          </div>
+
+          {/* Map Container */}
+          {view === "map" && (
+            <div className="flex-1 relative bg-[#F0EBE3] overflow-hidden md:rounded-tr-2xl">
+               {/* Wrapper so Map scales appropriately */}
+               <div className="absolute inset-0">
+                 <ThailandGeoMap regionFilter={regionFilter} onSelect={setSelectedProvince} />
+                 
+                 {/* Map Filter Overrides for AI matching dimming */}
+                 {aiFilter && (
+                   <div className="pointer-events-none absolute inset-0 bg-[#F0EBE3]/40 z-[5] animate-[fadeIn_0.3s_ease]" />
+                 )}
+               </div>
+            </div>
+          )}
+
+          {/* List Container */}
+          {view === "list" && (
+            <div className="flex-1 overflow-y-auto pb-[120px] md:pb-0 px-4">
+              <p className="py-2 text-xs font-semibold text-[#6B7280]">{filtered.length} จังหวัด</p>
+              {filtered.map((p) => (
+                <ProvinceCard key={p.id} province={p} onClick={() => setSelectedProvince(p)} />
+              ))}
+            </div>
+          )}
+
         </div>
-        <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "#E5DFD6" }}>
-          {(["map","list"] as const).map((v) => (
-            <button key={v} onClick={() => setView(v)}
-              className="px-3 py-1.5 text-xs font-medium transition-colors"
-              style={{ background: view === v ? "#1B2A4A" : "#FAF6F0", color: view === v ? "#C5A55A" : "#6B7280" }}>
-              {v === "map" ? "แผนที่" : "รายการ"}
-            </button>
-          ))}
-        </div>
+
+        {/* RIGHT COLUMN: Desktop Side Panel or Mobile Bottom Sheet */}
+        {selectedProvince && (
+          <>
+            {/* Desktop SidePanel */}
+            <div className="hidden md:block w-[400px] border-l border-[#E5DFD6] bg-white z-20 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.05)] animate-[fadeIn_0.2s_ease]">
+              <ProvinceDetailPanel province={selectedProvince} onClose={() => setSelectedProvince(null)} />
+            </div>
+
+            {/* Mobile BottomSheet (using fixed overlay) */}
+            <div className="md:hidden">
+              <div className="fixed inset-0 bg-black/40 z-[1000] animate-[fadeIn_0.2s_ease]" onClick={() => setSelectedProvince(null)} />
+              <div className="fixed bottom-[64px] left-0 right-0 h-[80vh] bg-white z-[1001] rounded-t-2xl overflow-hidden animate-[slideUp_0.3s_ease] shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
+                <ProvinceDetailPanel province={selectedProvince} onClose={() => setSelectedProvince(null)} />
+              </div>
+            </div>
+          </>
+        )}
+
       </div>
 
-      {/* Search */}
-      <div className="px-4 mb-3">
-        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ background: "#F0EBE3" }}>
-          <Search size={16} color="#9CA3AF" />
-          <input type="text" placeholder="ค้นหาจังหวัด หรือชื่อลายผ้า..."
-            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm outline-none" style={{ color: "#1B2A4A" }} />
-          {searchQuery && <button onClick={() => setSearchQuery("")}><X size={14} color="#9CA3AF" /></button>}
-        </div>
-      </div>
-
-      {/* Region filter */}
-      <div className="px-4 mb-4">
-        <RegionFilter selected={regionFilter} onChange={setRegionFilter} />
-      </div>
-
-      {/* Map View */}
-      {view === "map" && (
-        <div className="px-4 mb-4">
-          <ThailandGeoMap regionFilter={regionFilter} onSelect={setSelectedProvince} />
-          <p className="text-xs text-center mt-2" style={{ color: "#9CA3AF" }}>
-            แตะจังหวัดบนแผนที่เพื่อดูลายผ้า
-          </p>
+      {/* Floating Live Activity Toast */}
+      {liveToast && (
+        <div className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-[2000] animate-[slideUp_0.4s_ease] cursor-pointer hover:-translate-y-1 transition-transform"
+             onClick={() => {
+                // If user clicks toast, mock zoom logic
+                setSearchQuery(liveToast.includes("สกลนคร") ? "สกลนคร" : liveToast.includes("เชียงใหม่") ? "เชียงใหม่" : "ลำพูน");
+                setLiveToast(null);
+             }}>
+          <div className="bg-white/95 backdrop-blur-md border border-[#E5DFD6] shadow-xl rounded-2xl p-3 px-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-lg animate-pulse">🛎️</div>
+            <div>
+              <p className="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-wider mb-0.5">Live Activity</p>
+              <p className="text-xs font-semibold text-[#1B2A4A]">{liveToast}</p>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Province list */}
-      <div className={view === "map" ? "mt-2" : ""}>
-        {view === "list" && (
-          <p className="px-4 py-2 text-xs font-semibold" style={{ color: "#6B7280" }}>{filtered.length} จังหวัด</p>
-        )}
-        {(view === "list" ? filtered : []).map((p) => (
-          <ProvinceCard key={p.id} province={p} onClick={() => setSelectedProvince(p)} />
-        ))}
-        {view === "list" && filtered.length === 0 && (
-          <div className="px-4 py-12 text-center">
-            <p className="text-sm" style={{ color: "#9CA3AF" }}>ไม่พบจังหวัดที่ค้นหา</p>
-          </div>
-        )}
-      </div>
-
-      <div style={{ height: 100 }} />
-
-      {/* Bottom Sheet */}
-      {selectedProvince && <ProvinceSheet province={selectedProvince} onClose={() => setSelectedProvince(null)} />}
 
       <style>{`
         @keyframes slideUp { from { transform:translateY(100%);opacity:0 } to { transform:translateY(0);opacity:1 } }

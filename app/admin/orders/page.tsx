@@ -27,7 +27,7 @@ import { mockAdminOrders, AdminOrder } from "@/lib/mock-admin-data";
 
 const statusStyles: Record<string, { label: string; color: string; bgcolor: string }> = {
   pending: { label: "รอยืนยัน", color: "#F59E0B", bgcolor: "rgba(245,158,11,0.15)" },
-  confirmed: { label: "ยืนยันแล้ว", color: "#3B82F6", bgcolor: "rgba(59,130,246,0.15)" },
+  paid: { label: "ยืนยันแล้ว", color: "#3B82F6", bgcolor: "rgba(59,130,246,0.15)" },
   producing: { label: "กำลังผลิต", color: "#8B5CF6", bgcolor: "rgba(139,92,246,0.15)" },
   shipped: { label: "จัดส่งแล้ว", color: "#06B6D4", bgcolor: "rgba(6,182,212,0.15)" },
   delivered: { label: "สำเร็จ", color: "#22C55E", bgcolor: "rgba(34,197,94,0.15)" },
@@ -63,7 +63,7 @@ export default function AdminOrdersPage() {
   };
 
   const pendingCount = orders.filter((o) => o.status === "pending").length;
-  const producingCount = orders.filter((o) => o.status === "producing" || o.status === "confirmed").length;
+  const producingCount = orders.filter((o) => o.status === "producing" || o.status === "paid").length;
   const shippedCount = orders.filter((o) => o.status === "shipped").length;
 
   return (
@@ -129,7 +129,7 @@ export default function AdminOrdersPage() {
           >
             <MenuItem value="all">ทั้งหมด</MenuItem>
             <MenuItem value="pending">รอยืนยัน</MenuItem>
-            <MenuItem value="confirmed">ยืนยันแล้ว</MenuItem>
+            <MenuItem value="paid">ยืนยันแล้ว</MenuItem>
             <MenuItem value="producing">กำลังผลิต</MenuItem>
             <MenuItem value="shipped">จัดส่งแล้ว</MenuItem>
             <MenuItem value="delivered">สำเร็จ</MenuItem>
@@ -161,24 +161,15 @@ export default function AdminOrdersPage() {
                   <Typography sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary, transition: tr }}>{order.customerName}</Typography>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, transition: tr }}>{order.date} • {order.community}</Typography>
                 </Box>
-                <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, transition: tr }}>{order.items}</Typography>
+                <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, transition: tr }}>{order.items.length}</Typography>
                 <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: c.gold }}>฿{order.total.toLocaleString()}</Typography>
                 <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: pay.color }}>{order.paymentStatus}</Typography>
                 <Chip label={sts.label} size="small" sx={{ bgcolor: sts.bgcolor, color: sts.color, fontWeight: 700, fontSize: "0.7rem", height: 24 }} />
                 <Box sx={{ display: "flex", gap: 0.5 }}>
-                  {order.status === "pending" && (
-                    <Button size="small" onClick={() => updateStatus(order.id, "confirmed")} sx={{ fontSize: "0.7rem", color: "#22C55E", borderColor: "rgba(34,197,94,0.3)", textTransform: "none" }} variant="outlined">ยืนยัน</Button>
-                  )}
-                  {order.status === "confirmed" && (
-                    <Button size="small" onClick={() => updateStatus(order.id, "producing")} sx={{ fontSize: "0.7rem", color: "#8B5CF6", borderColor: "rgba(139,92,246,0.3)", textTransform: "none" }} variant="outlined">เริ่มผลิต</Button>
-                  )}
-                  {order.status === "producing" && (
-                    <Button size="small" onClick={() => updateStatus(order.id, "shipped")} startIcon={<LocalShippingRoundedIcon sx={{ fontSize: 14 }} />}
-                      sx={{ fontSize: "0.7rem", color: "#06B6D4", borderColor: "rgba(6,182,212,0.3)", textTransform: "none" }} variant="outlined">จัดส่ง</Button>
-                  )}
-                  {order.status === "shipped" && (
-                    <Button size="small" onClick={() => updateStatus(order.id, "delivered")} sx={{ fontSize: "0.7rem", color: "#22C55E", borderColor: "rgba(34,197,94,0.3)", textTransform: "none" }} variant="outlined">สำเร็จ</Button>
-                  )}
+                  <Button size="small" onClick={() => router.push(`/admin/orders/${order.id}`)}
+                    sx={{ fontSize: "0.75rem", color: c.gold, borderColor: `${c.gold}50`, textTransform: "none", borderRadius: "8px" }} variant="outlined">
+                    รายละเอียด
+                  </Button>
                 </Box>
               </Box>
             );
