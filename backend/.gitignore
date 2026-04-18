@@ -1,2 +1,7 @@
 node_modules/
 dist/
+
+# Environment variables — NEVER commit these
+.env
+.env.*
+.env.local
