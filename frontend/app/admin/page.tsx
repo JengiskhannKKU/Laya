@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -44,7 +44,7 @@ const SectionTitle = ({ children, emoji }: { children: string; emoji: string }) 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2.5, mt: 1 }}>
       <Typography sx={{ fontSize: "1.2rem" }}>{emoji}</Typography>
-      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
         {children}
       </Typography>
     </Box>
@@ -54,7 +54,7 @@ const SectionTitle = ({ children, emoji }: { children: string; emoji: string }) 
 const CardTitle = ({ children }: { children: string }) => {
   const { c } = useAdminTheme();
   return (
-    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
+    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
       {children}
     </Typography>
   );
@@ -100,7 +100,7 @@ function AdminDashboardContent() {
       >
         <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "center", gap: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
           <AutoAwesomeRoundedIcon sx={{ color: c.gold, fontSize: 22 }} />
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>
             🧠 AI Insights วันนี้
           </Typography>
           <Chip label="LIVE" size="small" sx={{ bgcolor: "rgba(34,197,94,0.2)", color: "#22C55E", fontWeight: 700, fontSize: "0.65rem", height: 20, ml: "auto",
@@ -137,7 +137,7 @@ function AdminDashboardContent() {
         {mockKPIs.map((kpi) => (
           <Box key={kpi.label} component={motion.div} {...cardAnim} sx={card}>
             <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, mb: 1 }}>{kpi.label}</Typography>
-            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.4rem", color: c.textPrimary, mb: 0.5 }}>{kpi.value}</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.4rem", color: c.textPrimary, mb: 0.5 }}>{kpi.value}</Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               {kpi.trend === "up" ? <TrendingUpRoundedIcon sx={{ fontSize: 14, color: "#22C55E" }} /> : <TrendingDownRoundedIcon sx={{ fontSize: 14, color: "#EF4444" }} />}
               <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: kpi.trend === "up" ? "#22C55E" : "#EF4444" }}>
@@ -158,7 +158,7 @@ function AdminDashboardContent() {
         ].map((item) => (
           <Box key={item.label} component={motion.div} {...cardAnim} sx={card}>
             <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, mb: 1 }}>{item.label}</Typography>
-            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.3rem", color: item.color }}>{item.value}</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: item.color }}>{item.value}</Typography>
             <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mt: 0.5 }}>{item.sub}</Typography>
           </Box>
         ))}
@@ -332,7 +332,7 @@ function AdminDashboardContent() {
           <Box key={item.label} component={motion.div} {...cardAnim} sx={card}>
             <Typography sx={{ fontSize: "1rem", mb: 0.5 }}>{item.icon}</Typography>
             <Typography sx={{ fontSize: "0.65rem", color: c.textMuted, fontWeight: 600 }}>{item.label}</Typography>
-            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>{item.value}</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>{item.value}</Typography>
           </Box>
         ))}
       </Box>
@@ -612,7 +612,7 @@ function AdminDashboardContent() {
           <Box sx={{ p: 2, borderRadius: "12px", background: `linear-gradient(135deg, rgba(197,165,90,0.1), rgba(197,165,90,0.03))`, border: `1px solid ${c.gold}33`, mb: 2 }}>
             <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mb: 0.5 }}>คาดการณ์รายรับเดือนหน้า</Typography>
             <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-              <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: c.gold }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: c.gold }}>
                 ฿{(mockPredictiveAnalytics.nextMonthRevenue.predicted / 1000000).toFixed(1)}M
               </Typography>
               <Chip label={`${mockPredictiveAnalytics.nextMonthRevenue.confidence}% confidence`} size="small"

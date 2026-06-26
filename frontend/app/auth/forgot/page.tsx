@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
         </IconButton>
         <Typography
           sx={{
-            fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "1.5rem",
             fontWeight: 700,
             color: "#1B2A4A",
@@ -72,21 +72,21 @@ export default function ForgotPasswordPage() {
 
       {/* Form Area */}
       <Box sx={{ px: 3, pt: 2, pb: 4, flex: 1 }}>
-        <Typography variant="h5" sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
+        <Typography variant="h5" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
           ลืมรหัสผ่าน?
         </Typography>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: "#6B7280", fontSize: "0.9rem", mb: 4 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.9rem", mb: 4 }}>
           กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้คุณ
         </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Noto Serif Thai", serif' }}>
+          <Alert severity="error" sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>
             {error}
           </Alert>
         )}
 
         {success ? (
-          <Alert severity="success" sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Noto Serif Thai", serif' }}>
+          <Alert severity="success" sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>
             เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณเรียบร้อยแล้ว กรุณาตรวจสอบกล่องจดหมายของคุณ
           </Alert>
         ) : (
@@ -117,7 +117,7 @@ export default function ForgotPasswordPage() {
                   borderRadius: "12px",
                   fontWeight: 700,
                   fontSize: "1rem",
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   "&:hover": { bgcolor: "#0F1A30" },
                   "&.Mui-disabled": { bgcolor: "rgba(27,42,74,0.5)", color: "#FFFFFF" }
                 }}

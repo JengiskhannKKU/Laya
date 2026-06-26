@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography, TextField, Button, CircularProgress, Chip } from "@mui/material";
@@ -44,10 +44,10 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", pt: 2 }}>
-      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 1 }}>
+      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 1 }}>
         สร้างลายผ้าด้วย Prompt ✍️
       </Typography>
-      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 3 }}>
+      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 3 }}>
         พิมพ์สิ่งที่คุณจินตนาการ เช่น "Thai silk, mudmee pattern, pastel pink floral, Isan style, elegant wedding"
       </Typography>
 
@@ -97,7 +97,7 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
         {isParsing && (
           <motion.div key="parsing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: "center", marginTop: 40 }}>
             <CircularProgress size={32} sx={{ color: "#C5A55A", mb: 2 }} />
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: "#1B2A4A", fontSize: "0.9rem" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#1B2A4A", fontSize: "0.9rem" }}>
               กำลังดึงข้อมูล Pattern, Color, และ Region...
             </Typography>
           </motion.div>
@@ -106,7 +106,7 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
         {parsedData && !isParsing && (
           <motion.div key="parsed" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Box sx={{ mt: 4, bgcolor: "#FFFFFF", p: 3, borderRadius: 4, border: "1px solid #E5DFD6" }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, color: "#1B2A4A", mb: 2 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", mb: 2 }}>
                 🎯 AI เข้าใจความต้องการของคุณดังนี้:
               </Typography>
               

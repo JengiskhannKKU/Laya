@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -112,7 +112,7 @@ export default function SettingsPage() {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
           ⚙️ Settings
         </Typography>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
@@ -146,7 +146,7 @@ export default function SettingsPage() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {/* Platform Info */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                     🏢 Platform Information
                   </Typography>
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -159,7 +159,7 @@ export default function SettingsPage() {
 
                 {/* Notification Settings */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                     🔔 Notification Settings
                   </Typography>
                   {[
@@ -183,7 +183,7 @@ export default function SettingsPage() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {/* Maintenance Mode */}
                 <Box sx={{ ...card, ...(sys.maintenanceMode && { borderColor: "#EF4444", boxShadow: "0 0 20px rgba(239,68,68,0.15)" }) }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                     🔧 Maintenance Mode
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, borderRadius: "10px", bgcolor: sys.maintenanceMode ? "rgba(239,68,68,0.1)" : c.bgStatBox, border: `1px solid ${sys.maintenanceMode ? "#EF444440" : c.borderCard}` }}>
@@ -202,7 +202,7 @@ export default function SettingsPage() {
 
                 {/* Security */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                     🔒 Security
                   </Typography>
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
 
                 {/* Backup */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                     💾 Backup
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, borderRadius: "10px", bgcolor: c.bgStatBox }}>
@@ -265,7 +265,7 @@ export default function SettingsPage() {
               ].map(kpi => (
                 <Box key={kpi.label} sx={{ ...card, textAlign: "center" }}>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600 }}>{kpi.label}</Typography>
-                  <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
                 </Box>
               ))}
             </Box>
@@ -275,7 +275,7 @@ export default function SettingsPage() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {/* Default Commission */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
                     📊 Default Commission Rate
                   </Typography>
                   <TextField fullWidth type="number" value={comm.defaultRate}
@@ -292,7 +292,7 @@ export default function SettingsPage() {
 
                 {/* Category Commission */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
                     📦 Category-specific Commission
                   </Typography>
                   <Box sx={{ borderRadius: "10px", border: `1px solid ${c.borderCard}`, overflow: "hidden" }}>
@@ -328,7 +328,7 @@ export default function SettingsPage() {
 
                 {/* Weaver Tier Commission */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
                     🧑‍🌾 Weaver Tier Commission
                   </Typography>
                   <Box sx={{ borderRadius: "10px", border: `1px solid ${c.borderCard}`, overflow: "hidden" }}>
@@ -356,7 +356,7 @@ export default function SettingsPage() {
 
                 {/* Withdrawal Fee */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
                     💳 Withdrawal Fee
                   </Typography>
                   <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
@@ -376,7 +376,7 @@ export default function SettingsPage() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {/* Live Preview Card */}
                 <Box sx={{ ...card, background: `linear-gradient(135deg, ${c.bgCard}, rgba(197,165,90,0.08))`, border: `1px solid ${c.gold}33`, position: "sticky", top: 80 }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.gold, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.gold, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
                     💡 Live Calculator
                   </Typography>
                   <TextField fullWidth type="number" label="ราคาสินค้า (฿)" value={previewPrice} onChange={e => setPreviewPrice(e.target.value)}
@@ -412,7 +412,7 @@ export default function SettingsPage() {
                 <Box sx={card}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                     <HistoryRoundedIcon sx={{ fontSize: 18, color: c.gold }} />
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary }}>Version History</Typography>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary }}>Version History</Typography>
                   </Box>
                   {mockSettingsAuditLog.map(log => (
                     <Box key={log.id} sx={{ py: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
@@ -457,7 +457,7 @@ export default function SettingsPage() {
           <Box sx={{ width: 40, height: 40, borderRadius: "10px", bgcolor: "rgba(239,68,68,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <WarningAmberRoundedIcon sx={{ color: "#EF4444", fontSize: 22 }} />
           </Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem" }}>เปิด Maintenance Mode?</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem" }}>เปิด Maintenance Mode?</Typography>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>
@@ -480,7 +480,7 @@ export default function SettingsPage() {
           <Box sx={{ width: 40, height: 40, borderRadius: "10px", bgcolor: c.goldSubtle, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Typography sx={{ fontSize: "1.2rem" }}>💸</Typography>
           </Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem" }}>ยืนยันการเปลี่ยนแปลงค่าคอมมิชชัน?</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem" }}>ยืนยันการเปลี่ยนแปลงค่าคอมมิชชัน?</Typography>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -48,7 +48,7 @@ export default function TraceabilityView({ product, onBack, onViewCertificate }:
         <IconButton onClick={onBack} sx={{ color: "#1B2A4A" }}>
           <ArrowBackIosNewRoundedIcon />
         </IconButton>
-        <Typography sx={{ fontWeight: 700, fontSize: "1.1rem", fontFamily: '"Noto Serif Thai", serif', color: "#1B2A4A" }}>
+        <Typography sx={{ fontWeight: 700, fontSize: "1.1rem", fontFamily: '"Kanit", sans-serif', color: "#1B2A4A" }}>
           เรื่องราวของผืนผ้า
         </Typography>
         <IconButton sx={{ color: "#1B2A4A" }}>
@@ -73,7 +73,7 @@ export default function TraceabilityView({ product, onBack, onViewCertificate }:
           </svg>
         </Box>
         
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.4rem", mb: 0.5, color: "#1B2A4A" }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.4rem", mb: 0.5, color: "#1B2A4A" }}>
           {product.name}
         </Typography>
         <Typography sx={{ fontSize: "0.85rem", color: "rgba(27,42,74,0.6)", mb: 2 }}>

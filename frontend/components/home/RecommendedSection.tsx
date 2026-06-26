@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -33,7 +33,7 @@ export default function RecommendedSection() {
         <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
               fontSize: "1.1rem",
               color: "#1B2A4A",
@@ -61,7 +61,7 @@ export default function RecommendedSection() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.75rem",
                 fontWeight: 600,
               }}
@@ -147,7 +147,7 @@ export default function RecommendedSection() {
                 >
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontWeight: 700,
                       fontSize: "0.7rem",
                       color: "#1B2A4A",
@@ -170,7 +170,7 @@ export default function RecommendedSection() {
                       borderRadius: "6px",
                       fontSize: "0.55rem",
                       fontWeight: 700,
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       letterSpacing: 0.5,
                     }}
                   >
@@ -197,7 +197,7 @@ export default function RecommendedSection() {
               </Box>
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 600,
                   fontSize: "0.82rem",
                   color: "#1B2A4A",
@@ -220,7 +220,7 @@ export default function RecommendedSection() {
               >
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontWeight: 400,
                     fontSize: "0.68rem",
                     color: "#6B7280",
@@ -240,7 +240,7 @@ export default function RecommendedSection() {
                   />
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontSize: "0.65rem",
                       color: "#6B7280",
                       fontWeight: 500,

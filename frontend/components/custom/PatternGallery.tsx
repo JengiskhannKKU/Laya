@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography, TextField, InputAdornment, Checkbox, IconButton, Button } from "@mui/material";
@@ -101,7 +101,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
           fullWidth
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchRoundedIcon sx={{ color: "#9CA3AF" }} /></InputAdornment>,
-            sx: { borderRadius: 6, bgcolor: "#FFFFFF", fontFamily: '"Noto Serif Thai", serif' }
+            sx: { borderRadius: 6, bgcolor: "#FFFFFF", fontFamily: '"Kanit", sans-serif' }
           }}
         />
       </Box>
@@ -136,7 +136,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
               boxShadow: activeCategory === cat.id ? "0 4px 10px rgba(27,42,74,0.2)" : "none",
             }}
           >
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", fontWeight: activeCategory === cat.id ? 600 : 400 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", fontWeight: activeCategory === cat.id ? 600 : 400 }}>
               {cat.id === "all" ? `ทั้งหมด (${PATTERN_DATA.length})` : cat.name}
             </Typography>
           </Box>
@@ -209,10 +209,10 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
 
                     {/* Text Area */}
                     <Box sx={{ p: 1.5 }}>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", lineHeight: 1.2 }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", lineHeight: 1.2 }}>
                         {pattern.name}
                       </Typography>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
                         {pattern.province}
                       </Typography>
                     </Box>
@@ -242,10 +242,10 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", mb: 1.5 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
             แสดง {filteredPatterns.length} จาก {PATTERN_DATA.length} ลาย
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A" }}>
             ลายที่เลือก (Blend)
           </Typography>
         </Box>
@@ -268,7 +268,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
                     cursor: "pointer",
                   }}
                 >
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#A68A3A", fontWeight: 600 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#A68A3A", fontWeight: 600 }}>
                     {p}
                   </Typography>
                   <CloseRoundedIcon sx={{ fontSize: 14, color: "#A68A3A" }} />
@@ -287,7 +287,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
                   opacity: 0.6,
                 }}
               >
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#A68A3A" }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#A68A3A" }}>
                   + กดเลือกรูปเพื่อเพิ่มลาย
                 </Typography>
               </Box>
@@ -303,7 +303,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
           sx={{
             bgcolor: "#C5A55A",
             color: "#1B2A4A",
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             py: 1.5,
             borderRadius: 3,

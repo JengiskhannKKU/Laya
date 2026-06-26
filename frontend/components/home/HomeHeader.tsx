@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -33,7 +33,7 @@ export default function HomeHeader() {
       <Box sx={{ textAlign: "center", flex: 1 }}>
         <Typography
           sx={{
-            fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "1.8rem",
             fontWeight: 700,
             color: "#1B2A4A",
@@ -45,7 +45,7 @@ export default function HomeHeader() {
         </Typography>
         <Typography
           sx={{
-            fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "0.5rem",
             color: "#C5A55A",
             letterSpacing: 2,

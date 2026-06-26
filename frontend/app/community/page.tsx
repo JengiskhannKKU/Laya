@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -156,7 +156,7 @@ export default function CommunityFeedPage() {
       <Box sx={{ p: 1.5 }}>
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "0.75rem",
             color: "#1B2A4A",
             lineHeight: 1.4,
@@ -197,7 +197,7 @@ export default function CommunityFeedPage() {
         <Box sx={{ px: 2.5, mb: 2 }}>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
               fontSize: "1.4rem",
               color: "#1B2A4A",
@@ -227,7 +227,7 @@ export default function CommunityFeedPage() {
             <Avatar sx={{ width: 36, height: 36, bgcolor: "#1B2A4A" }}>ย</Avatar>
             <InputBase
               placeholder="แชร์เรื่องราวเกี่ยวกับผ้าของคุณวันนี้..."
-              sx={{ flex: 1, fontSize: "0.85rem", fontFamily: '"Noto Serif Thai", serif' }}
+              sx={{ flex: 1, fontSize: "0.85rem", fontFamily: '"Kanit", sans-serif' }}
             />
             <IconButton size="small" sx={{ color: "#4CAF50", bgcolor: "rgba(76, 175, 80, 0.1)" }}>
               <ImageOutlinedIcon fontSize="small" />

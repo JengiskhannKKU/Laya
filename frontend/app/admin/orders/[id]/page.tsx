@@ -149,7 +149,7 @@ export default function OrderDetailPage() {
           <IconButton onClick={() => router.push("/admin/orders")} sx={{ color: c.textPrimary }}>
             <ArrowBackRoundedIcon />
           </IconButton>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>
             Order {order.id}
           </Typography>
           <Chip label={sts.label} size="small" sx={{ bgcolor: sts.bgcolor, color: sts.color, fontWeight: 700, fontSize: "0.75rem", height: 26, ml: 2 }} />
@@ -166,7 +166,7 @@ export default function OrderDetailPage() {
           <Box sx={card}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
               <Inventory2RoundedIcon sx={{ color: c.gold }} />
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
                 Order Items
               </Typography>
             </Box>
@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
             <Box sx={card}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
                 <PersonRoundedIcon sx={{ color: c.gold }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
                   Customer Info
                 </Typography>
               </Box>
@@ -211,7 +211,7 @@ export default function OrderDetailPage() {
             <Box sx={card}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
                 <LocationOnRoundedIcon sx={{ color: c.gold }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
                   Shipping Address
                 </Typography>
               </Box>
@@ -230,7 +230,7 @@ export default function OrderDetailPage() {
           <Box sx={{ ...card, position: "relative" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 4 }}>
               <InfoRoundedIcon sx={{ color: c.gold }} />
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
                 Order Timeline
               </Typography>
             </Box>
@@ -339,7 +339,7 @@ export default function OrderDetailPage() {
           <Box sx={card}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
               <AccountBalanceWalletRoundedIcon sx={{ color: c.gold }} />
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
                 Payment
               </Typography>
             </Box>
@@ -387,7 +387,7 @@ export default function OrderDetailPage() {
           <Box sx={card}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
               <LocalShippingRoundedIcon sx={{ color: c.gold }} />
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
                 Shipping
               </Typography>
             </Box>
@@ -456,7 +456,7 @@ export default function OrderDetailPage() {
 
       {/* Confirm Payment Dialog */}
       <Dialog open={showConfirmPayment} onClose={() => setShowConfirmPayment(false)} PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "14px" }}}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>ยืนยันการชำระเงิน?</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>ยืนยันการชำระเงิน?</DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: "0.9rem", color: c.textSecondary }}>
             คุณได้ตรวจสอบสลิปการโอนเงินแล้ว และยืนยันว่าได้รับยอดเงิน <strong>฿{order.paymentProof?.amount?.toLocaleString()}</strong> เรียบร้อยแล้วใช่หรือไม่?
@@ -470,7 +470,7 @@ export default function OrderDetailPage() {
 
       {/* Add Tracking Modal */}
       <Dialog open={showAddTracking} onClose={() => setShowAddTracking(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "14px", p: 1 }}}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>เพิ่มข้อมูลการจัดส่ง</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>เพิ่มข้อมูลการจัดส่ง</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
           <TextField fullWidth label="บริษัทขนส่ง (Provider)" placeholder="เช่น Kerry, Flash" value={shippingProvider} onChange={e => setShippingProvider(e.target.value)} size="small" 
             sx={{ "& .MuiOutlinedInput-root": { color: c.dialogText, "& fieldset": { borderColor: c.borderInput } }, "& .MuiInputLabel-root": { color: c.textMuted } }} />

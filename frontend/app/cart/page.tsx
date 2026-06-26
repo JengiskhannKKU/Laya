@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
@@ -124,7 +124,7 @@ export default function CartPage() {
           <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
             <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
+          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
             ตะกร้าสินค้า {activeItems.length > 0 ? `(${activeItems.length})` : ""}
           </Typography>
         </Box>
@@ -140,10 +140,10 @@ export default function CartPage() {
           <Box sx={{ width: 100, height: 100, borderRadius: "50%", bgcolor: "#E5DFD6", display: "flex", alignItems: "center", justifyContent: "center", mb: 3 }}>
             <Inventory2OutlinedIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
           </Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
             ตะกร้าว่างเปล่า
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
             ไปเลือกชมสินค้าและลายผ้าสวยๆ จากชุมชนกันเลย
           </Typography>
           <Button
@@ -156,7 +156,7 @@ export default function CartPage() {
               color: "#FFFFFF",
               borderRadius: "24px",
               fontWeight: 700,
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               "&:hover": { bgcolor: "#0F1A30" }
             }}
           >
@@ -173,18 +173,18 @@ export default function CartPage() {
                   <Image src={item.product.images[0]} alt={item.product.name} fill style={{ objectFit: "cover" }} />
                 </Box>
                 <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", lineHeight: 1.3 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", lineHeight: 1.3 }}>
                     {item.product.name}
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.3 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.3 }}>
                     ชุมชน: {item.product.community}
                   </Typography>
                   {item.selectedFormat && (
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>
                       รูปแบบ: {item.selectedFormat}
                     </Typography>
                   )}
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A", mt: "auto" }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A", mt: "auto" }}>
                     ฿{item.product.price.toLocaleString()}
                   </Typography>
                 </Box>
@@ -220,7 +220,7 @@ export default function CartPage() {
           {/* Coupon Section */}
           {activeItems.length > 0 && (
             <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6" }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A", mb: 1.5 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A", mb: 1.5 }}>
                 มีโค้ดส่วนลดหรือไม่?
               </Typography>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -249,7 +249,7 @@ export default function CartPage() {
                     fontWeight: 700,
                     borderColor: "#1B2A4A",
                     color: "#1B2A4A",
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     textTransform: "none",
                     "&:hover": { bgcolor: "rgba(27,42,74,0.05)", borderColor: "#1B2A4A" }
                   }}
@@ -258,7 +258,7 @@ export default function CartPage() {
                 </Button>
               </Box>
               {appliedDiscount > 0 && (
-                <Alert severity="success" sx={{ mt: 1.5, borderRadius: "8px", py: 0, px: 2, fontFamily: '"Noto Serif Thai", serif' }}>
+                <Alert severity="success" sx={{ mt: 1.5, borderRadius: "8px", py: 0, px: 2, fontFamily: '"Kanit", sans-serif' }}>
                   ใช้งานโค้ดแล้ว — ลด ฿{appliedDiscount}
                 </Alert>
               )}
@@ -268,28 +268,28 @@ export default function CartPage() {
           {/* Order Summary */}
           {activeItems.length > 0 && (
             <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 2, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6" }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
                 สรุปคำสั่งซื้อ
               </Typography>
               
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#6B7280" }}>ยอดรวมสินค้า</Typography>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280" }}>ยอดรวมสินค้า</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>
                   ฿{subtotal.toLocaleString()}
                 </Typography>
               </Box>
               
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#6B7280" }}>ค่าจัดส่งโดยประมาณ</Typography>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280" }}>ค่าจัดส่งโดยประมาณ</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>
                   ฿{shippingEstimate}
                 </Typography>
               </Box>
 
               {appliedDiscount > 0 && (
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#05A546" }}>ส่วนลด</Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#05A546", fontWeight: 600 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#05A546" }}>ส่วนลด</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#05A546", fontWeight: 600 }}>
                     -฿{appliedDiscount}
                   </Typography>
                 </Box>
@@ -298,10 +298,10 @@ export default function CartPage() {
               <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
               
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A" }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A" }}>
                   ยอดชำระสุทธิ
                 </Typography>
-                <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.3rem", color: "#C5A55A" }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: "#C5A55A" }}>
                   ฿{total.toLocaleString()}
                 </Typography>
               </Box>
@@ -311,7 +311,7 @@ export default function CartPage() {
           {/* Saved for Later Section */}
           {savedItems.length > 0 && (
             <Box sx={{ mt: 4 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2, px: 1 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2, px: 1 }}>
                 บันทึกไว้ซื้อภายหลัง ({savedItems.length})
               </Typography>
               
@@ -322,10 +322,10 @@ export default function CartPage() {
                       <Image src={item.product.images[0]} alt={item.product.name} fill style={{ objectFit: "cover" }} />
                     </Box>
                     <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A", lineHeight: 1.2 }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A", lineHeight: 1.2 }}>
                         {item.product.name}
                       </Typography>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.85rem", color: "#C5A55A", mt: 0.5 }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#C5A55A", mt: 0.5 }}>
                         ฿{item.product.price.toLocaleString()}
                       </Typography>
                     </Box>
@@ -335,14 +335,14 @@ export default function CartPage() {
                     <Button
                       size="small"
                       onClick={() => setItemToDelete(item.id)}
-                      sx={{ color: "#9CA3AF", fontSize: "0.75rem", fontFamily: '"Noto Serif Thai", serif', textTransform: "none" }}
+                      sx={{ color: "#9CA3AF", fontSize: "0.75rem", fontFamily: '"Kanit", sans-serif', textTransform: "none" }}
                     >
                       ลบออก
                     </Button>
                     <Button
                       size="small"
                       onClick={() => toggleSavedState(item.id, item.savedForLater)}
-                      sx={{ color: "#1B2A4A", fontSize: "0.75rem", fontWeight: 600, fontFamily: '"Noto Serif Thai", serif', textTransform: "none" }}
+                      sx={{ color: "#1B2A4A", fontSize: "0.75rem", fontWeight: 600, fontFamily: '"Kanit", sans-serif', textTransform: "none" }}
                     >
                       ย้ายกลับไปตะกร้า
                     </Button>
@@ -355,7 +355,7 @@ export default function CartPage() {
           {/* Continue Shopping Link if needed */}
           <Box sx={{ textAlign: "center", mt: 2 }}>
             <Link href="/community" style={{ textDecoration: "none" }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#C5A55A", fontWeight: 600, "&:hover": { textDecoration: "underline" }}}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#C5A55A", fontWeight: 600, "&:hover": { textDecoration: "underline" }}}>
                 ช้อปปิ้งต่อ
               </Typography>
             </Link>
@@ -391,7 +391,7 @@ export default function CartPage() {
               borderRadius: "14px",
               fontWeight: 700,
               fontSize: "1rem",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               "&:hover": { bgcolor: "#0F1A30" }
             }}
           >
@@ -402,19 +402,19 @@ export default function CartPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!itemToDelete} onClose={() => setItemToDelete(null)} PaperProps={{ sx: { borderRadius: "16px", p: 1 } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, color: "#1B2A4A", pb: 1 }}>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", pb: 1 }}>
           ยืนยันการลบ
         </DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ fontFamily: '"Noto Serif Thai", serif', color: "#6B7280", fontSize: "0.9rem" }}>
+          <DialogContentText sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.9rem" }}>
             คุณต้องการนำสินค้านี้ออกจากตะกร้าใช่หรือไม่?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setItemToDelete(null)} sx={{ color: "#6B7280", fontFamily: '"Noto Serif Thai", serif', fontWeight: 600 }}>
+          <Button onClick={() => setItemToDelete(null)} sx={{ color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
             ยกเลิก
           </Button>
-          <Button onClick={removeItem} sx={{ color: "#D32F2F", fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }} autoFocus>
+          <Button onClick={removeItem} sx={{ color: "#D32F2F", fontFamily: '"Kanit", sans-serif', fontWeight: 700 }} autoFocus>
             ลบสินค้า
           </Button>
         </DialogActions>

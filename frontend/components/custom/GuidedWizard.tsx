@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography, Button, LinearProgress, Slider, Chip, Stack } from "@mui/material";
@@ -136,7 +136,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
       case 1: // Dye Type Selection (New)
         return (
           <motion.div key="step-dye" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               ประเภทการย้อม (Dye Type)
             </Typography>
             
@@ -214,7 +214,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
         return (
           <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
                 สีที่ช่างมีพร้อมทอ ({WEAVER_COLORS.length} สี)
               </Typography>
               <Chip 
@@ -267,7 +267,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                         />
                       )}
                     </Box>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.7rem", color: isSelected ? "#1B2A4A" : "#6B7280", fontWeight: isSelected ? 600 : 400, textAlign: "center" }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", color: isSelected ? "#1B2A4A" : "#6B7280", fontWeight: isSelected ? 600 : 400, textAlign: "center" }}>
                       {color.name}
                     </Typography>
                   </Box>
@@ -277,14 +277,14 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
 
             {/* Disclaimer */}
             <Box sx={{ bgcolor: "#FDF8EF", border: "1px solid #E5DFD6", borderRadius: 3, p: 2, mb: 2 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#8B5A2B" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#8B5A2B" }}>
                 <b>สีจากธรรมชาติ</b> — สีที่เห็นอาจต่างจากสีจริงเล็กน้อย ขึ้นอยู่กับล็อตการย้อมและวัตถุดิบตามฤดูกาล
               </Typography>
             </Box>
 
             {/* Selection Summary */}
             <Box sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: 3, p: 2 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 1 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 1 }}>
                 สีที่เลือก ({(patternData.colors || []).length} สี)
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -296,7 +296,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                     )
                   })}
                 </Box>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 600, ml: 1 }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 600, ml: 1 }}>
                   {(patternData.colors || []).join(" + ")}
                 </Typography>
               </Box>
@@ -307,7 +307,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
       case 3: // Weave Type
         return (
           <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               เทคนิคการทอ (Weave Type)
             </Typography>
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gridTemplateRows: { xs: "1fr 1fr", md: "1fr" }, gap: 1.5, flex: 1, minHeight: { xs: 350, md: 200 }, mb: 2 }}>
@@ -349,7 +349,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                         zIndex: 2,
                         p: 1.5,
                         width: "100%",
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         color: "#FFFFFF",
                         fontWeight: 600,
                         fontSize: "0.85rem",
@@ -368,7 +368,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
       case 4: // Region
         return (
           <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               สไตล์การทอผ้าไทย
             </Typography>
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gridTemplateRows: { xs: "1fr 1fr", md: "1fr" }, gap: 1.5, flex: 1, minHeight: { xs: 280, md: 160 }, mb: 2 }}>
@@ -409,7 +409,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                         zIndex: 2, 
                         p: 1.5, 
                         width: "100%", 
-                        fontFamily: '"Noto Serif Thai", serif', 
+                        fontFamily: '"Kanit", sans-serif', 
                         color: "#FFFFFF", 
                         fontWeight: 600, 
                         fontSize: "0.85rem",
@@ -428,7 +428,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
       case 5: // Complexity Selection
         return (
           <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 3 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 3 }}>
               ระดับความซับซ้อนของลวดลาย
             </Typography>
             
@@ -470,7 +470,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                     {patternData.complexity === opt.value && <CheckRoundedIcon sx={{ color: "white", fontSize: 16 }} />}
                   </Box>
                   <Typography sx={{ 
-                    fontFamily: '"Noto Serif Thai", serif', 
+                    fontFamily: '"Kanit", sans-serif', 
                     fontWeight: patternData.complexity === opt.value ? 700 : 400,
                     color: "#1B2A4A",
                     fontSize: "0.95rem"
@@ -486,7 +486,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
       case 6: // Mood
         return (
           <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2 }}>
               อารมณ์ / การใช้งาน
             </Typography>
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gap: 1.5, flex: 1, overflowY: "auto", pb: 2, px: 0.5, mx: -0.5, mb: 2 }}>
@@ -525,7 +525,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                         zIndex: 2, 
                         p: 1.5, 
                         width: "100%", 
-                        fontFamily: '"Noto Serif Thai", serif', 
+                        fontFamily: '"Kanit", sans-serif', 
                         color: "#FFFFFF", 
                         fontWeight: 600, 
                         fontSize: "0.85rem",
@@ -544,7 +544,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
       case 7: // Summary
         return (
           <motion.div key="step7" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 3 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 3 }}>
               🧠 สรุปแบบลายผ้าของคุณ
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2, bgcolor: "#FFFFFF", p: 3, borderRadius: 4, border: "1px solid #E5DFD6" }}>

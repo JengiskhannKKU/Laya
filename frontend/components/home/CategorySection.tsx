@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -58,7 +58,7 @@ export default function CategorySection() {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1.1rem",
             color: "#333",
@@ -141,7 +141,7 @@ export default function CategorySection() {
                 </Box>
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontWeight: 500,
                     fontSize: "0.75rem",
                     color: "#555",

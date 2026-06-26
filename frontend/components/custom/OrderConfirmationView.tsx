@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography, Avatar, TextField, Button, Divider } from "@mui/material";
@@ -79,7 +79,7 @@ export default function OrderConfirmationView({ patternData, selectedWeaver, onC
             bgcolor: "#FFFFFF",
             "& .MuiOutlinedInput-root": {
               borderRadius: "16px",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.85rem",
               "& fieldset": { borderColor: "#E5DFD6" },
               "&.Mui-focused fieldset": { borderColor: "#1B2A4A" }

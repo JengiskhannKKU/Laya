@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -73,7 +73,7 @@ export default function ProfilePage() {
               width: 64,
               height: 64,
               bgcolor: "#1B2A4A",
-              fontFamily: '"Playfair Display", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "1.5rem",
               fontWeight: 700,
             }}
@@ -90,7 +90,7 @@ export default function ProfilePage() {
             >
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 700,
                   fontSize: "1.1rem",
                   color: "#1B2A4A",
@@ -104,7 +104,7 @@ export default function ProfilePage() {
             </Box>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.8rem",
                 color: "#6B7280",
               }}
@@ -148,7 +148,7 @@ export default function ProfilePage() {
             >
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 700,
                   fontSize: "1.4rem",
                   color: "#C5A55A",
@@ -158,7 +158,7 @@ export default function ProfilePage() {
               </Typography>
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.7rem",
                   color: "#6B7280",
                 }}
@@ -201,7 +201,7 @@ export default function ProfilePage() {
                   <Box sx={{ flex: 1 }}>
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.9rem",
                         color: "#1B2A4A",
                         fontWeight: 500,
@@ -212,7 +212,7 @@ export default function ProfilePage() {
                     {item.subtitle && (
                       <Typography
                         sx={{
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                           fontSize: "0.7rem",
                           color: "#9CA3AF",
                         }}
@@ -256,7 +256,7 @@ export default function ProfilePage() {
           <LogoutRoundedIcon sx={{ fontSize: 18, color: "#EF4444" }} />
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.9rem",
               color: "#EF4444",
               fontWeight: 500,

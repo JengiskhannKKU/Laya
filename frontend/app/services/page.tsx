@@ -1,4 +1,4 @@
-import MobileLayout from "@/components/layout/MobileLayout";
+﻿import MobileLayout from "@/components/layout/MobileLayout";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
@@ -10,7 +10,7 @@ export default function ServicesPage() {
         <Typography 
           variant="h5" 
           sx={{ 
-            fontFamily: '"Noto Serif Thai", serif', 
+            fontFamily: '"Kanit", sans-serif', 
             fontWeight: 700, 
             color: "#1B2A4A",
             textAlign: 'center',
@@ -36,10 +36,10 @@ export default function ServicesPage() {
               '&:active': { transform: 'scale(0.98)' }
             }}
           >
-            <Typography variant="h6" sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600 }}>
+            <Typography variant="h6" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
               สั่งตัด
             </Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: '0.85rem', mt: 1, opacity: 0.8, textAlign: 'center' }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: '0.85rem', mt: 1, opacity: 0.8, textAlign: 'center' }}>
               ออกแบบและสั่งตัดชุดจากผ้าที่คุณเลือก
             </Typography>
           </Box>
@@ -61,10 +61,10 @@ export default function ServicesPage() {
               '&:active': { transform: 'scale(0.98)' }
             }}
           >
-            <Typography variant="h6" sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>
+            <Typography variant="h6" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>
               สั่งทอผ้า
             </Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: '0.85rem', mt: 1, opacity: 0.8, textAlign: 'center' }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: '0.85rem', mt: 1, opacity: 0.8, textAlign: 'center' }}>
               ออกแบบลายผ้าและสั่งทอกับชุมชนโดยตรง
             </Typography>
           </Box>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -44,7 +44,7 @@ export default function DigitalCertificateView({ product, onBack }: DigitalCerti
         <IconButton onClick={onBack} sx={{ color: "#1B2A4A" }}>
           <ArrowBackIosNewRoundedIcon />
         </IconButton>
-        <Typography sx={{ flex: 1, fontWeight: 700, fontSize: "1.1rem", textAlign: "center", mr: 4, color: "#1B2A4A", fontFamily: '"Noto Serif Thai", serif' }}>
+        <Typography sx={{ flex: 1, fontWeight: 700, fontSize: "1.1rem", textAlign: "center", mr: 4, color: "#1B2A4A", fontFamily: '"Kanit", sans-serif' }}>
           ใบรับรองดิจิทัล
         </Typography>
       </Box>
@@ -86,7 +86,7 @@ export default function DigitalCertificateView({ product, onBack }: DigitalCerti
           </Typography>
 
           {/* Product Info */}
-          <Typography sx={{ mt: 2, fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A", textAlign: "center" }}>
+          <Typography sx={{ mt: 2, fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A", textAlign: "center" }}>
             {product.name}
           </Typography>
           <Typography sx={{ fontSize: "0.8rem", color: "#D8BC82", fontWeight: 700, mt: 0.5 }}>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -32,6 +32,8 @@ export default function MissionSection() {
           src="/thai.jpg"
           alt="Thai Silk Heritage"
           fill
+          priority
+          loading="eager"
           style={{ objectFit: "cover", filter: "brightness(0.55)" }}
         />
         
@@ -81,7 +83,7 @@ export default function MissionSection() {
 
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
               fontSize: "1.25rem",
               color: "#FFFFFF",

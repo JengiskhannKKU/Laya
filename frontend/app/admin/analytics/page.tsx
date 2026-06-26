@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -38,7 +38,7 @@ type AnalyticsTab = "sales" | "trends" | "insights";
 const CardTitle = ({ children, emoji }: { children: string; emoji?: string }) => {
   const { c } = useAdminTheme();
   return (
-    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
       {emoji && <span>{emoji}</span>}{children}
     </Typography>
   );
@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
           📊 Analytics
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
               {salesKPIs.map((kpi) => (
                 <Box key={kpi.label} component={motion.div} {...cardAnim} sx={card}>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, mb: 1 }}>{kpi.label}</Typography>
-                  <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.5rem", color: c.textPrimary }}>{kpi.value}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.5rem", color: c.textPrimary }}>{kpi.value}</Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
                     <TrendingUpRoundedIcon sx={{ fontSize: 14, color: "#22C55E" }} />
                     <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: "#22C55E" }}>+{kpi.change}%</Typography>
@@ -276,7 +276,7 @@ export default function AnalyticsPage() {
               }}>
               <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "center", gap: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
                 <Typography sx={{ fontSize: "1rem" }}>🔥</Typography>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>Trending Now</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>Trending Now</Typography>
                 <Chip label="LIVE" size="small" sx={{ bgcolor: "rgba(34,197,94,0.2)", color: "#22C55E", fontWeight: 700, fontSize: "0.65rem", height: 20, ml: "auto",
                   animation: "pulse 2s infinite", "@keyframes pulse": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.6 } },
                 }} />
@@ -383,7 +383,7 @@ export default function AnalyticsPage() {
               }}>
               <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "center", gap: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
                 <AutoAwesomeRoundedIcon sx={{ color: c.gold, fontSize: 22 }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>
                   🧠 AI Insight วันนี้
                 </Typography>
                 <Chip label="LIVE" size="small" sx={{ bgcolor: "rgba(34,197,94,0.2)", color: "#22C55E", fontWeight: 700, fontSize: "0.65rem", height: 20, ml: "auto",
@@ -429,7 +429,7 @@ export default function AnalyticsPage() {
                 <Box sx={{ p: 2, borderRadius: "12px", background: `linear-gradient(135deg, rgba(197,165,90,0.1), rgba(197,165,90,0.03))`, border: `1px solid ${c.gold}33`, mb: 2 }}>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mb: 0.5 }}>คาดการณ์รายรับเดือนหน้า</Typography>
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-                    <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: c.gold }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: c.gold }}>
                       ฿{(mockPredictiveAnalytics.nextMonthRevenue.predicted / 1000000).toFixed(1)}M
                     </Typography>
                     <Chip label={`${mockPredictiveAnalytics.nextMonthRevenue.confidence}% confidence`} size="small"

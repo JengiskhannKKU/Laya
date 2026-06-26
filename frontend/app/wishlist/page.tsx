@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
@@ -74,7 +74,7 @@ export default function WishlistPage() {
           <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
             <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A" }}>
+          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A" }}>
             รายการโปรด
           </Typography>
           <IconButton onClick={handleShare} sx={{ color: "#1B2A4A" }}>
@@ -95,10 +95,10 @@ export default function WishlistPage() {
             <Box sx={{ width: 100, height: 100, borderRadius: "50%", bgcolor: "#E5DFD6", display: "flex", alignItems: "center", justifyContent: "center", mb: 3 }}>
               <FavoriteBorderRoundedIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
             </Box>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
               ยังไม่มีรายการโปรด
             </Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
               กดหัวใจ ❤️ ที่สินค้าที่ชอบเพื่อบันทึกไว้ดูภายหลัง
             </Typography>
             <Button
@@ -106,7 +106,7 @@ export default function WishlistPage() {
               onClick={() => router.push("/community")}
               sx={{
                 py: 1.5, px: 4, bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "24px",
-                fontWeight: 700, fontFamily: '"Noto Serif Thai", serif',
+                fontWeight: 700, fontFamily: '"Kanit", sans-serif',
                 "&:hover": { bgcolor: "#0F1A30" }
               }}
             >
@@ -115,7 +115,7 @@ export default function WishlistPage() {
           </Box>
         ) : (
           <Box sx={{ px: 2, pt: 2, pb: 10 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 2 }}>
               {favoriteProducts.length} รายการ
             </Typography>
 
@@ -168,14 +168,14 @@ export default function WishlistPage() {
 
                     {/* Info */}
                     <Box sx={{ p: 1.5 }}>
-                      <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A", lineHeight: 1.3 }}>
+                      <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A", lineHeight: 1.3 }}>
                         {product.name}
                       </Typography>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.7rem", color: "#6B7280", mt: 0.3 }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", color: "#6B7280", mt: 0.3 }}>
                         {product.community}
                       </Typography>
                       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1 }}>
-                        <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A" }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A" }}>
                           ฿{product.price.toLocaleString()}
                         </Typography>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
@@ -192,7 +192,7 @@ export default function WishlistPage() {
                         sx={{
                           mt: 1, borderRadius: "8px", fontSize: "0.75rem", fontWeight: 600,
                           borderColor: "#1B2A4A", color: "#1B2A4A", textTransform: "none",
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                           "&:hover": { bgcolor: "rgba(27,42,74,0.05)" },
                         }}
                       >

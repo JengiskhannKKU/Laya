@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
@@ -51,7 +51,7 @@ export default function SideNav() {
       >
         <Typography
           sx={{
-            fontFamily: 'var(--font-playfair), "Playfair Display", serif',
+            fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
             fontSize: "1.8rem",
             fontWeight: 700,
             color: "#C5A55A",
@@ -62,7 +62,7 @@ export default function SideNav() {
         </Typography>
         <Typography
           sx={{
-            fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+            fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
             fontSize: "0.7rem",
             color: "rgba(255,255,255,0.5)",
             letterSpacing: 3,
@@ -112,7 +112,7 @@ export default function SideNav() {
               </Box>
               <Typography
                 sx={{
-                  fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+                  fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
                   fontSize: "0.95rem",
                   color: isActive ? "#FFFFFF" : "rgba(255,255,255,0.7)",
                   fontWeight: isActive ? 600 : 400,
@@ -134,7 +134,7 @@ export default function SideNav() {
       >
         <Typography
           sx={{
-            fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+            fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
             fontSize: "0.7rem",
             color: "rgba(255,255,255,0.3)",
             textAlign: "center",

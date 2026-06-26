@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState } from "react";
 
 import Box from "@mui/material/Box";
@@ -51,7 +51,7 @@ function CommunityCard({ community, index }: { community: any, index: number }) 
         <Box sx={{ px: 1.5, py: 1.2 }}>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
               fontSize: "0.82rem",
               color: "#1B2A4A",
@@ -62,7 +62,7 @@ function CommunityCard({ community, index }: { community: any, index: number }) 
           </Typography>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.65rem",
               color: "#9CA3AF",
               mt: 0.2,
@@ -83,7 +83,7 @@ function CommunityCard({ community, index }: { community: any, index: number }) 
             />
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.6rem",
                 color: "#6B7280",
               }}
@@ -120,7 +120,7 @@ export default function CommunitiesSection() {
         <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
               fontSize: "1.1rem",
               color: "#1B2A4A",
@@ -148,7 +148,7 @@ export default function CommunitiesSection() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.75rem",
                 fontWeight: 600,
               }}

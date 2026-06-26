@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -74,11 +74,11 @@ export default function AdminWeaversPage() {
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 3 }}>
           <Box sx={{ bgcolor: c.bgCard, borderRadius: "12px", p: 2.5, border: `1px solid ${c.borderCard}`, transition: tr }}>
             <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, transition: tr }}>ช่างทอที่ Active</Typography>
-            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.8rem", color: "#22C55E" }}>{activeCount}</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.8rem", color: "#22C55E" }}>{activeCount}</Typography>
           </Box>
           <Box sx={{ bgcolor: c.bgCard, borderRadius: "12px", p: 2.5, border: `1px solid ${c.borderCard}`, transition: tr }}>
             <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, transition: tr }}>รอตรวจสอบ KYC</Typography>
-            <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.8rem", color: "#F59E0B" }}>{pendingCount}</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.8rem", color: "#F59E0B" }}>{pendingCount}</Typography>
           </Box>
         </Box>
 
@@ -174,7 +174,7 @@ export default function AdminWeaversPage() {
 
       {/* Weaver Detail Dialog */}
       <Dialog open={!!viewWeaver} onClose={() => setViewWeaver(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>ข้อมูลช่างทอ</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>ข้อมูลช่างทอ</DialogTitle>
         <DialogContent>
           {viewWeaver && (
             <Box>

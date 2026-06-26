@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -78,7 +78,7 @@ export default function AdminOrdersPage() {
           <IconButton onClick={() => router.push("/admin")} sx={{ color: c.textPrimary }}>
             <ArrowBackRoundedIcon />
           </IconButton>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: tr }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: tr }}>
             จัดการคำสั่งซื้อ
           </Typography>
         </Box>
@@ -104,7 +104,7 @@ export default function AdminOrdersPage() {
           ].map((s) => (
             <Box key={s.label} sx={{ bgcolor: c.bgCard, borderRadius: "12px", p: 2, border: `1px solid ${c.borderCard}`, transition: tr }}>
               <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, transition: tr }}>{s.label}</Typography>
-              <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: s.color }}>{s.count}</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: s.color }}>{s.count}</Typography>
             </Box>
           ))}
         </Box>

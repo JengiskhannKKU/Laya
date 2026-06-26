@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -420,7 +420,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
           >
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 1 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 1 }}>
               ระดับความซับซ้อนของลวดลาย
             </Typography>
             <Typography variant="body2" sx={{ color: "#6B7280", mb: 3 }}>

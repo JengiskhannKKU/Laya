@@ -1,4 +1,4 @@
- "use client";
+﻿ "use client";
 
 import { useState, useMemo, useEffect, Suspense } from "react";
 import Box from "@mui/material/Box";
@@ -96,7 +96,7 @@ function OrderListContent() {
         <IconButton onClick={() => router.push("/profile")} sx={{ color: "#1B2A4A" }}>
           <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
         </IconButton>
-        <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
+        <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
           คำสั่งซื้อของฉัน
         </Typography>
       </Box>
@@ -104,16 +104,16 @@ function OrderListContent() {
       {/* Quick Stats */}
       <Box sx={{ display: "flex", px: 2, py: 2, gap: 2, bgcolor: "#FFFFFF", borderBottom: "1px solid #E5DFD6" }}>
         <Box sx={{ flex: 1, textAlign: "center", borderRight: "1px solid #E5DFD6" }}>
-          <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>{total}</Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>ทั้งหมด</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>{total}</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>ทั้งหมด</Typography>
         </Box>
         <Box sx={{ flex: 1, textAlign: "center", borderRight: "1px solid #E5DFD6" }}>
-          <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#D3A14A" }}>{inProgress}</Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>กำลังดำเนินการ</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#D3A14A" }}>{inProgress}</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>กำลังดำเนินการ</Typography>
         </Box>
         <Box sx={{ flex: 1, textAlign: "center" }}>
-          <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#05A546" }}>{completed}</Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>เสร็จสิ้น</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#05A546" }}>{completed}</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>เสร็จสิ้น</Typography>
         </Box>
       </Box>
 
@@ -128,7 +128,7 @@ function OrderListContent() {
           sx={{
             minHeight: 40,
             "& .MuiTab-root": {
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               minHeight: 40,
               textTransform: "none",
               fontWeight: 600,
@@ -154,8 +154,8 @@ function OrderListContent() {
           </Box>
         ) : filteredOrders.length === 0 ? (
           <Box sx={{ py: 10, textAlign: "center" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>ยังไม่มีคำสั่งซื้อในสถานะนี้</Typography>
-            <Button variant="outlined" onClick={() => router.push("/community")} sx={{ mt: 2, borderRadius: "20px", fontFamily: '"Noto Serif Thai", serif' }}>เริ่มช้อปปิ้ง</Button>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>ยังไม่มีคำสั่งซื้อในสถานะนี้</Typography>
+            <Button variant="outlined" onClick={() => router.push("/community")} sx={{ mt: 2, borderRadius: "20px", fontFamily: '"Kanit", sans-serif' }}>เริ่มช้อปปิ้ง</Button>
           </Box>
         ) : (
           filteredOrders.map(order => {
@@ -165,7 +165,7 @@ function OrderListContent() {
             return (
               <Box key={order.id} sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", mb: 2, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6", overflow: "hidden" }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1.5, borderBottom: "1px solid #F3F4F6", bgcolor: "#FAFAFA" }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280" }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>
                     สั่งเมื่อ {date}
                   </Typography>
                   <Typography sx={{ px: 1.5, py: 0.3, borderRadius: "12px", fontSize: "0.75rem", fontWeight: 700, bgcolor: statusMeta.bgcolor, color: statusMeta.color }}>
@@ -181,20 +181,20 @@ function OrderListContent() {
                         <Image src={item.product.images[0]} alt="" fill style={{ objectFit: "cover" }} />
                       </Box>
                       <Box sx={{ flex: 1 }}>
-                        <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
+                        <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
                           {item.product.name}
                         </Typography>
-                        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
                           จำนวน: {item.quantity}
                         </Typography>
-                        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", mt: 0.5 }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", mt: 0.5 }}>
                           ฿{item.priceAtPurchase.toLocaleString()}
                         </Typography>
                       </Box>
                     </Box>
                   ))}
                   {order.items.length > 2 && (
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#9CA3AF", mt: 1, textAlign: "center" }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#9CA3AF", mt: 1, textAlign: "center" }}>
                       ดูอีก {order.items.length - 2} รายการ...
                     </Typography>
                   )}
@@ -204,22 +204,22 @@ function OrderListContent() {
 
                 {/* Bottom Actions */}
                 <Box sx={{ p: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
                     ยอดรวม: <Box component="span" sx={{ fontWeight: 700, color: "#1B2A4A", fontSize: "1rem" }}>฿{order.totalPrice.toLocaleString()}</Box>
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 1 }}>
                     {order.status === "pending" && (
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleCancel(order.id)} sx={{ borderRadius: "8px", fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", minWidth: 80 }}>
+                      <Button size="small" variant="outlined" color="error" onClick={() => handleCancel(order.id)} sx={{ borderRadius: "8px", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", minWidth: 80 }}>
                         ยกเลิกคำสั่งซื้อ
                       </Button>
                     )}
                     {order.status === "delivered" && (
                       <>
-                        <Button size="small" variant="outlined" onClick={() => router.push(`/orders/${order.id}?review=true`)} sx={{ borderRadius: "8px", borderColor: "#C5A55A", color: "#C5A55A", fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem" }}>
+                        <Button size="small" variant="outlined" onClick={() => router.push(`/orders/${order.id}?review=true`)} sx={{ borderRadius: "8px", borderColor: "#C5A55A", color: "#C5A55A", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem" }}>
                           รีวิว
                         </Button>
-                        <Button size="small" variant="contained" onClick={() => handleReorder(order)} sx={{ borderRadius: "8px", bgcolor: "#1B2A4A", color: "#FFFFFF", fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem" }}>
+                        <Button size="small" variant="contained" onClick={() => handleReorder(order)} sx={{ borderRadius: "8px", bgcolor: "#1B2A4A", color: "#FFFFFF", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem" }}>
                           ซื้อซ้ำ
                         </Button>
                       </>

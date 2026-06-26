@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -283,21 +283,21 @@ export default function ProductDetailView({ product }: { product: Product }) {
         {/* Title Block */}
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <Box>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A" }}>
               {product.name}
             </Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#8E601C", mt: 0.5, display: "flex", alignItems: "center" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#8E601C", mt: 0.5, display: "flex", alignItems: "center" }}>
               • ชุมชนหริภุญชัย - ลำพูน
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
               <Rating value={product.rating} precision={0.1} readOnly size="small" sx={{ "& .MuiRating-iconFilled": { color: "#C5A55A" } }} />
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>
                 ({product.rating}) {product.reviewCount} รีวิว
               </Typography>
               {product.soldCount !== undefined && (
                 <>
                   <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mx: 0.5 }}>|</Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>
                     ขายแล้ว {(product.soldCount >= 1000 ? (product.soldCount / 1000).toFixed(1) + "k" : product.soldCount)} ชิ้น
                   </Typography>
                 </>
@@ -315,10 +315,10 @@ export default function ProductDetailView({ product }: { product: Product }) {
 
         {/* Price & Tags */}
         <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1, mb: 2 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.6rem", color: "#1B2A4A", lineHeight: 1 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: "#1B2A4A", lineHeight: 1 }}>
             {product.price.toLocaleString()}
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.3 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.3 }}>
             {product.priceUnit}
           </Typography>
         </Box>
@@ -514,10 +514,10 @@ export default function ProductDetailView({ product }: { product: Product }) {
 
         {/* Story Section */}
         <Box sx={{ mt: 4 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A", mb: 1 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A", mb: 1 }}>
             เรื่องราวของ{product.typeLabel || "ผ้า"}{product.typeLabel === "กระเป๋า" ? "ใบ" : "ผืน"}นี้
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7 }}>
             {product.story}
           </Typography>
           <Typography sx={{ fontSize: "0.8rem", color: "#CBA258", mt: 1, fontWeight: 600, cursor: "pointer" }}>

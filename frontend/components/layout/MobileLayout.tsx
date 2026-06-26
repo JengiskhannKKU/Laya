@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import { useEffect, useState } from "react";
 import { useTheme, useMediaQuery } from "@mui/material";
 import Box from "@mui/material/Box";
 import AppBottomNav from "@/components/layout/BottomNav";
@@ -14,48 +15,42 @@ export default function MobileLayout({
   children: React.ReactNode;
 }) {
   const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  const isDesktopMQ = useMediaQuery(theme.breakpoints.up("md"));
   const { user, openAuthModal } = useAuth();
 
+  // Prevent hydration mismatch: only apply media-query result after mount
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const isDesktop = mounted && isDesktopMQ;
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        bgcolor: "#FAF6F0",
-      }}
-    >
-      {/* Sidebar for desktop */}
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#FAF6F0" }}>
+      {/* Sidebar — only after mount to match server output */}
       {isDesktop && <SideNav />}
 
-      {/* Main content area */}
       <Box
         sx={{
           flex: 1,
-          maxWidth: "100%",
-          mx: "auto",
           width: "100%",
+          maxWidth: "100%",
           position: "relative",
-          boxShadow: isDesktop ? "none" : {
-            xs: "none",
-            sm: "0 0 40px rgba(0,0,0,0.08)",
-          },
+          overflowX: "hidden",
         }}
       >
+        {/* Bottom padding only on mobile */}
         <Box sx={{ pb: isDesktop ? 0 : "80px" }}>{children}</Box>
-        
+
+        {/* Auth promo bar */}
         {!user && (
           <Box
             sx={{
               position: "fixed",
               bottom: isDesktop ? 0 : 64,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "100%",
-              maxWidth: "100%",
+              left: isDesktop ? 240 : 0,
+              right: 0,
               bgcolor: "#1B2A4A",
               color: "#FFFFFF",
-              px: 2.5,
+              px: { xs: 2.5, sm: 4 },
               py: 1.5,
               display: "flex",
               justifyContent: "space-between",
@@ -64,7 +59,13 @@ export default function MobileLayout({
               boxShadow: "0 -4px 12px rgba(27,42,74,0.15)",
             }}
           >
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", fontWeight: 600 }}>
+            <Typography
+              sx={{
+                fontFamily: '"Kanit", sans-serif',
+                fontSize: { xs: "0.82rem", sm: "0.9rem" },
+                fontWeight: 600,
+              }}
+            >
               เข้าสู่ระบบเพื่อรับสิทธิพิเศษ
             </Typography>
             <Button
@@ -81,11 +82,12 @@ export default function MobileLayout({
                 "&:hover": { bgcolor: "#b4954a" },
               }}
             >
-              Login
+              เข้าสู่ระบบ
             </Button>
           </Box>
         )}
 
+        {/* Bottom nav — hidden on desktop */}
         {!isDesktop && <AppBottomNav />}
       </Box>
     </Box>

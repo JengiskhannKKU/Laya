@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography, IconButton } from "@mui/material";
@@ -138,7 +138,7 @@ export default function CustomGenerator() {
           
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
               fontSize: "1.1rem",
               color: "#1B2A4A",

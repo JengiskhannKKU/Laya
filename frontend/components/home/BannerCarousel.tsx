@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Box from "@mui/material/Box";
@@ -88,7 +88,7 @@ export default function BannerCarousel() {
             >
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 700,
                   fontSize: "1.3rem",
                   color: "#FFFFFF",
@@ -100,7 +100,7 @@ export default function BannerCarousel() {
               </Typography>
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 300,
                   fontSize: "0.75rem",
                   color: "rgba(255,255,255,0.8)",

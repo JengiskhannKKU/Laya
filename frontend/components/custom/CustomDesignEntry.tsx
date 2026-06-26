@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography, Button, Fade } from "@mui/material";
@@ -44,7 +44,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Typography
             sx={{
-              fontFamily: 'var(--font-playfair), "Playfair Display", serif',
+              fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
               fontSize: { xs: "1.8rem", sm: "2.2rem" },
               fontWeight: 700,
               color: "#1B2A4A",
@@ -55,7 +55,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
           </Typography>
           <Typography
             sx={{
-              fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+              fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
               fontSize: { xs: "0.9rem", sm: "1rem" },
               color: "#6B7280",
             }}
@@ -110,7 +110,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
               <Box>
                 <Typography
                   sx={{
-                    fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+                    fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
                     fontSize: "1.1rem",
                     fontWeight: 700,
                     color: "#1B2A4A",
@@ -120,7 +120,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
                 </Typography>
                 <Typography
                   sx={{
-                    fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+                    fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
                     fontSize: "0.8rem",
                     color: "#6B7280",
                   }}
@@ -140,7 +140,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
                     borderRadius: 1,
                     fontSize: "0.7rem",
                     color: "#A68A3A",
-                    fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+                    fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
                   }}
                 >
                   {item}
@@ -193,7 +193,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
               <Box>
                 <Typography
                   sx={{
-                    fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+                    fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
                     fontSize: "1.1rem",
                     fontWeight: 700,
                     color: "#1B2A4A",
@@ -203,7 +203,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
                 </Typography>
                 <Typography
                   sx={{
-                    fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+                    fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
                     fontSize: "0.8rem",
                     color: "#6B7280",
                   }}
@@ -223,7 +223,7 @@ export default function CustomDesignEntry({ onSelectMode }: CustomDesignEntryPro
                     borderRadius: 1,
                     fontSize: "0.7rem",
                     color: "#1B2A4A",
-                    fontFamily: 'var(--font-noto-serif-thai), "Noto Serif Thai", serif',
+                    fontFamily: 'var(--font-kanit), "Kanit", sans-serif',
                   }}
                 >
                   {item}

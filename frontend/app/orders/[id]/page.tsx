@@ -79,8 +79,8 @@ export default function OrderDetailPage() {
     return (
       <MobileLayout>
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", bgcolor: "#FAF6F0", minHeight: "100vh", px: 4 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 1 }}>ไม่พบคำสั่งซื้อ</Typography>
-          <Button variant="contained" onClick={() => router.push("/orders")} sx={{ mt: 2, borderRadius: "20px", fontFamily: '"Noto Serif Thai", serif', bgcolor: "#1B2A4A" }}>กลับหน้ารายการ</Button>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 1 }}>ไม่พบคำสั่งซื้อ</Typography>
+          <Button variant="contained" onClick={() => router.push("/orders")} sx={{ mt: 2, borderRadius: "20px", fontFamily: '"Kanit", sans-serif', bgcolor: "#1B2A4A" }}>กลับหน้ารายการ</Button>
         </Box>
       </MobileLayout>
     );
@@ -103,7 +103,7 @@ export default function OrderDetailPage() {
           <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
             <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
+          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
             รายละเอียดคำสั่งซื้อ
           </Typography>
         </Box>
@@ -113,47 +113,47 @@ export default function OrderDetailPage() {
           {/* Order ID & Status Header */}
           <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 2, border: "1px solid #E5DFD6" }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-              <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A" }}>
                 #{order.id.toUpperCase()}
               </Typography>
               <Typography sx={{ px: 1.5, py: 0.3, borderRadius: "12px", fontSize: "0.75rem", fontWeight: 700, bgcolor: statusMeta.bgcolor, color: statusMeta.color }}>
                 {statusMeta.label}
               </Typography>
             </Box>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>
               สั่งซื้อเมื่อ {new Date(order.createdAt).toLocaleString('th-TH')}
             </Typography>
           </Box>
 
           {/* Timeline Tracking */}
           <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2.5, mb: 2, border: "1px solid #E5DFD6" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 2 }}>
               สถานะการดำเนินการ
             </Typography>
 
             {isCancelled ? (
               <Box sx={{ bgcolor: "#FFEBEE", p: 2, borderRadius: "8px", border: "1px dashed #D32F2F" }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#D32F2F", fontWeight: 600, textAlign: "center" }}>ถูกยกเลิกแล้ว</Typography>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280", textAlign: "center", mt: 0.5 }}>กำลังดำเนินการคืนเงินให้ท่านผ่านช่องทางเดิม (ถ้ามี)</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#D32F2F", fontWeight: 600, textAlign: "center" }}>ถูกยกเลิกแล้ว</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280", textAlign: "center", mt: 0.5 }}>กำลังดำเนินการคืนเงินให้ท่านผ่านช่องทางเดิม (ถ้ามี)</Typography>
               </Box>
             ) : (
               <>
                 <Box sx={{ mb: 3 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>ความคืบหน้า</Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#1B2A4A", fontWeight: 700 }}>{Math.round(progressPercent)}%</Typography>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>ความคืบหน้า</Typography>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#1B2A4A", fontWeight: 700 }}>{Math.round(progressPercent)}%</Typography>
                   </Box>
                   <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 6, borderRadius: 3, bgcolor: "#E5DFD6", "& .MuiLinearProgress-bar": { bgcolor: "#1B2A4A", borderRadius: 3 } }} />
                 </Box>
-                <Stepper activeStep={normalizedActiveStep} orientation="vertical" sx={{ "& .MuiStepLabel-label": { fontFamily: '"Noto Serif Thai", serif' }, "& .MuiStepIcon-root.Mui-active": { color: "#C5A55A" }, "& .MuiStepIcon-root.Mui-completed": { color: "#1B2A4A" } }}>
+                <Stepper activeStep={normalizedActiveStep} orientation="vertical" sx={{ "& .MuiStepLabel-label": { fontFamily: '"Kanit", sans-serif' }, "& .MuiStepIcon-root.Mui-active": { color: "#C5A55A" }, "& .MuiStepIcon-root.Mui-completed": { color: "#1B2A4A" } }}>
                   {timelineSteps.map((step, index) => (
                     <Step key={step.key}>
                       <StepLabel>
-                        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: index <= normalizedActiveStep ? "#1B2A4A" : "#9CA3AF", fontWeight: index <= normalizedActiveStep ? 600 : 400 }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: index <= normalizedActiveStep ? "#1B2A4A" : "#9CA3AF", fontWeight: index <= normalizedActiveStep ? 600 : 400 }}>
                           {step.label}
                         </Typography>
                         {index === normalizedActiveStep && order.estimatedDelivery && (
-                          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#C5A55A", mt: 0.2 }}>
+                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#C5A55A", mt: 0.2 }}>
                             คาดว่าจะถึง: {new Date(order.estimatedDelivery).toLocaleDateString('th-TH')}
                           </Typography>
                         )}
@@ -168,19 +168,19 @@ export default function OrderDetailPage() {
           {/* Shipping Info if shipped */}
           {(order.status === "shipped" || order.status === "delivered") && order.trackingNumber && (
             <Box sx={{ bgcolor: "#E8F5E9", borderRadius: "16px", p: 2, mb: 2, border: "1px dashed #05A546" }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#05A546", mb: 1, display: "flex", alignItems: "center" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#05A546", mb: 1, display: "flex", alignItems: "center" }}>
                 <LocalShippingOutlinedIcon sx={{ mr: 1, fontSize: 20 }} /> ข้อมูลจัดส่ง
               </Typography>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Box>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280" }}>ผู้ให้บริการ</Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>{order.courierName}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>ผู้ให้บริการ</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>{order.courierName}</Typography>
                 </Box>
                 <Box sx={{ textAlign: "right" }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280" }}>หมายเลขติดตามพัสดุ</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>หมายเลขติดตามพัสดุ</Typography>
                   <Typography
                     onClick={() => alert(`กำลังนำคุณไปยังเว็บไซต์ ${order.courierName} เพื่อติดตามหมายเลข ${order.trackingNumber}`)}
-                    sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#0066CC", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+                    sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#0066CC", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
                   >
                     {order.trackingNumber}
                   </Typography>
@@ -191,19 +191,19 @@ export default function OrderDetailPage() {
 
           {/* Address */}
           <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 2, border: "1px solid #E5DFD6" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5, display: "flex", alignItems: "center" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5, display: "flex", alignItems: "center" }}>
               <LocationOnOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "#C5A55A" }} /> ที่อยู่สำหรับจัดส่ง
             </Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{order.shippingAddress.recipientName}</Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.2 }}>{order.shippingAddress.phone}</Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{order.shippingAddress.recipientName}</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.2 }}>{order.shippingAddress.phone}</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.2 }}>
               {order.shippingAddress.addressLine1} {order.shippingAddress.addressLine2} {order.shippingAddress.subdistrict} {order.shippingAddress.district} {order.shippingAddress.province} {order.shippingAddress.postalCode}
             </Typography>
           </Box>
 
           {/* Items */}
           <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 2, border: "1px solid #E5DFD6" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 2 }}>
               สินค้าที่สั่งซื้อ ({order.items.length})
             </Typography>
             {order.items.map(item => (
@@ -212,13 +212,13 @@ export default function OrderDetailPage() {
                   <Image src={item.product.images[0]} alt="" fill style={{ objectFit: "cover" }} />
                 </Box>
                 <Box sx={{ flex: 1 }}>
-                  <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
+                  <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
                     {item.product.name}
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
                     จำนวน: {item.quantity}
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", mt: 0.5 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", mt: 0.5 }}>
                     ฿{item.priceAtPurchase.toLocaleString()}
                   </Typography>
                 </Box>
@@ -228,36 +228,36 @@ export default function OrderDetailPage() {
 
           {/* Payment Summary */}
           <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 2, border: "1px solid #E5DFD6" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 2 }}>สรุปข้อมูลการชำระเงิน</Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 2 }}>สรุปข้อมูลการชำระเงิน</Typography>
             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>วิธีชำระเงิน</Typography>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 600 }}>{order.paymentMethod}</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>วิธีชำระเงิน</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 600 }}>{order.paymentMethod}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>สถานะชำระเงิน</Typography>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: order.paymentStatus === 'paid' ? "#05A546" : "#8E601C", fontWeight: 700 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>สถานะชำระเงิน</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: order.paymentStatus === 'paid' ? "#05A546" : "#8E601C", fontWeight: 700 }}>
                 {order.paymentStatus.toUpperCase()}
               </Typography>
             </Box>
             <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>ยอดรวมสินค้า</Typography>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#1B2A4A" }}>฿{order.subtotal.toLocaleString()}</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>ยอดรวมสินค้า</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A" }}>฿{order.subtotal.toLocaleString()}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>ค่าจัดส่ง ({order.shippingMethod.name})</Typography>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#1B2A4A" }}>฿{order.shippingCost.toLocaleString()}</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>ค่าจัดส่ง ({order.shippingMethod.name})</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A" }}>฿{order.shippingCost.toLocaleString()}</Typography>
             </Box>
             {order.discount > 0 && (
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#05A546" }}>ส่วนลด</Typography>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#05A546" }}>-฿{order.discount.toLocaleString()}</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#05A546" }}>ส่วนลด</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#05A546" }}>-฿{order.discount.toLocaleString()}</Typography>
               </Box>
             )}
             <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.95rem", color: "#1B2A4A", fontWeight: 700 }}>ชำระสุทธิ</Typography>
-              <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontSize: "1.3rem", color: "#C5A55A", fontWeight: 700, lineHeight: 1 }}>฿{order.totalPrice.toLocaleString()}</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.95rem", color: "#1B2A4A", fontWeight: 700 }}>ชำระสุทธิ</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.3rem", color: "#C5A55A", fontWeight: 700, lineHeight: 1 }}>฿{order.totalPrice.toLocaleString()}</Typography>
             </Box>
           </Box>
 
@@ -268,17 +268,17 @@ export default function OrderDetailPage() {
               fullWidth
               startIcon={<ChatBubbleOutlineRoundedIcon />}
               onClick={() => alert("ระบบแชทเปิดใน LAYA Messenger")}
-              sx={{ py: 1.2, borderRadius: "12px", borderColor: "#E5DFD6", color: "#1B2A4A", fontFamily: '"Noto Serif Thai", serif', fontWeight: 600 }}
+              sx={{ py: 1.2, borderRadius: "12px", borderColor: "#E5DFD6", color: "#1B2A4A", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}
             >
               ติดต่อช่างทอผู้ขาย
             </Button>
             
             {order.status === "pending" || order.status === "confirmed" ? (
-              <Button onClick={() => alert("ระบบกำลังประมวลผลการขอยกเลิก...")} sx={{ py: 1.2, color: "#D32F2F", fontFamily: '"Noto Serif Thai", serif', fontWeight: 600 }}>
+              <Button onClick={() => alert("ระบบกำลังประมวลผลการขอยกเลิก...")} sx={{ py: 1.2, color: "#D32F2F", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
                 ขอยกเลิกคำสั่งซื้อ
               </Button>
              ) : order.status === "delivered" ? (
-              <Button onClick={() => alert("การรส่งคืนเปิดเฉพาะกรณีมีปัญหาคุณภาพสินค้า")} sx={{ py: 1.2, color: "#6B7280", fontFamily: '"Noto Serif Thai", serif', fontWeight: 600 }}>
+              <Button onClick={() => alert("การรส่งคืนเปิดเฉพาะกรณีมีปัญหาคุณภาพสินค้า")} sx={{ py: 1.2, color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
                 ขอคืนสินค้า/ขอคืนเงิน (ภายใน 7 วัน)
               </Button>
             ) : null}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -172,7 +172,7 @@ export default function UsersManagementPage() {
     <Box>
       {/* ── Header + Tabs ── */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
           👥 User Management
         </Typography>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
@@ -282,7 +282,7 @@ export default function UsersManagementPage() {
               ].map(s => (
                 <Box key={s.label} sx={{ ...card, p: 2, textAlign: "center" }}>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600 }}>{s.label}</Typography>
-                  <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: s.color }}>{s.value}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: s.color }}>{s.value}</Typography>
                 </Box>
               ))}
             </Box>
@@ -508,7 +508,7 @@ export default function UsersManagementPage() {
             <Box sx={card}>
               <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${c.borderCard}`, display: "flex", alignItems: "center", gap: 1 }}>
                 <HistoryRoundedIcon sx={{ fontSize: 18, color: c.gold }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary }}>
                   Activity Log
                 </Typography>
               </Box>
@@ -537,7 +537,7 @@ export default function UsersManagementPage() {
 
       {/* Weaver Detail Dialog */}
       <Dialog open={!!viewWeaver} onClose={() => setViewWeaver(null)} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           ข้อมูลช่างทอ
           <Chip label={viewWeaver ? (weaverStatusStyles[viewWeaver.status]?.label || "") : ""} size="small"
             sx={{ bgcolor: viewWeaver ? weaverStatusStyles[viewWeaver.status]?.bgcolor : "", color: viewWeaver ? weaverStatusStyles[viewWeaver.status]?.color : "", fontWeight: 700 }} />
@@ -613,7 +613,7 @@ export default function UsersManagementPage() {
           <Box sx={{ width: 40, height: 40, borderRadius: "10px", bgcolor: "rgba(239,68,68,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <BlockRoundedIcon sx={{ color: "#EF4444", fontSize: 22 }} />
           </Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem" }}>ระงับบัญชีช่างทอ</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem" }}>ระงับบัญชีช่างทอ</Typography>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, mb: 2 }}>
@@ -637,7 +637,7 @@ export default function UsersManagementPage() {
           <Box sx={{ width: 40, height: 40, borderRadius: "10px", bgcolor: "rgba(239,68,68,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <WarningAmberRoundedIcon sx={{ color: "#EF4444", fontSize: 22 }} />
           </Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem" }}>ปฏิเสธการยืนยันตัวตน</Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem" }}>ปฏิเสธการยืนยันตัวตน</Typography>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, mb: 2 }}>
@@ -657,7 +657,7 @@ export default function UsersManagementPage() {
 
       {/* KYC Preview Dialog */}
       <Dialog open={!!previewKYC} onClose={() => setPreviewKYC(null)} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, display: "flex", justifyContent: "space-between" }}>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", justifyContent: "space-between" }}>
           เอกสาร KYC — {previewKYC?.weaverName}
           <Chip label={previewKYC ? kycStatusStyles[previewKYC.status]?.label : ""} size="small"
             sx={{ bgcolor: previewKYC ? kycStatusStyles[previewKYC.status]?.bgcolor : "", color: previewKYC ? kycStatusStyles[previewKYC.status]?.color : "", fontWeight: 700 }} />
@@ -697,7 +697,7 @@ export default function UsersManagementPage() {
 
       {/* Create Role Dialog */}
       <Dialog open={createRoleDialog} onClose={() => setCreateRoleDialog(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>➕ สร้าง Role ใหม่</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>➕ สร้าง Role ใหม่</DialogTitle>
         <DialogContent>
           <TextField fullWidth label="ชื่อ Role" placeholder="e.g. Community Manager" value={newRoleName} onChange={e => setNewRoleName(e.target.value)}
             sx={{ mb: 2, mt: 1, "& .MuiOutlinedInput-root": { color: c.dialogText, "& fieldset": { borderColor: c.borderInput } }, "& .MuiInputLabel-root": { color: c.textMuted } }} />

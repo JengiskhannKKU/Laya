@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import Box from "@mui/material/Box";
@@ -171,7 +171,7 @@ export default function ModerationPage() {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
           🛡️ Moderation
         </Typography>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
@@ -214,7 +214,7 @@ export default function ModerationPage() {
               ].map(kpi => (
                 <Box key={kpi.label} sx={{ ...card, p: 2, textAlign: "center" }}>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600 }}>{kpi.icon} {kpi.label}</Typography>
-                  <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
                 </Box>
               ))}
             </Box>
@@ -330,7 +330,7 @@ export default function ModerationPage() {
               ].map(kpi => (
                 <Box key={kpi.label} sx={{ ...card, p: 2, textAlign: "center" }}>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600 }}>{kpi.icon} {kpi.label}</Typography>
-                  <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
                 </Box>
               ))}
             </Box>
@@ -441,7 +441,7 @@ export default function ModerationPage() {
 
       {/* Report Detail Dialog */}
       <Dialog open={!!viewReport} onClose={() => setViewReport(null)} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           🚨 Report Detail — {viewReport?.id}
           {viewReport && <Chip label={reportStatusStyles[viewReport.status]?.label} size="small" sx={{ bgcolor: reportStatusStyles[viewReport.status]?.bg, color: reportStatusStyles[viewReport.status]?.color, fontWeight: 700 }} />}
         </DialogTitle>
@@ -541,7 +541,7 @@ export default function ModerationPage() {
           <Box sx={{ width: 40, height: 40, borderRadius: "10px", bgcolor: "rgba(239,68,68,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <WarningAmberRoundedIcon sx={{ color: "#EF4444", fontSize: 22 }} />
           </Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem" }}>
             {confirmDialog.type === "suspend" ? "ยืนยันระงับบัญชี?" : "ยืนยันลบสินค้า?"}
           </Typography>
         </DialogTitle>

@@ -1,20 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Noto_Serif_Thai } from "next/font/google";
+import { Kanit } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import MuiProvider from "@/components/providers/MuiProvider";
 import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
 import "./globals.css";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
-const notoSerifThai = Noto_Serif_Thai({
+const kanit = Kanit({
   subsets: ["thai", "latin"],
   weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-noto-serif-thai",
+  variable: "--font-kanit",
   display: "swap",
 });
 
@@ -56,10 +50,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${playfair.variable} ${notoSerifThai.variable}`} suppressHydrationWarning>
+    <html lang="th" className={kanit.variable} suppressHydrationWarning>
       <body
         style={{
-          fontFamily: "var(--font-noto-serif-thai), 'Playfair Display', serif",
+          fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
           backgroundColor: "#FAF6F0",
           margin: 0,
         }}

@@ -1,5 +1,7 @@
 import { createTheme } from "@mui/material/styles";
 
+const KANIT = '"Kanit", sans-serif';
+
 const theme = createTheme({
   palette: {
     primary: {
@@ -24,69 +26,35 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Noto Serif Thai", "Playfair Display", serif',
-    h1: {
-      fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
-      fontWeight: 700,
-    },
-    h2: {
-      fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
-      fontWeight: 600,
-    },
-    h3: {
-      fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
-      fontWeight: 600,
-    },
-    h4: {
-      fontFamily: '"Noto Serif Thai", "Playfair Display", serif',
-      fontWeight: 700,
-    },
-    h5: {
-      fontFamily: '"Noto Serif Thai", "Playfair Display", serif',
-      fontWeight: 600,
-    },
-    h6: {
-      fontFamily: '"Noto Serif Thai", "Playfair Display", serif',
-      fontWeight: 600,
-    },
-    body1: {
-      fontFamily: '"Noto Serif Thai", "Playfair Display", serif',
-    },
-    body2: {
-      fontFamily: '"Noto Serif Thai", "Playfair Display", serif',
-    },
-    button: {
-      fontFamily: '"Noto Serif Thai", "Playfair Display", serif',
-      fontWeight: 600,
-    },
+    fontFamily: KANIT,
+    h1: { fontFamily: KANIT, fontWeight: 700 },
+    h2: { fontFamily: KANIT, fontWeight: 600 },
+    h3: { fontFamily: KANIT, fontWeight: 600 },
+    h4: { fontFamily: KANIT, fontWeight: 700 },
+    h5: { fontFamily: KANIT, fontWeight: 600 },
+    h6: { fontFamily: KANIT, fontWeight: 600 },
+    body1: { fontFamily: KANIT },
+    body2: { fontFamily: KANIT },
+    button: { fontFamily: KANIT, fontWeight: 600 },
+    caption: { fontFamily: KANIT },
+    overline: { fontFamily: KANIT },
+    subtitle1: { fontFamily: KANIT },
+    subtitle2: { fontFamily: KANIT },
   },
-  shape: {
-    borderRadius: 12,
-  },
+  shape: { borderRadius: 12 },
   components: {
     MuiButton: {
       styleOverrides: {
-        root: {
-          textTransform: "none",
-          borderRadius: 12,
-          fontWeight: 600,
-        },
+        root: { textTransform: "none", borderRadius: 12, fontWeight: 600 },
       },
     },
     MuiCard: {
       styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-        },
+        root: { borderRadius: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" },
       },
     },
     MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 20,
-        },
-      },
+      styleOverrides: { root: { borderRadius: 20 } },
     },
   },
 });

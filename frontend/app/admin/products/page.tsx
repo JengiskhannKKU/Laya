@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
@@ -70,7 +70,7 @@ export default function AdminProductsPage() {
     <Box>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 2 }}>
             <Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, transition: tr }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, transition: tr }}>
                 สินค้าทั้งหมด ({products.length})
               </Typography>
               <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, transition: tr }}>
@@ -146,7 +146,7 @@ export default function AdminProductsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editProduct} onClose={() => setEditProduct(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>แก้ไขสินค้า</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>แก้ไขสินค้า</DialogTitle>
         <DialogContent>
           {editProduct && (
             <Box sx={{ pt: 1, display: "flex", flexDirection: "column", gap: 2 }}>

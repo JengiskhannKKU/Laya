@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import InputBase from "@mui/material/InputBase";
@@ -39,7 +39,7 @@ export default function SearchBar() {
           placeholder="ค้นหาลาย, ร้านค้า, ชุมชน..."
           sx={{
             flex: 1,
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "0.85rem",
             color: "#1B2A4A",
             py: 0.8,

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -65,7 +65,7 @@ export default function PassportPage({ product }: PassportPageProps) {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             color: "#6B7280",
           }}
         >
@@ -129,7 +129,7 @@ export default function PassportPage({ product }: PassportPageProps) {
         <Box sx={{ textAlign: "center" }}>
           <Typography
             sx={{
-              fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "1rem",
               fontWeight: 700,
               color: "#1B2A4A",
@@ -140,7 +140,7 @@ export default function PassportPage({ product }: PassportPageProps) {
           </Typography>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.55rem",
               color: "#C5A55A",
               letterSpacing: 1,
@@ -236,7 +236,7 @@ export default function PassportPage({ product }: PassportPageProps) {
             >
               <Typography
                 sx={{
-                  fontFamily: '"Playfair Display", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "1.3rem",
                   fontWeight: 700,
                   color: "#C5A55A",
@@ -273,7 +273,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                 />
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontSize: "0.58rem",
                     color: "#C5A55A",
                     fontWeight: 600,
@@ -300,7 +300,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                   borderRadius: "6px",
                   fontSize: "0.55rem",
                   fontWeight: 700,
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   letterSpacing: 1,
                   zIndex: 2,
                 }}
@@ -315,7 +315,7 @@ export default function PassportPage({ product }: PassportPageProps) {
             {/* Product Name */}
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.15rem",
                 color: "#FFFFFF",
@@ -369,7 +369,7 @@ export default function PassportPage({ product }: PassportPageProps) {
               <Box sx={{ flex: 1 }}>
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontWeight: 600,
                     fontSize: "0.82rem",
                     color: "#FFFFFF",
@@ -383,7 +383,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                   />
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontSize: "0.65rem",
                       color: "rgba(255,255,255,0.55)",
                     }}
@@ -420,7 +420,7 @@ export default function PassportPage({ product }: PassportPageProps) {
               </Box>
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.58rem",
                   color: "rgba(255,255,255,0.35)",
                 }}
@@ -442,7 +442,7 @@ export default function PassportPage({ product }: PassportPageProps) {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1rem",
             color: "#1B2A4A",
@@ -466,7 +466,7 @@ export default function PassportPage({ product }: PassportPageProps) {
               <SpaRoundedIcon sx={{ fontSize: 16, color: "#C5A55A" }} />
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 600,
                   fontSize: "0.82rem",
                   color: "#1B2A4A",
@@ -484,7 +484,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                   sx={{
                     bgcolor: "rgba(197,165,90,0.1)",
                     color: "#1B2A4A",
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontSize: "0.68rem",
                     fontWeight: 500,
                     border: "1px solid rgba(197,165,90,0.2)",
@@ -509,7 +509,7 @@ export default function PassportPage({ product }: PassportPageProps) {
               <ColorLensRoundedIcon sx={{ fontSize: 16, color: "#C5A55A" }} />
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 600,
                   fontSize: "0.82rem",
                   color: "#1B2A4A",
@@ -527,7 +527,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                   color: passport.dyeType.includes("ธรรมชาติ")
                     ? "#2E7D32"
                     : "#1976D2",
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.6rem",
                   fontWeight: 600,
                   height: 22,
@@ -537,7 +537,7 @@ export default function PassportPage({ product }: PassportPageProps) {
             </Box>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.75rem",
                 color: "#6B7280",
                 lineHeight: 1.6,
@@ -561,7 +561,7 @@ export default function PassportPage({ product }: PassportPageProps) {
               <TextureRoundedIcon sx={{ fontSize: 16, color: "#C5A55A" }} />
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontWeight: 600,
                   fontSize: "0.82rem",
                   color: "#1B2A4A",
@@ -575,7 +575,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                 sx={{
                   bgcolor: "rgba(197,165,90,0.12)",
                   color: "#A68A3A",
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.6rem",
                   fontWeight: 600,
                   height: 22,
@@ -585,7 +585,7 @@ export default function PassportPage({ product }: PassportPageProps) {
             </Box>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.75rem",
                 color: "#6B7280",
                 lineHeight: 1.6,
@@ -608,7 +608,7 @@ export default function PassportPage({ product }: PassportPageProps) {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1rem",
             color: "#1B2A4A",
@@ -695,7 +695,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                   >
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontWeight: 600,
                         fontSize: "0.82rem",
                         color: "#1B2A4A",
@@ -705,7 +705,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                     </Typography>
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.6rem",
                         color: "#9CA3AF",
                       }}
@@ -721,7 +721,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                     >
                       <Typography
                         sx={{
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                           fontSize: "0.72rem",
                           color: "#6B7280",
                           lineHeight: 1.6,
@@ -749,7 +749,7 @@ export default function PassportPage({ product }: PassportPageProps) {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1rem",
             color: "#1B2A4A",
@@ -782,7 +782,7 @@ export default function PassportPage({ product }: PassportPageProps) {
                 sx={{
                   bgcolor: "rgba(197,165,90,0.08)",
                   color: "#1B2A4A",
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.65rem",
                   fontWeight: 600,
                   border: "1px solid rgba(197,165,90,0.2)",
@@ -800,7 +800,7 @@ export default function PassportPage({ product }: PassportPageProps) {
             <EnergySavingsLeafRoundedIcon sx={{ fontSize: 18, color: carbon.color }} />
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.78rem",
                 color: "#1B2A4A",
                 fontWeight: 500,
@@ -814,7 +814,7 @@ export default function PassportPage({ product }: PassportPageProps) {
               sx={{
                 bgcolor: carbon.bg,
                 color: carbon.color,
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.62rem",
                 fontWeight: 700,
                 height: 22,
@@ -835,7 +835,7 @@ export default function PassportPage({ product }: PassportPageProps) {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1rem",
             color: "#1B2A4A",
@@ -854,7 +854,7 @@ export default function PassportPage({ product }: PassportPageProps) {
         >
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.82rem",
               color: "#6B7280",
               lineHeight: 1.8,
@@ -880,7 +880,7 @@ export default function PassportPage({ product }: PassportPageProps) {
             }
             sx={{
               mt: 0.5,
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               color: "#C5A55A",
               fontSize: "0.75rem",
               fontWeight: 600,
@@ -908,7 +908,7 @@ export default function PassportPage({ product }: PassportPageProps) {
             sx={{
               background: "linear-gradient(135deg, #C5A55A 0%, #D4BA7A 100%)",
               color: "#1B2A4A",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
               fontSize: "0.9rem",
               py: 1.6,

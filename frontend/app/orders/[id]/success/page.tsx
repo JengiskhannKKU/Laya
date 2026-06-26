@@ -66,7 +66,7 @@ export default function OrderSuccessPage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.5rem", color: "#1B2A4A", textAlign: "center", mb: 1 }}
+          sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.5rem", color: "#1B2A4A", textAlign: "center", mb: 1 }}
         >
           คำสั่งซื้อสำเร็จ!
         </Typography>
@@ -76,7 +76,7 @@ export default function OrderSuccessPage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          sx={{ fontFamily: '"Noto Serif Thai", serif', color: "#6B7280", textAlign: "center", mb: 4 }}
+          sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", textAlign: "center", mb: 4 }}
         >
           เราได้รับคำสั่งซื้อของคุณเรียบร้อยแล้ว<br/>และกำลังดำเนินการจัดเตรียมสินค้า
         </Typography>
@@ -88,19 +88,19 @@ export default function OrderSuccessPage() {
           transition={{ delay: 0.4 }}
           sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 3, width: "100%", border: "1px dashed #C5A55A", mb: 4, textAlign: "center" }}
         >
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.5 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.5 }}>
             หมายเลขคำสั่งซื้อ
           </Typography>
-          <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 2 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 2 }}>
             #{(order?.id || orderId).toUpperCase()}
           </Typography>
           
           <Divider sx={{ mb: 2, borderColor: "#F3F4F6" }} />
 
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.5 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.5 }}>
             การจัดส่งรับสินค้าผ่าน {shippingMethodName}
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 700 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 700 }}>
             ความรวดเร็วโดยประมาณ: {estimatedDays}
           </Typography>
         </Box>
@@ -110,7 +110,7 @@ export default function OrderSuccessPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#9CA3AF", textAlign: "center", mb: 5 }}
+          sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#9CA3AF", textAlign: "center", mb: 5 }}
         >
           ส่งใบยืนยันไปที่ {user?.email || "อีเมลของคุณ"} เรียบร้อยแล้ว
         </Typography>
@@ -133,7 +133,7 @@ export default function OrderSuccessPage() {
               borderRadius: "12px",
               fontWeight: 700,
               fontSize: "1rem",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               "&:hover": { bgcolor: "#0F1A30" },
               boxShadow: "0 4px 10px rgba(27,42,74,0.15)"
             }}
@@ -152,7 +152,7 @@ export default function OrderSuccessPage() {
               borderRadius: "12px",
               fontWeight: 700,
               fontSize: "1rem",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               "&:hover": { bgcolor: "#FFFFFF", borderColor: "#C5A55A" }
             }}
           >

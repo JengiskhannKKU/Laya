@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
@@ -37,17 +37,17 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
     >
       {/* ── Title ── */}
       <Box sx={{ textAlign: "center" }}>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A", mb: 0.5 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A", mb: 0.5 }}>
           ออกแบบลายผ้าของคุณเอง
         </Typography>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.82rem", color: "#6B7280" }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#6B7280" }}>
           เลือกวิธีเริ่มต้นสร้างผลงานสุดพิเศษในแบบคุณ
         </Typography>
       </Box>
 
       {/* ── Pattern Gallery ── */}
       <Box>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.78rem", color: "#6B7280", mb: 1.2, fontWeight: 600 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", color: "#6B7280", mb: 1.2, fontWeight: 600 }}>
           🎨 ตัวอย่างลายผ้าไทย Pixel Art ({PIXEL_PATTERNS.length} ลาย)
         </Typography>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(5, 1fr)", md: "repeat(10, 1fr)" }, gap: 1 }}>
@@ -78,7 +78,7 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
                 </Box>
                 <Box sx={{ p: "4px 5px", bgcolor: "#FAFAFA" }}>
                   <Typography sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontSize: "0.56rem",
                     color: "#1B2A4A",
                     lineHeight: 1.3,
@@ -115,10 +115,10 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
           <AutoAwesomeRoundedIcon sx={{ color: "#C5A55A", fontSize: 28 }} />
         </Box>
         <Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
             Guided Custom ✨
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
             สำหรับมือใหม่ ทำตามทีละขั้นตอน เลือกสไตล์ สี และเรื่องราว ง่ายดายและสนุก
           </Typography>
         </Box>
@@ -141,10 +141,10 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
           <CreateRoundedIcon sx={{ color: "#1B2A4A", fontSize: 28 }} />
         </Box>
         <Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
             Prompt Custom ✍️
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
             สำหรับสาย Pro พิมพ์ความต้องการของคุณอย่างอิสระ แล้วให้ AI จัดการให้
           </Typography>
         </Box>
@@ -176,10 +176,10 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
               <Box sx={{ p: 2.5, pb: 5 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
                   <Box>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
                       {preview.name}
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.78rem", color: "#6B7280" }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", color: "#6B7280" }}>
                       {preview.category} · แหล่งที่มา: {preview.origin}
                     </Typography>
                   </Box>
@@ -194,7 +194,7 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
                   sx={{
                     width: "100%", p: 1.8, border: "none", borderRadius: 3,
                     background: "linear-gradient(135deg, #C5A55A, #D4BA7A)",
-                    color: "#fff", fontFamily: '"Noto Serif Thai", serif',
+                    color: "#fff", fontFamily: '"Kanit", sans-serif',
                     fontWeight: 600, fontSize: "0.95rem", cursor: "pointer",
                   }}
                 >

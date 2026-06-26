@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
@@ -134,10 +134,10 @@ export default function CheckoutPage() {
         {isProcessing && (
           <Box sx={{ position: "fixed", inset: 0, zIndex: 9999, bgcolor: "rgba(250, 246, 240, 0.9)", backdropFilter: "blur(4px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <CircularProgress sx={{ color: "#1B2A4A", mb: 3 }} size={48} />
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
               กำลังดำเนินการ...
             </Typography>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: "#6B7280", mt: 1 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", mt: 1 }}>
               กรุณารอสักครู่ ห้ามปิดหน้านี้
             </Typography>
           </Box>
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
           <IconButton onClick={handleBackStep} sx={{ color: "#1B2A4A" }}>
             <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
+          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
             ชำระเงิน
           </Typography>
         </Box>
@@ -177,7 +177,7 @@ export default function CheckoutPage() {
           {/* STEP 1: Address */}
           {currentStep === 0 && (
             <Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
                 <LocationOnOutlinedIcon sx={{ mr: 1, fontSize: 22, color: "#C5A55A" }} /> ที่อยู่สำหรับการจัดส่ง
               </Typography>
               
@@ -191,13 +191,13 @@ export default function CheckoutPage() {
                           control={<Radio sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#C5A55A" } }} />}
                           label={
                             <Box sx={{ ml: 1 }}>
-                              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A" }}>
+                              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A" }}>
                                 {addr.recipientName} {addr.isDefault && <Box component="span" sx={{ bgcolor: "#FDF8F0", color: "#8E601C", px: 1, py: 0.2, borderRadius: "8px", fontSize: "0.7rem", ml: 1 }}>ค่าเริ่มต้น</Box>}
                               </Typography>
-                              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mt: 0.5 }}>
+                              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mt: 0.5 }}>
                                 {addr.phone}
                               </Typography>
-                              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mt: 0.2 }}>
+                              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mt: 0.2 }}>
                                 {addr.addressLine1} {addr.addressLine2} {addr.subdistrict} {addr.district} {addr.province} {addr.postalCode}
                               </Typography>
                             </Box>
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
                     startIcon={<AddRoundedIcon />}
                     onClick={() => setIsAddingNewAddress(true)}
                     sx={{
-                      borderRadius: "12px", py: 1.5, mt: 1, borderColor: "#E5DFD6", color: "#1B2A4A", fontFamily: '"Noto Serif Thai", serif',
+                      borderRadius: "12px", py: 1.5, mt: 1, borderColor: "#E5DFD6", color: "#1B2A4A", fontFamily: '"Kanit", sans-serif',
                       "&:hover": { borderColor: "#C5A55A", bgcolor: "#FDF8F0" }
                     }}
                   >
@@ -255,11 +255,11 @@ export default function CheckoutPage() {
                       />
                     </Box>
 
-                    <FormControlLabel control={<Checkbox sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#C5A55A" } }} />} label={<Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem" }}>ตั้งเป็นที่อยู่เริ่มต้น</Typography>} />
+                    <FormControlLabel control={<Checkbox sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#C5A55A" } }} />} label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem" }}>ตั้งเป็นที่อยู่เริ่มต้น</Typography>} />
                     
                     <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                      <Button variant="outlined" fullWidth onClick={() => setIsAddingNewAddress(false)} sx={{ borderRadius: "10px", borderColor: "#E5DFD6", color: "#6B7280", fontFamily: '"Noto Serif Thai", serif' }}>ยกเลิก</Button>
-                      <Button variant="contained" fullWidth onClick={() => { /* Mock save */ setIsAddingNewAddress(false); }} sx={{ borderRadius: "10px", bgcolor: "#1B2A4A", fontFamily: '"Noto Serif Thai", serif' }}>บันทึก</Button>
+                      <Button variant="outlined" fullWidth onClick={() => setIsAddingNewAddress(false)} sx={{ borderRadius: "10px", borderColor: "#E5DFD6", color: "#6B7280", fontFamily: '"Kanit", sans-serif' }}>ยกเลิก</Button>
+                      <Button variant="contained" fullWidth onClick={() => { /* Mock save */ setIsAddingNewAddress(false); }} sx={{ borderRadius: "10px", bgcolor: "#1B2A4A", fontFamily: '"Kanit", sans-serif' }}>บันทึก</Button>
                     </Box>
                   </Box>
                 </Box>
@@ -270,7 +270,7 @@ export default function CheckoutPage() {
           {/* STEP 2: Shipping */}
           {currentStep === 1 && (
             <Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
                 <LocalShippingOutlinedIcon sx={{ mr: 1, fontSize: 22, color: "#C5A55A" }} /> วิธีการจัดส่ง
               </Typography>
               
@@ -283,14 +283,14 @@ export default function CheckoutPage() {
                       label={
                         <Box sx={{ ml: 1, display: "flex", flexdirection: "column", flex: 1, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
                           <Box>
-                            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A" }}>
+                            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A" }}>
                               {ship.name}
                             </Typography>
-                            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.2 }}>
+                            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.2 }}>
                               รับสินค้าประเมิน: {ship.estimatedDays}
                             </Typography>
                           </Box>
-                          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: "#C5A55A" }}>
+                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#C5A55A" }}>
                             ฿{ship.cost}
                           </Typography>
                         </Box>
@@ -306,7 +306,7 @@ export default function CheckoutPage() {
           {/* STEP 3: Payment */}
           {currentStep === 2 && (
             <Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
                 <PaymentOutlinedIcon sx={{ mr: 1, fontSize: 22, color: "#C5A55A" }} /> ช่องทางการชำระเงิน
               </Typography>
 
@@ -317,23 +317,23 @@ export default function CheckoutPage() {
                   <FormControlLabel
                     value="promptpay"
                     control={<Radio sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#C5A55A" } }} />}
-                    label={<Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, color: "#1B2A4A", ml: 1 }}>QR Code พร้อมเพย์</Typography>}
+                    label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", ml: 1 }}>QR Code พร้อมเพย์</Typography>}
                     sx={{ m: 0 }}
                   />
                   {selectedPayment === "promptpay" && (
                     <Box sx={{ mt: 3, display: "flex", flexDirection: "column", alignItems: "center", bgcolor: "#FDF8F0", p: 3, borderRadius: "12px", border: "1px dashed #E5DFD6" }}>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#6B7280", mb: 2 }}>สแกนเพื่อชำระเงิน</Typography>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280", mb: 2 }}>สแกนเพื่อชำระเงิน</Typography>
                       <Box sx={{ width: 180, height: 180, bgcolor: "#FFFFFF", p: 1, borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
                         <QrCode2RoundedIcon sx={{ fontSize: 150, color: "#1B2A4A" }} />
                       </Box>
                       <Box sx={{ mt: 3, textAlign: "center" }}>
-                        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>กรุณาชำระเงินภายใน</Typography>
-                        <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.5rem", color: "#D32F2F" }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>กรุณาชำระเงินภายใน</Typography>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.5rem", color: "#D32F2F" }}>
                           {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
                         </Typography>
                       </Box>
                       {timeLeft <= 0 && (
-                        <Alert severity="error" sx={{ mt: 2, borderRadius: "8px", fontFamily: '"Noto Serif Thai", serif' }}>
+                        <Alert severity="error" sx={{ mt: 2, borderRadius: "8px", fontFamily: '"Kanit", sans-serif' }}>
                           QR Code หมดอายุ กรุณาทำรายการใหม่
                         </Alert>
                       )}
@@ -346,7 +346,7 @@ export default function CheckoutPage() {
                   <FormControlLabel
                     value="credit_card"
                     control={<Radio sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#C5A55A" } }} />}
-                    label={<Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, color: "#1B2A4A", ml: 1 }}>บัตรเครดิต / เดบิต</Typography>}
+                    label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", ml: 1 }}>บัตรเครดิต / เดบิต</Typography>}
                     sx={{ m: 0 }}
                   />
                   {selectedPayment === "credit_card" && (
@@ -368,13 +368,13 @@ export default function CheckoutPage() {
           {/* STEP 4: Review */}
           {currentStep === 3 && (
             <Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center" }}>
                 <ReceiptLongOutlinedIcon sx={{ mr: 1, fontSize: 22, color: "#C5A55A" }} /> ตรวจสอบคำสั่งซื้อ
               </Typography>
 
               {/* Items Summary limit visible items */}
               <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "12px", p: 2, mb: 2, border: "1px solid #E5DFD6" }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A", mb: 1.5 }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A", mb: 1.5 }}>
                   สินค้าที่สั่งซื้อ ({items.length})
                 </Typography>
                 {items.map(item => (
@@ -383,10 +383,10 @@ export default function CheckoutPage() {
                       <Image src={item.product.images[0]} alt="" fill style={{ objectFit: "cover" }} />
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", fontWeight: 600, color: "#1B2A4A" }}>{item.product.name}</Typography>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", color: "#6B7280" }}>จำนวน: {item.quantity}</Typography>
+                      <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", fontWeight: 600, color: "#1B2A4A" }}>{item.product.name}</Typography>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>จำนวน: {item.quantity}</Typography>
                     </Box>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", fontWeight: 700, color: "#1B2A4A" }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", fontWeight: 700, color: "#1B2A4A" }}>
                       ฿{(item.product.price * item.quantity).toLocaleString()}
                     </Typography>
                   </Box>
@@ -396,17 +396,17 @@ export default function CheckoutPage() {
               {/* Address Summary */}
               <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "12px", p: 2, mb: 2, border: "1px solid #E5DFD6", display: "flex", justifyContent: "space-between" }}>
                 <Box>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280", mb: 0.5 }}>จัดส่งไปที่</Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", fontWeight: 600, color: "#1B2A4A" }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mb: 0.5 }}>จัดส่งไปที่</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", fontWeight: 600, color: "#1B2A4A" }}>
                     {mockAddresses.find(a => a.id === selectedAddressId)?.recipientName}
                   </Typography>
                 </Box>
-                <Button size="small" onClick={() => setCurrentStep(0)} sx={{ color: "#C5A55A", fontFamily: '"Noto Serif Thai", serif' }}>แก้ไข</Button>
+                <Button size="small" onClick={() => setCurrentStep(0)} sx={{ color: "#C5A55A", fontFamily: '"Kanit", sans-serif' }}>แก้ไข</Button>
               </Box>
 
               {/* Note String */}
               <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "12px", p: 2, mb: 2, border: "1px solid #E5DFD6" }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#1B2A4A", mb: 1, fontWeight: 600 }}>หมายเหตุถึงผู้ขาย (ถ้ามี)</Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A", mb: 1, fontWeight: 600 }}>หมายเหตุถึงผู้ขาย (ถ้ามี)</Typography>
                 <TextField
                   fullWidth multiline rows={2} placeholder="ระบุข้อความ..."
                   value={noteToSeller} onChange={e => setNoteToSeller(e.target.value)}
@@ -417,17 +417,17 @@ export default function CheckoutPage() {
               {/* Cost Summary */}
               <Box sx={{ bgcolor: "#FDF8F0", borderRadius: "12px", p: 2, mb: 2, border: "1px solid #EBE3D5" }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>ยอดรวมสินค้า</Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>฿{subtotal.toLocaleString()}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>ยอดรวมสินค้า</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>฿{subtotal.toLocaleString()}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>ค่าจัดส่ง</Typography>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>฿{shippingCost.toLocaleString()}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>ค่าจัดส่ง</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>฿{shippingCost.toLocaleString()}</Typography>
                 </Box>
                 <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.95rem", color: "#1B2A4A", fontWeight: 700 }}>ยอดรวมทั้งสิ้น</Typography>
-                  <Typography sx={{ fontFamily: '"Playfair Display", "Noto Serif Thai", serif', fontSize: "1.5rem", color: "#C5A55A", fontWeight: 700, lineHeight: 1 }}>฿{total.toLocaleString()}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.95rem", color: "#1B2A4A", fontWeight: 700 }}>ยอดรวมทั้งสิ้น</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.5rem", color: "#C5A55A", fontWeight: 700, lineHeight: 1 }}>฿{total.toLocaleString()}</Typography>
                 </Box>
               </Box>
 
@@ -464,7 +464,7 @@ export default function CheckoutPage() {
               borderRadius: "14px",
               fontWeight: 700,
               fontSize: "1rem",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               "&:hover": { bgcolor: "#0F1A30" },
               "&.Mui-disabled": { bgcolor: "rgba(27,42,74,0.5)", color: "#FFFFFF" }
             }}

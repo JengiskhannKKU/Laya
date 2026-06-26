@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -113,10 +113,10 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
 
         {/* Title Positioned near bottom of Hero */}
         <Box sx={{ position: "absolute", bottom: 20, left: 20, right: 20 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.5rem", color: "#FFFFFF" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.5rem", color: "#FFFFFF" }}>
             {community.name}
           </Typography>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "rgba(255,255,255,0.8)", mt: 0.2 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "rgba(255,255,255,0.8)", mt: 0.2 }}>
             จ.{community.province} - ภาคเหนือ
           </Typography>
           
@@ -133,7 +133,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
       <Box sx={{ bgcolor: "#FFFFFF", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", py: 2, borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
         {COMMUNITY_STATS.map((stat, i) => (
           <Box key={i} sx={{ textAlign: "center", position: "relative" }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "1.2rem", fontWeight: 700, color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.2rem", fontWeight: 700, color: "#1B2A4A" }}>
               {stat.value}
             </Typography>
             <Typography sx={{ fontSize: "0.7rem", color: "#6B7280", mt: 0.2 }}>
@@ -190,7 +190,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         {/* Story Section */}
         <Box id="story" sx={{ mb: 4, scrollMarginTop: "140px" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
               เรื่องราวชุมชน
             </Typography>
             <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
@@ -198,7 +198,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
           <Box sx={{ bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7,
+                fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7,
                 overflow: "hidden", maxHeight: showFullStory ? "none" : 85, transition: "max-height 0.3s ease",
               }}
             >
@@ -216,7 +216,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         {/* Production Process Timeline */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
               กระบวนการผลิต
             </Typography>
             <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
@@ -243,7 +243,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         <Box id="weavers" sx={{ mb: 4, scrollMarginTop: "140px" }}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
                 ช่างทอ
               </Typography>
               <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
@@ -274,7 +274,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         <Box id="products" sx={{ mb: 4, scrollMarginTop: "140px" }}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
                 สินค้าจากชุมชนนี้
               </Typography>
               <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
@@ -290,10 +290,10 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
                     <Image src={p.images[0]} alt={p.name} fill style={{ objectFit: "cover" }} />
                   </Box>
                   <Box sx={{ p: 1.5 }}>
-                    <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A" }}>
+                    <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A" }}>
                       {p.name}
                     </Typography>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.85rem", color: "#CBA258", mt: 0.5 }}>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#CBA258", mt: 0.5 }}>
                       {p.price.toLocaleString()} ฿/ม.
                     </Typography>
                   </Box>
@@ -306,7 +306,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         {/* Reviews Section */}
         <Box id="reviews" sx={{ mb: 4, scrollMarginTop: "140px" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
               รีวิว
             </Typography>
             <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
@@ -356,7 +356,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         {/* Location & Certifications */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
               ที่ตั้งชุมชน
             </Typography>
             <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
@@ -369,7 +369,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
               การรับรอง
             </Typography>
             <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />

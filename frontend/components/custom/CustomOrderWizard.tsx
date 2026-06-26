@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -99,7 +99,7 @@ export default function CustomOrderWizard() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 color: "#1B2A4A",
@@ -127,7 +127,7 @@ export default function CustomOrderWizard() {
                   label={
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.9rem",
                         color: "#1B2A4A",
                       }}
@@ -162,7 +162,7 @@ export default function CustomOrderWizard() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 color: "#1B2A4A",
@@ -190,7 +190,7 @@ export default function CustomOrderWizard() {
                   label={
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.9rem",
                         color: "#1B2A4A",
                       }}
@@ -225,7 +225,7 @@ export default function CustomOrderWizard() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 color: "#1B2A4A",
@@ -236,7 +236,7 @@ export default function CustomOrderWizard() {
             </Typography>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.8rem",
                 color: "#6B7280",
                 mb: 2,
@@ -277,7 +277,7 @@ export default function CustomOrderWizard() {
                   />
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontSize: "0.65rem",
                       color: selectedColors.includes(color.value)
                         ? "#1B2A4A"
@@ -306,7 +306,7 @@ export default function CustomOrderWizard() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 color: "#1B2A4A",
@@ -347,7 +347,7 @@ export default function CustomOrderWizard() {
               >
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontWeight: 600,
                     color: "#1B2A4A",
                   }}
@@ -356,7 +356,7 @@ export default function CustomOrderWizard() {
                 </Typography>
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontWeight: 600,
                     color: "#1B2A4A",
                   }}
@@ -368,7 +368,7 @@ export default function CustomOrderWizard() {
 
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 color: "#1B2A4A",
@@ -387,7 +387,7 @@ export default function CustomOrderWizard() {
                 width: "100%",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   bgcolor: "#FFFFFF",
                   "& fieldset": { borderColor: "#E5DFD6" },
                   "&:hover fieldset": { borderColor: "#C5A55A" },
@@ -408,7 +408,7 @@ export default function CustomOrderWizard() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 color: "#1B2A4A",
@@ -429,7 +429,7 @@ export default function CustomOrderWizard() {
                 mb: 3,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   bgcolor: "#FFFFFF",
                   fontSize: "0.85rem",
                   "& fieldset": { borderColor: "#E5DFD6" },
@@ -441,7 +441,7 @@ export default function CustomOrderWizard() {
 
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 600,
                 fontSize: "0.95rem",
                 color: "#1B2A4A",
@@ -470,7 +470,7 @@ export default function CustomOrderWizard() {
               />
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.8rem",
                   color: "#6B7280",
                 }}
@@ -479,7 +479,7 @@ export default function CustomOrderWizard() {
               </Typography>
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.65rem",
                   color: "#9CA3AF",
                 }}
@@ -500,7 +500,7 @@ export default function CustomOrderWizard() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 color: "#1B2A4A",
@@ -511,7 +511,7 @@ export default function CustomOrderWizard() {
             </Typography>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.8rem",
                 color: "#6B7280",
                 mb: 2,
@@ -562,7 +562,7 @@ export default function CustomOrderWizard() {
                   >
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontWeight: 600,
                         fontSize: "0.85rem",
                         color: "#1B2A4A",
@@ -585,7 +585,7 @@ export default function CustomOrderWizard() {
                             ? "#A68A3A"
                             : "#1B2A4A",
                         fontWeight: 700,
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.65rem",
                         height: 24,
                       }}
@@ -604,7 +604,7 @@ export default function CustomOrderWizard() {
                     />
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.7rem",
                         color: "#6B7280",
                       }}
@@ -614,7 +614,7 @@ export default function CustomOrderWizard() {
                   </Box>
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontSize: "0.75rem",
                       color: "#6B7280",
                       mt: 0.5,
@@ -624,7 +624,7 @@ export default function CustomOrderWizard() {
                   </Typography>
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontSize: "0.7rem",
                       color: "#9CA3AF",
                     }}
@@ -672,7 +672,7 @@ export default function CustomOrderWizard() {
         </Link>
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1.1rem",
             color: "#1B2A4A",
@@ -692,7 +692,7 @@ export default function CustomOrderWizard() {
         >
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.7rem",
               color: "#6B7280",
             }}
@@ -701,7 +701,7 @@ export default function CustomOrderWizard() {
           </Typography>
           <Typography
             sx={{
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.7rem",
               color: "#C5A55A",
               fontWeight: 600,
@@ -747,7 +747,7 @@ export default function CustomOrderWizard() {
               flex: 1,
               borderColor: "#E5DFD6",
               color: "#1B2A4A",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
               py: 1.5,
               borderRadius: 3,
@@ -765,7 +765,7 @@ export default function CustomOrderWizard() {
             sx={{
               flex: 1,
               bgcolor: "#1B2A4A",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
               py: 1.5,
               borderRadius: 3,
@@ -786,7 +786,7 @@ export default function CustomOrderWizard() {
               background:
                 "linear-gradient(135deg, #C5A55A 0%, #D4BA7A 100%)",
               color: "#1B2A4A",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
               py: 1.5,
               borderRadius: 3,

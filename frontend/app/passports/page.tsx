@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -50,7 +50,7 @@ export default function PassportListPage() {
           <Box>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
                 fontSize: "1.15rem",
                 color: "#1B2A4A",
@@ -60,7 +60,7 @@ export default function PassportListPage() {
             </Typography>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.68rem",
                 color: "#9CA3AF",
               }}
@@ -146,7 +146,7 @@ export default function PassportListPage() {
                         fontSize: "0.5rem",
                         fontWeight: 700,
                         color: "#C5A55A",
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                       }}
                     >
                       {"ยืนยัน"}
@@ -166,7 +166,7 @@ export default function PassportListPage() {
                 >
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontWeight: 700,
                       fontSize: "0.82rem",
                       color: "#1B2A4A",
@@ -178,7 +178,7 @@ export default function PassportListPage() {
                   </Typography>
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontSize: "0.65rem",
                       color: "#9CA3AF",
                       mb: 0.8,
@@ -217,7 +217,7 @@ export default function PassportListPage() {
                           bgcolor: "rgba(197,165,90,0.12)",
                           color: "#A68A3A",
                           borderRadius: "4px",
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                         }}
                       />
                     )}
@@ -262,7 +262,7 @@ export default function PassportListPage() {
           >
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.9rem",
                 color: "#9CA3AF",
               }}
@@ -271,7 +271,7 @@ export default function PassportListPage() {
             </Typography>
             <Typography
               sx={{
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 fontSize: "0.75rem",
                 color: "#D1D5DB",
                 mt: 0.5,

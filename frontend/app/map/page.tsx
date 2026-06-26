@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -367,7 +367,7 @@ function ProvinceSheet({ province, onClose }: { province: Province; onClose: () 
             {/* Province name + close */}
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0 pr-3">
-                <h2 className="text-xl font-bold leading-tight" style={{ color: "#1B2A4A", fontFamily: "var(--font-playfair)" }}>
+                <h2 className="text-xl font-bold leading-tight" style={{ color: "#1B2A4A", fontFamily: "var(--font-kanit)" }}>
                   {province.name}
                 </h2>
                 <span
@@ -715,7 +715,7 @@ function ThailandGeoMap({
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-2 rounded-xl pointer-events-none min-w-[140px] animate-[slideUp_0.2s_ease]"
           style={{ background: "rgba(27,42,74,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}>
           <div className="flex justify-between items-center mb-1">
-            <p className="text-sm font-bold font-playfair" style={{ color: "#FFD700" }}>
+            <p className="text-sm font-bold" style={{ color: "#FFD700" }}>
               {GEO_NAME_MAP[hovered]?.name || hovered}
             </p>
             {/* Mock Trend - Randomize or hardcode for demo */}
@@ -828,7 +828,7 @@ function ProvinceDetailPanel({ province, onClose }: { province: Province; onClos
         </button>
         <div className="absolute bottom-4 left-4 right-4">
           <span className="inline-block text-[10px] px-2 py-0.5 rounded-full font-bold mb-1" style={{ background: region.color, color: "#FFF" }}>{region.label}</span>
-          <h2 className="text-2xl font-bold text-white font-playfair">{province.name}</h2>
+          <h2 className="text-2xl font-bold text-white">{province.name}</h2>
           <p className="text-sm text-[#C5A55A] font-semibold truncate">ลาย{province.fabric}</p>
         </div>
       </div>
@@ -921,7 +921,7 @@ export default function MapPage() {
                 <ArrowLeft size={18} color="#1B2A4A" />
               </button>
               <div className="flex-1">
-                <h1 className="text-xl font-bold font-playfair text-[#1B2A4A]">Discovery Map</h1>
+                <h1 className="text-xl font-bold text-[#1B2A4A]">Discovery Map</h1>
                 <p className="text-[10px] text-[#6B7280]">Interactive Commerce & AI Matching</p>
               </div>
               <div className="flex rounded-xl overflow-hidden border border-[#E5DFD6]">

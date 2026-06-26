@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -93,10 +93,10 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                       background: "linear-gradient(145deg, #C5A55A, #D4BA7A)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
-                      <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1rem", color: "#FFFFFF" }}>L</Typography>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#FFFFFF" }}>L</Typography>
                     </Box>
                     <Box>
-                      <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, letterSpacing: 2, transition: t }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, letterSpacing: 2, transition: t }}>
                         LAYA
                       </Typography>
                       <Typography sx={{ fontSize: "0.6rem", color: c.textMuted, letterSpacing: 1, transition: t }}>
@@ -178,7 +178,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
               <IconButton onClick={() => setSidebarOpen(true)} sx={{ color: c.textPrimary, display: { md: "none" } }}>
                 <MenuRoundedIcon />
               </IconButton>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: t }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: t }}>
                 {activeNav?.label || "Admin"}
               </Typography>
             </Box>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
@@ -110,7 +110,7 @@ export default function AppBottomNav() {
               >
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontSize: "0.6rem",
                     color: isActive ? "#C5A55A" : "rgba(255,255,255,0.6)",
                     fontWeight: isActive ? 600 : 400,
@@ -155,7 +155,7 @@ export default function AppBottomNav() {
               </Box>
               <Typography
                 sx={{
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   fontSize: "0.6rem",
                   color: isActive ? "#FFFFFF" : "rgba(255,255,255,0.5)",
                   fontWeight: isActive ? 600 : 400,

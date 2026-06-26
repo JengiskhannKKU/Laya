@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, Suspense } from "react";
 import Box from "@mui/material/Box";
@@ -141,7 +141,7 @@ function SearchContent() {
                 onChange={(e) => setQuery(e.target.value)}
                 InputProps={{ disableUnderline: true }}
                 autoFocus
-                sx={{ "& input": { fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", py: 0.8, color: "#1B2A4A" } }}
+                sx={{ "& input": { fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", py: 0.8, color: "#1B2A4A" } }}
               />
             </Box>
             <IconButton onClick={() => setFilterOpen(true)} sx={{ color: "#1B2A4A", position: "relative" }}>
@@ -159,7 +159,7 @@ function SearchContent() {
 
           {/* Sort Bar */}
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1.5 }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#6B7280" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>
               พบ {filteredProducts.length} ผลลัพธ์
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -169,10 +169,10 @@ function SearchContent() {
                 onChange={(e) => setSortBy(e.target.value)}
                 variant="standard"
                 disableUnderline
-                sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}
+                sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}
               >
                 {sortOptions.map((o) => (
-                  <MenuItem key={o.value} value={o.value} sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem" }}>
+                  <MenuItem key={o.value} value={o.value} sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem" }}>
                     {o.label}
                   </MenuItem>
                 ))}
@@ -185,13 +185,13 @@ function SearchContent() {
         <Box sx={{ px: 2, pt: 2, pb: 10 }}>
           {filteredProducts.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 10 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
                 ไม่พบผลลัพธ์
               </Typography>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 3 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 3 }}>
                 ลองค้นหาด้วยคำอื่น หรือปรับตัวกรอง
               </Typography>
-              <Button onClick={clearFilters} variant="outlined" sx={{ borderRadius: "20px", fontFamily: '"Noto Serif Thai", serif' }}>
+              <Button onClick={clearFilters} variant="outlined" sx={{ borderRadius: "20px", fontFamily: '"Kanit", sans-serif' }}>
                 ล้างตัวกรอง
               </Button>
             </Box>
@@ -225,14 +225,14 @@ function SearchContent() {
                       )}
                     </Box>
                     <Box sx={{ p: 1.5 }}>
-                      <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A", lineHeight: 1.3 }}>
+                      <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A", lineHeight: 1.3 }}>
                         {product.name}
                       </Typography>
-                      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.7rem", color: "#6B7280", mt: 0.3 }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", color: "#6B7280", mt: 0.3 }}>
                         {product.community}
                       </Typography>
                       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1 }}>
-                        <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A" }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A" }}>
                           ฿{product.price.toLocaleString()}
                         </Typography>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
@@ -252,7 +252,7 @@ function SearchContent() {
         <Drawer anchor="bottom" open={filterOpen} onClose={() => setFilterOpen(false)} PaperProps={{ sx: { borderTopLeftRadius: "24px", borderTopRightRadius: "24px", maxHeight: "80vh" } }}>
           <Box sx={{ p: 3 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
                 ตัวกรอง
               </Typography>
               <IconButton onClick={() => setFilterOpen(false)}>
@@ -261,7 +261,7 @@ function SearchContent() {
             </Box>
 
             {/* Price Range */}
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
               ช่วงราคา
             </Typography>
             <Box sx={{ px: 1, mb: 3 }}>
@@ -282,7 +282,7 @@ function SearchContent() {
             </Box>
 
             {/* Province */}
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
               จังหวัด
             </Typography>
             <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 3 }}>
@@ -292,7 +292,7 @@ function SearchContent() {
                   label={p}
                   onClick={() => setSelectedProvince(p)}
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem",
+                    fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem",
                     bgcolor: selectedProvince === p ? "#1B2A4A" : "#F0EBE3",
                     color: selectedProvince === p ? "#FFFFFF" : "#6B7280",
                     fontWeight: selectedProvince === p ? 700 : 400,
@@ -302,7 +302,7 @@ function SearchContent() {
             </Box>
 
             {/* Fabric Type */}
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
               ประเภทผ้า
             </Typography>
             <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 3 }}>
@@ -312,7 +312,7 @@ function SearchContent() {
                   label={t}
                   onClick={() => setSelectedFabric(t)}
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem",
+                    fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem",
                     bgcolor: selectedFabric === t ? "#1B2A4A" : "#F0EBE3",
                     color: selectedFabric === t ? "#FFFFFF" : "#6B7280",
                     fontWeight: selectedFabric === t ? 700 : 400,
@@ -327,7 +327,7 @@ function SearchContent() {
               icon={<VerifiedRoundedIcon sx={{ fontSize: 14, color: giOnly ? "#FFFFFF" : "#C5A55A" }} />}
               onClick={() => setGiOnly(!giOnly)}
               sx={{
-                fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", mb: 3,
+                fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", mb: 3,
                 bgcolor: giOnly ? "#C5A55A" : "#FAF6F0",
                 color: giOnly ? "#FFFFFF" : "#1B2A4A",
                 fontWeight: 600, px: 1,
@@ -340,7 +340,7 @@ function SearchContent() {
                 fullWidth
                 variant="outlined"
                 onClick={clearFilters}
-                sx={{ borderRadius: "12px", borderColor: "#E5DFD6", color: "#6B7280", fontFamily: '"Noto Serif Thai", serif', fontWeight: 600 }}
+                sx={{ borderRadius: "12px", borderColor: "#E5DFD6", color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}
               >
                 ล้างทั้งหมด
               </Button>
@@ -349,7 +349,7 @@ function SearchContent() {
                 variant="contained"
                 onClick={() => setFilterOpen(false)}
                 sx={{
-                  borderRadius: "12px", bgcolor: "#1B2A4A", fontWeight: 700, fontFamily: '"Noto Serif Thai", serif',
+                  borderRadius: "12px", bgcolor: "#1B2A4A", fontWeight: 700, fontFamily: '"Kanit", sans-serif',
                   "&:hover": { bgcolor: "#0F1A30" },
                 }}
               >

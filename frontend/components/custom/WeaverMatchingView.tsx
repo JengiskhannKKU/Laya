@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { Box, Typography, Avatar, Rating, Button, LinearProgress, Chip, IconButton, Skeleton } from "@mui/material";
@@ -106,7 +106,7 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver, onBack
   if (isAnalyzing) {
     return (
       <Box sx={{ p: 3, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, pt: 8 }}>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
           AI กำลังวิเคราะห์ลายผ้าของคุณ...
         </Typography>
         <Box sx={{ width: "100%", position: "relative", height: 80, display: "flex", justifyContent: "center" }}>

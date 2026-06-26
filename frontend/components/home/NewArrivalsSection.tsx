@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -32,7 +32,7 @@ export default function NewArrivalsSection() {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1.1rem",
             color: "#1B2A4A",
@@ -122,7 +122,7 @@ export default function NewArrivalsSection() {
               >
                 <Typography
                   sx={{
-                    fontFamily: '"Noto Serif Thai", serif',
+                    fontFamily: '"Kanit", sans-serif',
                     fontWeight: 600,
                     fontSize: "0.82rem",
                     color: "#1B2A4A",
@@ -145,7 +145,7 @@ export default function NewArrivalsSection() {
                   />
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontSize: "0.65rem",
                       color: "#6B7280",
                     }}
@@ -162,7 +162,7 @@ export default function NewArrivalsSection() {
                 >
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontWeight: 700,
                       fontSize: "0.85rem",
                       color: "#C5A55A",
@@ -182,7 +182,7 @@ export default function NewArrivalsSection() {
                     />
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.65rem",
                         color: "#6B7280",
                       }}

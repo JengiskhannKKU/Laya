@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Box, Typography, Button, Tabs, Tab, IconButton, Alert } from "@mui/material";
@@ -32,7 +32,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
       <Box>
         <Typography
           sx={{
-            fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1.4rem",
             color: "#1B2A4A",
@@ -43,7 +43,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
         </Typography>
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "0.85rem",
             color: "#6B7280",
           }}
@@ -73,7 +73,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
             mb: 2,
             "& .MuiTab-root": {
               minHeight: 36,
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.8rem",
               fontWeight: 600,
               textTransform: "none",
@@ -162,7 +162,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
               >
                 <Box sx={{ width: "100%", height: "100%", bgcolor: "white", p: 1, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
                   <Box sx={{ width: "100%", height: "80%", backgroundImage: `url(${generatedImage})`, backgroundSize: "cover" }} />
-                  <Typography sx={{ textAlign: "center", mt: 1, fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
+                  <Typography sx={{ textAlign: "center", mt: 1, fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
                     LAYA EXCLUSIVE
                   </Typography>
                 </Box>
@@ -181,7 +181,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
             flex: { xs: "unset", md: 1 },
             bgcolor: "#C5A55A",
             color: "#1B2A4A",
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             py: 1.5,
             borderRadius: 3,
@@ -199,7 +199,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
               flex: 1,
               borderColor: "#1B2A4A",
               color: "#1B2A4A",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
               py: 1.2,
               borderRadius: 3,
@@ -215,7 +215,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
               flex: 1,
               borderColor: "#1B2A4A",
               color: "#1B2A4A",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
               py: 1.2,
               borderRadius: 3,

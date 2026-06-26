@@ -32,8 +32,8 @@
 }
 
 @theme inline {
-  --font-sans: 'Noto Serif Thai', 'Playfair Display', serif;
-  --font-serif: 'Playfair Display', 'Noto Serif Thai', serif;
+  --font-sans: 'Kanit', sans-serif;
+  --font-serif: 'Kanit', sans-serif;
   --font-mono: 'Geist Mono', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);

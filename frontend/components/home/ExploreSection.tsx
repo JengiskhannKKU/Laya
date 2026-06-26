@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -40,7 +40,7 @@ export default function ExploreSection() {
       >
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontWeight: 700,
             fontSize: "1.3rem",
             color: "#1B2A4A",
@@ -119,7 +119,7 @@ export default function ExploreSection() {
             placeholder="ค้นหาลาย, ชุมชน, จังหวัด..."
             sx={{
               flex: 1,
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.85rem",
               color: "#1B2A4A",
               py: 0.8,
@@ -165,7 +165,7 @@ export default function ExploreSection() {
             sx={{
               bgcolor: activeFilter === i ? "#1B2A4A" : "#FFFFFF",
               color: activeFilter === i ? "#FFFFFF" : "#1B2A4A",
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontSize: "0.75rem",
               fontWeight: activeFilter === i ? 600 : 400,
               border: `1.5px solid ${activeFilter === i ? "#1B2A4A" : "#E5DFD6"}`,
@@ -186,7 +186,7 @@ export default function ExploreSection() {
       <Box sx={{ px: 2.5, mb: 1.5 }}>
         <Typography
           sx={{
-            fontFamily: '"Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "0.72rem",
             color: "#9CA3AF",
           }}
@@ -266,7 +266,7 @@ export default function ExploreSection() {
                           borderRadius: "6px",
                           fontSize: "0.55rem",
                           fontWeight: 700,
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                         }}
                       >
                         GI
@@ -302,7 +302,7 @@ export default function ExploreSection() {
                     >
                       <Typography
                         sx={{
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                           fontWeight: 700,
                           fontSize: "0.68rem",
                           color: "#1B2A4A",
@@ -314,7 +314,7 @@ export default function ExploreSection() {
                   </Box>
                   <Typography
                     sx={{
-                      fontFamily: '"Noto Serif Thai", serif',
+                      fontFamily: '"Kanit", sans-serif',
                       fontWeight: 600,
                       fontSize: "0.78rem",
                       color: "#1B2A4A",
@@ -336,7 +336,7 @@ export default function ExploreSection() {
                   >
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.65rem",
                         color: "#9CA3AF",
                       }}
@@ -355,7 +355,7 @@ export default function ExploreSection() {
                       />
                       <Typography
                         sx={{
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                           fontSize: "0.6rem",
                           color: "#6B7280",
                         }}
@@ -451,7 +451,7 @@ export default function ExploreSection() {
                   >
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontWeight: 600,
                         fontSize: "0.82rem",
                         color: "#1B2A4A",
@@ -463,7 +463,7 @@ export default function ExploreSection() {
                     </Typography>
                     <Typography
                       sx={{
-                        fontFamily: '"Noto Serif Thai", serif',
+                        fontFamily: '"Kanit", sans-serif',
                         fontSize: "0.68rem",
                         color: "#9CA3AF",
                         mb: 0.5,
@@ -480,7 +480,7 @@ export default function ExploreSection() {
                     >
                       <Typography
                         sx={{
-                          fontFamily: '"Noto Serif Thai", serif',
+                          fontFamily: '"Kanit", sans-serif',
                           fontWeight: 700,
                           fontSize: "0.88rem",
                           color: "#C5A55A",
@@ -500,7 +500,7 @@ export default function ExploreSection() {
                         />
                         <Typography
                           sx={{
-                            fontFamily: '"Noto Serif Thai", serif',
+                            fontFamily: '"Kanit", sans-serif',
                             fontSize: "0.65rem",
                             color: "#6B7280",
                           }}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, Suspense } from "react";
 import Box from "@mui/material/Box";
@@ -67,7 +67,7 @@ function ResetPasswordForm() {
       <Typography
         variant="h5"
         sx={{
-          fontFamily: '"Noto Serif Thai", serif',
+          fontFamily: '"Kanit", sans-serif',
           fontWeight: 700,
           color: "#1B2A4A",
           mb: 1,
@@ -81,7 +81,7 @@ function ResetPasswordForm() {
         {error && (
           <Alert
             severity="error"
-            sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Noto Serif Thai", serif' }}
+            sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}
           >
             {error}
           </Alert>
@@ -90,7 +90,7 @@ function ResetPasswordForm() {
         {success ? (
           <Alert
             severity="success"
-            sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Noto Serif Thai", serif' }}
+            sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}
           >
             ตั้งรหัสผ่านใหม่สำเร็จ ระบบกำลังพากลับไปยังหน้าเข้าสู่ระบบ...
           </Alert>
@@ -134,7 +134,7 @@ function ResetPasswordForm() {
                   borderRadius: "12px",
                   fontWeight: 700,
                   fontSize: "1rem",
-                  fontFamily: '"Noto Serif Thai", serif',
+                  fontFamily: '"Kanit", sans-serif',
                   "&:hover": { bgcolor: "#0F1A30" },
                   "&.Mui-disabled": { bgcolor: "rgba(27,42,74,0.5)", color: "#FFFFFF" },
                 }}
@@ -156,7 +156,7 @@ export default function ResetPasswordPage() {
       <Box sx={{ px: 3, pt: 5, pb: 2 }}>
         <Typography
           sx={{
-            fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "1.8rem",
             fontWeight: 700,
             color: "#1B2A4A",

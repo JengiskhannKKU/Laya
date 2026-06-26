@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import Box from "@mui/material/Box";
@@ -173,7 +173,7 @@ export default function MarketingPage() {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
           📣 Marketing
         </Typography>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
@@ -344,7 +344,7 @@ export default function MarketingPage() {
                           <Chip label={`⏳ เหลือ ${days} วัน`} size="small"
                             sx={{ position: "absolute", top: 12, left: 12, bgcolor: "rgba(0,0,0,0.6)", color: "#FFF", fontWeight: 600, fontSize: "0.65rem" }} />
                         )}
-                        <Typography sx={{ position: "absolute", bottom: 12, left: 16, fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: "#FFF" }}>
+                        <Typography sx={{ position: "absolute", bottom: 12, left: 16, fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#FFF" }}>
                           {cam.name}
                         </Typography>
                       </Box>
@@ -410,7 +410,7 @@ export default function MarketingPage() {
 
       {/* Create Promotion Dialog */}
       <Dialog open={createPromoOpen} onClose={() => setCreatePromoOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>🎫 สร้างโปรโมชั่นใหม่</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>🎫 สร้างโปรโมชั่นใหม่</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
             {/* Basic */}
@@ -491,7 +491,7 @@ export default function MarketingPage() {
 
       {/* Create Campaign Dialog */}
       <Dialog open={createCampOpen} onClose={() => setCreateCampOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700 }}>📣 สร้างแคมเปญใหม่</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>📣 สร้างแคมเปญใหม่</DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
             <TextField fullWidth label="ชื่อแคมเปญ" value={campForm.name} onChange={e => setCampForm(f => ({ ...f, name: e.target.value }))} sx={inputSx} />
@@ -528,7 +528,7 @@ export default function MarketingPage() {
 
       {/* Campaign Detail Dialog */}
       <Dialog open={!!viewCampaign} onClose={() => setViewCampaign(null)} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           📣 {viewCampaign?.name}
           {viewCampaign && <Chip label={campaignStatusStyles[viewCampaign.status]?.label} size="small" sx={{ bgcolor: campaignStatusStyles[viewCampaign.status]?.bg, color: campaignStatusStyles[viewCampaign.status]?.color, fontWeight: 700 }} />}
         </DialogTitle>
@@ -560,7 +560,7 @@ export default function MarketingPage() {
                 ].map(item => (
                   <Box key={item.label} sx={{ p: 2, borderRadius: "10px", bgcolor: c.bgStatBox, mb: 1.5 }}>
                     <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>{item.label}</Typography>
-                    <Typography sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: "1.2rem", color: item.color }}>{item.value}</Typography>
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: item.color }}>{item.value}</Typography>
                   </Box>
                 ))}
                 {viewCampaign.status === "active" && (

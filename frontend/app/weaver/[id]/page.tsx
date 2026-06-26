@@ -64,7 +64,7 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
     return (
       <MobileLayout>
         <Box sx={{ px: 2, pt: 4, textAlign: "center" }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mt: 10 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mt: 10 }}>
             ไม่พบข้อมูลช่างทอ
           </Typography>
           <Button onClick={() => router.back()} sx={{ mt: 2 }}>กลับ</Button>
@@ -81,7 +81,7 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
           <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
             <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Noto Serif Thai", serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
+          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
             ช่างทอ
           </Typography>
         </Box>
@@ -99,17 +99,17 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
           >
             <Avatar
               src={weaver.avatar && weaver.avatar.startsWith("http") ? weaver.avatar : undefined}
-              sx={{ width: 80, height: 80, mx: "auto", mb: 2, bgcolor: "#1B2A4A", fontSize: "2rem", fontWeight: 700, fontFamily: '"Playfair Display", serif' }}
+              sx={{ width: 80, height: 80, mx: "auto", mb: 2, bgcolor: "#1B2A4A", fontSize: "2rem", fontWeight: 700, fontFamily: '"Kanit", sans-serif' }}
             >
               {weaver.avatar && !weaver.avatar.startsWith("http") ? weaver.avatar : weaver.name[0]}
             </Avatar>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mb: 0.5 }}>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A" }}>
                 {weaver.name}
               </Typography>
               {weaver.isGI && <VerifiedRoundedIcon sx={{ fontSize: 18, color: "#C5A55A" }} />}
             </Box>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280", mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 2 }}>
               {weaver.community} • {weaver.province}
             </Typography>
 
@@ -143,7 +143,7 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
                   setToastMsg(isFollowing ? "ยกเลิกติดตามแล้ว" : "ติดตามช่างทอแล้ว!");
                 }}
                 sx={{
-                  py: 1.2, borderRadius: "12px", fontWeight: 700, fontFamily: '"Noto Serif Thai", serif',
+                  py: 1.2, borderRadius: "12px", fontWeight: 700, fontFamily: '"Kanit", sans-serif',
                   textTransform: "none",
                   ...(isFollowing
                     ? { borderColor: "#E5DFD6", color: "#6B7280" }
@@ -158,7 +158,7 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
                 startIcon={<ChatBubbleOutlineRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setToastMsg("ฟีเจอร์แชทกำลังพัฒนา")}
                 sx={{
-                  py: 1.2, borderRadius: "12px", fontWeight: 700, fontFamily: '"Noto Serif Thai", serif',
+                  py: 1.2, borderRadius: "12px", fontWeight: 700, fontFamily: '"Kanit", sans-serif',
                   textTransform: "none", borderColor: "#C5A55A", color: "#C5A55A",
                   "&:hover": { bgcolor: "rgba(197,165,90,0.05)" },
                 }}
@@ -179,12 +179,12 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
             transition={{ delay: 0.1 }}
             sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2.5, mb: 2, border: "1px solid #E5DFD6" }}
           >
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
               เทคนิคที่ถนัด
             </Typography>
             <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap" }}>
               {weaver.techniques.map((t) => (
-                <Chip key={t} label={t} sx={{ bgcolor: "#FDF8F0", color: "#8E601C", fontWeight: 600, fontFamily: '"Noto Serif Thai", serif', fontSize: "0.8rem" }} />
+                <Chip key={t} label={t} sx={{ bgcolor: "#FDF8F0", color: "#8E601C", fontWeight: 600, fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem" }} />
               ))}
             </Box>
           </Box>
@@ -197,32 +197,32 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
             transition={{ delay: 0.15 }}
             sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2.5, mb: 2, border: "1px solid #E5DFD6" }}
           >
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
               ข้อมูลช่างทอ
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                 <LocationOnRoundedIcon sx={{ fontSize: 18, color: "#C5A55A" }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
                   {weaver.location || `${weaver.community}, จ.${weaver.province}`}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                 <AccessTimeRoundedIcon sx={{ fontSize: 18, color: "#C5A55A" }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
                   ระยะเวลาผลิต: {weaver.leadTimeDays} วัน
                 </Typography>
               </Box>
               {weaver.specialty && (
                 <>
                   <Divider sx={{ borderColor: "#F0EBE3" }} />
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
                     ความเชี่ยวชาญ: {weaver.specialty}
                   </Typography>
                 </>
               )}
               {weaver.experience && (
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
                   ประสบการณ์: {weaver.experience}
                 </Typography>
               )}
@@ -238,7 +238,7 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
               transition={{ delay: 0.2 }}
               sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2.5, mb: 2, border: "1px solid #E5DFD6" }}
             >
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
                 ผลงานล่าสุด
               </Typography>
               <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
@@ -260,7 +260,7 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
               transition={{ delay: 0.25 }}
               sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2.5, border: "1px solid #E5DFD6" }}
             >
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A", mb: 1.5 }}>
                 สินค้าจากช่างทอ
               </Typography>
               <Box sx={{ display: "flex", gap: 1.5, overflowX: "auto", pb: 1, "&::-webkit-scrollbar": { display: "none" } }}>
@@ -277,10 +277,10 @@ export default function WeaverProfilePage({ params }: { params: Promise<{ id: st
                       <Image src={p.images[0]} alt={p.name} fill style={{ objectFit: "cover" }} />
                     </Box>
                     <Box sx={{ p: 1 }}>
-                      <Typography noWrap sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.75rem", fontWeight: 600, color: "#1B2A4A" }}>
+                      <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", fontWeight: 600, color: "#1B2A4A" }}>
                         {p.name}
                       </Typography>
-                      <Typography sx={{ fontFamily: '"Playfair Display", serif', fontSize: "0.8rem", fontWeight: 700, color: "#C5A55A" }}>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", fontWeight: 700, color: "#C5A55A" }}>
                         ฿{p.price.toLocaleString()}
                       </Typography>
                     </Box>

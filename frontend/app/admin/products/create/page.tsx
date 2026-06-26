@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Box from "@mui/material/Box";
@@ -308,7 +308,7 @@ export default function CreateProductPage() {
               <ArrowBackRoundedIcon />
             </IconButton>
             <Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: tr }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, transition: tr }}>
                 เพิ่มสินค้าใหม่
               </Typography>
               <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, transition: tr }}>
@@ -361,7 +361,7 @@ export default function CreateProductPage() {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {/* ── General Info Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} sx={cardSx}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr }}>
                   📋 ข้อมูลทั่วไป
                 </Typography>
 
@@ -445,7 +445,7 @@ export default function CreateProductPage() {
 
               {/* ── Attributes Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} sx={cardSx}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr }}>
                   🏷️ คุณลักษณะ
                 </Typography>
                 <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
@@ -756,7 +756,7 @@ export default function CreateProductPage() {
           }}>
             <WarningAmberRoundedIcon sx={{ color: "#F59E0B", fontSize: 22 }} />
           </Box>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem" }}>
             ยังไม่ได้บันทึกข้อมูล
           </Typography>
         </DialogTitle>

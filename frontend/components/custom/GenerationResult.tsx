@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Box, Typography } from "@mui/material";
 import { motion } from "framer-motion";
@@ -20,7 +20,7 @@ export default function GenerationResult() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         sx={{
-          fontFamily: '"Noto Serif Thai", serif',
+          fontFamily: '"Kanit", sans-serif',
           fontWeight: 700,
           fontSize: "1.2rem",
           color: "#1B2A4A",
@@ -99,7 +99,7 @@ export default function GenerationResult() {
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         sx={{
-          fontFamily: '"Noto Serif Thai", serif',
+          fontFamily: '"Kanit", sans-serif',
           fontSize: "0.85rem",
           color: "#6B7280",
           textAlign: "center",

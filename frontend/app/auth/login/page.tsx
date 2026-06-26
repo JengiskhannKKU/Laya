@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
@@ -73,7 +73,7 @@ export default function LoginPage() {
         </IconButton>
         <Typography
           sx={{
-            fontFamily: '"Playfair Display", "Noto Serif Thai", serif',
+            fontFamily: '"Kanit", sans-serif',
             fontSize: "1.5rem",
             fontWeight: 700,
             color: "#1B2A4A",
@@ -87,15 +87,15 @@ export default function LoginPage() {
 
       {/* Form Area */}
       <Box sx={{ px: 3, pt: 2, pb: 4, flex: 1 }}>
-        <Typography variant="h5" sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
+        <Typography variant="h5" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
           ยินดีต้อนรับกลับมา
         </Typography>
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: "#6B7280", fontSize: "0.9rem", mb: 4 }}>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.9rem", mb: 4 }}>
           เข้าสู่ระบบเพื่อดำเนินการต่อ
         </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Noto Serif Thai", serif' }}>
+          <Alert severity="error" sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>
             {error}
           </Alert>
         )}
@@ -137,13 +137,13 @@ export default function LoginPage() {
                   />
                 }
                 label={
-                  <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#6B7280" }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
                     จดจำฉันไว้
                   </Typography>
                 }
               />
               <Link href="/auth/forgot" style={{ textDecoration: "none" }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.85rem", color: "#C5A55A", fontWeight: 600 }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#C5A55A", fontWeight: 600 }}>
                   ลืมรหัสผ่าน?
                 </Typography>
               </Link>
@@ -162,7 +162,7 @@ export default function LoginPage() {
                 borderRadius: "12px",
                 fontWeight: 700,
                 fontSize: "1rem",
-                fontFamily: '"Noto Serif Thai", serif',
+                fontFamily: '"Kanit", sans-serif',
                 "&:hover": { bgcolor: "#0F1A30" },
                 "&.Mui-disabled": { bgcolor: "rgba(27,42,74,0.5)", color: "#FFFFFF" }
               }}
@@ -174,7 +174,7 @@ export default function LoginPage() {
 
         <Box sx={{ display: "flex", alignItems: "center", my: 4 }}>
           <Box sx={{ flex: 1, height: "1px", bgcolor: "#E5DFD6" }} />
-          <Typography sx={{ mx: 2, color: "#9CA3AF", fontSize: "0.8rem", fontFamily: '"Noto Serif Thai", serif' }}>
+          <Typography sx={{ mx: 2, color: "#9CA3AF", fontSize: "0.8rem", fontFamily: '"Kanit", sans-serif' }}>
             หรือเข้าสู่ระบบด้วย
           </Typography>
           <Box sx={{ flex: 1, height: "1px", bgcolor: "#E5DFD6" }} />
@@ -191,7 +191,7 @@ export default function LoginPage() {
               color: "#FFFFFF",
               borderRadius: "12px",
               fontWeight: 600,
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               textTransform: "none",
               "&:hover": { bgcolor: "#05A546" },
             }}
@@ -209,7 +209,7 @@ export default function LoginPage() {
               borderColor: "#E5DFD6",
               borderRadius: "12px",
               fontWeight: 600,
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               textTransform: "none",
               "&:hover": { bgcolor: "#F9FAFB", borderColor: "#E5DFD6" },
             }}
@@ -226,7 +226,7 @@ export default function LoginPage() {
               color: "#FFFFFF",
               borderRadius: "12px",
               fontWeight: 600,
-              fontFamily: '"Noto Serif Thai", serif',
+              fontFamily: '"Kanit", sans-serif',
               textTransform: "none",
               "&:hover": { bgcolor: "#166FE5" },
             }}
@@ -236,7 +236,7 @@ export default function LoginPage() {
         </Box>
 
         <Box sx={{ textAlign: "center", mt: 4 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", color: "#6B7280" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280" }}>
             ยังไม่มีบัญชี?{" "}
             <Link href="/auth/register" style={{ textDecoration: "none" }}>
               <Box component="span" sx={{ color: "#C5A55A", fontWeight: 600, "&:hover": { textDecoration: "underline" }}}>
