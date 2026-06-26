@@ -89,4 +89,88 @@ router.post("/generate", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/ai/analyze-fabric
+router.post("/analyze-fabric", async (req: Request, res: Response) => {
+  try {
+    const { imageBase64 } = req.body;
+    if (!imageBase64) {
+      res.status(400).json({ error: "imageBase64 is required" });
+      return;
+    }
+
+    const apiKey = process.env.GEN_AI_KKU_API_KEY || process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      // Mock response if no API key is configured
+      await new Promise(r => setTimeout(r, 2000));
+      res.json({
+        type: "ผ้าไหม (Mock)",
+        technique: "มัดหมี่",
+        pattern: "ลายดอกแก้ว",
+        tone: "ม่วง, ชมพู",
+        thickness: "ปานกลาง"
+      });
+      return;
+    }
+
+    // Call OpenAI-compatible LLM Vision API using the KKU proxy
+    const response = await fetch("https://gen.ai.kku.ac.th/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gemini-2.5-flash-lite", // or gemini-2.5-pro
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert in Thai textiles. Analyze the provided image of a Thai fabric. Extract the following 5 attributes in Thai language: 1) type (ประเภทผ้า e.g. ผ้าไหม, ผ้าฝ้าย), 2) technique (เทคนิคการทอ e.g. มัดหมี่, ยกขิด), 3) pattern (ลาย e.g. ลายดอกแก้ว), 4) tone (โทนสี e.g. ม่วง, ชมพู), 5) thickness (ความหนา e.g. บาง, ปานกลาง, หนา). Return ONLY a valid JSON object with the keys: type, technique, pattern, tone, thickness."
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: imageBase64.startsWith("data:image") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
+                }
+              }
+            ]
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 300,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("LLM API Error:", err);
+      // Fallback to mock if API fails
+      res.json({
+        type: "ผ้าไหม (API Error)",
+        technique: "มัดหมี่",
+        pattern: "ลายดอกแก้ว",
+        tone: "ม่วง, ชมพู",
+        thickness: "ปานกลาง"
+      });
+      return;
+    }
+
+    const data = await response.json();
+    let resultText = data.choices[0].message.content;
+    
+    // Strip markdown formatting if the LLM returns wrapped JSON
+    resultText = resultText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    
+    const parsed = JSON.parse(resultText);
+
+    res.json(parsed);
+  } catch (err) {
+    console.error("Fabric analysis error:", err);
+    res.status(500).json({ error: "Analysis failed" });
+  }
+});
+
 export default router;

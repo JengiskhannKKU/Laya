@@ -127,5 +127,24 @@ frontend/
   - Mobile-first: 3-column บน desktop, stacked บน mobile
   - Bottom sticky nav bar สำหรับ step navigation
 
+### 2026-06-26 — Tailor with Fabric Flow & Layout Fixes
+**ผู้แก้**: AI (Antigravity)
+
+**ปัญหาที่แก้ / งานที่ทำ:**
+- Fix horizontal scrolling / overflow issue on mobile width layout (`globals.css` overflow-x: hidden).
+- Rename "Custom" floating bottom nav button to "สั่งตัด/ทอ" and point it to a new service hub (`/services`).
+- Create `/services/page.tsx` as a branch between สั่งตัด (Tailoring) and สั่งทอผ้า (Weaving).
+- Create `/services/tailor/page.tsx` as a branch between มีผ้า (Have fabric) and ไม่มีผ้า (No fabric).
+- Implement comprehensive 9-step mock UI flow for "สั่งตัดด้วยผ้าที่มีอยู่แล้ว" (Tailor with existing fabric) at `/tailor/with-fabric` using framer-motion transitions.
+- Build step components in `components/tailor/steps/`: `UploadFabricStep`, `AIAnalysisStep`, `SelectOccasionStep`, `PatternRecommendationStep`, `VirtualTryOnStep`, `OrderSummaryStep`, `SelectTailorShopStep`, `MeasurementsStep`, `OrderSuccessStep`.
+
+### 2026-06-26 — AI Fabric Analysis & React Unmounting Fixes
+**ผู้แก้**: AI (Antigravity)
+
+**ปัญหาที่แก้ / งานที่ทำ:**
+- แก้ปัญหา API Reject ภาพที่ใหญ่เกินไป (Payload Too Large) โดยการเพิ่มฟังก์ชัน Client-side image compression (ลดขนาดภาพผ่าน Canvas ให้กว้างไม่เกิน 800px และคุณภาพ 0.6) ใน `UploadFabricStep.tsx`.
+- แก้ปัญหา React Hydration (`removeChild TypeError`) เวลาข้าม Step หน้าจอเร็วๆ โดยการลบ `mode="wait"` ออกจาก `<AnimatePresence>` ใน `TailorWithFabricFlow.tsx`.
+- ผูกระบบ API ของ `AIAnalysisStep.tsx` กับ Backend สำเร็จแล้ว.
+
 ---
 <!-- เพิ่ม changelog entry ใหม่ต่อท้ายนี้ -->
