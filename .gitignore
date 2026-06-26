@@ -39,3 +39,5 @@ backend/.env.production
 
 # Vercel
 .vercel
+
+create_tickets.sh

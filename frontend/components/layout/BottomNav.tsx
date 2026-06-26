@@ -14,7 +14,7 @@ import { motion } from "framer-motion";
 const navItems = [
   { label: "Home", icon: <HomeRoundedIcon />, path: "/" },
   { label: "community", icon: <ExploreRoundedIcon />, path: "/community" },
-  { label: "Custom", icon: <StarRoundedIcon />, path: "/custom" },
+  { label: "สั่งตัด/ทอ", icon: <StarRoundedIcon />, path: "/services" },
   { label: "Map", icon: <MapRoundedIcon />, path: "/map" },
   { label: "Profile", icon: <PersonRoundedIcon />, path: "/profile" },
 ];
@@ -36,7 +36,7 @@ export default function AppBottomNav() {
         left: 0,
         right: 0,
         zIndex: 1200,
-        maxWidth: 430,
+        maxWidth: "100%",
         mx: "auto",
         width: "100%",
       }}
@@ -54,7 +54,7 @@ export default function AppBottomNav() {
         <Box
           component={motion.div}
           whileTap={{ scale: 0.9 }}
-          onClick={() => router.push("/custom")}
+          onClick={() => router.push("/services")}
           sx={{
             width: 56,
             height: 56,
@@ -80,8 +80,6 @@ export default function AppBottomNav() {
       <Box
         sx={{
           bgcolor: "#1B2A4A",
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "space-around",

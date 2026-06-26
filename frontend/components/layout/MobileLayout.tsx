@@ -32,7 +32,7 @@ export default function MobileLayout({
       <Box
         sx={{
           flex: 1,
-          maxWidth: isDesktop ? "none" : 430,
+          maxWidth: "100%",
           mx: "auto",
           width: "100%",
           position: "relative",
@@ -52,7 +52,7 @@ export default function MobileLayout({
               left: "50%",
               transform: "translateX(-50%)",
               width: "100%",
-              maxWidth: isDesktop ? "none" : 430,
+              maxWidth: "100%",
               bgcolor: "#1B2A4A",
               color: "#FFFFFF",
               px: 2.5,
