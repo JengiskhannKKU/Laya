@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger";
 
 dotenv.config();
 
@@ -30,6 +32,13 @@ app.use(
 // ── Body parsing ──────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ── Swagger UI ────────────────────────────────────────────────────────────────
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: "LAYA API Docs",
+  customCss: ".swagger-ui .topbar { background-color: #1B2A4A; } .swagger-ui .topbar-wrapper img { display: none; } .swagger-ui .topbar-wrapper::before { content: 'LAYA API'; color: #C5A55A; font-size: 1.2rem; font-weight: 700; }",
+}));
+app.get("/docs.json", (_req, res) => res.json(swaggerSpec));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/health", healthRouter);
