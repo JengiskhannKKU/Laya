@@ -20,7 +20,7 @@ export default function ServicesPage() {
           เลือกบริการ
         </Typography>
 
-        <Link href="/custom" style={{ textDecoration: 'none' }}>
+        <Link href="/services/tailor" style={{ textDecoration: 'none' }}>
           <Box
             sx={{
               p: 4,
