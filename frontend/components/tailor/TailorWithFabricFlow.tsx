@@ -96,7 +96,7 @@ export default function TailorWithFabricFlow() {
 
       {/* Main Content Area */}
       <Box sx={{ px: 2, py: 1, pb: 10 }}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {currentStep === "upload" && (
             <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
           )}

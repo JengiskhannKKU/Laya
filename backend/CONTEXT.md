@@ -100,5 +100,19 @@ NODE_ENV=development|production
 - ยังไม่มีการ authentication/authorization middleware
 - CORS ยังเปิดกว้าง (`origin: true`) — ควรจำกัดใน production
 
+### 2026-06-26 — Environment Config Fixes
+**ผู้แก้**: AI (Antigravity)
+
+**ปัญหาที่แก้ / งานที่ทำ:**
+- Renamed the incorrectly named `env` file to `.env` in the backend root directory so that the application could properly load the `DATABASE_URL` and boot correctly.
+
+### 2026-06-26 — AI API Integration & Payload Limit Fixes
+**ผู้แก้**: AI (Antigravity)
+
+**ปัญหาที่แก้ / งานที่ทำ:**
+- เพิ่ม payload limit ใน `src/app.ts` สำหรับ `express.json({ limit: "50mb" })` เพื่อให้รองรับการส่งภาพ Base64 ขนาดใหญ่จาก frontend ได้.
+- แก้ไข Route `/api/ai` ใน `src/routes/ai.ts` ให้เรียกใช้ KKU LLM API (`https://gen.ai.kku.ac.th/api/v1`) โมเดล `gemini-2.5-flash-lite`.
+- เพิ่มโค้ดลบ Markdown Backticks (` ```json `) ออกจาก response ของ LLM ก่อนทำการ `JSON.parse` เพื่อแก้ปัญหา Syntax Error เวลาที่ LLM ตอบกลับมาเป็น Markdown.
+
 ---
 <!-- เพิ่ม changelog entry ใหม่ต่อท้ายนี้ -->
