@@ -48,7 +48,9 @@ interface DesignSpec {
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
-export default function AIShapeDesignPage() {
+import { Suspense } from "react";
+
+function DesignContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fabricImage = searchParams.get("fabric") ?? null;
@@ -371,5 +373,13 @@ export default function AIShapeDesignPage() {
         </Box>
       )}
     </Box></MobileLayout>
+  );
+}
+
+export default function AIShapeDesignPage() {
+  return (
+    <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>}>
+      <DesignContent />
+    </Suspense>
   );
 }
