@@ -14,6 +14,13 @@ const options: swaggerJsdoc.Options = {
       { url: "https://api.laya.th", description: "Production" },
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
       schemas: {
         Product: {
           type: "object",
@@ -125,6 +132,48 @@ const options: swaggerJsdoc.Options = {
           summary: "Health check",
           responses: {
             "200": { description: "Server is running", content: { "application/json": { schema: { type: "object", properties: { status: { type: "string", example: "ok" }, timestamp: { type: "string" } } } } } },
+          },
+        },
+      },
+
+      // ── Auth ─────────────────────────────────────────────────────────────────
+      "/api/auth/register": {
+        post: {
+          tags: ["Auth"],
+          summary: "สมัครสมาชิกใหม่",
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { type: "object", required: ["name", "email", "password"], properties: { name: { type: "string", example: "สมชาย มั่นคง" }, email: { type: "string", format: "email", example: "user@example.com" }, password: { type: "string", minLength: 8, example: "MyPass123" }, phone: { type: "string", example: "081-234-5678" } } } } },
+          },
+          responses: {
+            "201": { description: "สมัครสำเร็จ คืน token + user", content: { "application/json": { schema: { type: "object", properties: { token: { type: "string" }, user: { type: "object", properties: { id: { type: "string" }, email: { type: "string" }, name: { type: "string" }, role: { type: "string" } } } } } } } },
+            "400": { description: "ข้อมูลไม่ครบหรือรหัสผ่านสั้นเกินไป" },
+            "409": { description: "อีเมลซ้ำ" },
+          },
+        },
+      },
+      "/api/auth/login": {
+        post: {
+          tags: ["Auth"],
+          summary: "เข้าสู่ระบบ",
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { type: "object", required: ["email", "password"], properties: { email: { type: "string", format: "email", example: "admin@laya.com" }, password: { type: "string", example: "Admin@1234" } } } } },
+          },
+          responses: {
+            "200": { description: "Login สำเร็จ", content: { "application/json": { schema: { type: "object", properties: { token: { type: "string" }, user: { type: "object", properties: { id: { type: "string" }, email: { type: "string" }, name: { type: "string" }, role: { type: "string" }, merchantId: { type: "string" }, avatar: { type: "string" } } } } } } } },
+            "401": { description: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" },
+          },
+        },
+      },
+      "/api/auth/me": {
+        get: {
+          tags: ["Auth"],
+          summary: "ดึงข้อมูลผู้ใช้ปัจจุบัน (ต้องมี JWT)",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            "200": { description: "ข้อมูลผู้ใช้", content: { "application/json": { schema: { type: "object", properties: { id: { type: "string" }, email: { type: "string" }, name: { type: "string" }, role: { type: "string" } } } } } },
+            "401": { description: "ไม่มี token หรือ token หมดอายุ" },
           },
         },
       },

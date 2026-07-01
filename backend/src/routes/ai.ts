@@ -158,7 +158,7 @@ router.post("/analyze-fabric", async (req: Request, res: Response) => {
       return;
     }
 
-    const data = await response.json();
+    const data = await response.json() as { choices: { message: { content: string } }[] };
     let resultText = data.choices[0].message.content;
     
     // Strip markdown formatting if the LLM returns wrapped JSON

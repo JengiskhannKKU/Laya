@@ -1,99 +1,126 @@
 import { Router, Request, Response } from "express";
 import { query } from "../db";
-import { Product } from "../types";
 
 const router = Router();
 
-// GET /api/products
-// Supports: ?fabricType=ผ้าไหม  ?hasGI=true  ?search=กินรี  ?province=ลำพูน
+/**
+ * GET /api/products
+ * Maps shop_fabrics → Product shape the frontend expects.
+ * Query params: ?patternTag=มัดหมี่  ?province=เชียงใหม่  ?search=  ?shopId=
+ */
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { fabricType, hasGI, search, province } = req.query;
-    const conditions: string[] = [];
+    const { patternTag, province, search, shopId } = req.query;
+    const conditions: string[] = ["f.is_active = true", "s.status = 'active'"];
     const params: unknown[] = [];
     let idx = 1;
 
-    if (fabricType) {
-      conditions.push(`fabric_type = $${idx++}`);
-      params.push(fabricType);
-    }
-    if (hasGI !== undefined) {
-      conditions.push(`has_gi = $${idx++}`);
-      params.push(hasGI === "true");
+    if (patternTag) {
+      conditions.push(`f.pattern_tag = $${idx++}`);
+      params.push(patternTag);
     }
     if (province) {
-      conditions.push(`province = $${idx++}`);
+      conditions.push(`s.province = $${idx++}`);
       params.push(province);
+    }
+    if (shopId) {
+      conditions.push(`f.shop_id = $${idx++}`);
+      params.push(shopId);
     }
     if (search) {
       conditions.push(
-        `(name ILIKE $${idx} OR community ILIKE $${idx} OR province ILIKE $${idx})`
+        `(f.name ILIKE $${idx} OR f.pattern_tag ILIKE $${idx} OR s.province ILIKE $${idx} OR s.name ILIKE $${idx})`
       );
       params.push(`%${search}%`);
       idx++;
     }
 
-    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const where = `WHERE ${conditions.join(" AND ")}`;
     const sql = `
-      SELECT id, name, community, province, price, price_unit,
-             rating, review_count, images, has_gi, production_time,
-             available_length, fabric_type, story, weaver_name,
-             certificate_id, passport
-      FROM products
+      SELECT
+        f.id,
+        f.name,
+        f.description,
+        f.pattern_tag,
+        f.color_name,
+        f.color_hex,
+        f.width_cm,
+        f.price_per_meter  AS price,
+        f.stock_meters     AS stock,
+        f.shop_id,
+        s.name             AS shop_name,
+        s.province,
+        s.rating,
+        s.review_count,
+        COALESCE(
+          json_agg(fi.image_url ORDER BY fi.sort_order) FILTER (WHERE fi.id IS NOT NULL),
+          '[]'::json
+        ) AS images
+      FROM shop_fabrics f
+      JOIN shops s ON s.id = f.shop_id
+      LEFT JOIN shop_fabric_images fi ON fi.fabric_id = f.id
       ${where}
-      ORDER BY rating DESC
+      GROUP BY f.id, s.name, s.province, s.rating, s.review_count
+      ORDER BY s.rating DESC, f.created_at DESC
     `;
 
     const rows = await query<Record<string, unknown>>(sql, params);
-    res.json(rows.map(mapProduct));
+    res.json(rows.map(mapFabric));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 
-// GET /api/products/:id
+/** GET /api/products/:id */
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const rows = await query<Record<string, unknown>>(
-      `SELECT id, name, community, province, price, price_unit,
-              rating, review_count, images, has_gi, production_time,
-              available_length, fabric_type, story, weaver_name,
-              certificate_id, passport
-       FROM products WHERE id = $1`,
+      `SELECT
+         f.id, f.name, f.description, f.pattern_tag, f.color_name, f.color_hex,
+         f.width_cm, f.price_per_meter AS price, f.stock_meters AS stock, f.shop_id,
+         s.name AS shop_name, s.province, s.rating, s.review_count,
+         COALESCE(
+           json_agg(fi.image_url ORDER BY fi.sort_order) FILTER (WHERE fi.id IS NOT NULL),
+           '[]'::json
+         ) AS images
+       FROM shop_fabrics f
+       JOIN shops s ON s.id = f.shop_id
+       LEFT JOIN shop_fabric_images fi ON fi.fabric_id = f.id
+       WHERE f.id = $1
+       GROUP BY f.id, s.name, s.province, s.rating, s.review_count`,
       [req.params.id]
     );
+
     if (!rows.length) {
       res.status(404).json({ error: "Product not found" });
       return;
     }
-    res.json(mapProduct(rows[0]));
+    res.json(mapFabric(rows[0]));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch product" });
   }
 });
 
-/** Map snake_case DB row to camelCase Product */
-function mapProduct(row: Record<string, unknown>): Product {
+function mapFabric(row: Record<string, unknown>) {
   return {
-    id: row.id as string,
-    name: row.name as string,
-    community: row.community as string,
-    province: row.province as string,
+    id: row.id,
+    name: row.name,
+    description: row.description ?? null,
+    patternTag: row.pattern_tag ?? null,
+    colorName: row.color_name ?? null,
+    colorHex: row.color_hex ?? null,
+    widthCm: row.width_cm ? Number(row.width_cm) : null,
     price: Number(row.price),
-    priceUnit: row.price_unit as string,
-    rating: Number(row.rating),
-    reviewCount: Number(row.review_count),
-    images: row.images as string[],
-    hasGI: row.has_gi as boolean,
-    productionTime: row.production_time as string,
-    availableLength: Number(row.available_length),
-    fabricType: row.fabric_type as string,
-    story: row.story as string,
-    weaverName: row.weaver_name as string,
-    certificateId: row.certificate_id as string,
-    passport: row.passport as Product["passport"],
+    priceUnit: "เมตร",
+    stock: Number(row.stock),
+    shopId: row.shop_id,
+    shopName: row.shop_name,
+    province: row.province,
+    rating: Number(row.rating ?? 0),
+    reviewCount: Number(row.review_count ?? 0),
+    images: Array.isArray(row.images) ? row.images : [],
   };
 }
 

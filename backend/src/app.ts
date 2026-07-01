@@ -7,6 +7,10 @@ import { swaggerSpec } from "./swagger";
 dotenv.config();
 
 import healthRouter from "./routes/health";
+import authRouter from "./routes/auth";
+import shopsRouter from "./routes/shops";
+import measurementsRouter from "./routes/measurements";
+import notificationsRouter from "./routes/notifications";
 import productsRouter from "./routes/products";
 import categoriesRouter from "./routes/categories";
 import bannersRouter from "./routes/banners";
@@ -42,6 +46,10 @@ app.get("/docs.json", (_req, res) => res.json(swaggerSpec));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/health", healthRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/shops", shopsRouter);
+app.use("/api/measurements", measurementsRouter);
+app.use("/api/notifications", notificationsRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/banners", bannersRouter);
