@@ -41,3 +41,6 @@ backend/.env.production
 .vercel
 
 create_tickets.sh
+
+# Database migrations — run manually in Supabase SQL Editor
+backend/migrations/
