@@ -38,7 +38,7 @@ export interface TailorOrderState {
 }
 
 export default function TailorWithFabricFlow() {
-  const [currentStep, setCurrentStep] = useState<TailorStep>("upload");
+  const [currentStep, setCurrentStep] = useState<TailorStep>("pattern_recommendation");
   const [orderState, setOrderState] = useState<TailorOrderState>({});
 
   const goNext = (step: TailorStep) => setCurrentStep(step);
