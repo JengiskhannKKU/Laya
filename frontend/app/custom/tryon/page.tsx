@@ -22,7 +22,9 @@ import { motion } from "framer-motion";
 
 const BLEND_LABELS = ["แบบ 25%", "แบบ 50%", "แบบ 75%", "แบบ 100%"];
 
-export default function VirtualTryOnPage() {
+import { Suspense } from "react";
+
+function TryOnContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const designImage = searchParams.get("design") ?? null;
@@ -259,5 +261,13 @@ export default function VirtualTryOnPage() {
         )}
       </Box>
     </Box></MobileLayout>
+  );
+}
+
+export default function VirtualTryOnPage() {
+  return (
+    <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>}>
+      <TryOnContent />
+    </Suspense>
   );
 }
