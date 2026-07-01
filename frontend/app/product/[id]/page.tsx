@@ -1,5 +1,6 @@
 import { products } from "@/lib/mock-data";
 import ProductDetailView from "@/components/product/ProductDetailView";
+import MobileLayout from "@/components/layout/MobileLayout";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
@@ -18,5 +19,9 @@ export default async function ProductPage({
     notFound();
   }
 
-  return <ProductDetailView product={product} />;
+  return (
+    <MobileLayout>
+      <ProductDetailView product={product} />
+    </MobileLayout>
+  );
 }

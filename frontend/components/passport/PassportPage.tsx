@@ -54,10 +54,7 @@ export default function PassportPage({ product }: PassportPageProps) {
     return (
       <Box
         sx={{
-          maxWidth: 430,
-          mx: "auto",
-          minHeight: "100vh",
-          bgcolor: "#FAF6F0",
+          width: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -85,8 +82,7 @@ export default function PassportPage({ product }: PassportPageProps) {
   return (
     <Box
       sx={{
-        maxWidth: 430,
-        mx: "auto",
+        width: "100%",
         minHeight: "100vh",
         bgcolor: "#FAF6F0",
         position: "relative",

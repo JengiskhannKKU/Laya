@@ -1,39 +1,90 @@
+/* ============================================================
+   LAYA Design System — CSS Tokens
+   ============================================================ */
+
+/* Google Fonts: Cormorant Garamond + Kanit */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Kanit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* --- Brand Colors --- */
+  --indigo-700: #1B2A4A;
+  --indigo-800: #0F1A30;
+  --indigo-600: #2C3E6B;
+  --gold-500: #C5A55A;
+  --gold-400: #D4BA7A;
+  --gold-600: #B8954A;
+  --gold-700: #9C7E37;
+  --cream: #FAF6F0;
+  --paper: #FFFFFF;
+  --line: #E5DFD6;
+  --ink: #1B2A4A;
+  --ink-soft: #4A5468;
+  --ink-muted: #7A7468;
+  --ink-faint: #A89F94;
+
+  /* --- Gradients --- */
+  --grad-scrim: linear-gradient(to top, rgba(15,26,48,0.55) 0%, transparent 60%);
+  --grad-indigo: linear-gradient(135deg, rgba(27,42,74,0.95) 0%, rgba(27,42,74,0.40) 100%);
+  --grad-gold: linear-gradient(145deg, #C5A55A 0%, #D4BA7A 50%, #C5A55A 100%);
+  --hairline-gold: linear-gradient(to right, transparent, #C5A55A, transparent);
+
+  /* --- Shadows (indigo-tinted, never pure black) --- */
+  --shadow-xs: 0 2px 6px rgba(27,42,74,0.05);
+  --shadow-sm: 0 2px 8px rgba(27,42,74,0.06);
+  --shadow-md: 0 4px 12px rgba(27,42,74,0.08);
+  --shadow-lg: 0 8px 24px rgba(27,42,74,0.12);
+  --shadow-xl: 0 20px 40px rgba(27,42,74,0.18);
+  --shadow-gold: 0 4px 14px rgba(197,165,90,0.40), 0 2px 6px rgba(0,0,0,0.15);
+  --ring: 0 0 0 3px rgba(197,165,90,0.35);
+
+  /* --- Typography Scale --- */
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.4375rem;
+
+  /* --- Radii --- */
+  --radius-btn: 12px;
+  --radius-card: 16px;
+  --radius-banner: 20px;
+  --radius-hero: 28px;
+  --radius-pill: 999px;
+
+  /* --- Spacing --- */
+  --gutter: 20px;
+
+  /* --- Tailwind / shadcn compatibility --- */
+  --background: var(--cream);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--indigo-700);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--gold-500);
+  --secondary-foreground: var(--ink);
+  --muted: #F0EBE3;
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--gold-500);
+  --accent-foreground: var(--ink);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: var(--line);
+  --input: var(--line);
+  --radius: 0.75rem;
+}
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: #FAF6F0;
-  --foreground: #1B2A4A;
-  --card: #FFFFFF;
-  --card-foreground: #1B2A4A;
-  --popover: #FFFFFF;
-  --popover-foreground: #1B2A4A;
-  --primary: #1B2A4A;
-  --primary-foreground: #FFFFFF;
-  --secondary: #C5A55A;
-  --secondary-foreground: #1B2A4A;
-  --muted: #F0EBE3;
-  --muted-foreground: #6B7280;
-  --accent: #C5A55A;
-  --accent-foreground: #1B2A4A;
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: #E5DFD6;
-  --input: #E5DFD6;
-  --ring: #C5A55A;
-  --radius: 0.75rem;
-  
-  --color-indigo: #1B2A4A;
-  --color-gold: #C5A55A;
-  --color-cream: #FAF6F0;
-  --color-warm-gray: #F0EBE3;
-}
-
 @theme inline {
   --font-sans: 'Kanit', sans-serif;
-  --font-serif: 'Kanit', sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
   --font-mono: 'Geist Mono', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -67,10 +118,17 @@
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    /* Almost-invisible handmade-paper warmth over the ivory base */
+    background-color: var(--cream);
+    background-image:
+      radial-gradient(rgba(27, 42, 74, 0.018) 1px, transparent 1px),
+      radial-gradient(rgba(27, 42, 74, 0.014) 1px, transparent 1px);
+    background-size: 22px 22px, 22px 22px;
+    background-position: 0 0, 11px 11px;
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — hidden globally */
 ::-webkit-scrollbar {
   width: 0;
   display: none;
@@ -82,4 +140,28 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+/* ============================================================
+   LAYA Utility Classes
+   ============================================================ */
+
+/* Horizontal scroll container with hidden scrollbar */
+.laya-scroll-x {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.laya-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gold hairline divider */
+.laya-hairline {
+  border: none;
+  height: 1px;
+  background: var(--hairline-gold);
+  width: 100%;
+  margin: 0;
 }

@@ -13,12 +13,12 @@ export default function MissionSection() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      sx={{ px: 2.5, py: 3 }}
+      sx={{ py: { xs: 4, md: 7 } }}
     >
       <Box
         sx={{
           position: "relative",
-          minHeight: 240,
+          minHeight: { xs: 280, md: 420 },
           borderRadius: "28px",
           overflow: "hidden",
           display: "flex",
@@ -85,7 +85,7 @@ export default function MissionSection() {
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 700,
-              fontSize: "1.25rem",
+              fontSize: { xs: "1.05rem", md: "1.35rem" },
               color: "#FFFFFF",
               lineHeight: 1.8,
               textShadow: "0 2px 8px rgba(0,0,0,0.4)",

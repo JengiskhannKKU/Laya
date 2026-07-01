@@ -11,33 +11,47 @@ export default function InspirationSection() {
   return (
     <Box
       sx={{
-        mt: 6,
-        px: 2,
-        pb: 10, // Extra padding for the last section
+        py: { xs: 4, md: 7 },
+        pb: { xs: 8, md: 10 },
       }}
     >
-      <Typography
-        sx={{
-          fontFamily: '"Kanit", sans-serif',
-          fontWeight: 700,
-          fontSize: "1.2rem",
-          color: "#1B2A4A",
-          mb: 2,
-          pl: 0.5,
-        }}
-      >
-        แรงบันดาลใจของ Laya
-      </Typography>
+      <Box sx={{ mb: { xs: 2, md: 2.5 } }}>
+        <Typography
+          sx={{
+            fontFamily: '"Kanit", sans-serif',
+            fontWeight: 600,
+            fontSize: "0.6rem",
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "#C5A55A",
+            mb: 0.75,
+          }}
+        >
+          Our Inspiration
+        </Typography>
+        <Typography
+          sx={{
+            fontFamily: '"Kanit", sans-serif',
+            fontWeight: 700,
+            fontSize: { xs: "1.3rem", md: "1.7rem" },
+            color: "#1B2A4A",
+            lineHeight: 1.2,
+            letterSpacing: "-0.01em",
+          }}
+        >
+          แรงบันดาลใจของ Laya
+        </Typography>
+      </Box>
 
       <Box
         component={motion.div}
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.97 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
         sx={{
           width: "100%",
-          height: 400,
+          height: { xs: 340, md: 460 },
           borderRadius: "24px",
           overflow: "hidden",
           position: "relative",

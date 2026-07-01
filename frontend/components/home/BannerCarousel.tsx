@@ -44,15 +44,15 @@ export default function BannerCarousel() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15, duration: 0.5 }}
-      sx={{ px: 2.5, py: 1 }}
+      sx={{ py: 1 }}
     >
       <Box
         sx={{
           position: "relative",
-          borderRadius: "20px",
+          borderRadius: { xs: "20px", md: "28px" },
           overflow: "hidden",
-          height: 190,
-          boxShadow: "0 8px 24px rgba(27,42,74,0.12)",
+          height: { xs: 200, md: 440 },
+          boxShadow: "0 20px 50px rgba(27,42,74,0.16)",
         }}
       >
         <AnimatePresence mode="wait" custom={direction}>
@@ -78,40 +78,55 @@ export default function BannerCarousel() {
                 position: "absolute",
                 inset: 0,
                 background:
-                  "linear-gradient(to left, rgba(27,42,74,0.88) 35%, rgba(27,42,74,0.2) 100%)",
+                  "linear-gradient(105deg, rgba(15,26,48,0.72) 0%, rgba(15,26,48,0.32) 45%, rgba(15,26,48,0.05) 100%)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                alignItems: "flex-end",
-                px: 3,
+                alignItems: "flex-start",
+                px: { xs: 3, md: 7 },
               }}
             >
-              <Typography
-                sx={{
-                  fontFamily: '"Kanit", sans-serif',
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#FFFFFF",
-                  lineHeight: 1.35,
-                  textAlign: "right",
-                }}
-              >
-                {banners[current].title}
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: '"Kanit", sans-serif',
-                  fontWeight: 300,
-                  fontSize: "0.75rem",
-                  color: "rgba(255,255,255,0.8)",
-                  mt: 0.8,
-                  textAlign: "right",
-                  whiteSpace: "pre-line",
-                  lineHeight: 1.5,
-                }}
-              >
-                {banners[current].subtitle}
-              </Typography>
+              <Box sx={{ maxWidth: { xs: "80%", md: "58%" } }}>
+                <Typography
+                  sx={{
+                    fontFamily: '"Kanit", sans-serif',
+                    fontWeight: 600,
+                    fontSize: "0.6rem",
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    color: "#D4BA7A",
+                    mb: { xs: 1, md: 1.5 },
+                  }}
+                >
+                  Featured Collection
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: '"Kanit", sans-serif',
+                    fontWeight: 700,
+                    fontSize: { xs: "1.35rem", md: "2.6rem" },
+                    color: "#FFFFFF",
+                    lineHeight: 1.2,
+                    letterSpacing: "-0.01em",
+                    textShadow: "0 2px 16px rgba(0,0,0,0.35)",
+                  }}
+                >
+                  {banners[current].title}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: '"Kanit", sans-serif',
+                    fontWeight: 300,
+                    fontSize: { xs: "0.78rem", md: "1rem" },
+                    color: "rgba(255,255,255,0.85)",
+                    mt: { xs: 1, md: 1.5 },
+                    whiteSpace: "pre-line",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {banners[current].subtitle}
+                </Typography>
+              </Box>
             </Box>
           </motion.div>
         </AnimatePresence>

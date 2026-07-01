@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -7,8 +7,6 @@ import Badge from "@mui/material/Badge";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import { useAuth } from "@/lib/auth-context";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -29,7 +27,10 @@ export default function HomeHeader() {
         pb: 0.5,
       }}
     >
+      {/* Left spacer */}
       <Box sx={{ width: 60 }} />
+
+      {/* Centered wordmark */}
       <Box sx={{ textAlign: "center", flex: 1 }}>
         <Typography
           sx={{
@@ -37,7 +38,7 @@ export default function HomeHeader() {
             fontSize: "1.8rem",
             fontWeight: 700,
             color: "#1B2A4A",
-            letterSpacing: 4,
+            letterSpacing: "0.12em",
             lineHeight: 1,
           }}
         >
@@ -45,10 +46,10 @@ export default function HomeHeader() {
         </Typography>
         <Typography
           sx={{
-            fontFamily: '"Kanit", sans-serif',
-            fontSize: "0.5rem",
-            color: "#C5A55A",
-            letterSpacing: 2,
+            fontFamily: '"Cormorant Garamond", var(--font-cormorant), Georgia, serif',
+            fontSize: "0.625rem",
+            color: "#B8954A",
+            letterSpacing: "0.14em",
             fontStyle: "italic",
             mt: 0.2,
           }}
@@ -56,15 +57,47 @@ export default function HomeHeader() {
           Every Pattern Tells a Story
         </Typography>
       </Box>
-      <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", justifyContent: "flex-end" }}>
+
+      {/* Right icons */}
+      <Box
+        sx={{
+          display: "flex",
+          gap: 0.5,
+          alignItems: "center",
+          justifyContent: "flex-end",
+          width: 60,
+        }}
+      >
         <IconButton size="small" sx={{ color: "#1B2A4A" }}>
-          <Badge badgeContent={2} color="error" sx={{ '& .MuiBadge-badge': { backgroundColor: '#C5A55A', color: 'white' } }}>
+          <Badge
+            badgeContent={2}
+            sx={{
+              "& .MuiBadge-badge": {
+                backgroundColor: "#C5A55A",
+                color: "#FFFFFF",
+                fontSize: "0.55rem",
+                minWidth: 16,
+                height: 16,
+              },
+            }}
+          >
             <NotificationsNoneRoundedIcon sx={{ fontSize: 22 }} />
           </Badge>
         </IconButton>
         <Link href="/cart" passHref>
           <IconButton size="small" sx={{ color: "#1B2A4A" }}>
-            <Badge badgeContent={1} color="error" sx={{ '& .MuiBadge-badge': { backgroundColor: '#C5A55A', color: 'white' } }}>
+            <Badge
+              badgeContent={1}
+              sx={{
+                "& .MuiBadge-badge": {
+                  backgroundColor: "#C5A55A",
+                  color: "#FFFFFF",
+                  fontSize: "0.55rem",
+                  minWidth: 16,
+                  height: 16,
+                },
+              }}
+            >
               <ShoppingCartRoundedIcon sx={{ fontSize: 22 }} />
             </Badge>
           </IconButton>

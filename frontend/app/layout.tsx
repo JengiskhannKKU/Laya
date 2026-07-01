@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Kanit } from "next/font/google";
+import { Kanit, Cormorant_Garamond } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import MuiProvider from "@/components/providers/MuiProvider";
 import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
@@ -9,6 +9,14 @@ const kanit = Kanit({
   subsets: ["thai", "latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-kanit",
+  display: "swap",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
@@ -50,8 +58,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={kanit.variable} suppressHydrationWarning>
+    <html
+      lang="th"
+      className={`${kanit.variable} ${cormorantGaramond.variable}`}
+      suppressHydrationWarning
+    >
       <body
+        suppressHydrationWarning
         style={{
           fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
           backgroundColor: "#FAF6F0",

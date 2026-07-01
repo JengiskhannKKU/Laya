@@ -55,7 +55,7 @@ function MenuItem({ icon, label, subtitle, href, badge }: {
 }
 
 export default function ProfilePage() {
-  const { user, logout, loginAsRole } = useAuth();
+  const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
 
   return (
@@ -162,26 +162,6 @@ export default function ProfilePage() {
           </Typography>
         </Box>
 
-        {/* Dev helper: switch roles */}
-        {process.env.NODE_ENV === "development" && (
-          <Box sx={{ mt: 2, p: 2, bgcolor: "#F0F9FF", borderRadius: "12px", border: "1px dashed #93C5FD" }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#3B82F6", mb: 1, fontWeight: 600 }}>
-              DEV: Switch Role
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1 }}>
-              {(["customer", "merchant", "admin"] as const).map((role) => (
-                <Button key={role} size="small" variant={user?.role === role ? "contained" : "outlined"}
-                  onClick={() => loginAsRole(role)}
-                  sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", textTransform: "none", borderRadius: "8px", py: 0.3,
-                    ...(user?.role === role ? { bgcolor: "#1B2A4A" } : { borderColor: "#93C5FD", color: "#3B82F6" })
-                  }}
-                >
-                  {role}
-                </Button>
-              ))}
-            </Box>
-          </Box>
-        )}
       </Box>
     </MobileLayout>
   );

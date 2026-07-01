@@ -1,22 +1,17 @@
-﻿"use client";
+"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import ExploreRoundedIcon from "@mui/icons-material/ExploreRounded";
-import StarRoundedIcon from "@mui/icons-material/StarRounded";
-import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
-import MapRoundedIcon from "@mui/icons-material/MapRounded";
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { motion } from "framer-motion";
+import { Home, Compass, Scissors, Map, User } from "lucide-react";
 
 const navItems = [
-  { label: "Home", icon: <HomeRoundedIcon />, path: "/" },
-  { label: "community", icon: <ExploreRoundedIcon />, path: "/community" },
-  { label: "สั่งตัด/ทอ", icon: <StarRoundedIcon />, path: "/services" },
-  { label: "Map", icon: <MapRoundedIcon />, path: "/map" },
-  { label: "Profile", icon: <PersonRoundedIcon />, path: "/profile" },
+  { label: "Home", icon: <Home size={22} strokeWidth={1.5} />, path: "/" },
+  { label: "ชุมชน", icon: <Compass size={22} strokeWidth={1.5} />, path: "/community" },
+  { label: "สั่งตัด/ทอ", icon: null, path: "/services" },
+  { label: "Map", icon: <Map size={22} strokeWidth={1.5} />, path: "/map" },
+  { label: "Profile", icon: <User size={22} strokeWidth={1.5} />, path: "/profile" },
 ];
 
 export default function AppBottomNav() {
@@ -36,12 +31,10 @@ export default function AppBottomNav() {
         left: 0,
         right: 0,
         zIndex: 1200,
-        maxWidth: "100%",
-        mx: "auto",
         width: "100%",
       }}
     >
-      {/* Floating Custom button */}
+      {/* Center FAB — raised 24px above bar */}
       <Box
         sx={{
           position: "absolute",
@@ -53,26 +46,22 @@ export default function AppBottomNav() {
       >
         <Box
           component={motion.div}
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.96 }}
           onClick={() => router.push("/services")}
           sx={{
             width: 56,
             height: 56,
             borderRadius: "50%",
-            background:
-              value === 2
-                ? "linear-gradient(145deg, #C5A55A 0%, #D4BA7A 50%, #C5A55A 100%)"
-                : "linear-gradient(145deg, #C5A55A 0%, #D4BA7A 50%, #C5A55A 100%)",
+            background: "linear-gradient(145deg, #C5A55A 0%, #D4BA7A 50%, #C5A55A 100%)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow:
-              "0 4px 14px rgba(197,165,90,0.4), 0 2px 6px rgba(0,0,0,0.15)",
+            boxShadow: "0 4px 14px rgba(197,165,90,0.40), 0 2px 6px rgba(0,0,0,0.15)",
             cursor: "pointer",
             border: "3px solid #FAF6F0",
           }}
         >
-          <StarRoundedIcon sx={{ fontSize: 28, color: "#FFFFFF" }} />
+          <Scissors size={24} strokeWidth={1.5} color="#FFFFFF" />
         </Box>
       </Box>
 
@@ -85,7 +74,7 @@ export default function AppBottomNav() {
           justifyContent: "space-around",
           px: 1,
           pt: 1.2,
-          pb: 2,
+          pb: "16px",
           height: 72,
         }}
       >
@@ -105,14 +94,14 @@ export default function AppBottomNav() {
                   justifyContent: "flex-end",
                   width: 64,
                   cursor: "pointer",
-                  pt: 2.5,
+                  pb: 0.5,
                 }}
               >
                 <Typography
                   sx={{
                     fontFamily: '"Kanit", sans-serif',
-                    fontSize: "0.6rem",
-                    color: isActive ? "#C5A55A" : "rgba(255,255,255,0.6)",
+                    fontSize: "10px",
+                    color: isActive ? "#C5A55A" : "rgba(255,255,255,0.5)",
                     fontWeight: isActive ? 600 : 400,
                     mt: 0.5,
                   }}
@@ -127,7 +116,7 @@ export default function AppBottomNav() {
             <Box
               key={item.label}
               component={motion.div}
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => router.push(item.path)}
               sx={{
                 display: "flex",
@@ -135,9 +124,10 @@ export default function AppBottomNav() {
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                gap: 0.3,
+                gap: "4px",
                 width: 64,
                 py: 0.5,
+                position: "relative",
               }}
             >
               <Box
@@ -146,9 +136,6 @@ export default function AppBottomNav() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  "& .MuiSvgIcon-root": {
-                    fontSize: 22,
-                  },
                 }}
               >
                 {item.icon}
@@ -156,13 +143,26 @@ export default function AppBottomNav() {
               <Typography
                 sx={{
                   fontFamily: '"Kanit", sans-serif',
-                  fontSize: "0.6rem",
+                  fontSize: "10px",
                   color: isActive ? "#FFFFFF" : "rgba(255,255,255,0.5)",
                   fontWeight: isActive ? 600 : 400,
                 }}
               >
                 {item.label}
               </Typography>
+              {/* Active indicator dot */}
+              {isActive && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: -4,
+                    width: 4,
+                    height: 4,
+                    borderRadius: "50%",
+                    bgcolor: "#C5A55A",
+                  }}
+                />
+              )}
             </Box>
           );
         })}

@@ -13,6 +13,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useRouter } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import { useAuth } from "@/lib/auth-context";
 
 const textFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -26,6 +27,7 @@ const textFieldStyles = {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register: registerUser } = useAuth();
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -51,20 +53,17 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Navigate to success or login
-      router.push("/auth/login");
-    } catch (err: any) {
-      setError(err.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก");
+      await registerUser(name, email, password, phone || undefined);
+      router.push("/");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการสมัครสมาชิก");
     } finally {
       setLoading(false);
     }
   };
 
   const handleOAuth = (provider: string) => {
-    alert(`Mock OAuth Register: ${provider}`);
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/api/auth/oauth/${provider.toLowerCase()}`;
   };
 
   return (

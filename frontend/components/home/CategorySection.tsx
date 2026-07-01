@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
 import { categories } from "@/lib/mock-data";
 import Link from "next/link";
+import SectionHeader from "./SectionHeader";
 import {
   Layers,
   Shirt,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 
 const getCategoryIcon = (id: string, color: string) => {
-  const props = { size: 30, color, strokeWidth: 1.5 };
+  const props = { size: 28, color, strokeWidth: 1.4 };
   switch (id) {
     case "fabric": return <Layers {...props} />;
     case "clothing": return <Shirt {...props} />;
@@ -29,65 +30,32 @@ const getCategoryIcon = (id: string, color: string) => {
   }
 };
 
-const categoryStyles: Record<string, { bg: string; iconColor: string }> = {
-  fabric: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
-  clothing: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
-  scarf: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
-  bag: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
-  premium: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
-  decor: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
-  others: { bg: "#1B2A4A", iconColor: "#FFFFFF" },
-};
-
 export default function CategorySection() {
   return (
     <Box
       component={motion.div}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.35, duration: 0.5 }}
-      sx={{ py: 2, px: 2.5 }}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      sx={{ py: { xs: 4, md: 6 } }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-      >
-        <Typography
-          sx={{
-            fontFamily: '"Kanit", sans-serif',
-            fontWeight: 700,
-            fontSize: "1.1rem",
-            color: "#333",
-          }}
-        >
-          หมวดหมู่
-        </Typography>
-        <Typography
-          component={Link}
-          href="/categories"
-          sx={{
-            fontFamily: '"Inter", sans-serif',
-            fontSize: "0.85rem",
-            color: "#091751ff",
-            textDecoration: "none",
-            fontWeight: 500,
-          }}
-        >
-          ดูทั้งหมด
-        </Typography>
-      </Box>
+      <SectionHeader
+        eyebrow="Browse"
+        title="หมวดหมู่"
+        subtitle="Explore by craft and creation"
+        href="/categories"
+      />
 
-      {/* Horizontal Scrollable Container */}
+      {/* Category Container — horizontal scroll on mobile, centered wrap on desktop */}
       <Box
         sx={{
           display: "flex",
-          gap: 2.5,
-          overflowX: "auto",
-          pb: 1.5, // Space for drop shadow
+          gap: { xs: 3, md: 5 },
+          overflowX: { xs: "auto", md: "visible" },
+          flexWrap: { xs: "nowrap", md: "wrap" },
+          justifyContent: { xs: "flex-start", md: "center" },
+          pb: 1.5,
           pt: 0.5,
           px: 0.5,
           mx: -0.5,
@@ -98,64 +66,78 @@ export default function CategorySection() {
           scrollbarWidth: "none",
         }}
       >
-        {categories.map((cat, index) => {
-          const style = categoryStyles[cat.id] || categoryStyles.others;
-          return (
-            <Link
-              key={cat.id}
-              href={`/community?category=${cat.id}`}
-              style={{ textDecoration: "none", flexShrink: 0 }}
+        {categories.map((cat, index) => (
+          <Link
+            key={cat.id}
+            href={`/community?category=${cat.id}`}
+            style={{ textDecoration: "none", flexShrink: 0 }}
+          >
+            <Box
+              component={motion.div}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05, duration: 0.4 }}
+              whileTap={{ scale: 0.95 }}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: { xs: "72px", md: "88px" },
+                gap: 1.4,
+                cursor: "pointer",
+                "&:hover .laya-cat-circle": {
+                  transform: "translateY(-4px)",
+                  borderColor: "#C5A55A",
+                  boxShadow: "0 10px 24px rgba(197,165,90,0.18)",
+                },
+                "&:hover .laya-cat-icon svg": { stroke: "#C5A55A" },
+                "&:hover .laya-cat-label": { color: "#1B2A4A" },
+              }}
             >
               <Box
-                component={motion.div}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="laya-cat-circle"
                 sx={{
+                  width: { xs: 68, md: 84 },
+                  height: { xs: 68, md: 84 },
+                  borderRadius: "50%",
+                  bgcolor: "#FFFFFF",
+                  border: "1px solid #E5DFD6",
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
-                  width: "64px",
-                  gap: 1.2,
-                  cursor: "pointer",
+                  justifyContent: "center",
+                  transition:
+                    "transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
                 }}
               >
                 <Box
+                  className="laya-cat-icon"
                   sx={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: "18px",
-                    bgcolor: style.bg,
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "all 0.2s ease",
-                    "&:hover": {
-                      transform: "translateY(-3px)",
-                      boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
-                    },
+                    "& svg": { transition: "stroke 0.3s ease" },
                   }}
                 >
-                  {getCategoryIcon(cat.id, style.iconColor)}
+                  {getCategoryIcon(cat.id, "#1B2A4A")}
                 </Box>
-                <Typography
-                  sx={{
-                    fontFamily: '"Kanit", sans-serif',
-                    fontWeight: 500,
-                    fontSize: "0.75rem",
-                    color: "#555",
-                    textAlign: "center",
-                    lineHeight: 1.2,
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {cat.name}
-                </Typography>
               </Box>
-            </Link>
-          );
-        })}
+              <Typography
+                className="laya-cat-label"
+                sx={{
+                  fontFamily: '"Kanit", sans-serif',
+                  fontWeight: 400,
+                  fontSize: "0.75rem",
+                  color: "#7A7468",
+                  textAlign: "center",
+                  lineHeight: 1.2,
+                  wordBreak: "break-word",
+                  transition: "color 0.25s ease",
+                }}
+              >
+                {cat.name}
+              </Typography>
+            </Box>
+          </Link>
+        ))}
       </Box>
     </Box>
   );

@@ -13,7 +13,7 @@ const theme = createTheme({
     secondary: {
       main: "#C5A55A",
       light: "#D4BA7A",
-      dark: "#A68A3A",
+      dark: "#9C7E37",
       contrastText: "#1B2A4A",
     },
     background: {
@@ -22,7 +22,7 @@ const theme = createTheme({
     },
     text: {
       primary: "#1B2A4A",
-      secondary: "#6B7280",
+      secondary: "#4A5468",
     },
   },
   typography: {
@@ -42,19 +42,71 @@ const theme = createTheme({
     subtitle2: { fontFamily: KANIT },
   },
   shape: { borderRadius: 12 },
+  shadows: [
+    "none",
+    "0 2px 6px rgba(27,42,74,0.05)",
+    "0 2px 8px rgba(27,42,74,0.06)",
+    "0 4px 12px rgba(27,42,74,0.08)",
+    "0 4px 12px rgba(27,42,74,0.08)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 8px 24px rgba(27,42,74,0.12)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+    "0 20px 40px rgba(27,42,74,0.18)",
+  ],
   components: {
     MuiButton: {
       styleOverrides: {
-        root: { textTransform: "none", borderRadius: 12, fontWeight: 600 },
+        root: {
+          textTransform: "none",
+          borderRadius: 12,
+          fontWeight: 600,
+          fontFamily: KANIT,
+        },
       },
     },
     MuiCard: {
       styleOverrides: {
-        root: { borderRadius: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" },
+        root: {
+          borderRadius: 16,
+          boxShadow: "0 4px 12px rgba(27,42,74,0.08)",
+          border: "none",
+        },
       },
     },
     MuiChip: {
-      styleOverrides: { root: { borderRadius: 20 } },
+      styleOverrides: {
+        root: { borderRadius: 999 },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#C5A55A",
+            },
+          },
+          "& label.Mui-focused": {
+            color: "#C5A55A",
+          },
+        },
+      },
     },
   },
 });

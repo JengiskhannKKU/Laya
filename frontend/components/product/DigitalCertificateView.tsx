@@ -29,10 +29,8 @@ export default function DigitalCertificateView({ product, onBack }: DigitalCerti
       exit={{ opacity: 0, scale: 0.95 }}
       sx={{
         bgcolor: "#F8F5F1",
-        minHeight: "100vh",
         pb: 12,
-        maxWidth: 430,
-        mx: "auto",
+        width: "100%",
         position: "relative",
         display: "flex",
         flexDirection: "column",

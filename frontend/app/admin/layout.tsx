@@ -55,36 +55,35 @@ function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: c.bgPage, transition: "background-color 0.3s ease" }}>
       <Box sx={{ display: "flex", minHeight: "100vh" }}>
-        {/* ── Sidebar ── */}
+        {/* ── Mobile overlay ── */}
         <AnimatePresence>
-          {(sidebarOpen || typeof window !== "undefined") && (
-            <>
-              {sidebarOpen && (
-                <Box
-                  component={motion.div}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setSidebarOpen(false)}
-                  sx={{ position: "fixed", inset: 0, bgcolor: c.sidebarOverlay, zIndex: 998, display: { md: "none" } }}
-                />
-              )}
-              <Box
-                component={motion.aside}
-                initial={{ x: -280 }}
-                animate={{ x: 0 }}
-                sx={{
-                  width: 260,
-                  bgcolor: c.bgSidebar,
-                  display: { xs: sidebarOpen ? "flex" : "none", md: "flex" },
-                  flexDirection: "column",
-                  position: { xs: "fixed", md: "sticky" },
-                  top: 0, left: 0, height: "100vh", zIndex: 999,
-                  borderRight: `1px solid ${c.borderCard}`,
-                  overflowY: "auto",
-                  transition: t,
-                }}
-              >
+          {sidebarOpen && (
+            <Box
+              component={motion.div}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              sx={{ position: "fixed", inset: 0, bgcolor: c.sidebarOverlay, zIndex: 998, display: { md: "none" } }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* ── Sidebar — always in DOM, CSS-controlled on mobile ── */}
+        <Box
+          component="aside"
+          sx={{
+            width: 260,
+            bgcolor: c.bgSidebar,
+            display: { xs: sidebarOpen ? "flex" : "none", md: "flex" },
+            flexDirection: "column",
+            position: { xs: "fixed", md: "sticky" },
+            top: 0, left: 0, height: "100vh", zIndex: 999,
+            borderRight: `1px solid ${c.borderCard}`,
+            overflowY: "auto",
+            transition: t,
+          }}
+        >
                 {/* Brand */}
                 <Box sx={{ px: 3, py: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -161,10 +160,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                     <Typography sx={{ fontSize: "0.85rem" }}>กลับหน้าหลัก</Typography>
                   </Box>
                 </Box>
-              </Box>
-            </>
-          )}
-        </AnimatePresence>
+        </Box>
 
         {/* ── Main ── */}
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" }}>

@@ -96,24 +96,26 @@ export default function ProductDetailView({ product }: { product: Product }) {
   return (
     <Box
       sx={{
-        maxWidth: 430,
-        mx: "auto",
-        minHeight: "100vh",
-        bgcolor: "#FAF6F0",
-        position: "relative",
-        boxShadow: { xs: "none", sm: "0 0 40px rgba(0,0,0,0.08)" },
-        pb: 12, // Space for bottom action bar
+        py: { xs: 0, md: 4 },
+        display: { xs: "block", md: "grid" },
+        gridTemplateColumns: { md: "1fr 1fr", lg: "1.1fr 0.9fr" },
+        gap: { md: 5, lg: 7 },
+        alignItems: "start",
+        pb: { xs: 12, md: 8 },
       }}
     >
-      {/* Top Image Section */}
-      <Box sx={{ position: "relative" }}>
+      {/* Left col: Images (sticky on desktop) */}
+      <Box sx={{ position: { md: "sticky" }, top: { md: 90 } }}>
+        {/* Top Image Section */}
+        <Box sx={{ position: "relative" }}>
         <Box
           sx={{
-            height: 480,
+            height: { xs: 420, md: 560 },
             width: "100%",
             position: "relative",
             overflow: "hidden",
-            touchAction: "none", // Prevent scrolling while pressing
+            borderRadius: { xs: 0, md: "20px" },
+            touchAction: "none",
           }}
           onPointerDown={handlePressStart}
           onPointerUp={handlePressEnd}
@@ -253,9 +255,10 @@ export default function ProductDetailView({ product }: { product: Product }) {
           ))}
         </Box>
       </Box>
+      </Box>{/* end left col sticky */}
 
-      {/* Main Content */}
-      <Box sx={{ px: 2.5, pt: 1, pb: 3 }}>
+      {/* Right col: Details */}
+      <Box sx={{ px: { xs: 2.5, md: 0 }, pt: { xs: 1, md: 0 }, pb: { xs: 3, md: 0 } }}>
         
         {/* Prominent Story Button at the Top */}
         <Button
@@ -615,48 +618,62 @@ export default function ProductDetailView({ product }: { product: Product }) {
           ))}
         </Box>
 
-      </Box>
+        {/* Desktop: inline order button at bottom of right col */}
+        <Box sx={{ display: { xs: "none", md: "block" }, mt: 4 }}>
+          <Button
+            onClick={() => { if (!user) { openAuthModal(); } else { alert("ดำเนินการสั่งซื้อ..."); } }}
+            fullWidth
+            sx={{
+              bgcolor: "#D3A14A",
+              color: "#FFFFFF",
+              borderRadius: "16px",
+              py: 1.8,
+              fontWeight: 600,
+              fontSize: "1.05rem",
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#C19036", boxShadow: "none" },
+            }}
+          >
+            {product.isCustomizable === false ? "สั่งซื้อเลย" : "สั่งทำเลย"}
+          </Button>
+        </Box>
 
-      {/* Sticky Bottom Action Bar */}
+      </Box>{/* end right col */}
+
+      {/* Mobile: fixed bottom action bar */}
       <Box
         sx={{
+          display: { xs: "block", md: "none" },
           position: "fixed",
           bottom: 0,
           left: 0,
           right: 0,
-          maxWidth: 430,
-          mx: "auto",
           zIndex: 100,
           bgcolor: "#FAF6F0",
-          pb: 3,
+          pb: "env(safe-area-inset-bottom, 16px)",
           pt: 1.5,
-          px: 2,
+          px: 2.5,
           borderTop: "1px solid rgba(0,0,0,0.05)",
         }}
       >
-        <Box sx={{ display: "flex", gap: 1.5 }}>
-          <Button
-            onClick={() => {
-              if (!user) {
-                openAuthModal();
-              } else {
-                alert("ดำเนินการสั่งซื้อ...");
-              }
-            }}
-            sx={{
-              flex: 1,
-              bgcolor: "#D3A14A",
-              color: "#FFFFFF",
-              borderRadius: "24px",
-              py: 1.5,
-              fontWeight: 600,
-              fontSize: "1rem",
-              "&:hover": { bgcolor: "#C19036" }
-            }}
-          >
-            {product.isCustomizable === false ? "สั่งซื้อเลย ›" : "สั่งทำเลย ›"}
-          </Button>
-        </Box>
+        <Button
+          onClick={() => { if (!user) { openAuthModal(); } else { alert("ดำเนินการสั่งซื้อ..."); } }}
+          fullWidth
+          sx={{
+            bgcolor: "#D3A14A",
+            color: "#FFFFFF",
+            borderRadius: "24px",
+            py: 1.6,
+            fontWeight: 600,
+            fontSize: "1rem",
+            textTransform: "none",
+            boxShadow: "none",
+            "&:hover": { bgcolor: "#C19036", boxShadow: "none" },
+          }}
+        >
+          {product.isCustomizable === false ? "สั่งซื้อเลย" : "สั่งทำเลย"}
+        </Button>
       </Box>
     </Box>
   );

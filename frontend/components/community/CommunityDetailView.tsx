@@ -73,13 +73,8 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
   return (
     <Box
       sx={{
-        maxWidth: 430,
-        mx: "auto",
-        minHeight: "100vh",
-        bgcolor: "#FAF6F0",
-        position: "relative",
-        boxShadow: { xs: "none", sm: "0 0 40px rgba(0,0,0,0.08)" },
-        pb: 12, // Space for bottom CTA
+        width: "100%",
+        pb: { xs: 12, md: 8 },
       }}
     >
       {/* 1. Hero + GI Strip */}
@@ -395,17 +390,16 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
       {/* Sticky Bottom Action Bar */}
       <Box
         sx={{
+          display: { md: "none" },
           position: "fixed",
           bottom: 0,
           left: 0,
           right: 0,
-          maxWidth: 430,
-          mx: "auto",
           zIndex: 100,
           bgcolor: "#FAF6F0",
           pb: 3,
           pt: 1.5,
-          px: 2,
+          px: 2.5,
           borderTop: "1px solid rgba(0,0,0,0.05)",
         }}
       >

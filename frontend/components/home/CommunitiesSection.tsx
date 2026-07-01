@@ -6,32 +6,41 @@ import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
 import { communities } from "@/lib/mock-data";
 import Image from "next/image";
-import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
-import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import Link from "next/link";
+import SectionHeader from "./SectionHeader";
 
-function CommunityCard({ community, index }: { community: any, index: number }) {
+function CommunityCard({ community }: { community: any }) {
   const [imgSrc, setImgSrc] = useState(community.image);
 
   return (
-    <Link href={`/community/${community.id}`} style={{ textDecoration: 'none' }}>
+    <Link href={`/community/${community.id}`} style={{ textDecoration: "none" }}>
       <Box
-        component={motion.div}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.5 + index * 0.08, duration: 0.4 }}
-        whileTap={{ scale: 0.97 }}
         sx={{
-          minWidth: 220,
-          bgcolor: "#FFFFFF",
-          borderRadius: "16px",
+          position: "relative",
+          minWidth: { xs: 260, md: "auto" },
+          height: { xs: 200, md: 300 },
+          borderRadius: "20px",
           overflow: "hidden",
-          border: "1px solid #E5DFD6",
           cursor: "pointer",
-          boxShadow: "0 2px 8px rgba(27,42,74,0.04)",
+          boxShadow: "0 4px 18px rgba(27,42,74,0.07)",
+          transition:
+            "transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s ease",
+          "&:hover": {
+            transform: "translateY(-6px)",
+            boxShadow: "0 18px 40px rgba(27,42,74,0.16)",
+          },
+          "&:hover .laya-comm-img": { transform: "scale(1.06)" },
         }}
       >
-        <Box sx={{ position: "relative", height: 100 }}>
+        <Box
+          className="laya-comm-img"
+          sx={{
+            position: "absolute",
+            inset: 0,
+            transition: "transform 0.6s cubic-bezier(0.22,0.61,0.36,1)",
+          }}
+        >
           <Image
             src={imgSrc}
             alt={community.name}
@@ -39,23 +48,48 @@ function CommunityCard({ community, index }: { community: any, index: number }) 
             style={{ objectFit: "cover" }}
             onError={() => setImgSrc("/assets/province-fallback.jpg")}
           />
+        </Box>
+
+        {/* Editorial scrim */}
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(15,26,48,0.82) 0%, rgba(15,26,48,0.15) 55%, transparent 100%)",
+          }}
+        />
+
+        <Box sx={{ position: "absolute", left: 18, right: 18, bottom: 16 }}>
           <Box
             sx={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(to bottom, transparent 40%, rgba(27,42,74,0.5) 100%)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.4,
+              mb: 0.75,
             }}
-          />
-        </Box>
-        <Box sx={{ px: 1.5, py: 1.2 }}>
+          >
+            <PlaceRoundedIcon sx={{ fontSize: 13, color: "#D4BA7A" }} />
+            <Typography
+              sx={{
+                fontFamily: '"Kanit", sans-serif',
+                fontSize: "0.65rem",
+                fontWeight: 400,
+                letterSpacing: "0.06em",
+                color: "#D4BA7A",
+              }}
+            >
+              {community.province}
+            </Typography>
+          </Box>
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
-              fontSize: "0.82rem",
-              color: "#1B2A4A",
+              fontSize: { xs: "1rem", md: "1.15rem" },
+              color: "#FFFFFF",
               lineHeight: 1.3,
+              textShadow: "0 2px 10px rgba(0,0,0,0.35)",
             }}
           >
             {community.name}
@@ -63,35 +97,14 @@ function CommunityCard({ community, index }: { community: any, index: number }) 
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
-              fontSize: "0.65rem",
-              color: "#9CA3AF",
-              mt: 0.2,
+              fontWeight: 300,
+              fontSize: "0.68rem",
+              color: "rgba(255,255,255,0.8)",
+              mt: 0.4,
             }}
           >
-            {"จ."}{community.province}
+            {community.memberCount} สมาชิก · {community.productCount} ผลิตภัณฑ์
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              mt: 0.8,
-            }}
-          >
-            <PeopleAltRoundedIcon
-              sx={{ fontSize: 12, color: "#C5A55A" }}
-            />
-            <Typography
-              sx={{
-                fontFamily: '"Kanit", sans-serif',
-                fontSize: "0.6rem",
-                color: "#6B7280",
-              }}
-            >
-              {community.memberCount} {"สมาชิก"} {" | "}{" "}
-              {community.productCount} {"ผลิตภัณฑ์"}
-            </Typography>
-          </Box>
         </Box>
       </Box>
     </Link>
@@ -105,74 +118,28 @@ export default function CommunitiesSection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.45, duration: 0.5 }}
-      sx={{ py: 1.5 }}
+      sx={{ py: { xs: 4, md: 7 } }}
     >
-      {/* Section Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          px: 2.5,
-          mb: 1.5,
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-          <Typography
-            sx={{
-              fontFamily: '"Kanit", sans-serif',
-              fontWeight: 700,
-              fontSize: "1.1rem",
-              color: "#1B2A4A",
-            }}
-          >
-            {"ชุมชนยอดนิยม"}
-          </Typography>
-          <Box
-            sx={{
-              width: 24,
-              height: 2,
-              bgcolor: "#C5A55A",
-              borderRadius: 1,
-            }}
-          />
-        </Box>
-        <Link href="/community" style={{ textDecoration: "none" }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.2,
-              color: "#C5A55A",
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: '"Kanit", sans-serif',
-                fontSize: "0.75rem",
-                fontWeight: 600,
-              }}
-            >
-              {"ดูทั้งหมด"}
-            </Typography>
-            <ChevronRightRoundedIcon sx={{ fontSize: 16 }} />
-          </Box>
-        </Link>
-      </Box>
+      <SectionHeader
+        eyebrow="Community"
+        title="ชุมชนทอผ้า"
+        subtitle="Discover authentic weaving villages across Thailand"
+        href="/community"
+      />
 
-      {/* Community Cards */}
+      {/* Community Cards — horizontal scroll on mobile, 3-col grid on desktop */}
       <Box
         sx={{
-          display: "flex",
-          gap: 1.5,
-          overflowX: "auto",
-          px: 2.5,
+          display: { xs: "flex", md: "grid" },
+          gridTemplateColumns: { md: "repeat(3, 1fr)" },
+          gap: { xs: 2, md: 3 },
+          overflowX: { xs: "auto", md: "visible" },
           pb: 1,
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {communities.slice(0, 3).map((community, index) => (
-          <CommunityCard key={community.id} community={community} index={index} />
+        {communities.slice(0, 6).map((community) => (
+          <CommunityCard key={community.id} community={community} />
         ))}
       </Box>
     </Box>

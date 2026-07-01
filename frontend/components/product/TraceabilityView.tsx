@@ -35,10 +35,8 @@ export default function TraceabilityView({ product, onBack, onViewCertificate }:
       exit={{ opacity: 0, y: 30 }}
       sx={{
         bgcolor: "#FAF6F0",
-        minHeight: "100vh",
         pb: 10,
-        maxWidth: 430,
-        mx: "auto",
+        width: "100%",
         position: "relative",
         color: "#1B2A4A",
       }}

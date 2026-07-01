@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
 export type UserRole = "customer" | "merchant" | "admin";
 
@@ -11,7 +13,8 @@ export interface User {
   name: string;
   role: UserRole;
   avatar?: string;
-  merchantId?: string; // only for merchants
+  shopId?: string;
+  shopStatus?: string;
 }
 
 export interface MerchantApplication {
@@ -23,15 +26,17 @@ export interface MerchantApplication {
   expertise: string[];
   bankAccount: string;
   bankName: string;
-  idCardUrl?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
-  loginAsRole: (role: UserRole) => void; // dev helper
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginAsRole: (role: UserRole) => void;
+  logout: () => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
   openAuthModal: () => void;
   closeAuthModal: () => void;
   registerMerchant: (data: MerchantApplication) => Promise<void>;
@@ -39,70 +44,179 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = "laya_user";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+async function apiFetch(path: string, token: string | null, options?: RequestInit) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...options,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Request failed");
+  return data;
+}
+
+/** Map Supabase + public.users profile into our User shape */
+function buildUser(supabaseUser: { id: string; email?: string }, profile: Record<string, unknown>): User {
+  const role: UserRole =
+    profile.role === "admin" ? "admin"
+    : profile.shop_id ? "merchant"
+    : "customer";
+
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email ?? "",
+    name: (profile.display_name as string) ?? supabaseUser.email?.split("@")[0] ?? "User",
+    role,
+    avatar: (profile.avatar_url as string) ?? undefined,
+    shopId: (profile.shop_id as string) ?? undefined,
+    shopStatus: (profile.shop_status as string) ?? undefined,
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser]       = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Restore session from localStorage on mount
-  useEffect(() => {
+  /** Fetch our custom profile from backend /api/auth/me */
+  const fetchProfile = async (accessToken: string, supabaseUser: { id: string; email?: string }) => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setUser(JSON.parse(stored));
-    } catch {}
-    setLoading(false);
+      const profile = await apiFetch("/api/auth/me", accessToken);
+      setUser(buildUser(supabaseUser, profile));
+    } catch {
+      // Fallback: build minimal user from Supabase data only
+      setUser({
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? "",
+        name: supabaseUser.email?.split("@")[0] ?? "User",
+        role: "customer",
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (s?.user) {
+        fetchProfile(s.access_token, s.user).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes (login, logout, OAuth callback, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s);
+      if (s?.user) {
+        if (event === "SIGNED_IN") {
+          // Upsert into public.users on every sign-in (idempotent).
+          // Covers OAuth users in case the /auth/callback sync failed.
+          const meta = s.user.user_metadata ?? {};
+          apiFetch("/api/auth/sync", s.access_token, {
+            method: "POST",
+            body: JSON.stringify({
+              display_name: meta.full_name ?? meta.name ?? s.user.email?.split("@")[0],
+              avatar_url:   meta.avatar_url ?? meta.picture ?? null,
+            }),
+          })
+            .catch(() => {})
+            .finally(() => fetchProfile(s.access_token, s.user));
+        } else {
+          fetchProfile(s.access_token, s.user);
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const persist = (u: User | null) => {
-    setUser(u);
-    if (u) localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    else localStorage.removeItem(STORAGE_KEY);
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+    // onAuthStateChange will fire and call fetchProfile
   };
 
-  const login = async (email: string, pass: string) => {
-    await new Promise((r) => setTimeout(r, 800));
-    // Mock: admin@laya.com → admin, merchant@laya.com → merchant, else customer
-    let role: UserRole = "customer";
-    if (email.includes("admin")) role = "admin";
-    else if (email.includes("merchant") || email.includes("shop")) role = "merchant";
-
-    persist({
-      id: "mock_" + Date.now(),
-      email,
-      name: email.split("@")[0],
-      role,
-      merchantId: role === "merchant" ? "shop_001" : undefined,
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { access_type: "offline", prompt: "consent" },
+      },
     });
+    if (error) throw new Error(error.message);
   };
 
-  // Dev helper: switch role without a real backend
+  const register = async (name: string, email: string, password: string, phone?: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { display_name: name, phone: phone ?? "" },
+      },
+    });
+    if (error) throw new Error(error.message);
+    if (!data.user) throw new Error("สมัครสมาชิกไม่สำเร็จ");
+    // Sync profile to public.users via backend
+    if (data.session) {
+      await apiFetch("/api/auth/sync", data.session.access_token, {
+        method: "POST",
+        body: JSON.stringify({ display_name: name, phone }),
+      });
+    }
+  };
+
   const loginAsRole = (role: UserRole) => {
     const mocks: Record<UserRole, User> = {
-      customer: { id: "c1", email: "user@example.com", name: "สมชาย มั่นคง", role: "customer" },
-      merchant: { id: "m1", email: "merchant@laya.com", name: "ร้านทอผ้าเชียงใหม่", role: "merchant", merchantId: "shop_001" },
-      admin: { id: "a1", email: "admin@laya.com", name: "Admin LAYA", role: "admin" },
+      customer: { id: "c1", email: "user@example.com",   name: "สมชาย มั่นคง",         role: "customer" },
+      merchant: { id: "m1", email: "merchant@laya.com",  name: "ร้านทอผ้าเชียงใหม่",   role: "merchant", shopId: "shop_001" },
+      admin:    { id: "a1", email: "admin@laya.com",      name: "Admin LAYA",             role: "admin" },
     };
-    persist(mocks[role]);
+    setUser(mocks[role]);
   };
 
-  const logout = () => {
-    persist(null);
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
     router.push("/");
   };
 
-  const openAuthModal = () => router.push("/auth/login");
+  const openAuthModal  = () => router.push("/auth/login");
   const closeAuthModal = () => {};
 
   const registerMerchant = async (data: MerchantApplication) => {
-    await new Promise((r) => setTimeout(r, 1000));
-    // In production: POST /api/merchant/apply
-    console.log("Merchant application submitted:", data);
+    const token = session?.access_token ?? null;
+    await apiFetch("/api/shops/apply", token, {
+      method: "POST",
+      body: JSON.stringify({
+        name: data.shopName,
+        description: data.shopDescription,
+        province: data.province,
+        phone: data.phone,
+        lineId: data.lineId,
+        specialties: data.expertise,
+      }),
+    });
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginAsRole, logout, openAuthModal, closeAuthModal, registerMerchant }}>
+    <AuthContext.Provider value={{
+      user, session, loading,
+      login, loginWithGoogle, loginAsRole,
+      logout, register,
+      openAuthModal, closeAuthModal,
+      registerMerchant,
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -112,4 +226,9 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
+}
+
+export function getToken(): string | null {
+  // Sync read of session token for non-hook code
+  return null; // session is async; prefer useAuth().session?.access_token in components
 }

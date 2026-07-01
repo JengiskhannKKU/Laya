@@ -11,10 +11,10 @@ import Link from "next/link";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import InputBase from "@mui/material/InputBase";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
 import ViewListRoundedIcon from "@mui/icons-material/ViewListRounded";
+import ProductCard from "./ProductCard";
 
 const filters = ["ทั้งหมด", "ผ้าผืน", "เสื้อผ้า", "ผ้าพันคอ", "กระเป๋า", "ของฝาก"];
 
@@ -23,7 +23,7 @@ export default function ExploreSection() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   return (
-    <Box sx={{ pt: 3, pb: 2, bgcolor: "#FAF6F0" }}>
+    <Box sx={{ py: { xs: 4, md: 7 }, overflow: "hidden" }}>
       {/* Header */}
       <Box
         component={motion.div}
@@ -32,23 +32,40 @@ export default function ExploreSection() {
         viewport={{ once: true }}
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-end",
           justifyContent: "space-between",
-          px: 2.5,
-          mb: 2,
+          gap: 2,
+          mb: { xs: 2.5, md: 3 },
         }}
       >
-        <Typography
-          sx={{
-            fontFamily: '"Kanit", sans-serif',
-            fontWeight: 700,
-            fontSize: "1.3rem",
-            color: "#1B2A4A",
-          }}
-        >
-          {"สำรวจลายผ้าเพิ่มเติม"}
-        </Typography>
-        <Box sx={{ display: "flex", gap: 0.5 }}>
+        <Box>
+          <Typography
+            sx={{
+              fontFamily: '"Kanit", sans-serif',
+              fontWeight: 600,
+              fontSize: "0.6rem",
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              color: "#C5A55A",
+              mb: 0.75,
+            }}
+          >
+            Explore All
+          </Typography>
+          <Typography
+            sx={{
+              fontFamily: '"Kanit", sans-serif',
+              fontWeight: 700,
+              fontSize: { xs: "1.3rem", md: "1.7rem" },
+              color: "#1B2A4A",
+              lineHeight: 1.2,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {"สำรวจลายผ้าทั้งหมด"}
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
           <IconButton
             size="small"
             onClick={() => setViewMode("grid")}
@@ -93,7 +110,7 @@ export default function ExploreSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.05 }}
-        sx={{ px: 2.5, mb: 1.5 }}
+        sx={{ mb: 1.5 }}
       >
         <Box
           sx={{
@@ -152,7 +169,6 @@ export default function ExploreSection() {
           overflowX: "auto",
           pb: 1,
           mb: 1,
-          px: 2.5,
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
@@ -183,7 +199,7 @@ export default function ExploreSection() {
       </Box>
 
       {/* Results count */}
-      <Box sx={{ px: 2.5, mb: 1.5 }}>
+      <Box sx={{ mb: 1.5 }}>
         <Typography
           sx={{
             fontFamily: '"Kanit", sans-serif',
@@ -206,166 +222,22 @@ export default function ExploreSection() {
             exit={{ opacity: 0 }}
             sx={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 1.5,
-              px: 2.5,
+              gridTemplateColumns: { xs: "repeat(2,1fr)", md: "repeat(4,1fr)" },
+              gap: { xs: 2, md: 3 },
             }}
           >
             {products.map((product, index) => (
-              <Link
+              <Box
                 key={product.id}
-                href={`/product/${product.id}`}
-                style={{ textDecoration: "none" }}
+                component={motion.div}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: index * 0.05 }}
+                sx={{ minWidth: 0, width: "100%" }}
               >
-                <Box
-                  component={motion.div}
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ delay: index * 0.06 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  <Box
-                    sx={{
-                      position: "relative",
-                      height: 200,
-                      borderRadius: "16px",
-                      overflow: "hidden",
-                      mb: 0.8,
-                      boxShadow: "0 4px 12px rgba(27,42,74,0.06)",
-                    }}
-                  >
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      style={{ objectFit: "cover" }}
-                      sizes="(max-width: 600px) 50vw, 33vw"
-                    />
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: "35%",
-                        background:
-                          "linear-gradient(to top, rgba(0,0,0,0.25) 0%, transparent 100%)",
-                      }}
-                    />
-                    {product.hasGI && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 8,
-                          left: 8,
-                          bgcolor: "#C5A55A",
-                          color: "#FFFFFF",
-                          px: 0.8,
-                          py: 0.2,
-                          borderRadius: "6px",
-                          fontSize: "0.55rem",
-                          fontWeight: 700,
-                          fontFamily: '"Kanit", sans-serif',
-                        }}
-                      >
-                        GI
-                      </Box>
-                    )}
-                    <IconButton
-                      size="small"
-                      sx={{
-                        position: "absolute",
-                        top: 6,
-                        right: 6,
-                        bgcolor: "rgba(255,255,255,0.85)",
-                        width: 28,
-                        height: 28,
-                        "&:hover": { bgcolor: "#FFF" },
-                      }}
-                    >
-                      <FavoriteBorderRoundedIcon
-                        sx={{ fontSize: 14, color: "#1B2A4A" }}
-                      />
-                    </IconButton>
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        bottom: 8,
-                        left: 8,
-                        bgcolor: "rgba(255,255,255,0.92)",
-                        backdropFilter: "blur(6px)",
-                        borderRadius: "7px",
-                        px: 0.8,
-                        py: 0.25,
-                      }}
-                    >
-                      <Typography
-                        sx={{
-                          fontFamily: '"Kanit", sans-serif',
-                          fontWeight: 700,
-                          fontSize: "0.68rem",
-                          color: "#1B2A4A",
-                        }}
-                      >
-                        {product.price.toLocaleString()} {"บาท"}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography
-                    sx={{
-                      fontFamily: '"Kanit", sans-serif',
-                      fontWeight: 600,
-                      fontSize: "0.78rem",
-                      color: "#1B2A4A",
-                      lineHeight: 1.3,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {product.name}
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      mt: 0.2,
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontFamily: '"Kanit", sans-serif',
-                        fontSize: "0.65rem",
-                        color: "#9CA3AF",
-                      }}
-                    >
-                      {product.community}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.2,
-                      }}
-                    >
-                      <StarRoundedIcon
-                        sx={{ color: "#C5A55A", fontSize: 11 }}
-                      />
-                      <Typography
-                        sx={{
-                          fontFamily: '"Kanit", sans-serif',
-                          fontSize: "0.6rem",
-                          color: "#6B7280",
-                        }}
-                      >
-                        {product.rating}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </Link>
+                <ProductCard product={product} collection="Collection" variant="grid" />
+              </Box>
             ))}
           </Box>
         ) : (
@@ -379,7 +251,6 @@ export default function ExploreSection() {
               display: "flex",
               flexDirection: "column",
               gap: 1.2,
-              px: 2.5,
             }}
           >
             {products.map((product, index) => (

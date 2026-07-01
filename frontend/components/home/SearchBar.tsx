@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Box from "@mui/material/Box";
 import InputBase from "@mui/material/InputBase";
@@ -21,22 +21,22 @@ export default function SearchBar() {
           display: "flex",
           alignItems: "center",
           bgcolor: "#FFFFFF",
-          borderRadius: "14px",
+          borderRadius: "999px",
           border: "1.5px solid #E5DFD6",
           px: 1.5,
           py: 0.3,
           gap: 0.5,
-          boxShadow: "0 2px 8px rgba(27,42,74,0.04)",
+          boxShadow: "0 2px 6px rgba(27,42,74,0.05)",
           transition: "box-shadow 0.3s, border-color 0.3s",
           "&:focus-within": {
             borderColor: "#C5A55A",
-            boxShadow: "0 2px 12px rgba(197,165,90,0.15)",
+            boxShadow: "0 0 0 3px rgba(197,165,90,0.35)",
           },
         }}
       >
-        <SearchRoundedIcon sx={{ color: "#9CA3AF", fontSize: 20, ml: 0.5 }} />
+        <SearchRoundedIcon sx={{ color: "#A89F94", fontSize: 20, ml: 0.5 }} />
         <InputBase
-          placeholder="ค้นหาลาย, ร้านค้า, ชุมชน..."
+          placeholder="ค้นหาผ้าไทย ชุมชน ลวดลาย…"
           sx={{
             flex: 1,
             fontFamily: '"Kanit", sans-serif',
@@ -44,7 +44,7 @@ export default function SearchBar() {
             color: "#1B2A4A",
             py: 0.8,
             "& ::placeholder": {
-              color: "#9CA3AF",
+              color: "#A89F94",
               opacity: 1,
             },
           }}
@@ -55,7 +55,7 @@ export default function SearchBar() {
             bgcolor: "#F0EBE3",
             width: 32,
             height: 32,
-            borderRadius: "10px",
+            borderRadius: "999px",
           }}
         >
           <TuneRoundedIcon sx={{ fontSize: 16, color: "#1B2A4A" }} />

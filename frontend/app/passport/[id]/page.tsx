@@ -1,5 +1,6 @@
 import { products } from "@/lib/mock-data";
 import PassportPage from "@/components/passport/PassportPage";
+import MobileLayout from "@/components/layout/MobileLayout";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
@@ -18,5 +19,9 @@ export default async function PassportRoute({
     notFound();
   }
 
-  return <PassportPage product={product} />;
+  return (
+    <MobileLayout>
+      <PassportPage product={product} />
+    </MobileLayout>
+  );
 }

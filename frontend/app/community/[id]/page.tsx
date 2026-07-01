@@ -1,5 +1,6 @@
 import { communities } from "@/lib/mock-data";
 import CommunityDetailView from "@/components/community/CommunityDetailView";
+import MobileLayout from "@/components/layout/MobileLayout";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
@@ -18,5 +19,9 @@ export default async function CommunityPage({
     notFound();
   }
 
-  return <CommunityDetailView community={community} />;
+  return (
+    <MobileLayout>
+      <CommunityDetailView community={community} />
+    </MobileLayout>
+  );
 }
