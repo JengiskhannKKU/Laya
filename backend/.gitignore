@@ -5,3 +5,49 @@ dist/
 .env
 .env.*
 .env.local
+# v0 runtime files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Next.js build output
+.next/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# Backend build output
+backend/dist/
+
+# OS
+.DS_Store
+
+# Environment variables — NEVER commit these
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.staging
+frontend/.env
+frontend/.env.*
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+backend/.env
+backend/.env.*
+backend/.env.local
+backend/.env.development
+backend/.env.production
+
+# Vercel
+.vercel
+
+create_tickets.sh
+
+# Database migrations — run manually in Supabase SQL Editor
+backend/migrations/
