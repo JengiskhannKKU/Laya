@@ -17,7 +17,11 @@ import FormControl from "@mui/material/FormControl";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 
+import { QRCodeSVG } from "qrcode.react";
+import { generatePromptPayPayload, PROMPTPAY_ID, formatPromptPayIdDisplay } from "@/lib/promptpay";
+
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import ReplayRoundedIcon from "@mui/icons-material/ReplayRounded";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import PaymentOutlinedIcon from "@mui/icons-material/PaymentOutlined";
@@ -67,6 +71,12 @@ export default function CheckoutPage() {
   const subtotal = useMemo(() => items.reduce((acc, item) => acc + item.product.price * item.quantity, 0), [items]);
   const shippingCost = mockShippingOptions.find(o => o.id === selectedShippingId)?.cost || 0;
   const total = subtotal + shippingCost; // Mock: without coupon
+
+  // PromptPay QR payload — dynamic QR ตามยอดสั่งซื้อจริง (US-604)
+  const qrPayload = useMemo(
+    () => (total > 0 ? generatePromptPayPayload(PROMPTPAY_ID, total) : ""),
+    [total]
+  );
 
   // PromptPay Timer logic
   useEffect(() => {
@@ -323,10 +333,36 @@ export default function CheckoutPage() {
                   {selectedPayment === "promptpay" && (
                     <Box sx={{ mt: 3, display: "flex", flexDirection: "column", alignItems: "center", bgcolor: "#FDF8F0", p: 3, borderRadius: "12px", border: "1px dashed #E5DFD6" }}>
                       <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280", mb: 2 }}>สแกนเพื่อชำระเงิน</Typography>
-                      <Box sx={{ width: 180, height: 180, bgcolor: "#FFFFFF", p: 1, borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-                        <QrCode2RoundedIcon sx={{ fontSize: 150, color: "#1B2A4A" }} />
+                      <Box sx={{ bgcolor: "#FFFFFF", p: 1.5, borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", position: "relative" }}>
+                        {qrPayload ? (
+                          <QRCodeSVG
+                            value={qrPayload}
+                            size={180}
+                            level="M"
+                            style={{ opacity: timeLeft <= 0 ? 0.15 : 1, transition: "opacity 0.3s" }}
+                          />
+                        ) : (
+                          <QrCode2RoundedIcon sx={{ fontSize: 150, color: "#E5DFD6" }} />
+                        )}
+                        {timeLeft <= 0 && (
+                          <Button
+                            onClick={() => setTimeLeft(900)}
+                            startIcon={<ReplayRoundedIcon />}
+                            sx={{ position: "absolute", inset: 0, m: "auto", width: "fit-content", height: "fit-content", bgcolor: "#1B2A4A", color: "#FFF", borderRadius: "10px", px: 2, fontFamily: '"Kanit", sans-serif', "&:hover": { bgcolor: "#0F1A30" } }}
+                          >
+                            สร้าง QR ใหม่
+                          </Button>
+                        )}
                       </Box>
-                      <Box sx={{ mt: 3, textAlign: "center" }}>
+                      <Box sx={{ mt: 2, textAlign: "center" }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 600 }}>
+                          พร้อมเพย์: {formatPromptPayIdDisplay(PROMPTPAY_ID)} · LAYA Platform
+                        </Typography>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", color: "#C5A55A", fontWeight: 700 }}>
+                          ยอดชำระ ฿{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mt: 1.5, textAlign: "center" }}>
                         <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>กรุณาชำระเงินภายใน</Typography>
                         <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.5rem", color: "#D32F2F" }}>
                           {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
@@ -334,7 +370,7 @@ export default function CheckoutPage() {
                       </Box>
                       {timeLeft <= 0 && (
                         <Alert severity="error" sx={{ mt: 2, borderRadius: "8px", fontFamily: '"Kanit", sans-serif' }}>
-                          QR Code หมดอายุ กรุณาทำรายการใหม่
+                          QR Code หมดอายุ กดสร้าง QR ใหม่เพื่อทำรายการต่อ
                         </Alert>
                       )}
                     </Box>

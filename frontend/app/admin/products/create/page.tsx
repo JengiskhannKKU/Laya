@@ -196,7 +196,7 @@ export default function CreateProductPage() {
     const newProduct = {
       id: `new-${Date.now()}`,
       name: form.name.trim(),
-      image: form.imagePreview || "/images/fabric1.jpg",
+      image: form.imagePreview || "/images/fabric1.webp",
       community: form.community,
       province: form.province,
       price: parseFloat(form.price),

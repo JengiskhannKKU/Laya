@@ -29,11 +29,21 @@ export default function ProductCard({
   const isCarousel = variant === "carousel";
 
   return (
-    <Link href={`/product/${product.id}`} style={{ textDecoration: "none" }}>
+    <Box
+      component={Link}
+      href={`/product/${product.id}`}
+      sx={{
+        textDecoration: "none",
+        display: "block",
+        // grid: minWidth 0 กันข้อความ nowrap ดันคอลัมน์ให้กว้างไม่เท่ากัน
+        // carousel (มือถือ): ห้ามหด ไม่งั้นการ์ดซ้อนกันใน scroll แถวนอน
+        minWidth: isCarousel ? { xs: 180, md: 0 } : 0,
+        flexShrink: isCarousel ? 0 : undefined,
+      }}
+    >
       <Box
         sx={{
           width: isCarousel ? { xs: 180, md: "100%" } : "100%",
-          minWidth: isCarousel ? { xs: 180, md: 0 } : "auto",
           cursor: "pointer",
           scrollSnapAlign: "start",
           "&:hover .laya-card-img": { transform: "scale(1.06)" },
@@ -44,20 +54,26 @@ export default function ProductCard({
           "&:hover .laya-card-fav": { opacity: 1, transform: "translateY(0)" },
         }}
       >
-        {/* Image frame */}
+        {/* Card frame — ภาพ + ข้อความรวมเป็นการ์ดเดียว พื้นหลังขาว */}
         <Box
           className="laya-card-frame"
+          sx={{
+            borderRadius: "18px",
+            overflow: "hidden",
+            bgcolor: "#FFFFFF",
+            boxShadow: "0 4px 18px rgba(27,42,74,0.07)",
+            transition:
+              "transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s ease",
+          }}
+        >
+        {/* Image */}
+        <Box
           sx={{
             position: "relative",
             width: "100%",
             aspectRatio: "3 / 4",
-            borderRadius: "18px",
             overflow: "hidden",
             bgcolor: "#F0EBE3",
-            boxShadow: "0 4px 18px rgba(27,42,74,0.07)",
-            transition:
-              "transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s ease",
-            mb: 1.5,
           }}
         >
           <Box
@@ -147,12 +163,12 @@ export default function ProductCard({
           </IconButton>
         </Box>
 
-        {/* Meta — breathing room, clear hierarchy */}
-        <Box sx={{ px: 0.25 }}>
+        {/* Meta — พื้นหลังขาวในตัวการ์ด, ชื่อ/ราคาใหญ่ขึ้น */}
+        <Box sx={{ px: 1.5, pt: 1.25, pb: 1.5, bgcolor: "#FFFFFF" }}>
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
-              fontSize: "0.6rem",
+              fontSize: "0.62rem",
               fontWeight: 500,
               letterSpacing: "0.14em",
               textTransform: "uppercase",
@@ -166,8 +182,8 @@ export default function ProductCard({
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
-              fontWeight: 600,
-              fontSize: "0.95rem",
+              fontWeight: 700,
+              fontSize: "1.05rem",
               color: "#1B2A4A",
               lineHeight: 1.35,
               overflow: "hidden",
@@ -182,9 +198,9 @@ export default function ProductCard({
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 300,
-              fontSize: "0.72rem",
+              fontSize: "0.8rem",
               color: "#7A7468",
-              mt: 0.2,
+              mt: 0.3,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -204,8 +220,8 @@ export default function ProductCard({
             <Typography
               sx={{
                 fontFamily: '"Kanit", sans-serif',
-                fontWeight: 600,
-                fontSize: "0.9rem",
+                fontWeight: 700,
+                fontSize: "1.15rem",
                 color: "#1B2A4A",
               }}
             >
@@ -214,7 +230,7 @@ export default function ProductCard({
                 component="span"
                 sx={{
                   fontWeight: 300,
-                  fontSize: "0.7rem",
+                  fontSize: "0.78rem",
                   color: "#7A7468",
                   ml: 0.5,
                 }}
@@ -223,11 +239,11 @@ export default function ProductCard({
               </Box>
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-              <StarRoundedIcon sx={{ color: "#C5A55A", fontSize: 13 }} />
+              <StarRoundedIcon sx={{ color: "#C5A55A", fontSize: 15 }} />
               <Typography
                 sx={{
                   fontFamily: '"Kanit", sans-serif',
-                  fontSize: "0.7rem",
+                  fontSize: "0.78rem",
                   fontWeight: 400,
                   color: "#7A7468",
                 }}
@@ -237,7 +253,8 @@ export default function ProductCard({
             </Box>
           </Box>
         </Box>
+        </Box>
       </Box>
-    </Link>
+    </Box>
   );
 }

@@ -66,7 +66,7 @@ export default function CustomGenerator() {
       // Silence console error and provide mock fallback to avoid dev overlay
       setPatternData((prev: any) => ({ 
         ...prev, 
-        generatedImageUrl: "/images/fabric1.jpg", 
+        generatedImageUrl: "/images/fabric1.webp", 
         isMock: true 
       }));
     } finally {

@@ -132,7 +132,7 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver, onBack
       <Box sx={{ p: 2, bgcolor: "#FFFFFF", borderBottom: "1px solid #E5DFD6" }}>
         <Box sx={{ display: "flex", gap: 2, p: 1.5, bgcolor: "#FAF6F0", borderRadius: "16px", border: "1px solid #E5DFD6" }}>
           <Box sx={{ width: 80, height: 80, borderRadius: "12px", bgcolor: "#FFFFFF", p: 0.5, border: "1px solid #E5DFD6", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-            <Box sx={{ width: "100%", height: "100%", backgroundImage: `url(${patternData.generatedImageUrl || "/images/fabric1.jpg"})`, backgroundSize: "cover", borderRadius: "8px" }} />
+            <Box sx={{ width: "100%", height: "100%", backgroundImage: `url(${patternData.generatedImageUrl || "/images/fabric1.webp"})`, backgroundSize: "cover", borderRadius: "8px" }} />
           </Box>
           <Box>
             <Typography sx={{ fontWeight: 700, color: "#1B2A4A", fontSize: "1rem" }}>Your Pattern</Typography>

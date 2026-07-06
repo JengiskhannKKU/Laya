@@ -3,6 +3,14 @@ import { Kanit, Cormorant_Garamond } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import MuiProvider from "@/components/providers/MuiProvider";
 import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
+import {
+  absoluteUrl,
+  defaultDescription,
+  defaultKeywords,
+  defaultTitle,
+  siteName,
+  siteUrl,
+} from "@/lib/seo";
 import "./globals.css";
 
 const kanit = Kanit({
@@ -29,10 +37,57 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "LAYA - Every Pattern Tells a Story",
-  description:
-    "AI-Powered Thai Textile Marketplace. Discover authentic Thai fabrics from local communities with AI matching, digital textile passports, and AR simulation.",
-  generator: "v0.app",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: defaultTitle,
+    template: `%s | ${siteName}`,
+  },
+  description: defaultDescription,
+  keywords: defaultKeywords,
+  applicationName: siteName,
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  category: "marketplace",
+  alternates: {
+    canonical: "/",
+    languages: {
+      th: "/",
+    },
+  },
+  openGraph: {
+    title: defaultTitle,
+    description: defaultDescription,
+    url: "/",
+    siteName,
+    locale: "th_TH",
+    type: "website",
+    images: [
+      {
+        url: "/images/banner1.webp",
+        width: 1200,
+        height: 630,
+        alt: "LAYA Thai textile marketplace",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description: defaultDescription,
+    images: ["/images/banner1.webp"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   icons: {
     icon: [
       {
@@ -49,6 +104,28 @@ export const metadata: Metadata = {
       },
     ],
     apple: "/apple-icon.png",
+  },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: siteName,
+  url: siteUrl,
+  logo: absoluteUrl("/icon.svg"),
+  sameAs: [],
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteName,
+  url: siteUrl,
+  inLanguage: "th-TH",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${siteUrl}/search?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
   },
 };
 
@@ -71,6 +148,14 @@ export default function RootLayout({
           margin: 0,
         }}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <MuiProvider>
           <AuthProviderWrapper>{children}</AuthProviderWrapper>
         </MuiProvider>

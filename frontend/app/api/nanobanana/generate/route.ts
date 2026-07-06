@@ -122,7 +122,7 @@ export async function POST(req: Request) {
   } catch (err: any) {
     if (err instanceof CreditsExhaustedError) {
       console.warn("[nanobanana] Credits exhausted! Displaying placeholder mock fabric.");
-      return NextResponse.json({ success: true, imageUrl: "/images/fabric1.jpg", mock: true });
+      return NextResponse.json({ success: true, imageUrl: "/images/fabric1.webp", mock: true });
     }
     console.error("[nanobanana] error:", err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });

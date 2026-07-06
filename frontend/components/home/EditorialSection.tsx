@@ -38,7 +38,7 @@ export default function EditorialSection() {
           }}
         >
           <Image
-            src="/thai.jpg"
+            src="/Thai.webp"
             alt="The story behind Thai silk"
             fill
             style={{ objectFit: "cover" }}

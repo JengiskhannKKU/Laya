@@ -114,5 +114,22 @@ NODE_ENV=development|production
 - แก้ไข Route `/api/ai` ใน `src/routes/ai.ts` ให้เรียกใช้ KKU LLM API (`https://gen.ai.kku.ac.th/api/v1`) โมเดล `gemini-2.5-flash-lite`.
 - เพิ่มโค้ดลบ Markdown Backticks (` ```json `) ออกจาก response ของ LLM ก่อนทำการ `JSON.parse` เพื่อแก้ปัญหา Syntax Error เวลาที่ LLM ตอบกลับมาเป็น Markdown.
 
+### 2026-07-06 — PromptPay Payments + Order Confirm Flow + Weaving Orders + Shop Matching
+**ผู้แก้**: AI (Claude Fable 5)
+
+**งานที่ทำ:**
+- เพิ่ม `src/utils/promptpay.ts` — EMVCo PromptPay QR payload generator (เทียบผลตรงกับไลบรารี `promptpay-qr`)
+- เพิ่ม `src/routes/payments.ts` — `GET /api/payments/qr`, `POST /api/payments` (คิด platform fee จาก `PLATFORM_FEE_PERCENT`), `POST /api/payments/:id/confirm` (mock gateway), `GET /api/payments[/:id]`
+- เพิ่ม `src/routes/weaving-orders.ts` — CRUD + state machine (pending_confirm→confirmed→weaving→ready→shipped→delivered) + logs + notifications
+- เพิ่ม `src/routes/weave-patterns.ts` — `GET /api/weave-patterns` พร้อม color variants
+- `src/routes/orders.ts` — เพิ่ม transition validation, `POST /:id/confirm`, ตั้ง confirmed_at/completed_at, แจ้งเตือนสองทาง; แก้บั๊ก default fabricSource เป็น `shop`
+- `src/routes/shops.ts` — เพิ่ม `GET /api/shops/match` (US-506); แก้บั๊ก `status='active'` → `'approved'` (ตรง enum)
+- Env ใหม่ใน `.env`: `PROMPTPAY_ID`, `PLATFORM_FEE_PERCENT`, `JWT_SECRET`, `SUPABASE_JWT_SECRET` (dotenv ไม่โหลด `.env.local`)
+- Seed ร้านทอตัวอย่าง 4 ร้าน: `node _seed_demo_shops.js` | ทดสอบ e2e: `node _test_flow.js`
+
+**ข้อควรระวัง:**
+- การ UPDATE คอลัมน์ enum ที่ใช้ `$1` ซ้ำใน CASE ต้อง cast `($1::text)::enum_type` ไม่งั้นเจอ error 42P08
+- tsx watch บน Windows บางครั้งไม่ hot-reload — ต้อง restart process เอง
+
 ---
 <!-- เพิ่ม changelog entry ใหม่ต่อท้ายนี้ -->

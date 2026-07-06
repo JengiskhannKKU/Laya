@@ -87,7 +87,7 @@ export default function GenerationResult() {
           sx={{
             position: "absolute",
             inset: 0,
-            backgroundImage: "url('/images/fabric1.jpg')", // Example pattern
+            backgroundImage: "url('/images/fabric1.webp')", // Example pattern
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}

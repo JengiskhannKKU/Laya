@@ -4,6 +4,37 @@ import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
+/** สถานะที่เปลี่ยนต่อได้ (US-212: pending_confirm → confirmed ก่อนเริ่มงาน) */
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  draft: ["pending_confirm", "cancelled"],
+  pending_confirm: ["confirmed", "cancelled"],
+  confirmed: ["in_progress", "cancelled"],
+  in_progress: ["ready"],
+  ready: ["shipped"],
+  shipped: ["delivered"],
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending_confirm: "รอร้านยืนยัน",
+  confirmed: "ร้านยืนยันออเดอร์แล้ว",
+  in_progress: "กำลังตัดเย็บ",
+  ready: "ตัดเสร็จแล้ว พร้อมจัดส่ง",
+  shipped: "จัดส่งแล้ว",
+  delivered: "จัดส่งสำเร็จ",
+  cancelled: "ออเดอร์ถูกยกเลิก",
+};
+
+async function notify(userId: string, title: string, body: string, data: unknown) {
+  try {
+    await query(
+      "INSERT INTO notifications (user_id, type, title, body, data) VALUES ($1, 'order_update', $2, $3, $4)",
+      [userId, title, body, JSON.stringify(data)]
+    );
+  } catch (err) {
+    console.error("notify failed:", err);
+  }
+}
+
 /**
  * GET /api/orders
  * Requires Bearer token. Returns orders for the current user.
@@ -138,7 +169,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
       shopFabricId,
       fabricMetersUsed,
       measurementId,
-      fabricSource = "shop_fabric",
+      fabricSource = "shop", // enum fabric_source: 'own' | 'shop'
       specialInstructions,
       estimatedPrice,
     } = req.body as {
@@ -181,13 +212,25 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
 });
 
 /**
- * PATCH /api/orders/:id/status
- * Merchant or admin updates order status + logs the change.
+ * POST /api/orders/:id/confirm
+ * ร้านยืนยันรับออเดอร์ (US-212: pending_confirm → confirmed)
  */
-router.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
+router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => {
+  req.body = { ...req.body, status: "confirmed" };
+  await changeStatus(req, res);
+});
+
+/**
+ * PATCH /api/orders/:id/status
+ * เปลี่ยนสถานะตามลำดับที่กำหนด + log + แจ้งเตือน (US-212, US-601, US-602)
+ * ร้าน/แอดมินเปลี่ยนได้ทุกขั้น, ลูกค้ายกเลิกได้เฉพาะก่อนร้านยืนยัน (US-603)
+ */
+router.patch("/:id/status", requireAuth, changeStatus);
+
+async function changeStatus(req: Request, res: Response) {
   try {
     const { role, userId, shopId } = req.user!;
-    const { status, note } = req.body as { status: string; note?: string };
+    const { status, note, finalPrice } = req.body as { status: string; note?: string; finalPrice?: number };
 
     if (!status) {
       res.status(400).json({ error: "status is required" });
@@ -195,37 +238,83 @@ router.patch("/:id/status", requireAuth, async (req: Request, res: Response) => 
     }
 
     // Fetch current order
-    const current = await query<{ id: string; status: string; shop_id: string }>(
-      "SELECT id, status, shop_id FROM orders WHERE id = $1",
+    const current = await query<{ id: string; status: string; shop_id: string; customer_id: string }>(
+      "SELECT id, status, shop_id, customer_id FROM orders WHERE id = $1",
       [req.params.id]
     );
     if (!current.length) {
       res.status(404).json({ error: "Order not found" });
       return;
     }
+    const order = current[0];
 
-    if (role === "merchant" && current[0].shop_id !== shopId) {
+    if (role === "merchant" && order.shop_id !== shopId) {
       res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    if (role === "customer") {
+      if (order.customer_id !== userId) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
+      const customerAllowed =
+        (status === "cancelled" && ["draft", "pending_confirm"].includes(order.status)) ||
+        (status === "pending_confirm" && order.status === "draft");
+      if (!customerAllowed) {
+        res.status(403).json({ error: "ลูกค้ายกเลิกได้เฉพาะออเดอร์ที่ร้านยังไม่ยืนยัน" });
+        return;
+      }
+    }
+
+    const allowed = ALLOWED_TRANSITIONS[order.status] ?? [];
+    if (!allowed.includes(status)) {
+      res.status(400).json({ error: `เปลี่ยนสถานะจาก ${order.status} เป็น ${status} ไม่ได้` });
       return;
     }
 
     await query(
-      "UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2",
-      [status, req.params.id]
+      `UPDATE orders SET
+         status = ($1::text)::order_status,
+         confirmed_at = CASE WHEN $1::text = 'confirmed' THEN NOW() ELSE confirmed_at END,
+         completed_at = CASE WHEN $1::text = 'delivered' THEN NOW() ELSE completed_at END,
+         final_price = COALESCE($2, final_price),
+         updated_at = NOW()
+       WHERE id = $3`,
+      [status, finalPrice ?? null, req.params.id]
     );
 
     await query(
       `INSERT INTO order_status_logs (order_id, old_status, new_status, changed_by, note)
        VALUES ($1, $2, $3, $4, $5)`,
-      [req.params.id, current[0].status, status, userId, note ?? null]
+      [req.params.id, order.status, status, userId, note ?? null]
     );
+
+    // แจ้งเตือนอีกฝั่ง: ร้านเปลี่ยน → แจ้งลูกค้า, ลูกค้าเปลี่ยน → แจ้งร้าน
+    if (role === "customer") {
+      const shopOwner = await query<{ user_id: string }>("SELECT user_id FROM shops WHERE id = $1", [order.shop_id]);
+      if (shopOwner.length) {
+        await notify(
+          shopOwner[0].user_id,
+          status === "cancelled" ? "ลูกค้ายกเลิกออเดอร์" : "ออเดอร์ใหม่รอยืนยัน",
+          note ?? `ออเดอร์ ${req.params.id.slice(0, 8)} — ${STATUS_LABELS[status] ?? status}`,
+          { orderId: req.params.id, status }
+        );
+      }
+    } else {
+      await notify(
+        order.customer_id,
+        STATUS_LABELS[status] ?? `สถานะออเดอร์: ${status}`,
+        note ?? `ออเดอร์ของคุณอัปเดตเป็น ${STATUS_LABELS[status] ?? status}`,
+        { orderId: req.params.id, status }
+      );
+    }
 
     res.json({ id: req.params.id, status });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update status" });
   }
-});
+}
 
 function mapOrder(row: Record<string, unknown>) {
   return {

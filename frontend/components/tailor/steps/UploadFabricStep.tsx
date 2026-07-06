@@ -80,7 +80,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
           </>
         ) : (
           <>
-            <Image src="/images/fabric1.jpg" alt="Fabric placeholder" fill style={{ objectFit: 'cover', opacity: 0.3 }} />
+            <Image src="/images/fabric1.webp" alt="Fabric placeholder" fill style={{ objectFit: 'cover', opacity: 0.3 }} />
             <Box sx={{ position: 'absolute', bottom: 16, right: 16, bgcolor: '#FFFFFF', p: 1.5, borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CameraAltRoundedIcon sx={{ color: '#1B2A4A', fontSize: 28 }} />
             </Box>

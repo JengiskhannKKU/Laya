@@ -17,11 +17,11 @@ import CropSquareIcon from '@mui/icons-material/CropSquare';
 // Mocking 2D preview images based on selection
 const getPreviewImage = (gender: string, shape: string, collar: string) => {
   if (gender === 'women') {
-    if (shape === 'fitted') return '/mom1.png';
-    if (shape === 'loose') return '/mom3.png';
-    return '/teenager1.png';
+    if (shape === 'fitted') return '/mom1.webp';
+    if (shape === 'loose') return '/mom3.webp';
+    return '/teenager1.webp';
   }
-  return '/teenager2.png'; // Fallback
+  return '/teenager2.webp'; // Fallback
 };
 
 export default function PatternRecommendationStep({ orderState, setOrderState, onNext }: any) {

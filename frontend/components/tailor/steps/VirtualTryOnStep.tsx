@@ -10,7 +10,7 @@ export default function VirtualTryOnStep({ orderState, onNext }: any) {
       
       <Box sx={{ width: '100%', height: 450, borderRadius: '16px', overflow: 'hidden', position: 'relative', bgcolor: '#E5DFD6' }}>
         {/* Placeholder for Virtual Try-On image showing user face and fabric on body */}
-        <Image src={"/images/fabric1.jpg"} alt="Virtual Try-On" fill style={{ objectFit: 'cover' }} />
+        <Image src={"/images/fabric1.webp"} alt="Virtual Try-On" fill style={{ objectFit: 'cover' }} />
         
         {/* Mock camera overlay icons */}
         <Box sx={{ position: 'absolute', bottom: 16, width: '100%', display: 'flex', justifyContent: 'center', gap: 2 }}>

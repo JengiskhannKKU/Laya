@@ -8,7 +8,8 @@ const router = Router();
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { province, search } = req.query;
-    const conditions = ["s.status = 'active'"];
+    // NOTE: enum shop_status = pending | approved | suspended ('active' ไม่มีในระบบ)
+    const conditions = ["s.status = 'approved'"];
     const params: unknown[] = [];
     let idx = 1;
 
@@ -56,6 +57,67 @@ router.get("/mine", requireAuth, requireRole("merchant", "admin"), async (req: R
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch shop" });
+  }
+});
+
+/**
+ * GET /api/shops/match?patternTag=มัดหมี่&province=อุดรธานี&service=weave
+ * แนะนำร้านที่เชี่ยวชาญตรงกับลายผ้าของลูกค้า (US-506)
+ * คะแนน: ความเชี่ยวชาญตรงลาย +2, จังหวัดตรง +1 — เรียงตามคะแนนแล้วตาม rating
+ */
+router.get("/match", async (req: Request, res: Response) => {
+  try {
+    const { patternTag, province, service } = req.query as Record<string, string | undefined>;
+
+    const params: unknown[] = [];
+    let idx = 1;
+
+    const pTag = patternTag ? `$${idx++}` : null;
+    if (patternTag) params.push(`%${patternTag}%`);
+    const pProvince = province ? `$${idx++}` : null;
+    if (province) params.push(province);
+
+    let serviceJoin = "";
+    if (service) {
+      serviceJoin = `JOIN shop_services sv ON sv.shop_id = s.id AND sv.service_type IN ($${idx++}, 'all')`;
+      params.push(service);
+    }
+
+    const rows = await query<Record<string, unknown>>(
+      `SELECT s.id, s.name, s.description, s.province, s.profile_image_url,
+              s.rating, s.review_count,
+              COALESCE(json_agg(DISTINCT ss.pattern_tag) FILTER (WHERE ss.id IS NOT NULL), '[]') AS specialties,
+              (
+                ${pTag ? `(CASE WHEN EXISTS (
+                    SELECT 1 FROM shop_specialties m
+                    WHERE m.shop_id = s.id AND m.pattern_tag ILIKE ${pTag}
+                  ) THEN 2 ELSE 0 END)` : "0"}
+                + ${pProvince ? `(CASE WHEN s.province = ${pProvince} THEN 1 ELSE 0 END)` : "0"}
+              ) AS match_score
+       FROM shops s
+       ${serviceJoin}
+       LEFT JOIN shop_specialties ss ON ss.shop_id = s.id
+       WHERE s.status = 'approved'
+       GROUP BY s.id
+       ORDER BY match_score DESC, s.rating DESC, s.review_count DESC
+       LIMIT 20`,
+      params
+    );
+
+    res.json(rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      province: r.province,
+      profileImageUrl: r.profile_image_url,
+      rating: Number(r.rating ?? 0),
+      reviewCount: Number(r.review_count ?? 0),
+      specialties: r.specialties,
+      matchScore: Number(r.match_score ?? 0),
+    })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to match shops" });
   }
 });
 
@@ -153,7 +215,7 @@ router.patch("/:id/status", requireAuth, requireRole("admin"), async (req: Reque
     if (!status) { res.status(400).json({ error: "status required" }); return; }
 
     await query(
-      `UPDATE shops SET status=$1, approved_at = CASE WHEN $1='active' THEN NOW() ELSE approved_at END,
+      `UPDATE shops SET status=$1, approved_at = CASE WHEN $1='approved' THEN NOW() ELSE approved_at END,
        updated_at=NOW() WHERE id=$2`,
       [status, req.params.id]
     );

@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "เข้าสู่ระบบ",
+  description: "เข้าสู่ระบบหรือสมัครสมาชิก LAYA",
+  path: "/auth/login",
+  noIndex: true,
+});
 
 function BrandPanel() {
   return (

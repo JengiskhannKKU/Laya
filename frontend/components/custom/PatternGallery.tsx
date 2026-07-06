@@ -44,20 +44,20 @@ const PATTERN_DATA: PatternItem[] = [
 
 // Direct pattern id → pixel-art image (one unique image per pattern)
 const PATTERN_IMAGE: Record<string, string> = {
-  p1:  "/patterns/lotus.png",
-  p2:  "/patterns/naga.png",
-  p3:  "/patterns/diamond.png",
-  p4:  "/patterns/swan.png",
-  p5:  "/patterns/hook.png",
-  p6:  "/patterns/elephant.png",
-  p7:  "/patterns/zigzag.png",
-  p8:  "/patterns/kinnara.png",
-  p9:  "/patterns/leaf.png",
-  p10: "/patterns/star_moon.png",
+  p1:  "/patterns/lotus.webp",
+  p2:  "/patterns/naga.webp",
+  p3:  "/patterns/diamond.webp",
+  p4:  "/patterns/swan.webp",
+  p5:  "/patterns/hook.webp",
+  p6:  "/patterns/elephant.webp",
+  p7:  "/patterns/zigzag.webp",
+  p8:  "/patterns/kinnara.webp",
+  p9:  "/patterns/leaf.webp",
+  p10: "/patterns/star_moon.webp",
 };
 
 function getPatternImage(item: PatternItem): string {
-  return PATTERN_IMAGE[item.id] ?? "/patterns/lotus.png";
+  return PATTERN_IMAGE[item.id] ?? "/patterns/lotus.webp";
 }
 
 interface PatternGalleryProps {

@@ -127,7 +127,7 @@ router.post("/generate", async (req: Request, res: Response) => {
     if (err instanceof CreditsExhaustedError) {
       // Return mock gracefully — don't 500
       console.warn("[nanobanana] Credits exhausted! Displaying placeholder mock fabric for demo purposes.");
-      return res.json({ success: true, imageUrl: "/images/fabric1.jpg", mock: true });
+      return res.json({ success: true, imageUrl: "/images/fabric1.webp", mock: true });
     }
     console.error("[nanobanana] error:", err.message);
     res.status(500).json({ error: err.message });

@@ -113,11 +113,11 @@ export interface TopProduct {
 }
 
 export const mockTopProducts: TopProduct[] = [
-  { id: "1", name: "ผ้ายกลายกินรีหริภุญชัย", image: "/images/fabric1.jpg", revenue: 540000, unitsSold: 300, rating: 4.8, community: "ชุมชนหริภุญชัย" },
-  { id: "3", name: "ผ้าฝ้ายย้อมคราม", image: "/images/fabric4.jpg", revenue: 450000, unitsSold: 300, rating: 4.9, community: "กลุ่มทอผ้าครามสกลนคร" },
-  { id: "4", name: "ผ้าไหมแพรวา", image: "/images/fabric5.jpg", revenue: 350000, unitsSold: 70, rating: 4.7, community: "กลุ่มทอผ้าแพรวาคำเขื่อนแก้ว" },
-  { id: "teenager1", name: "ชุดเซ็ตผ้าไหม 'วัยรุ่นเดอะ'", image: "/teenager1.png", revenue: 409600, unitsSold: 128, rating: 4.9, community: "กลุ่มคนรุ่นใหม่หริภุญชัย" },
-  { id: "2", name: "ผ้ามัดหมี่ลายนาคราช", image: "/images/fabric2.jpg", revenue: 308000, unitsSold: 110, rating: 4.6, community: "กลุ่มทอผ้าบ้านเขว้า" },
+  { id: "1", name: "ผ้ายกลายกินรีหริภุญชัย", image: "/images/fabric1.webp", revenue: 540000, unitsSold: 300, rating: 4.8, community: "ชุมชนหริภุญชัย" },
+  { id: "3", name: "ผ้าฝ้ายย้อมคราม", image: "/images/fabric4.webp", revenue: 450000, unitsSold: 300, rating: 4.9, community: "กลุ่มทอผ้าครามสกลนคร" },
+  { id: "4", name: "ผ้าไหมแพรวา", image: "/images/fabric5.webp", revenue: 350000, unitsSold: 70, rating: 4.7, community: "กลุ่มทอผ้าแพรวาคำเขื่อนแก้ว" },
+  { id: "teenager1", name: "ชุดเซ็ตผ้าไหม 'วัยรุ่นเดอะ'", image: "/teenager1.webp", revenue: 409600, unitsSold: 128, rating: 4.9, community: "กลุ่มคนรุ่นใหม่หริภุญชัย" },
+  { id: "2", name: "ผ้ามัดหมี่ลายนาคราช", image: "/images/fabric2.webp", revenue: 308000, unitsSold: 110, rating: 4.6, community: "กลุ่มทอผ้าบ้านเขว้า" },
 ];
 
 // ─── Top Weavers ───────────────────────────────────────────────
@@ -208,13 +208,13 @@ export const mockAdminOrders: AdminOrder[] = [
     id: "ORD-2024-1405", customerName: "สมชาย มั่นคง", customerPhone: "081-234-5678", customerEmail: "somchai@email.com",
     shippingAddress: { fullAddress: "123 หมู่ 4 ต.ในเมือง อ.เมือง", province: "เชียงใหม่", zipCode: "50000" },
     items: [
-      { id: "i1", name: "ผ้าไหมมัดหมี่ลายนาคราช", type: "ผ้าไหม", weaver: "แม่สมจิตร ใจดี", qty: 2, price: 3500, image: "/images/fabric1.jpg" },
-      { id: "i2", name: "ผ้าฝ้ายย้อมคราม", type: "ผ้าฝ้าย", weaver: "ป้าบุญส่ง ดวงดี", qty: 1, price: 1500, image: "/images/fabric2.jpg" },
+      { id: "i1", name: "ผ้าไหมมัดหมี่ลายนาคราช", type: "ผ้าไหม", weaver: "แม่สมจิตร ใจดี", qty: 2, price: 3500, image: "/images/fabric1.webp" },
+      { id: "i2", name: "ผ้าฝ้ายย้อมคราม", type: "ผ้าฝ้าย", weaver: "ป้าบุญส่ง ดวงดี", qty: 1, price: 1500, image: "/images/fabric2.webp" },
     ],
     subtotal: 8500, shippingFee: 0, total: 8500,
     status: "pending", paymentStatus: "pending",
     paymentMethod: "PromptPay",
-    paymentProof: { image: "/images/fabric4.jpg", amount: 8500, date: "2024-12-14 10:30" }, // pending approval
+    paymentProof: { image: "/images/fabric4.webp", amount: 8500, date: "2024-12-14 10:30" }, // pending approval
     timeline: [
       { status: "pending", timestamp: "2024-12-14 10:00", description: "Order Created" },
     ],
@@ -224,12 +224,12 @@ export const mockAdminOrders: AdminOrder[] = [
     id: "ORD-2024-1404", customerName: "กานดา วรรณ", customerPhone: "089-876-5432", customerEmail: "kanda@email.com",
     shippingAddress: { fullAddress: "45/6 ซอยสุขุมวิท 63 แขวงคลองตันเหนือ เขตวัฒนา", province: "กรุงเทพมหานคร", zipCode: "10110" },
     items: [
-      { id: "i3", name: "ผ้าแพรวาลายดอกจันทร์", type: "ผ้าไหมแพรวา", weaver: "คุณน้านภา ทอรัก", qty: 1, price: 5000, image: "/images/fabric5.jpg" },
+      { id: "i3", name: "ผ้าแพรวาลายดอกจันทร์", type: "ผ้าไหมแพรวา", weaver: "คุณน้านภา ทอรัก", qty: 1, price: 5000, image: "/images/fabric5.webp" },
     ],
     subtotal: 5000, shippingFee: 0, total: 5000,
     status: "paid", paymentStatus: "paid",
     paymentMethod: "Credit Card",
-    paymentProof: { image: "/images/fabric3.jpg", amount: 5000, date: "2024-12-14 09:15" },
+    paymentProof: { image: "/images/fabric3.webp", amount: 5000, date: "2024-12-14 09:15" },
     timeline: [
       { status: "pending", timestamp: "2024-12-14 09:00", description: "Order Created" },
       { status: "paid", timestamp: "2024-12-14 09:15", description: "Payment Confirmed via Credit Card" },
@@ -240,12 +240,12 @@ export const mockAdminOrders: AdminOrder[] = [
     id: "ORD-2024-1403", customerName: "Nadia Schmidt", customerPhone: "+49-123-456789", customerEmail: "nadia@email.com",
     shippingAddress: { fullAddress: "123 Alexanderplatz", province: "Berlin", zipCode: "10178" },
     items: [
-      { id: "i4", name: "ผ้ายกลายกินรีหริภุญชัย", type: "ผ้าไหมยกดอก", weaver: "แม่สมจิตร ใจดี", qty: 2, price: 1800, image: "/images/fabric1.jpg" },
+      { id: "i4", name: "ผ้ายกลายกินรีหริภุญชัย", type: "ผ้าไหมยกดอก", weaver: "แม่สมจิตร ใจดี", qty: 2, price: 1800, image: "/images/fabric1.webp" },
     ],
     subtotal: 3600, shippingFee: 600, total: 4200,
     status: "producing", paymentStatus: "paid",
     paymentMethod: "Bank Transfer",
-    paymentProof: { image: "/images/fabric2.jpg", amount: 4200, date: "2024-12-13 14:00" },
+    paymentProof: { image: "/images/fabric2.webp", amount: 4200, date: "2024-12-13 14:00" },
     timeline: [
       { status: "pending", timestamp: "2024-12-13 10:00", description: "Order Created" },
       { status: "paid", timestamp: "2024-12-13 15:30", description: "Payment Confirmed by Admin" },
@@ -257,12 +257,12 @@ export const mockAdminOrders: AdminOrder[] = [
     id: "ORD-2024-1402", customerName: "ประเสริฐ จันทร์", customerPhone: "082-345-6789", customerEmail: "prasert@email.com",
     shippingAddress: { fullAddress: "78 หมู่ 1 ต.แพ่ง อ.เมือง", province: "ชัยภูมิ", zipCode: "36000" },
     items: [
-      { id: "i5", name: "ผ้าฝ้ายทอมือลายโบราณ", type: "ผ้าฝ้าย", weaver: "แม่ประนอม สีทอง", qty: 1, price: 2800, image: "/images/fabric4.jpg" },
+      { id: "i5", name: "ผ้าฝ้ายทอมือลายโบราณ", type: "ผ้าฝ้าย", weaver: "แม่ประนอม สีทอง", qty: 1, price: 2800, image: "/images/fabric4.webp" },
     ],
     subtotal: 2800, shippingFee: 0, total: 2800,
     status: "shipped", paymentStatus: "paid",
     paymentMethod: "PromptPay",
-    paymentProof: { image: "/images/fabric3.jpg", amount: 2800, date: "2024-12-12 11:20" },
+    paymentProof: { image: "/images/fabric3.webp", amount: 2800, date: "2024-12-12 11:20" },
     shippingProvider: "Flash Express", trackingNumber: "TH23456789F",
     timeline: [
       { status: "pending", timestamp: "2024-12-12 11:00", description: "Order Created" },
@@ -276,12 +276,12 @@ export const mockAdminOrders: AdminOrder[] = [
     id: "ORD-2024-1401", customerName: "วิภา ศรีสุข", customerPhone: "085-678-9012", customerEmail: "wipa@email.com",
     shippingAddress: { fullAddress: "99/9 หมู่ 5 บ้านบึง", province: "ลำพูน", zipCode: "51000" },
     items: [
-      { id: "i6", name: "ผ้าจกพิกุล", type: "ผ้าจก", weaver: "ป้าบุญส่ง ดวงดี", qty: 2, price: 2100, image: "/images/fabric5.jpg" },
+      { id: "i6", name: "ผ้าจกพิกุล", type: "ผ้าจก", weaver: "ป้าบุญส่ง ดวงดี", qty: 2, price: 2100, image: "/images/fabric5.webp" },
     ],
     subtotal: 4200, shippingFee: 0, total: 4200,
     status: "delivered", paymentStatus: "paid",
     paymentMethod: "Credit Card",
-    paymentProof: { image: "/images/fabric1.jpg", amount: 4200, date: "2024-12-11 09:10" },
+    paymentProof: { image: "/images/fabric1.webp", amount: 4200, date: "2024-12-11 09:10" },
     shippingProvider: "Kerry Express", trackingNumber: "KER12345678",
     timeline: [
       { status: "pending", timestamp: "2024-12-11 09:00", description: "Order Created" },
@@ -310,13 +310,13 @@ export interface AdminProduct {
 }
 
 export const mockAdminProducts: AdminProduct[] = [
-  { id: "1", name: "ผ้ายกลายกินรีหริภุญชัย", image: "/images/fabric1.jpg", community: "ชุมชนหริภุญชัย", province: "ลำพูน", price: 1800, stock: 20, status: "active", hasGI: true, soldCount: 300, rating: 4.8 },
-  { id: "2", name: "ผ้ามัดหมี่ลายนาคราช", image: "/images/fabric2.jpg", community: "กลุ่มทอผ้าบ้านเขว้า", province: "ชัยภูมิ", price: 2800, stock: 15, status: "active", hasGI: false, soldCount: 110, rating: 4.6 },
-  { id: "3", name: "ผ้าฝ้ายย้อมคราม", image: "/images/fabric4.jpg", community: "กลุ่มทอผ้าครามสกลนคร", province: "สกลนคร", price: 1500, stock: 30, status: "active", hasGI: true, soldCount: 300, rating: 4.9 },
-  { id: "4", name: "ผ้าไหมแพรวา", image: "/images/fabric5.jpg", community: "กลุ่มทอผ้าแพรวาคำเขื่อนแก้ว", province: "กาฬสินธุ์", price: 5000, stock: 10, status: "active", hasGI: true, soldCount: 70, rating: 4.7 },
-  { id: "5", name: "ผ้าจกลายดอกพิกุล", image: "/images/fabric3.jpg", community: "กลุ่มทอผ้าจกราชบุรี", province: "ราชบุรี", price: 2200, stock: 0, status: "out_of_stock", hasGI: false, soldCount: 93, rating: 4.5 },
-  { id: "teenager1", name: "ชุดเซ็ตผ้าไหม 'วัยรุ่นเดอะ'", image: "/teenager1.png", community: "กลุ่มคนรุ่นใหม่หริภุญชัย", province: "ลำพูน", price: 3200, stock: 10, status: "active", hasGI: true, soldCount: 128, rating: 4.9 },
-  { id: "bag1", name: "พวงกุญแจผ้าทอ LAYA (Small)", image: "/bag1.png", community: "ชุมชนหริภุญชัย", province: "ลำพูน", price: 1250, stock: 100, status: "active", hasGI: false, soldCount: 34, rating: 4.9 },
+  { id: "1", name: "ผ้ายกลายกินรีหริภุญชัย", image: "/images/fabric1.webp", community: "ชุมชนหริภุญชัย", province: "ลำพูน", price: 1800, stock: 20, status: "active", hasGI: true, soldCount: 300, rating: 4.8 },
+  { id: "2", name: "ผ้ามัดหมี่ลายนาคราช", image: "/images/fabric2.webp", community: "กลุ่มทอผ้าบ้านเขว้า", province: "ชัยภูมิ", price: 2800, stock: 15, status: "active", hasGI: false, soldCount: 110, rating: 4.6 },
+  { id: "3", name: "ผ้าฝ้ายย้อมคราม", image: "/images/fabric4.webp", community: "กลุ่มทอผ้าครามสกลนคร", province: "สกลนคร", price: 1500, stock: 30, status: "active", hasGI: true, soldCount: 300, rating: 4.9 },
+  { id: "4", name: "ผ้าไหมแพรวา", image: "/images/fabric5.webp", community: "กลุ่มทอผ้าแพรวาคำเขื่อนแก้ว", province: "กาฬสินธุ์", price: 5000, stock: 10, status: "active", hasGI: true, soldCount: 70, rating: 4.7 },
+  { id: "5", name: "ผ้าจกลายดอกพิกุล", image: "/images/fabric3.webp", community: "กลุ่มทอผ้าจกราชบุรี", province: "ราชบุรี", price: 2200, stock: 0, status: "out_of_stock", hasGI: false, soldCount: 93, rating: 4.5 },
+  { id: "teenager1", name: "ชุดเซ็ตผ้าไหม 'วัยรุ่นเดอะ'", image: "/teenager1.webp", community: "กลุ่มคนรุ่นใหม่หริภุญชัย", province: "ลำพูน", price: 3200, stock: 10, status: "active", hasGI: true, soldCount: 128, rating: 4.9 },
+  { id: "bag1", name: "พวงกุญแจผ้าทอ LAYA (Small)", image: "/bag1.webp", community: "ชุมชนหริภุญชัย", province: "ลำพูน", price: 1250, stock: 100, status: "active", hasGI: false, soldCount: 34, rating: 4.9 },
 ];
 
 // ─── Admin Weaver Management ───────────────────────────────────
@@ -601,11 +601,11 @@ export interface KYCSubmission {
 }
 
 export const mockKYCSubmissions: KYCSubmission[] = [
-  { id: "kyc1", weaverId: "w5", weaverName: "นิตยา ผดุงศิลป์", avatar: "น", community: "กลุ่มทอผ้าจกราชบุรี", province: "ราชบุรี", submittedDate: "2024-12-10", idCardImage: "/images/fabric1.jpg", selfieImage: "/images/fabric2.jpg", status: "pending" },
-  { id: "kyc2", weaverId: "w7", weaverName: "วันดี สืบศิลป์", avatar: "ว", community: "กลุ่มทอผ้าครามสกลนคร", province: "สกลนคร", submittedDate: "2024-12-12", idCardImage: "/images/fabric3.jpg", selfieImage: "/images/fabric4.jpg", status: "pending" },
-  { id: "kyc3", weaverId: "w8", weaverName: "อำพร ทองคำ", avatar: "อ", community: "ชุมชนหริภุญชัย", province: "ลำพูน", submittedDate: "2024-12-13", idCardImage: "/images/fabric5.jpg", selfieImage: "/images/fabric1.jpg", status: "pending" },
-  { id: "kyc4", weaverId: "w1", weaverName: "แม่สมจิตร ใจดี", avatar: "ส", community: "ชุมชนหริภุญชัย", province: "ลำพูน", submittedDate: "2024-11-15", idCardImage: "/images/fabric2.jpg", selfieImage: "/images/fabric3.jpg", status: "approved", reviewedBy: "Admin A", reviewedDate: "2024-11-16" },
-  { id: "kyc5", weaverId: "w6", weaverName: "สมพงษ์ ทอสวย", avatar: "ส", community: "ชุมชนหริภุญชัย", province: "ลำพูน", submittedDate: "2024-06-15", idCardImage: "/images/fabric4.jpg", selfieImage: "/images/fabric5.jpg", status: "rejected", rejectedReason: "รูปบัตรประชาชนไม่ชัด", reviewedBy: "Admin A", reviewedDate: "2024-06-16" },
+  { id: "kyc1", weaverId: "w5", weaverName: "นิตยา ผดุงศิลป์", avatar: "น", community: "กลุ่มทอผ้าจกราชบุรี", province: "ราชบุรี", submittedDate: "2024-12-10", idCardImage: "/images/fabric1.webp", selfieImage: "/images/fabric2.webp", status: "pending" },
+  { id: "kyc2", weaverId: "w7", weaverName: "วันดี สืบศิลป์", avatar: "ว", community: "กลุ่มทอผ้าครามสกลนคร", province: "สกลนคร", submittedDate: "2024-12-12", idCardImage: "/images/fabric3.webp", selfieImage: "/images/fabric4.webp", status: "pending" },
+  { id: "kyc3", weaverId: "w8", weaverName: "อำพร ทองคำ", avatar: "อ", community: "ชุมชนหริภุญชัย", province: "ลำพูน", submittedDate: "2024-12-13", idCardImage: "/images/fabric5.webp", selfieImage: "/images/fabric1.webp", status: "pending" },
+  { id: "kyc4", weaverId: "w1", weaverName: "แม่สมจิตร ใจดี", avatar: "ส", community: "ชุมชนหริภุญชัย", province: "ลำพูน", submittedDate: "2024-11-15", idCardImage: "/images/fabric2.webp", selfieImage: "/images/fabric3.webp", status: "approved", reviewedBy: "Admin A", reviewedDate: "2024-11-16" },
+  { id: "kyc5", weaverId: "w6", weaverName: "สมพงษ์ ทอสวย", avatar: "ส", community: "ชุมชนหริภุญชัย", province: "ลำพูน", submittedDate: "2024-06-15", idCardImage: "/images/fabric4.webp", selfieImage: "/images/fabric5.webp", status: "rejected", rejectedReason: "รูปบัตรประชาชนไม่ชัด", reviewedBy: "Admin A", reviewedDate: "2024-06-16" },
 ];
 
 // ─── Roles & Permissions ───────────────────────────────────────
@@ -777,25 +777,25 @@ export interface AdminCampaign {
 export const mockCampaigns: AdminCampaign[] = [
   {
     id: "cam1", name: "ผ้าทอไทย x ปีใหม่ 2025", description: "แคมเปญต้อนรับปีใหม่ ลดพิเศษทั้งร้าน พร้อมของขวัญสุดพิเศษ",
-    bannerImage: "/images/fabric1.jpg", startDate: "2024-12-20", endDate: "2025-01-15", status: "active",
+    bannerImage: "/images/fabric1.webp", startDate: "2024-12-20", endDate: "2025-01-15", status: "active",
     linkedPromoCode: "LAYA10", visibility: "public", productCount: 24,
     stats: { revenue: 245000, orders: 85, conversion: 4.2 },
   },
   {
     id: "cam2", name: "สงกรานต์เซลล์ 2025", description: "เทศกาลสงกรานต์ ลดสูงสุด 20% เสื้อผ้าไหมและผ้าฝ้ายทอมือ",
-    bannerImage: "/images/fabric2.jpg", startDate: "2025-04-10", endDate: "2025-04-17", status: "upcoming",
+    bannerImage: "/images/fabric2.webp", startDate: "2025-04-10", endDate: "2025-04-17", status: "upcoming",
     linkedPromoCode: "SKR2025", visibility: "public", productCount: 18,
     stats: { revenue: 0, orders: 0, conversion: 0 },
   },
   {
     id: "cam3", name: "ผ้าย้อมคราม Festival", description: "รวมผ้าย้อมครามจากสกลนคร ราคาพิเศษ",
-    bannerImage: "/images/fabric3.jpg", startDate: "2024-06-01", endDate: "2024-09-30", status: "ended",
+    bannerImage: "/images/fabric3.webp", startDate: "2024-06-01", endDate: "2024-09-30", status: "ended",
     linkedPromoCode: "KRAM100", visibility: "public", productCount: 12,
     stats: { revenue: 380000, orders: 210, conversion: 5.1 },
   },
   {
     id: "cam4", name: "แพรวา Premium Collection", description: "คอลเลคชันพิเศษผ้าแพรวาจากกาฬสินธุ์ สำหรับลูกค้าพรีเมียม",
-    bannerImage: "/images/fabric4.jpg", startDate: "2024-11-01", endDate: "2025-02-28", status: "active",
+    bannerImage: "/images/fabric4.webp", startDate: "2024-11-01", endDate: "2025-02-28", status: "active",
     linkedPromoCode: "SILK15", visibility: "private", productCount: 8,
     stats: { revenue: 520000, orders: 42, conversion: 6.8 },
   },
@@ -827,7 +827,7 @@ export const mockReports: AdminReport[] = [
     id: "RPT-001", type: "product", targetName: "ผ้าไหมปลอม (สงสัยเป็นเครื่องจักร)", targetId: "prod-x1",
     reporterName: "สมชาย มั่นคง", reporterEmail: "somchai@email.com",
     description: "สินค้านี้ไม่ใช่ผ้าทอมือ ลายดูเป็นเครื่องจักรทอ คุณภาพไม่ตรงกับที่โฆษณา",
-    evidence: ["/images/fabric1.jpg", "/images/fabric2.jpg"],
+    evidence: ["/images/fabric1.webp", "/images/fabric2.webp"],
     date: "2024-12-14", status: "pending", priority: "high",
     timeline: [
       { time: "2024-12-14 10:30", action: "User รายงานปัญหา", actor: "สมชาย มั่นคง" },
@@ -837,7 +837,7 @@ export const mockReports: AdminReport[] = [
     id: "RPT-002", type: "user", targetName: "สมพงษ์ ทอสวย", targetId: "w6",
     reporterName: "กานดา วรรณ", reporterEmail: "kanda@email.com",
     description: "ช่างทอรายนี้ส่งของช้ามาก (2 เดือน) และไม่ตอบข้อความ",
-    evidence: ["/images/fabric3.jpg"],
+    evidence: ["/images/fabric3.webp"],
     date: "2024-12-13", status: "investigating", priority: "high",
     adminNote: "กำลังติดต่อช่างทอเพื่อสอบถาม",
     timeline: [
@@ -863,7 +863,7 @@ export const mockReports: AdminReport[] = [
     id: "RPT-004", type: "product", targetName: "กระเป๋าลอกแบรนด์", targetId: "prod-x2",
     reporterName: "Nadia Schmidt", reporterEmail: "nadia@email.com",
     description: "กระเป๋านี้มีโลโก้คล้ายแบรนด์ดัง อาจละเมิดลิขสิทธิ์",
-    evidence: ["/images/fabric4.jpg"],
+    evidence: ["/images/fabric4.webp"],
     date: "2024-12-11", status: "pending", priority: "high",
     timeline: [
       { time: "2024-12-11 15:00", action: "User รายงานปัญหา", actor: "Nadia Schmidt" },

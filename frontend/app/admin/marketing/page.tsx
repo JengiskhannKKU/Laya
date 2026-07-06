@@ -144,7 +144,7 @@ export default function MarketingPage() {
     if (!campForm.name.trim() || !campForm.startDate || !campForm.endDate) return;
     const nc: AdminCampaign = {
       id: `cam${Date.now()}`, name: campForm.name, description: campForm.description,
-      bannerImage: "/images/fabric5.jpg", startDate: campForm.startDate, endDate: campForm.endDate,
+      bannerImage: "/images/fabric5.webp", startDate: campForm.startDate, endDate: campForm.endDate,
       status: "upcoming", linkedPromoCode: campForm.linkedPromoCode || undefined,
       visibility: campForm.visibility, productCount: 0,
       stats: { revenue: 0, orders: 0, conversion: 0 },

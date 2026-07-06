@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MobileLayout from "@/components/layout/MobileLayout";
+import { QRCodeSVG } from "qrcode.react";
+import { useAuth } from "@/lib/auth-context";
+import { formatPromptPayIdDisplay } from "@/lib/promptpay";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -56,9 +59,20 @@ const COMMUNITIES = [
 
 const STEPS = ["เลือกลาย", "เลือกสี", "เลือกชุมชน", "สรุปออเดอร์"];
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const PATTERN_PREVIEW_COLORS = ["#8B4513", "#4B0082", "#DC143C", "#DAA520", "#2E8B57", "#8FBC8F", "#1B2A4A", "#92652A"];
+
+interface PaymentInfo {
+  id: string;
+  amount: number;
+  qrPayload: string;
+  promptpayId: string;
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function WeavingOrderPage() {
   const router = useRouter();
+  const { session } = useAuth();
 
   const [step, setStep]         = useState(0);
   const [loading, setLoading]   = useState(false);
@@ -74,9 +88,51 @@ export default function WeavingOrderPage() {
   const [community, setCommunity] = useState("");
   const [notes, setNotes]       = useState("");
 
-  const selectedCommunity = COMMUNITIES.find((c) => c.id === community);
+  // ข้อมูลจริงจาก API (fallback เป็น mock ถ้า backend ไม่พร้อม)
+  const [patterns, setPatterns] = useState(WEAVE_PATTERNS);
+  const [communities, setCommunities] = useState(COMMUNITIES);
+  const [isLive, setIsLive] = useState(false);
 
-  const estimatedPrice = meters * 320; // mock: 320 บาท/เมตร
+  // ขั้นตอนชำระเงิน PromptPay (US-604)
+  const [payment, setPayment] = useState<PaymentInfo | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [patRes, shopRes] = await Promise.all([
+          fetch(`${API_BASE}/api/weave-patterns`),
+          fetch(`${API_BASE}/api/shops/match?service=weave`),
+        ]);
+        if (!patRes.ok || !shopRes.ok) return;
+        const pats = (await patRes.json()) as { id: string; name: string; originProvince?: string }[];
+        const shops = (await shopRes.json()) as { id: string; name: string; province: string; rating: number; specialties: string[] }[];
+        if (!pats.length || !shops.length) return;
+
+        setPatterns(pats.map((p, i) => ({
+          id: p.id,
+          label: p.name,
+          region: p.originProvince ?? "-",
+          preview: PATTERN_PREVIEW_COLORS[i % PATTERN_PREVIEW_COLORS.length],
+        })));
+        setCommunities(shops.map((s) => ({
+          id: s.id,
+          name: s.name,
+          province: s.province,
+          rating: s.rating,
+          specialty: s.specialties?.[0] ?? "ทอผ้า",
+          leadTime: "3-5 สัปดาห์",
+        })));
+        setIsLive(true);
+      } catch {
+        // backend ไม่พร้อม — ใช้ mock ต่อไป
+      }
+    })();
+  }, []);
+
+  const selectedCommunity = communities.find((c) => c.id === community);
+
+  const estimatedPrice = meters * 320; // ราคาประเมินเบื้องต้น 320 บาท/เมตร
 
   const canNext = [
     !!pattern,
@@ -89,15 +145,111 @@ export default function WeavingOrderPage() {
     setLoading(true);
     setError("");
     try {
-      // TODO: POST /api/weaving-orders
-      await new Promise((r) => setTimeout(r, 1500));
-      setSuccess(true);
-    } catch {
-      setError("ส่งออเดอร์ไม่สำเร็จ กรุณาลองใหม่");
+      const token = session?.access_token;
+
+      if (token && isLive) {
+        // สร้างออเดอร์ทอจริง (US-404, US-406)
+        const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+        const orderRes = await fetch(`${API_BASE}/api/weaving-orders`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            shopId: community,
+            patternId: pattern,
+            customColorNote: COLOR_TONES.find((t) => t.id === colorTone)?.label,
+            metersRequested: meters,
+            estimatedPrice,
+            specialInstructions: notes || undefined,
+            colorDisclaimerAccepted: acceptedWarning,
+          }),
+        });
+        const order = await orderRes.json();
+        if (!orderRes.ok) throw new Error(order.error ?? "สร้างออเดอร์ไม่สำเร็จ");
+
+        // สร้างรายการชำระเงิน → ได้ PromptPay QR ตามยอด (US-604)
+        const payRes = await fetch(`${API_BASE}/api/payments`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ weavingOrderId: order.id }),
+        });
+        const pay = await payRes.json();
+        if (!payRes.ok) throw new Error(pay.error ?? "สร้างรายการชำระเงินไม่สำเร็จ");
+
+        setPayment({ id: pay.id, amount: pay.amount, qrPayload: pay.qrPayload, promptpayId: pay.promptpayId });
+      } else {
+        // Demo mode — ยังไม่ได้ล็อกอิน/backend ไม่พร้อม
+        await new Promise((r) => setTimeout(r, 1500));
+        setSuccess(true);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ส่งออเดอร์ไม่สำเร็จ กรุณาลองใหม่");
     } finally {
       setLoading(false);
     }
   };
+
+  /** ลูกค้ากด "โอนเงินแล้ว" → ยืนยันการชำระ (mock gateway) แล้วเข้าสถานะรอร้านคอนเฟิร์ม */
+  const handleConfirmPaid = async () => {
+    if (!payment || !session?.access_token) return;
+    setPaying(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE}/api/payments/${payment.id}/confirm`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "ยืนยันการชำระเงินไม่สำเร็จ");
+      setPayment(null);
+      setSuccess(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ยืนยันการชำระเงินไม่สำเร็จ");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // ── หน้าชำระเงิน PromptPay (หลังสร้างออเดอร์จริง) ──
+  if (payment) {
+    return (
+      <Box sx={{ flex: 1, bgcolor: "#FAF6F0", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", p: 3, gap: 2 }}>
+        <Typography variant="h6" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A" }}>
+          ชำระเงินด้วยพร้อมเพย์
+        </Typography>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.85rem", textAlign: "center" }}>
+          สแกน QR ด้วยแอปธนาคารเพื่อชำระเงิน
+        </Typography>
+
+        <Box sx={{ bgcolor: "#FFFFFF", p: 2, borderRadius: "16px", boxShadow: "0 2px 12px rgba(27,42,74,0.08)" }}>
+          <QRCodeSVG value={payment.qrPayload} size={200} level="M" />
+        </Box>
+
+        <Box sx={{ textAlign: "center" }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#1B2A4A", fontWeight: 600 }}>
+            พร้อมเพย์: {formatPromptPayIdDisplay(payment.promptpayId)} · LAYA Platform
+          </Typography>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.4rem", color: "#C5A55A", fontWeight: 700 }}>
+            ฿{payment.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </Typography>
+        </Box>
+
+        {error && (
+          <Alert severity="error" sx={{ borderRadius: "10px", fontFamily: '"Kanit", sans-serif', width: "100%" }} onClose={() => setError("")}>{error}</Alert>
+        )}
+
+        <Button
+          variant="contained" fullWidth disabled={paying} onClick={handleConfirmPaid}
+          startIcon={paying ? <CircularProgress size={18} color="inherit" /> : <CheckCircleRoundedIcon />}
+          sx={{ mt: 1, py: 1.4, bgcolor: "#1B2A4A", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none", maxWidth: 360 }}
+        >
+          {paying ? "กำลังตรวจสอบ..." : "ฉันโอนเงินแล้ว"}
+        </Button>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#9CA3AF", textAlign: "center" }}>
+          หลังยืนยัน ร้านจะได้รับแจ้งเตือนและตรวจสอบออเดอร์ของคุณ
+        </Typography>
+      </Box>
+    );
+  }
 
   if (success) {
     return (
@@ -169,7 +321,7 @@ export default function WeavingOrderPage() {
                 เลือกลายผ้าพื้นฐาน
               </Typography>
               <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
-                {WEAVE_PATTERNS.map((p) => (
+                {patterns.map((p) => (
                   <Box
                     key={p.id}
                     onClick={() => setPattern(p.id)}
@@ -258,7 +410,7 @@ export default function WeavingOrderPage() {
                 เลือกชุมชนทอผ้า
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {COMMUNITIES.map((c) => (
+                {communities.map((c) => (
                   <Box
                     key={c.id}
                     onClick={() => setCommunity(c.id)}
@@ -342,7 +494,7 @@ export default function WeavingOrderPage() {
                   สรุปออเดอร์ทอผ้า
                 </Typography>
                 {[
-                  ["ลายผ้า", WEAVE_PATTERNS.find((p) => p.id === pattern)?.label],
+                  ["ลายผ้า", patterns.find((p) => p.id === pattern)?.label],
                   ["โทนสี", COLOR_TONES.find((t) => t.id === colorTone)?.label],
                   ["จำนวน", `${meters} เมตร`],
                   ["ชุมชน", selectedCommunity?.name],

@@ -132,7 +132,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
               style={{ position: "absolute", inset: 0 }}
             >
               <Image
-                src={product.images[currentImage] || "/placeholder.jpg"}
+                src={product.images[currentImage] || "/placeholder.webp"}
                 alt={product.name}
                 fill
                 style={{ objectFit: "cover" }}

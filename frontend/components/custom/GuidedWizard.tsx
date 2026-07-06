@@ -46,27 +46,27 @@ const WEAVER_COLORS = [
   { name: "บานเย็น", hex: "#ff1493" },
 ];
 const WEAVE_TYPES = [
-  { name: "มัดหมี่ (Mudmee)", image: "/patterns/weave_mudmee.png", color: "#e8d5c4" },
-  { name: "ขิด (Khit)", image: "/patterns/weave_khit.png", color: "#d5e8c4" },
-  { name: "ยกดอก (Yok Dok)", image: "/patterns/weave_yokdok.png", color: "#e8c4c4" },
-  { name: "จก (Jok)", image: "/patterns/weave_jok.png", color: "#c4d5e8" },
+  { name: "มัดหมี่ (Mudmee)", image: "/patterns/weave_mudmee.webp", color: "#e8d5c4" },
+  { name: "ขิด (Khit)", image: "/patterns/weave_khit.webp", color: "#d5e8c4" },
+  { name: "ยกดอก (Yok Dok)", image: "/patterns/weave_yokdok.webp", color: "#e8c4c4" },
+  { name: "จก (Jok)", image: "/patterns/weave_jok.webp", color: "#c4d5e8" },
 ];
 
 const REGION_TYPES = [
   { name: "ล้านนา (Lanna)", image: "https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&q=80&w=400", color: "#4f6b55" },
-  { name: "อีสาน (Isan)", image: "/images/Isan.png", color: "#8b5a2b" },
+  { name: "อีสาน (Isan)", image: "/images/Isan.webp", color: "#8b5a2b" },
   { name: "ภาคใต้ (South)", image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=400", color: "#2E5B7C" },
-  { name: "ภาคกลาง (Central)", image: "/images/Central.png", color: "#C89F53" },
+  { name: "ภาคกลาง (Central)", image: "/images/Central.webp", color: "#C89F53" },
 ];
 
 const MOOD_TYPES = [
   { name: "งานแต่ง / พิธี", image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=400", color: "#f8e1e7" },
   { name: "ทางการ", image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=400", color: "#d1c4e9" },
-  { name: "ลำลอง", image: "/images/lumlong.png", color: "#b3e5fc" },
+  { name: "ลำลอง", image: "/images/lumlong.webp", color: "#b3e5fc" },
   { name: "แฟชั่น", image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=400", color: "#ffccbc" },
   { name: "ของขวัญ", image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&q=80&w=400", color: "#c8e6c9" },
   { name: "ของแต่งบ้าน", image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=400", color: "#fff9c4" },
-  { name: "พรีเมียม", image: "/images/premier.png", color: "#cfd8dc" },
+  { name: "พรีเมียม", image: "/images/premier.webp", color: "#cfd8dc" },
 ];
 
 export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {

@@ -51,7 +51,7 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
       
       {/* Fabric Thumbnail - Wide aspect ratio matching mockup */}
       <Box sx={{ width: '100%', height: 200, borderRadius: '16px', overflow: 'hidden', position: 'relative', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-        <Image src={orderState.fabricImage || "/images/fabric1.jpg"} alt="Fabric" fill style={{ objectFit: 'cover' }} />
+        <Image src={orderState.fabricImage || "/images/fabric1.webp"} alt="Fabric" fill style={{ objectFit: 'cover' }} />
       </Box>
 
       {analyzing ? (

@@ -13,7 +13,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
 
         <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
           <Box sx={{ width: 60, height: 80, position: 'relative', borderRadius: '8px', overflow: 'hidden', bgcolor: '#E5DFD6' }}>
-            <Image src={orderState.fabricImage || "/images/fabric1.jpg"} alt="Pattern" fill style={{ objectFit: 'cover' }} />
+            <Image src={orderState.fabricImage || "/images/fabric1.webp"} alt="Pattern" fill style={{ objectFit: 'cover' }} />
           </Box>
           <Box>
             <Typography sx={{ fontSize: '0.8rem', color: '#6B7280' }}>ทรงที่เลือก</Typography>

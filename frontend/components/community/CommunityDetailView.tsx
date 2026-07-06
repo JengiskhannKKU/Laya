@@ -80,7 +80,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
       {/* 1. Hero + GI Strip */}
       <Box sx={{ position: "relative", width: "100%", height: 320 }}>
         <Image
-          src={community.image || "/placeholder.jpg"}
+          src={community.image || "/placeholder.webp"}
           alt={community.name}
           fill
           style={{ objectFit: "cover" }}

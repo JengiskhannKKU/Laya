@@ -17,7 +17,7 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
   const [tabValue, setTabValue] = useState(0);
 
   // Use AI-generated image from Nano Banana 2, fallback to placeholder
-  const generatedImage = patternData.generatedImageUrl ?? "/images/fabric1.jpg";
+  const generatedImage = patternData.generatedImageUrl ?? "/images/fabric1.webp";
   const isAIGenerated = !!patternData.generatedImageUrl && !patternData.isMock;
 
 

@@ -29,7 +29,7 @@ export default function MissionSection() {
       >
         {/* Background Image - Impactful Heritage */}
         <Image
-          src="/thai.jpg"
+          src="/Thai.webp"
           alt="Thai Silk Heritage"
           fill
           priority

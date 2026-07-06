@@ -12,16 +12,16 @@ interface ModeSelectionProps {
 }
 
 const PIXEL_PATTERNS = [
-  { id: 1, name: "ลายดอกบัว", category: "ลายดอก", src: "/patterns/lotus.png", origin: "เชียงใหม่" },
-  { id: 2, name: "ลายนาค", category: "ลายสัตว์", src: "/patterns/naga.png", origin: "ลำพูน" },
-  { id: 3, name: "ลายเพชร", category: "ลายเรขาคณิต", src: "/patterns/diamond.png", origin: "น่าน" },
-  { id: 4, name: "ลายหงส์", category: "ลายสัตว์", src: "/patterns/swan.png", origin: "อุบลราชธานี" },
-  { id: 5, name: "ลายขอ", category: "ลายเรขาคณิต", src: "/patterns/hook.png", origin: "ขอนแก่น" },
-  { id: 6, name: "ลายช้าง", category: "ลายสัตว์", src: "/patterns/elephant.png", origin: "เชียงราย" },
-  { id: 7, name: "ลายซิกแซก", category: "ลายเรขาคณิต", src: "/patterns/zigzag.png", origin: "แพร่" },
-  { id: 8, name: "ลายกินนร", category: "ลายโบราณ", src: "/patterns/kinnara.png", origin: "สุโขทัย" },
-  { id: 9, name: "ลายใบไม้", category: "ลายพฤกษา", src: "/patterns/leaf.png", origin: "นครราชสีมา" },
-  { id: 10, name: "ลายดาวล้อมเดือน", category: "ลายโบราณ", src: "/patterns/star_moon.png", origin: "สุโขทัย" },
+  { id: 1, name: "ลายดอกบัว", category: "ลายดอก", src: "/patterns/lotus.webp", origin: "เชียงใหม่" },
+  { id: 2, name: "ลายนาค", category: "ลายสัตว์", src: "/patterns/naga.webp", origin: "ลำพูน" },
+  { id: 3, name: "ลายเพชร", category: "ลายเรขาคณิต", src: "/patterns/diamond.webp", origin: "น่าน" },
+  { id: 4, name: "ลายหงส์", category: "ลายสัตว์", src: "/patterns/swan.webp", origin: "อุบลราชธานี" },
+  { id: 5, name: "ลายขอ", category: "ลายเรขาคณิต", src: "/patterns/hook.webp", origin: "ขอนแก่น" },
+  { id: 6, name: "ลายช้าง", category: "ลายสัตว์", src: "/patterns/elephant.webp", origin: "เชียงราย" },
+  { id: 7, name: "ลายซิกแซก", category: "ลายเรขาคณิต", src: "/patterns/zigzag.webp", origin: "แพร่" },
+  { id: 8, name: "ลายกินนร", category: "ลายโบราณ", src: "/patterns/kinnara.webp", origin: "สุโขทัย" },
+  { id: 9, name: "ลายใบไม้", category: "ลายพฤกษา", src: "/patterns/leaf.webp", origin: "นครราชสีมา" },
+  { id: 10, name: "ลายดาวล้อมเดือน", category: "ลายโบราณ", src: "/patterns/star_moon.webp", origin: "สุโขทัย" },
 ];
 
 export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
