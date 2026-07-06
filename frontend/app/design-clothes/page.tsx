@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import ClothingDesigner from "@/components/design-clothes/ClothingDesigner";
+import GarmentCreatorLoader from "@/components/garment-creator/Loader";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "ออกแบบเสื้อผ้าของคุณ",
+  title: "ห้องออกแบบเสื้อผ้า 3D",
   description:
-    "เลือกทรงเสื้อ เลือกผ้า ปรับดีไซน์ และสร้างสรรค์ชิ้นงานในแบบของคุณกับ LAYA.",
+    "สร้างชุดของคุณเองแบบอินเทอร์แอคทีฟ — คลิกทุกชิ้นส่วน ลากผ้าไทยมาวาง ปรับดีไซน์แบบเรียลไทม์ กับ LAYA Garment Creator.",
   path: "/design-clothes",
 });
 
 export default function DesignClothesPage() {
-  return <ClothingDesigner />;
+  return <GarmentCreatorLoader />;
 }

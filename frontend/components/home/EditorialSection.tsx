@@ -100,7 +100,7 @@ export default function EditorialSection() {
           </Typography>
 
           <Box>
-            <Link href="/community" style={{ textDecoration: "none" }}>
+            <Link href="/community/heritage" style={{ textDecoration: "none" }}>
               <Button
                 endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />}
                 sx={{

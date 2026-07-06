@@ -49,7 +49,7 @@ export default function TailorTypePage() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, px: 1 }}>
           
           {/* Option 1: Have Fabric */}
-          <Link href="/tailor/with-fabric" style={{ textDecoration: 'none' }}>
+          <Link href="/design-clothes" style={{ textDecoration: 'none' }}>
             <Box
               sx={{
                 p: 3,
