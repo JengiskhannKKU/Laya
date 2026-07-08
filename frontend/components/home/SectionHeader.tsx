@@ -47,12 +47,12 @@ export default function SectionHeader({
         )}
         <Typography
           sx={{
-            fontFamily: '"Kanit", sans-serif',
-            fontWeight: 700,
-            fontSize: { xs: "1.3rem", md: "1.7rem" },
+            fontFamily: '"Cormorant Garamond", "Georgia", serif',
+            fontStyle: "italic",
+            fontWeight: 600,
+            fontSize: { xs: "1.55rem", md: "2.05rem" },
             color: "#1B2A4A",
             lineHeight: 1.2,
-            letterSpacing: "-0.01em",
           }}
         >
           {title}

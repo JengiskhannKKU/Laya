@@ -14,16 +14,16 @@ import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import { useAuth } from "@/lib/auth-context";
+import { useCartStore } from "@/lib/cart-store";
+import { useNotifications } from "@/lib/notification-context";
 
 const navLinks = [
   { label: "หน้าหลัก", path: "/" },
   { label: "สำรวจ", path: "/search" },
-  { label: "หมวดหมู่", path: "/community?cat=all" },
+  { label: "หมวดหมู่", path: "/category" },
   { label: "ชุมชน", path: "/community" },
-  { label: "แผนที่", path: "/map" },
+  { label: "สั่งตัด/สั่งทอ", path: "/services" },
 ];
-
-const MOCK_CART_COUNT = 2;
 
 const NAV_BG = "#1B2A4A";
 const NAV_ICON = "rgba(255,255,255,0.85)";
@@ -38,14 +38,24 @@ export default function AppTopNav() {
   const theme = useTheme();
   const isMobileMQ = useMediaQuery(theme.breakpoints.down("md"));
   const [mounted, setMounted] = useState(false);
+  const cartItems = useCartStore((s) => s.items);
+  const { unreadCount } = useNotifications();
 
   useEffect(() => { setMounted(true); }, []);
   const isMobile = !mounted || isMobileMQ;
+  // อ่านหลัง mount เท่านั้น — กัน hydration mismatch (ตะกร้าอยู่ใน localStorage)
+  const cartCount = mounted ? cartItems.reduce((sum, i) => sum + i.quantity, 0) : 0;
 
-  const isActive = (path: string) => {
-    if (path === "/") return pathname === "/";
-    return pathname.startsWith(path.split("?")[0]);
-  };
+  // เลือก nav link ที่ตรงกับ pathname มากที่สุด (path ยาวสุด) กันไฮไลต์ซ้อนกันตอน path ซ้อนกัน เช่น /community กับ /community/heritage
+  const activeLinkPath = navLinks.reduce<string | null>((best, link) => {
+    const base = link.path.split("?")[0];
+    const matches = base === "/" ? pathname === "/" : pathname.startsWith(base);
+    if (!matches) return best;
+    if (!best || base.length > best.length) return base;
+    return best;
+  }, null);
+
+  const isActive = (path: string) => path.split("?")[0] === activeLinkPath;
 
   return (
     <>
@@ -198,6 +208,8 @@ export default function AppTopNav() {
             {/* Wishlist — desktop only */}
             {!isMobile && (
               <IconButton
+                onClick={() => router.push(user ? "/wishlist" : "/auth/login")}
+                aria-label="รายการโปรด"
                 sx={{
                   width: 36,
                   height: 36,
@@ -212,6 +224,8 @@ export default function AppTopNav() {
 
             {/* Cart */}
             <IconButton
+              onClick={() => router.push("/cart")}
+              aria-label="ตะกร้าสินค้า"
               sx={{
                 width: 36,
                 height: 36,
@@ -221,7 +235,7 @@ export default function AppTopNav() {
               }}
             >
               <Badge
-                badgeContent={MOCK_CART_COUNT}
+                badgeContent={cartCount}
                 sx={{
                   "& .MuiBadge-badge": {
                     bgcolor: "#C5A55A",
@@ -240,6 +254,7 @@ export default function AppTopNav() {
             {/* Notifications — desktop only */}
             {!isMobile && (
               <IconButton
+                onClick={() => router.push(user ? "/notifications" : "/auth/login")}
                 sx={{
                   width: 36,
                   height: 36,
@@ -249,7 +264,7 @@ export default function AppTopNav() {
                 }}
               >
                 <Badge
-                  badgeContent={2}
+                  badgeContent={mounted && user ? unreadCount : 0}
                   sx={{
                     "& .MuiBadge-badge": {
                       bgcolor: "#C5A55A",

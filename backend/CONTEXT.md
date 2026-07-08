@@ -131,5 +131,26 @@ NODE_ENV=development|production
 - การ UPDATE คอลัมน์ enum ที่ใช้ `$1` ซ้ำใน CASE ต้อง cast `($1::text)::enum_type` ไม่งั้นเจอ error 42P08
 - tsx watch บน Windows บางครั้งไม่ hot-reload — ต้อง restart process เอง
 
+### 2026-07-07 — Marketplace: สินค้าพร้อมขาย + ตะกร้า + Checkout + PromptPay
+**ผู้แก้**: AI (Claude Fable 5)
+
+**บริบท**: แยกจาก flow สั่งตัด/สั่งทอ (custom) เดิม — นี่คือ flow สำหรับสินค้าที่มีอยู่แล้วในสต็อก ไม่ต้อง custom ซื้อได้ทันที
+
+**งานที่ทำ:**
+- Migration `backend/migrations/003_marketplace_products.sql` (ใช้ psql/Supabase SQL editor รันเอง ไม่มี auto-migration): เพิ่ม `products`, `product_order_groups`, `product_orders`, `product_order_items`, `product_order_status_logs` + เพิ่มคอลัมน์ `payments.product_order_group_id`
+- `src/routes/products.ts` — **เขียนใหม่ทั้งหมด** (เดิม map จาก `shop_fabrics`/`shops` ซึ่งไม่มีใครเรียกใช้จริงจาก frontend) ตอนนี้ query ตาราง `products` ใหม่แทน — `GET /api/products` (filter: category/province/search/shopId), `GET /api/products/:id`
+- `src/routes/product-orders.ts` (ใหม่) — `POST /` สร้างออเดอร์จากตะกร้า (validate ราคา/สต็อกจริงจาก DB ในทรานแซกชัน, กันลูกค้าปลอมยอด, หักสต็อกจริง), แยกเป็น sub-order ต่อร้านอัตโนมัติถ้าตะกร้ามีของจากหลายร้าน ภายใต้ `product_order_groups` เดียว, `GET /group/:groupId`, `GET /` (list), `PATCH /:id/status` (state machine เดียวกับ orders.ts)
+- `src/routes/payments.ts` — ขยายให้รับ `productOrderGroupId` (นอกจาก orderId/weavingOrderId เดิม) — **QR เดียวจ่ายได้ทั้งตะกร้าแม้มีสินค้าจากหลายร้าน**, confirm แล้วอัปเดตทุก sub-order เป็น pending_confirm + แจ้งเตือนทุกร้านที่เกี่ยวข้อง
+- `src/db.ts` — เพิ่ม `getClient()` export สำหรับ transaction (BEGIN/COMMIT/ROLLBACK) ที่ product-orders.ts ใช้
+- `_seed_demo_products.js` — seed สินค้าพร้อมขาย 10 รายการ ผูกกับร้านสาธิต 4 ร้านเดิม (เนื้อหา/รูปคัดจาก frontend mock-data)
+- ทดสอบ e2e ด้วย `_test_marketplace_flow.js`: ตะกร้าข้ามร้าน → payment เดียว → confirm → ทั้งสองร้าน pending_confirm → ร้านหนึ่งยืนยันอิสระจากอีกร้าน → สต็อกหักถูกต้อง — **ผ่านหมด**, และรัน `_test_flow.js` เดิมซ้ำเพื่อยืนยันไม่มี regression ต่อ flow สั่งตัด/สั่งทอ — **ผ่านหมด**
+
+**ข้อควรระวัง/scope ที่ยังไม่ทำ:**
+- ตะกร้าเก็บฝั่ง client (localStorage ผ่าน zustand) ไม่มีตาราง cart ใน DB — ตั้งใจให้เรียบง่าย เพราะ backend ตรวจราคา/สต็อกจริงอีกครั้งตอน checkout อยู่แล้ว
+- ค่าส่งแบ่งตามสัดส่วนยอดร้าน (ปัดเศษง่ายๆ) ไม่ใช่ระบบคำนวณค่าส่งจริงตามระยะทาง/น้ำหนัก
+- payout ต่อร้านคำนวณจาก `product_orders.subtotal` ที่ query time ไม่ได้มี ledger แยกต่อร้านใน payments (payment 1 แถวคุม fee/payout รวมทั้ง checkout group)
+- หน้า merchant สร้างสินค้า (`/merchant/products/create`) ยังไม่ได้ต่อ API จริง — ใช้ seed script แทนไปก่อน
+- หน้า `/orders` (ประวัติออเดอร์ฝั่งลูกค้า) ยังเป็น mock — ยังไม่รวม product_orders (ใส่ไว้ที่ `/orders/product/[groupId]/success` แทนสำหรับหน้ายืนยันหลังชำระเงินจบ)
+
 ---
 <!-- เพิ่ม changelog entry ใหม่ต่อท้ายนี้ -->

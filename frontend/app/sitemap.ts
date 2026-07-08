@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { products, communities } from "@/lib/mock-data";
+import { fetchLiveProducts } from "@/lib/live-products";
+import { fetchCommunities } from "@/lib/communities";
 import { absoluteUrl } from "@/lib/seo";
 
 const staticRoutes = [
@@ -12,11 +13,11 @@ const staticRoutes = [
   "/design-clothes",
   "/gen-silk",
   "/weaving-order",
-  "/map",
+  "/community/heritage",
   "/passports",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticEntries = staticRoutes.map((route) => ({
@@ -25,6 +26,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: route === "" ? "daily" : "weekly",
     priority: route === "" ? 1 : 0.7,
   })) satisfies MetadataRoute.Sitemap;
+
+  const [products, communities] = await Promise.all([
+    fetchLiveProducts().catch(() => []),
+    fetchCommunities().catch(() => []),
+  ]);
 
   const productEntries = products.map((product) => ({
     url: absoluteUrl(`/product/${product.id}`),

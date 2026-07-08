@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import type { Product } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth-context";
+import { useWishlist } from "@/lib/wishlist-context";
 
 interface ProductCardProps {
   product: Product;
@@ -24,7 +26,10 @@ export default function ProductCard({
   collection = "LAYA Collection",
   variant = "grid",
 }: ProductCardProps) {
-  const [fav, setFav] = useState(false);
+  const router = useRouter();
+  const { user } = useAuth();
+  const { isWishlisted, toggle } = useWishlist();
+  const fav = isWishlisted(product.id);
 
   const isCarousel = variant === "carousel";
 
@@ -138,7 +143,9 @@ export default function ProductCard({
             className="laya-card-fav"
             onClick={(e) => {
               e.preventDefault();
-              setFav((v) => !v);
+              e.stopPropagation();
+              if (!user) { router.push("/auth/login"); return; }
+              toggle(product.id);
             }}
             size="small"
             sx={{

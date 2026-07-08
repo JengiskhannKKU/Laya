@@ -1,0 +1,599 @@
+{
+  "version": 1,
+  "canvas": {
+    "width": 400,
+    "height": 520
+  },
+  "patterns": [
+    {
+      "id": "plain",
+      "name": "เรียบ (ไม่มีลาย)",
+      "image": null,
+      "pricePerM": 0
+    },
+    {
+      "id": "cotton",
+      "name": "ฝ้ายทอมือ",
+      "image": "/fabric_patterns/07.webp",
+      "pricePerM": 480
+    },
+    {
+      "id": "thaisilk",
+      "name": "ไหมไทย",
+      "image": "/fabric_patterns/03.webp",
+      "pricePerM": 1180
+    },
+    {
+      "id": "mudmee",
+      "name": "มัดหมี่",
+      "image": "/fabric_patterns/01.webp",
+      "pricePerM": 1250
+    },
+    {
+      "id": "indigo",
+      "name": "ครามสกลนคร",
+      "image": "/fabric_patterns/08.webp",
+      "pricePerM": 520
+    },
+    {
+      "id": "linen",
+      "name": "ลินิน",
+      "image": "/fabric_patterns/10.webp",
+      "pricePerM": 650
+    }
+  ],
+  "colors": [
+    {
+      "hex": "#F5E6D3",
+      "name": "ครีม"
+    },
+    {
+      "hex": "#F4A7B9",
+      "name": "ชมพู"
+    },
+    {
+      "hex": "#8B1A2D",
+      "name": "แดงเข้ม"
+    },
+    {
+      "hex": "#1B2A4A",
+      "name": "กรมท่า"
+    },
+    {
+      "hex": "#5F7470",
+      "name": "เขียวหม่น"
+    },
+    {
+      "hex": "#2D6A4F",
+      "name": "เขียว"
+    },
+    {
+      "hex": "#4A5568",
+      "name": "เทา"
+    },
+    {
+      "hex": "#8B4513",
+      "name": "น้ำตาลแดง"
+    },
+    {
+      "hex": "#0E7C7B",
+      "name": "เขียวขวด"
+    },
+    {
+      "hex": "#A3B18A",
+      "name": "เขียวมะกอก"
+    },
+    {
+      "hex": "#B8B2A7",
+      "name": "เบจ"
+    },
+    {
+      "hex": "#C9A227",
+      "name": "ทอง"
+    }
+  ],
+  "options": {
+    "bodies-top": [
+      {
+        "id": "shirt",
+        "name": "เสื้อเชิ้ต",
+        "asset": "/assets/garments/tops/body/shirt.svg",
+        "price": 0
+      },
+      {
+        "id": "blouse",
+        "name": "เบลาส์",
+        "asset": "/assets/garments/tops/body/blouse.svg",
+        "price": 100
+      },
+      {
+        "id": "polo",
+        "name": "โปโล",
+        "asset": "/assets/garments/tops/body/polo.svg",
+        "price": 0
+      },
+      {
+        "id": "dress",
+        "name": "เดรส",
+        "asset": "/assets/garments/tops/body/dress.svg",
+        "price": 600
+      }
+    ],
+    "collars": [
+      {
+        "id": "mandarin",
+        "name": "คอจีน",
+        "asset": "/assets/garments/tops/collar/mandarin.svg",
+        "price": 80
+      },
+      {
+        "id": "round",
+        "name": "คอกลม",
+        "asset": "/assets/garments/tops/collar/round.svg",
+        "price": 0
+      },
+      {
+        "id": "vneck",
+        "name": "คอวี",
+        "asset": "/assets/garments/tops/collar/vneck.svg",
+        "price": 0
+      },
+      {
+        "id": "shirt",
+        "name": "คอปกเชิ้ต",
+        "asset": "/assets/garments/tops/collar/shirt.svg",
+        "price": 120
+      },
+      {
+        "id": "hood",
+        "name": "ฮู้ด",
+        "asset": "/assets/garments/tops/collar/hood.svg",
+        "price": 250
+      }
+    ],
+    "sleeves": [
+      {
+        "id": "short",
+        "name": "แขนสั้น",
+        "asset": "/assets/garments/tops/sleeves/short.svg",
+        "price": 0
+      },
+      {
+        "id": "long",
+        "name": "แขนยาว",
+        "asset": "/assets/garments/tops/sleeves/long.svg",
+        "price": 120
+      },
+      {
+        "id": "balloon",
+        "name": "แขนบอลลูน",
+        "asset": "/assets/garments/tops/sleeves/balloon.svg",
+        "price": 250
+      },
+      {
+        "id": "bishop",
+        "name": "แขนบิชอป",
+        "asset": "/assets/garments/tops/sleeves/bishop.svg",
+        "price": 250
+      }
+    ],
+    "pockets-top": [
+      {
+        "id": "chest",
+        "name": "กระเป๋าอก",
+        "asset": "/assets/garments/tops/pocket/chest.svg",
+        "price": 120,
+        "layout": {
+          "left": 54,
+          "top": 29,
+          "width": 12.5,
+          "height": 10.5
+        }
+      },
+      {
+        "id": "side",
+        "name": "กระเป๋าข้าง",
+        "asset": "/assets/garments/tops/pocket/side.svg",
+        "price": 200,
+        "layout": {
+          "left": 25,
+          "top": 51,
+          "width": 50,
+          "height": 13
+        }
+      }
+    ],
+    "buttons": [
+      {
+        "id": "wood",
+        "name": "กระดุมไม้",
+        "asset": "/assets/garments/tops/buttons/wood.svg",
+        "price": 60
+      },
+      {
+        "id": "gold",
+        "name": "กระดุมทอง",
+        "asset": "/assets/garments/tops/buttons/gold.svg",
+        "price": 120
+      },
+      {
+        "id": "black",
+        "name": "กระดุมดำ",
+        "asset": "/assets/garments/tops/buttons/black.svg",
+        "price": 40
+      }
+    ],
+    "decorations": [
+      {
+        "id": "trim",
+        "name": "แถบตกแต่งชาย",
+        "asset": "/assets/garments/tops/decoration/trim.svg",
+        "price": 180
+      }
+    ],
+    "bodies-pants": [
+      {
+        "id": "wide",
+        "name": "ขากว้าง",
+        "asset": "/assets/garments/bottoms/body/wide.svg",
+        "price": 100
+      },
+      {
+        "id": "straight",
+        "name": "ทรงตรง",
+        "asset": "/assets/garments/bottoms/body/straight.svg",
+        "price": 0
+      },
+      {
+        "id": "jogger",
+        "name": "จ็อกเกอร์",
+        "asset": "/assets/garments/bottoms/body/jogger.svg",
+        "price": 150
+      },
+      {
+        "id": "cargo",
+        "name": "คาร์โก้",
+        "asset": "/assets/garments/bottoms/body/cargo.svg",
+        "price": 150
+      }
+    ],
+    "pockets-pants": [
+      {
+        "id": "cargo",
+        "name": "กระเป๋าคาร์โก้",
+        "asset": "/assets/garments/bottoms/pocket/cargo.svg",
+        "price": 180,
+        "layout": {
+          "left": 24.5,
+          "top": 46,
+          "width": 51,
+          "height": 15
+        }
+      }
+    ],
+    "bodies-skirt": [
+      {
+        "id": "aline",
+        "name": "ทรงเอ",
+        "asset": "/assets/garments/skirts/body/aline.svg",
+        "price": 0
+      },
+      {
+        "id": "pencil",
+        "name": "ทรงดินสอ",
+        "asset": "/assets/garments/skirts/body/pencil.svg",
+        "price": 0
+      },
+      {
+        "id": "pleated",
+        "name": "จีบรอบตัว",
+        "asset": "/assets/garments/skirts/body/pleated.svg",
+        "price": 200
+      }
+    ]
+  },
+  "categories": {
+    "top": {
+      "name": "เสื้อ / เดรส",
+      "basePrice": 990,
+      "parts": [
+        {
+          "key": "sleeves",
+          "name": "แขนเสื้อ",
+          "options": "sleeves",
+          "z": 1,
+          "transition": "slide",
+          "allowNone": true,
+          "layouts": [
+            {
+              "left": 6.5,
+              "top": 12,
+              "width": 21,
+              "height": 47,
+              "mirror": true
+            },
+            {
+              "left": 72.5,
+              "top": 12,
+              "width": 21,
+              "height": 47
+            }
+          ]
+        },
+        {
+          "key": "body",
+          "name": "ตัวเสื้อ",
+          "options": "bodies-top",
+          "z": 2,
+          "transition": "fade",
+          "layouts": [
+            {
+              "left": 23,
+              "top": 9,
+              "width": 54,
+              "height": 79
+            }
+          ]
+        },
+        {
+          "key": "collar",
+          "name": "คอ / ปกเสื้อ",
+          "options": "collars",
+          "z": 4,
+          "transition": "fade",
+          "allowNone": true,
+          "layouts": [
+            {
+              "left": 34.5,
+              "top": 6.5,
+              "width": 31,
+              "height": 13
+            }
+          ]
+        },
+        {
+          "key": "pocket",
+          "name": "กระเป๋า",
+          "options": "pockets-top",
+          "z": 3,
+          "transition": "scale",
+          "allowNone": true,
+          "layouts": [
+            {
+              "left": 54,
+              "top": 29,
+              "width": 12.5,
+              "height": 10.5
+            }
+          ]
+        },
+        {
+          "key": "buttons",
+          "name": "กระดุม",
+          "options": "buttons",
+          "z": 5,
+          "transition": "fade",
+          "allowNone": true,
+          "render": "image",
+          "layouts": [
+            {
+              "left": 47.8,
+              "top": 20,
+              "width": 4.4,
+              "height": 42
+            }
+          ]
+        },
+        {
+          "key": "decoration",
+          "name": "งานตกแต่ง",
+          "options": "decorations",
+          "z": 6,
+          "transition": "scale",
+          "allowNone": true,
+          "layouts": [
+            {
+              "left": 24,
+              "top": 54.5,
+              "width": 52,
+              "height": 5
+            }
+          ]
+        }
+      ]
+    },
+    "pants": {
+      "name": "กางเกง",
+      "basePrice": 890,
+      "parts": [
+        {
+          "key": "body",
+          "name": "ตัวกางเกง",
+          "options": "bodies-pants",
+          "z": 2,
+          "transition": "fade",
+          "layouts": [
+            {
+              "left": 26.5,
+              "top": 8,
+              "width": 47,
+              "height": 84
+            }
+          ]
+        },
+        {
+          "key": "pocket",
+          "name": "กระเป๋า",
+          "options": "pockets-pants",
+          "z": 3,
+          "transition": "scale",
+          "allowNone": true,
+          "layouts": [
+            {
+              "left": 24.5,
+              "top": 46,
+              "width": 51,
+              "height": 15
+            }
+          ]
+        }
+      ]
+    },
+    "skirt": {
+      "name": "กระโปรง",
+      "basePrice": 790,
+      "parts": [
+        {
+          "key": "body",
+          "name": "ตัวกระโปรง",
+          "options": "bodies-skirt",
+          "z": 2,
+          "transition": "fade",
+          "layouts": [
+            {
+              "left": 21,
+              "top": 12,
+              "width": 58,
+              "height": 64
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "templates": [
+    {
+      "id": "women-shirt",
+      "name": "เสื้อผู้หญิง",
+      "category": "top",
+      "parts": {
+        "body": "blouse",
+        "collar": "round",
+        "sleeves": "short",
+        "pocket": "none",
+        "buttons": "gold",
+        "decoration": "none"
+      },
+      "pattern": "cotton",
+      "color": "#F4A7B9"
+    },
+    {
+      "id": "office-shirt",
+      "name": "เชิ้ตออฟฟิศ",
+      "category": "top",
+      "parts": {
+        "body": "shirt",
+        "collar": "shirt",
+        "sleeves": "long",
+        "pocket": "chest",
+        "buttons": "black",
+        "decoration": "none"
+      },
+      "pattern": "linen",
+      "color": "#1B2A4A"
+    },
+    {
+      "id": "thai-contemporary",
+      "name": "ไทยร่วมสมัย",
+      "category": "top",
+      "parts": {
+        "body": "blouse",
+        "collar": "mandarin",
+        "sleeves": "long",
+        "pocket": "none",
+        "buttons": "wood",
+        "decoration": "trim"
+      },
+      "pattern": "thaisilk",
+      "color": "#C9A227"
+    },
+    {
+      "id": "casual-shirt",
+      "name": "เสื้อลำลอง",
+      "category": "top",
+      "parts": {
+        "body": "shirt",
+        "collar": "round",
+        "sleeves": "short",
+        "pocket": "chest",
+        "buttons": "none",
+        "decoration": "none"
+      },
+      "pattern": "cotton",
+      "color": "#5F7470"
+    },
+    {
+      "id": "polo",
+      "name": "โปโล",
+      "category": "top",
+      "parts": {
+        "body": "polo",
+        "collar": "shirt",
+        "sleeves": "short",
+        "pocket": "none",
+        "buttons": "black",
+        "decoration": "none"
+      },
+      "pattern": "plain",
+      "color": "#1B2A4A"
+    },
+    {
+      "id": "dress",
+      "name": "เดรส",
+      "category": "top",
+      "parts": {
+        "body": "dress",
+        "collar": "vneck",
+        "sleeves": "balloon",
+        "pocket": "none",
+        "buttons": "none",
+        "decoration": "trim"
+      },
+      "pattern": "thaisilk",
+      "color": "#8B1A2D"
+    },
+    {
+      "id": "skirt",
+      "name": "กระโปรง",
+      "category": "skirt",
+      "parts": {
+        "body": "aline"
+      },
+      "pattern": "mudmee",
+      "color": "#8B4513"
+    },
+    {
+      "id": "wide-pants",
+      "name": "กางเกงขากว้าง",
+      "category": "pants",
+      "parts": {
+        "body": "wide",
+        "pocket": "none"
+      },
+      "pattern": "linen",
+      "color": "#B8B2A7"
+    },
+    {
+      "id": "jogger",
+      "name": "จ็อกเกอร์",
+      "category": "pants",
+      "parts": {
+        "body": "jogger",
+        "pocket": "none"
+      },
+      "pattern": "cotton",
+      "color": "#4A5568"
+    },
+    {
+      "id": "cargo",
+      "name": "คาร์โก้",
+      "category": "pants",
+      "parts": {
+        "body": "cargo",
+        "pocket": "cargo"
+      },
+      "pattern": "plain",
+      "color": "#A3B18A"
+    }
+  ]
+}

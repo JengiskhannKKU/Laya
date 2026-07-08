@@ -3,6 +3,7 @@ import { Kanit, Cormorant_Garamond } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import MuiProvider from "@/components/providers/MuiProvider";
 import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
+import { AppModalProvider } from "@/components/providers/AppModalProvider";
 import {
   absoluteUrl,
   defaultDescription,
@@ -157,7 +158,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <MuiProvider>
-          <AuthProviderWrapper>{children}</AuthProviderWrapper>
+          <AuthProviderWrapper>
+            <AppModalProvider>{children}</AppModalProvider>
+          </AuthProviderWrapper>
         </MuiProvider>
         <Analytics />
       </body>

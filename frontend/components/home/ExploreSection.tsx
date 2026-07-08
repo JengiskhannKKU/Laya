@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import { motion, AnimatePresence } from "framer-motion";
-import { products } from "@/lib/mock-data";
+import { useLiveProducts } from "@/lib/use-live-products";
 import Image from "next/image";
 import Link from "next/link";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
@@ -19,6 +19,7 @@ import ProductCard from "./ProductCard";
 const filters = ["ทั้งหมด", "ผ้าผืน", "เสื้อผ้า", "ผ้าพันคอ", "กระเป๋า", "ของฝาก"];
 
 export default function ExploreSection() {
+  const { products } = useLiveProducts();
   const [activeFilter, setActiveFilter] = useState(0);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 

@@ -24,7 +24,8 @@ import SortRoundedIcon from "@mui/icons-material/SortRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 import MobileLayout from "@/components/layout/MobileLayout";
-import { products, categories, Product } from "@/lib/mock-data";
+import { categories, Product } from "@/lib/mock-data";
+import { useLiveProducts } from "@/lib/use-live-products";
 
 const provinces = ["ทั้งหมด", "ลำพูน", "ชัยภูมิ", "สกลนคร", "กาฬสินธุ์", "ราชบุรี", "กรุงเทพมหานคร"];
 const fabricTypes = ["ทั้งหมด", "ผ้าไหม", "ผ้าฝ้าย", "ผ้าไหมผสมฝ้าย", "ผ้าทอมือ"];
@@ -39,6 +40,7 @@ const sortOptions = [
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { products } = useLiveProducts();
   const initialQuery = searchParams.get("q") || "";
 
   const [query, setQuery] = useState(initialQuery);
@@ -102,7 +104,7 @@ function SearchContent() {
     }
 
     return result;
-  }, [query, priceRange, selectedProvince, selectedFabric, giOnly, sortBy]);
+  }, [products, query, priceRange, selectedProvince, selectedFabric, giOnly, sortBy]);
 
   const activeFilterCount = [
     selectedProvince !== "ทั้งหมด",

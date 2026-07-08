@@ -28,3 +28,11 @@ export async function query<T = unknown>(
     client.release();
   }
 }
+
+/**
+ * Checkout a dedicated client for multi-statement transactions (BEGIN/COMMIT/ROLLBACK).
+ * Caller MUST call client.release() when done (use try/finally).
+ */
+export async function getClient() {
+  return pool.connect();
+}

@@ -12,6 +12,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 import SectionHeader from "@/components/home/SectionHeader";
+import ThailandFabricMap from "@/components/community/ThailandFabricMap";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -622,6 +623,12 @@ export default function HeritageStory() {
             </Typography>
           </Box>
         </Box>
+      </Box>
+
+      {/* แผนที่ลายผ้าประจำจังหวัด — เรื่องราวของผ้าทั่วประเทศ */}
+      <Box component={motion.div} {...fadeUp} sx={{ mb: { xs: 5, md: 8 } }}>
+        <SectionHeader eyebrow="ทั่วแผ่นดินไทย" title="แผนที่ลายผ้าประจำจังหวัด" subtitle="สำรวจเรื่องราวลายผ้าเอกลักษณ์ 77 จังหวัด" />
+        <ThailandFabricMap />
       </Box>
 
       {/* ผลกระทบและมรดก */}

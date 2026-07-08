@@ -7,6 +7,7 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUncheckedRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAppModal } from "@/components/providers/AppModalProvider";
 
 export interface PatternItem {
   id: string;
@@ -67,6 +68,7 @@ interface PatternGalleryProps {
 }
 
 export default function PatternGallery({ selectedPatterns, onChange, onNext }: PatternGalleryProps) {
+  const { showAlert } = useAppModal();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
@@ -83,7 +85,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
       if (selectedPatterns.length < 3) {
         onChange([...selectedPatterns, name]);
       } else {
-        alert("เบลนด์(Blend) ลายได้สูงสุด 3 ลาย");
+        showAlert({ title: "เลือกลายครบแล้ว", message: "เบลนด์ (Blend) ลายได้สูงสุด 3 ลาย — เอาลายที่เลือกไว้ออกก่อน แล้วเลือกลายใหม่ได้เลย", tone: "warning" });
       }
     }
   };

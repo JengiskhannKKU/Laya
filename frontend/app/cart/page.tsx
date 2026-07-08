@@ -1,434 +1,309 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
 import Divider from "@mui/material/Divider";
-import CircularProgress from "@mui/material/CircularProgress";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
-import Skeleton from "@mui/material/Skeleton";
-import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { initialMockCartItems, CartItem } from "@/lib/mock-data";
+import { useCartStore, cartSubtotal } from "@/lib/cart-store";
 import Image from "next/image";
 import Link from "next/link";
 import MobileLayout from "@/components/layout/MobileLayout";
 
+const SHIPPING_ESTIMATE = 50;
+const FONT = '"Kanit", sans-serif';
+const NAVY = "#1B2A4A";
+const GOLD = "#C5A55A";
+const IVORY = "#FAF6F0";
+const CARD_BORDER = "#EFE9DD";
+
+const cardSx = {
+  bgcolor: "#FFFFFF",
+  borderRadius: "18px",
+  border: `1px solid ${CARD_BORDER}`,
+  boxShadow: "0 2px 14px rgba(27,42,74,0.05)",
+};
+
 export default function CartPage() {
   const router = useRouter();
-  const { user } = useAuth();
-  
-  const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [coupon, setCoupon] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState(0);
-  const [shippingEstimate] = useState(50); // MOCKED shipping
-  
+  const { user, loading: authLoading } = useAuth();
+
+  const items = useCartStore((s) => s.items);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const [hydrated, setHydrated] = useState(false);
+
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
-    // Auth Guard
-    if (!user) {
-      router.push("/auth/login");
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || authLoading) return; // รอ auth โหลดเสร็จก่อน — กัน redirect ทั้งที่ล็อกอินอยู่
+    if (!user) router.push("/auth/login");
+  }, [hydrated, authLoading, user, router]);
+
+  const subtotal = useMemo(() => cartSubtotal(items), [items]);
+  const total = Math.max(0, subtotal + (items.length > 0 ? SHIPPING_ESTIMATE : 0));
+
+  const handleUpdateQty = (productId: string, delta: number, current: number, stock: number) => {
+    const next = current + delta;
+    if (next > stock) {
+      setToastMessage(`สินค้าเหลือ ${stock} ชิ้น`);
+      updateQuantity(productId, stock);
       return;
     }
-
-    // Load Items mock
-    const timer = setTimeout(() => {
-      setItems([...initialMockCartItems]); // Clone to allow local edits
-      setLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [user, router]);
-
-  const activeItems = useMemo(() => items.filter((i) => !i.savedForLater), [items]);
-  const savedItems = useMemo(() => items.filter((i) => i.savedForLater), [items]);
-
-  const subtotal = useMemo(() => {
-    return activeItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  }, [activeItems]);
-
-  const total = Math.max(0, subtotal + shippingEstimate - appliedDiscount);
-
-  const updateQuantity = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          const maxStock = item.product.availableLength || 99;
-          
-          if (newQty > maxStock) {
-            setToastMessage(`สินค้าเหลือ ${maxStock} ชิ้น`);
-            return { ...item, quantity: maxStock };
-          }
-          if (newQty >= 1) return { ...item, quantity: newQty };
-        }
-        return item;
-      })
-    );
+    updateQuantity(productId, next);
   };
 
-  const removeItem = () => {
+  const confirmRemove = () => {
     if (!itemToDelete) return;
-    setItems((prev) => prev.filter((item) => item.id !== itemToDelete));
+    removeItem(itemToDelete);
     setItemToDelete(null);
   };
 
-  const toggleSavedState = (id: string, isSaved: boolean) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          return { ...item, savedForLater: !isSaved };
-        }
-        return item;
-      })
-    );
-  };
+  if (!hydrated || authLoading) return null;
+  if (!user) return null;
 
-  const applyCoupon = () => {
-    if (coupon.toUpperCase() === "LAYA200") {
-      setAppliedDiscount(200);
-      setToastMessage("ใช้โค้ดส่วนลด 200 บาทสำเร็จ");
-    } else {
-      setAppliedDiscount(0);
-      setToastMessage("โค้ดไม่ถูกต้องหรือหมดอายุ");
-    }
-  };
+  const orderSummaryCard = (
+    <Box sx={{ ...cardSx, p: { xs: 2, md: 2.5 } }}>
+      <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1.05rem", color: NAVY, mb: 2 }}>
+        สรุปคำสั่งซื้อ
+      </Typography>
 
-  if (!user) return null; // Prevent flash
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.2 }}>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>
+          ยอดรวมสินค้า ({items.reduce((n, i) => n + i.quantity, 0)} ชิ้น)
+        </Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: NAVY, fontWeight: 600 }}>
+          ฿{subtotal.toLocaleString()}
+        </Typography>
+      </Box>
+
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.2 }}>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>ค่าจัดส่งโดยประมาณ</Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: NAVY, fontWeight: 600 }}>
+          ฿{SHIPPING_ESTIMATE}
+        </Typography>
+      </Box>
+
+      <Divider sx={{ my: 1.5, borderColor: "#F3EDE2" }} />
+
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", mb: 2 }}>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.95rem", color: NAVY, fontWeight: 700 }}>ยอดชำระสุทธิ</Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: "1.6rem", color: GOLD, fontWeight: 700, lineHeight: 1 }}>
+          ฿{total.toLocaleString()}
+        </Typography>
+      </Box>
+
+      <Button
+        variant="contained" fullWidth
+        onClick={() => router.push("/checkout")}
+        sx={{
+          py: 1.6, bgcolor: NAVY, color: "#FFFFFF", borderRadius: "14px", fontWeight: 700,
+          fontSize: "0.98rem", fontFamily: FONT, textTransform: "none",
+          boxShadow: "0 6px 18px rgba(27,42,74,0.22)", transition: "all 0.2s",
+          "&:hover": { bgcolor: "#0F1A30", transform: "translateY(-1px)" },
+        }}
+      >
+        ดำเนินการสั่งซื้อ
+      </Button>
+
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <LockOutlinedIcon sx={{ fontSize: 14, color: GOLD }} />
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.68rem", color: "#9CA3AF" }}>ชำระเงินปลอดภัย</Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <LocalShippingRoundedIcon sx={{ fontSize: 14, color: GOLD }} />
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.68rem", color: "#9CA3AF" }}>จัดส่งติดตามได้</Typography>
+        </Box>
+      </Box>
+
+      <Box sx={{ textAlign: "center", mt: 2 }}>
+        <Link href="/community" style={{ textDecoration: "none" }}>
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.82rem", color: GOLD, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}>
+            ช้อปปิ้งต่อ
+          </Typography>
+        </Link>
+      </Box>
+    </Box>
+  );
 
   return (
     <MobileLayout>
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: IVORY, minHeight: "100vh" }}>
         {/* Header */}
-        <Box sx={{ px: 2, pt: 4, pb: 2, display: "flex", alignItems: "center", bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #E5DFD6" }}>
-          <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
-            <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
-          </IconButton>
-          <Typography sx={{ flex: 1, textAlign: "center", fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mr: 4 }}>
-            ตะกร้าสินค้า {activeItems.length > 0 ? `(${activeItems.length})` : ""}
-          </Typography>
-        </Box>
-
-      {loading ? (
-        <Box sx={{ px: 2, pt: 3 }}>
-          <Skeleton variant="rounded" height={100} sx={{ mb: 2, borderRadius: "12px" }} />
-          <Skeleton variant="rounded" height={100} sx={{ mb: 2, borderRadius: "12px" }} />
-          <Skeleton variant="rounded" height={200} sx={{ mb: 2, borderRadius: "12px" }} />
-        </Box>
-      ) : activeItems.length === 0 && savedItems.length === 0 ? (
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", px: 4, pb: 10 }}>
-          <Box sx={{ width: 100, height: 100, borderRadius: "50%", bgcolor: "#E5DFD6", display: "flex", alignItems: "center", justifyContent: "center", mb: 3 }}>
-            <Inventory2OutlinedIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
-          </Box>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-            ตะกร้าว่างเปล่า
-          </Typography>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
-            ไปเลือกชมสินค้าและลายผ้าสวยๆ จากชุมชนกันเลย
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => router.push("/community")}
-            sx={{
-              py: 1.5,
-              px: 4,
-              bgcolor: "#1B2A4A",
-              color: "#FFFFFF",
-              borderRadius: "24px",
-              fontWeight: 700,
-              fontFamily: '"Kanit", sans-serif',
-              "&:hover": { bgcolor: "#0F1A30" }
-            }}
-          >
-            เริ่มช้อปปิ้ง
-          </Button>
-        </Box>
-      ) : (
-        <Box sx={{ px: 2, pt: 2, pb: 12 }}>
-          {/* Active Items */}
-          {activeItems.map((item) => (
-            <Box key={item.id} sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 1.5, mb: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6" }}>
-              <Box sx={{ display: "flex", gap: 1.5 }}>
-                <Box sx={{ width: 80, height: 80, borderRadius: "12px", overflow: "hidden", position: "relative", bgcolor: "#F0F0F0" }}>
-                  <Image src={item.product.images[0]} alt={item.product.name} fill style={{ objectFit: "cover" }} />
-                </Box>
-                <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", lineHeight: 1.3 }}>
-                    {item.product.name}
-                  </Typography>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.3 }}>
-                    ชุมชน: {item.product.community}
-                  </Typography>
-                  {item.selectedFormat && (
-                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>
-                      รูปแบบ: {item.selectedFormat}
-                    </Typography>
-                  )}
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A", mt: "auto" }}>
-                    ฿{item.product.price.toLocaleString()}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
-              
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Box sx={{ display: "flex", gap: 0.5 }}>
-                  <IconButton onClick={() => toggleSavedState(item.id, item.savedForLater)} size="small" sx={{ color: "#9CA3AF" }}>
-                    <BookmarkBorderRoundedIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton onClick={() => setItemToDelete(item.id)} size="small" sx={{ color: "#9CA3AF" }}>
-                    <DeleteOutlineRoundedIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-
-                <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "8px", bgcolor: "#FFFFFF" }}>
-                  <IconButton onClick={() => updateQuantity(item.id, -1)} size="small" sx={{ p: 0.5 }}>
-                    <RemoveRoundedIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-                  <Typography sx={{ px: 1.5, fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", minWidth: 30, textAlign: "center" }}>
-                    {item.quantity}
-                  </Typography>
-                  <IconButton onClick={() => updateQuantity(item.id, 1)} size="small" sx={{ p: 0.5 }}>
-                    <AddRoundedIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-                </Box>
-              </Box>
-            </Box>
-          ))}
-
-          {/* Coupon Section */}
-          {activeItems.length > 0 && (
-            <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 1.5, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6" }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A", mb: 1.5 }}>
-                มีโค้ดส่วนลดหรือไม่?
-              </Typography>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  placeholder="กรอกรหัสโปรโมชั่น"
-                  value={coupon}
-                  onChange={(e) => setCoupon(e.target.value)}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "10px",
-                      bgcolor: "#FAF6F0",
-                      "& fieldset": { borderColor: "transparent" },
-                      "&.Mui-focused fieldset": { borderColor: "#C5A55A" },
-                    }
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={applyCoupon}
-                  disabled={!coupon}
-                  sx={{
-                    borderRadius: "10px",
-                    fontWeight: 700,
-                    borderColor: "#1B2A4A",
-                    color: "#1B2A4A",
-                    fontFamily: '"Kanit", sans-serif',
-                    textTransform: "none",
-                    "&:hover": { bgcolor: "rgba(27,42,74,0.05)", borderColor: "#1B2A4A" }
-                  }}
-                >
-                  ใช้โค้ด
-                </Button>
-              </Box>
-              {appliedDiscount > 0 && (
-                <Alert severity="success" sx={{ mt: 1.5, borderRadius: "8px", py: 0, px: 2, fontFamily: '"Kanit", sans-serif' }}>
-                  ใช้งานโค้ดแล้ว — ลด ฿{appliedDiscount}
-                </Alert>
-              )}
-            </Box>
-          )}
-
-          {/* Order Summary */}
-          {activeItems.length > 0 && (
-            <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 2, mb: 2, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6" }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
-                สรุปคำสั่งซื้อ
-              </Typography>
-              
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280" }}>ยอดรวมสินค้า</Typography>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>
-                  ฿{subtotal.toLocaleString()}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280" }}>ค่าจัดส่งโดยประมาณ</Typography>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#1B2A4A", fontWeight: 600 }}>
-                  ฿{shippingEstimate}
-                </Typography>
-              </Box>
-
-              {appliedDiscount > 0 && (
-                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#05A546" }}>ส่วนลด</Typography>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#05A546", fontWeight: 600 }}>
-                    -฿{appliedDiscount}
-                  </Typography>
-                </Box>
-              )}
-
-              <Divider sx={{ my: 1.5, borderColor: "rgba(0,0,0,0.06)" }} />
-              
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A" }}>
-                  ยอดชำระสุทธิ
-                </Typography>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: "#C5A55A" }}>
-                  ฿{total.toLocaleString()}
-                </Typography>
-              </Box>
-            </Box>
-          )}
-
-          {/* Saved for Later Section */}
-          {savedItems.length > 0 && (
-            <Box sx={{ mt: 4 }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2, px: 1 }}>
-                บันทึกไว้ซื้อภายหลัง ({savedItems.length})
-              </Typography>
-              
-              {savedItems.map((item) => (
-                <Box key={item.id} sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", p: 1.5, mb: 1.5, border: "1px solid #E5DFD6", opacity: 0.85 }}>
-                  <Box sx={{ display: "flex", gap: 1.5 }}>
-                    <Box sx={{ width: 60, height: 60, borderRadius: "12px", overflow: "hidden", position: "relative", bgcolor: "#F0F0F0" }}>
-                      <Image src={item.product.images[0]} alt={item.product.name} fill style={{ objectFit: "cover" }} />
-                    </Box>
-                    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A", lineHeight: 1.2 }}>
-                        {item.product.name}
-                      </Typography>
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#C5A55A", mt: 0.5 }}>
-                        ฿{item.product.price.toLocaleString()}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Divider sx={{ my: 1, borderColor: "rgba(0,0,0,0.04)" }} />
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Button
-                      size="small"
-                      onClick={() => setItemToDelete(item.id)}
-                      sx={{ color: "#9CA3AF", fontSize: "0.75rem", fontFamily: '"Kanit", sans-serif', textTransform: "none" }}
-                    >
-                      ลบออก
-                    </Button>
-                    <Button
-                      size="small"
-                      onClick={() => toggleSavedState(item.id, item.savedForLater)}
-                      sx={{ color: "#1B2A4A", fontSize: "0.75rem", fontWeight: 600, fontFamily: '"Kanit", sans-serif', textTransform: "none" }}
-                    >
-                      ย้ายกลับไปตะกร้า
-                    </Button>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          )}
-
-          {/* Continue Shopping Link if needed */}
-          <Box sx={{ textAlign: "center", mt: 2 }}>
-            <Link href="/community" style={{ textDecoration: "none" }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#C5A55A", fontWeight: 600, "&:hover": { textDecoration: "underline" }}}>
-                ช้อปปิ้งต่อ
-              </Typography>
-            </Link>
+        <Box sx={{
+          px: { xs: 2, md: 4 }, pt: { xs: 4, md: 3 }, pb: { xs: 2, md: 2 }, display: "flex", alignItems: "center",
+          bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #EFE9DD",
+        }}>
+          <Box sx={{ display: "flex", alignItems: "center", maxWidth: 1280, width: "100%", mx: "auto" }}>
+            <IconButton onClick={() => router.back()} sx={{ color: NAVY }}>
+              <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+            <Typography sx={{ flex: 1, textAlign: { xs: "center", md: "left" }, ml: { md: 1 }, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY, mr: { xs: 4, md: 0 } }}>
+              ตะกร้าสินค้า {items.length > 0 ? `(${items.length})` : ""}
+            </Typography>
           </Box>
         </Box>
-      )}
 
-      {/* Sticky Bottom Checkout Action */}
-      {!loading && activeItems.length > 0 && (
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: { xs: 56, md: 0 }, // above bottom nav on mobile
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "100%",
-            maxWidth: 430, // Matches Layout boundaries
-            zIndex: 100,
-            bgcolor: "#FFFFFF",
-            p: 2,
-            borderTop: "1px solid #E5DFD6",
-            boxShadow: "0 -4px 12px rgba(27,42,74,0.05)",
-          }}
-        >
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={() => router.push("/checkout")}
+        {items.length === 0 ? (
+          <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", px: 4, pb: 10 }}>
+            <Box sx={{ width: 100, height: 100, borderRadius: "50%", bgcolor: "#E5DFD6", display: "flex", alignItems: "center", justifyContent: "center", mb: 3 }}>
+              <Inventory2OutlinedIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
+            </Box>
+            <Typography sx={{ fontFamily: FONT, fontSize: "1.1rem", fontWeight: 700, color: NAVY, mb: 1 }}>
+              ตะกร้าว่างเปล่า
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
+              ไปเลือกชมสินค้าและลายผ้าสวยๆ จากชุมชนกันเลย
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => router.push("/community")}
+              sx={{
+                py: 1.5, px: 4, bgcolor: NAVY, color: "#FFFFFF", borderRadius: "24px", fontWeight: 700,
+                fontFamily: FONT, textTransform: "none", "&:hover": { bgcolor: "#0F1A30" },
+              }}
+            >
+              เริ่มช้อปปิ้ง
+            </Button>
+          </Box>
+        ) : (
+          <Box sx={{ maxWidth: 1280, width: "100%", mx: "auto", px: { xs: 2, md: 4 }, pt: { xs: 2, md: 4 }, pb: { xs: 13, md: 6 }, flex: 1 }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: { xs: 0, md: 4 }, alignItems: "flex-start" }}>
+
+              {/* LEFT: รายการสินค้า */}
+              <Box sx={{ flex: { md: "1 1 0" }, minWidth: 0, width: "100%" }}>
+                {items.map((line) => (
+                  <Box key={line.productId} sx={{ ...cardSx, p: { xs: 1.5, md: 2 }, mb: 1.5 }}>
+                    <Box sx={{ display: "flex", gap: 1.8 }}>
+                      <Box sx={{ width: { xs: 80, md: 96 }, height: { xs: 80, md: 96 }, borderRadius: "14px", overflow: "hidden", position: "relative", bgcolor: "#F0F0F0", flexShrink: 0 }}>
+                        {line.product.image && (
+                          <Image src={line.product.image} alt={line.product.name} fill style={{ objectFit: "cover" }} />
+                        )}
+                      </Box>
+                      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+                        <Typography sx={{ fontFamily: FONT, fontWeight: 600, fontSize: "0.95rem", color: NAVY, lineHeight: 1.3 }}>
+                          {line.product.name}
+                        </Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#9CA3AF", mt: 0.3 }}>
+                          ร้าน: {line.product.shopName}
+                        </Typography>
+                        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1rem", color: GOLD, mt: "auto" }}>
+                          ฿{line.product.price.toLocaleString()} / {line.product.priceUnit}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Divider sx={{ my: 1.5, borderColor: "#F3EDE2" }} />
+
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <IconButton onClick={() => setItemToDelete(line.productId)} size="small" sx={{ color: "#D1D5DB", "&:hover": { color: "#D32F2F" } }}>
+                        <DeleteOutlineRoundedIcon fontSize="small" />
+                      </IconButton>
+
+                      <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "10px", bgcolor: "#FFFFFF" }}>
+                        <IconButton onClick={() => handleUpdateQty(line.productId, -1, line.quantity, line.product.stock)} size="small" sx={{ p: 0.6 }}>
+                          <RemoveRoundedIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <Typography sx={{ px: 1.6, fontWeight: 600, fontSize: "0.9rem", color: NAVY, minWidth: 30, textAlign: "center" }}>
+                          {line.quantity}
+                        </Typography>
+                        <IconButton onClick={() => handleUpdateQty(line.productId, 1, line.quantity, line.product.stock)} size="small" sx={{ p: 0.6 }}>
+                          <AddRoundedIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+
+              {/* RIGHT: สรุปคำสั่งซื้อ sticky (เดสก์ท็อป) */}
+              <Box sx={{ display: { xs: "none", md: "block" }, flex: "0 0 360px", width: 360, position: "sticky", top: 100 }}>
+                {orderSummaryCard}
+              </Box>
+
+              {/* สรุปคำสั่งซื้อแบบ inline (มือถือ) */}
+              <Box sx={{ display: { xs: "block", md: "none" }, width: "100%" }}>
+                {orderSummaryCard}
+              </Box>
+            </Box>
+          </Box>
+        )}
+
+        {/* Sticky Bottom Checkout Action — มือถือเท่านั้น */}
+        {items.length > 0 && (
+          <Box
             sx={{
-              py: 1.5,
-              bgcolor: "#1B2A4A",
-              color: "#FFFFFF",
-              borderRadius: "14px",
-              fontWeight: 700,
-              fontSize: "1rem",
-              fontFamily: '"Kanit", sans-serif',
-              "&:hover": { bgcolor: "#0F1A30" }
+              display: { xs: "block", md: "none" },
+              position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)",
+              width: "100%", maxWidth: 430, zIndex: 100, bgcolor: "#FFFFFF", p: 2,
+              borderTop: "1px solid #E5DFD6", boxShadow: "0 -4px 12px rgba(27,42,74,0.05)",
             }}
           >
-            ดำเนินการสั่งซื้อ (฿{total.toLocaleString()})
-          </Button>
-        </Box>
-      )}
+            <Button
+              variant="contained" fullWidth
+              onClick={() => router.push("/checkout")}
+              sx={{
+                py: 1.5, bgcolor: NAVY, color: "#FFFFFF", borderRadius: "14px", fontWeight: 700,
+                fontSize: "1rem", fontFamily: FONT, textTransform: "none", "&:hover": { bgcolor: "#0F1A30" },
+              }}
+            >
+              ดำเนินการสั่งซื้อ (฿{total.toLocaleString()})
+            </Button>
+          </Box>
+        )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={!!itemToDelete} onClose={() => setItemToDelete(null)} PaperProps={{ sx: { borderRadius: "16px", p: 1 } }}>
-        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", pb: 1 }}>
-          ยืนยันการลบ
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.9rem" }}>
-            คุณต้องการนำสินค้านี้ออกจากตะกร้าใช่หรือไม่?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setItemToDelete(null)} sx={{ color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
-            ยกเลิก
-          </Button>
-          <Button onClick={removeItem} sx={{ color: "#D32F2F", fontFamily: '"Kanit", sans-serif', fontWeight: 700 }} autoFocus>
-            ลบสินค้า
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={!!itemToDelete} onClose={() => setItemToDelete(null)} PaperProps={{ sx: { borderRadius: "16px", p: 1 } }}>
+          <DialogTitle sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, pb: 1 }}>
+            ยืนยันการลบ
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.9rem" }}>
+              คุณต้องการนำสินค้านี้ออกจากตะกร้าใช่หรือไม่?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setItemToDelete(null)} sx={{ color: "#6B7280", fontFamily: FONT, fontWeight: 600 }}>
+              ยกเลิก
+            </Button>
+            <Button onClick={confirmRemove} sx={{ color: "#D32F2F", fontFamily: FONT, fontWeight: 700 }} autoFocus>
+              ลบสินค้า
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Global Snackbars */}
-      <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        open={!!toastMessage}
-        autoHideDuration={3000}
-        onClose={() => setToastMessage("")}
-        message={toastMessage}
-        sx={{ bottom: { xs: 80, sm: 24 } }} 
-      />
+        <Snackbar
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          open={!!toastMessage}
+          autoHideDuration={3000}
+          onClose={() => setToastMessage("")}
+          message={toastMessage}
+          sx={{ bottom: { xs: 80, sm: 24 } }}
+        />
       </Box>
     </MobileLayout>
   );

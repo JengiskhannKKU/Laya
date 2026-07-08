@@ -4,13 +4,13 @@ import { usePathname, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
-import { Home, Compass, Scissors, Map, User } from "lucide-react";
+import { Home, Compass, Scissors, LayoutGrid, User } from "lucide-react";
 
 const navItems = [
   { label: "Home", icon: <Home size={22} strokeWidth={1.5} />, path: "/" },
   { label: "ชุมชน", icon: <Compass size={22} strokeWidth={1.5} />, path: "/community" },
   { label: "สั่งตัด/ทอ", icon: null, path: "/services" },
-  { label: "Map", icon: <Map size={22} strokeWidth={1.5} />, path: "/map" },
+  { label: "หมวดหมู่", icon: <LayoutGrid size={22} strokeWidth={1.5} />, path: "/category" },
   { label: "Profile", icon: <User size={22} strokeWidth={1.5} />, path: "/profile" },
 ];
 

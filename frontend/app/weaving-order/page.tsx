@@ -5,6 +5,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/lib/auth-context";
 import { formatPromptPayIdDisplay } from "@/lib/promptpay";
+import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -145,14 +146,10 @@ export default function WeavingOrderPage() {
     setLoading(true);
     setError("");
     try {
-      const token = session?.access_token;
-
-      if (token && isLive) {
-        // สร้างออเดอร์ทอจริง (US-404, US-406)
-        const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-        const orderRes = await fetch(`${API_BASE}/api/weaving-orders`, {
+      if (session && isLive) {
+        // สร้างออเดอร์ทอจริง (US-404, US-406) — authFetch จัดการ token สด + auto-refresh
+        const orderRes = await authFetch(`${API_BASE}/api/weaving-orders`, {
           method: "POST",
-          headers,
           body: JSON.stringify({
             shopId: community,
             patternId: pattern,
@@ -167,9 +164,8 @@ export default function WeavingOrderPage() {
         if (!orderRes.ok) throw new Error(order.error ?? "สร้างออเดอร์ไม่สำเร็จ");
 
         // สร้างรายการชำระเงิน → ได้ PromptPay QR ตามยอด (US-604)
-        const payRes = await fetch(`${API_BASE}/api/payments`, {
+        const payRes = await authFetch(`${API_BASE}/api/payments`, {
           method: "POST",
-          headers,
           body: JSON.stringify({ weavingOrderId: order.id }),
         });
         const pay = await payRes.json();
@@ -182,6 +178,11 @@ export default function WeavingOrderPage() {
         setSuccess(true);
       }
     } catch (err) {
+      if (err instanceof SessionExpiredError) {
+        setError("เซสชันหมดอายุ กำลังพาไปเข้าสู่ระบบใหม่...");
+        setTimeout(() => router.push("/auth/login"), 1500);
+        return;
+      }
       setError(err instanceof Error ? err.message : "ส่งออเดอร์ไม่สำเร็จ กรุณาลองใหม่");
     } finally {
       setLoading(false);
@@ -190,19 +191,21 @@ export default function WeavingOrderPage() {
 
   /** ลูกค้ากด "โอนเงินแล้ว" → ยืนยันการชำระ (mock gateway) แล้วเข้าสถานะรอร้านคอนเฟิร์ม */
   const handleConfirmPaid = async () => {
-    if (!payment || !session?.access_token) return;
+    if (!payment) return;
     setPaying(true);
     setError("");
     try {
-      const res = await fetch(`${API_BASE}/api/payments/${payment.id}/confirm`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+      const res = await authFetch(`${API_BASE}/api/payments/${payment.id}/confirm`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "ยืนยันการชำระเงินไม่สำเร็จ");
       setPayment(null);
       setSuccess(true);
     } catch (err) {
+      if (err instanceof SessionExpiredError) {
+        setError("เซสชันหมดอายุ กำลังพาไปเข้าสู่ระบบใหม่...");
+        setTimeout(() => router.push("/auth/login"), 1500);
+        return;
+      }
       setError(err instanceof Error ? err.message : "ยืนยันการชำระเงินไม่สำเร็จ");
     } finally {
       setPaying(false);

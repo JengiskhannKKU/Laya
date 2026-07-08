@@ -52,9 +52,14 @@ export interface Product {
   reviews?: Review[];
   soldCount?: number;
   isCustomizable?: boolean;
+  /** true เมื่อโหลดมาจาก backend จริง (สินค้าพร้อมขาย ตะกร้า/checkout ใช้งานได้จริง) */
+  isLive?: boolean;
+  shopId?: string;
   relatedProductIds?: string[];
   tags?: string[];
   typeLabel?: string;
+  /** หมวดหมู่สินค้า (fabric/clothing/scarf/bag/premium/decor/others) — มีเฉพาะสินค้าจริงจาก backend */
+  category?: string;
 }
 
 export interface CustomPatternData {

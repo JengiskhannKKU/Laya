@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useAppModal } from "@/components/providers/AppModalProvider";
 // Assumes this component exists: change div if missing
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -102,7 +103,8 @@ const PROMPT_SUGGESTIONS = [
 
 export default function GenSilkPage() {
   const router = useRouter();
-  
+  const { showAlert } = useAppModal();
+
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState("mudmee");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -130,7 +132,7 @@ export default function GenSilkPage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() && !imageFile) {
-        alert("กรุณากรอก Prompt หรือแนบรูปภาพลายตัวอย่าง");
+        showAlert({ title: "ยังไม่มีข้อมูลสำหรับสร้างลาย", message: "กรุณากรอก Prompt หรือแนบรูปภาพลายตัวอย่าง", tone: "warning" });
         return;
     }
     setLoading(true);
@@ -160,11 +162,11 @@ export default function GenSilkPage() {
             message: data.message
         });
       } else {
-        alert(data.error || "Generation failed.");
+        showAlert({ title: "สร้างลายไม่สำเร็จ", message: data.error || "กรุณาลองใหม่อีกครั้ง", tone: "warning" });
       }
     } catch (error) {
       console.error(error);
-      alert("ไม่สามารถเชื่อมต่อ Server ได้ ตรวจสอบว่าเปิด Backend API แล้วหรือไม่");
+      showAlert({ title: "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้", message: "ตรวจสอบว่าเปิด Backend API แล้วหรือไม่", tone: "warning" });
     } finally {
       setLoading(false);
     }

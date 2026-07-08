@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -9,45 +9,111 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 import Switch from "@mui/material/Switch";
+import Alert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useAuth } from "@/lib/auth-context";
+import { authFetch, SessionExpiredError } from "@/lib/api-auth";
+import { PRODUCT_CATEGORIES } from "@/components/merchant/ProductForm";
 
-const MOCK_PRODUCTS = [
-  { id: "p1", name: "ผ้าไหมมัดหมี่ ลายขอ", type: "ผ้าไหม", price: 1200, stock: 45, active: true, image: "/product1.jpg" },
-  { id: "p2", name: "ผ้าขิดลายดอกพิกุล", type: "ผ้าฝ้าย", price: 850, stock: 0, active: false, image: "/product2.jpg" },
-  { id: "p3", name: "ผ้าทอมือลายน้ำ", type: "ผ้าทอมือ", price: 950, stock: 20, active: true, image: "/product3.jpg" },
-  { id: "p4", name: "ผ้าซิ่นลายขอเชียงใหม่", type: "ผ้าไหม", price: 2400, stock: 8, active: true, image: "/product4.jpg" },
-];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const FONT = '"Kanit", sans-serif';
+
+interface MerchantProduct {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  priceUnit: string;
+  stock: number;
+  images: string[];
+  isActive: boolean;
+}
+
+const categoryLabel = (v: string) => PRODUCT_CATEGORIES.find((c) => c.value === v)?.label ?? v;
 
 export default function MerchantProductsPage() {
+  const { session } = useAuth();
   const [search, setSearch] = useState("");
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<MerchantProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filtered = products.filter((p) => !search || p.name.includes(search) || p.type.includes(search));
+  const fetchProducts = useCallback(async () => {
+    if (!session?.access_token) { setLoading(false); return; }
+    try {
+      const res = await authFetch(`${API_BASE}/api/products/mine`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "โหลดรายการสินค้าไม่สำเร็จ");
+      setProducts(data);
+    } catch (err) {
+      setError(err instanceof SessionExpiredError ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่" : (err instanceof Error ? err.message : "โหลดรายการสินค้าไม่สำเร็จ"));
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token]);
 
-  const toggleActive = (id: string) => {
-    setProducts((prev) => prev.map((p) => p.id === id ? { ...p, active: !p.active } : p));
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+
+  const filtered = products.filter((p) => !search || p.name.includes(search) || categoryLabel(p.category).includes(search));
+
+  const toggleActive = async (product: MerchantProduct) => {
+    setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, isActive: !p.isActive } : p)));
+    try {
+      const res = await authFetch(`${API_BASE}/api/products/${product.id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ isActive: !product.isActive }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, isActive: product.isActive } : p))); // rollback
+      setError("เปลี่ยนสถานะสินค้าไม่สำเร็จ");
+    }
+  };
+
+  const handleDelete = async (product: MerchantProduct) => {
+    if (!window.confirm(`ลบ "${product.name}" ออกจากร้านใช่ไหม?`)) return;
+    try {
+      const res = await authFetch(`${API_BASE}/api/products/${product.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "ลบสินค้าไม่สำเร็จ");
+      if (data.hidden) {
+        setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, isActive: false } : p)));
+        setError(data.message ?? "สินค้านี้เคยมีคำสั่งซื้อแล้ว จึงซ่อนจากการขายแทนการลบถาวร");
+      } else {
+        setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ลบสินค้าไม่สำเร็จ");
+    }
   };
 
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.3rem", fontWeight: 700, color: "#1B2A4A" }}>
+        <Typography sx={{ fontFamily: FONT, fontSize: "1.3rem", fontWeight: 700, color: "#1B2A4A" }}>
           สินค้า / ผ้า
         </Typography>
         <Button
           component={Link} href="/merchant/products/create"
           variant="contained" startIcon={<AddRoundedIcon />}
-          sx={{ bgcolor: "#1B2A4A", borderRadius: "10px", fontFamily: '"Kanit", sans-serif', textTransform: "none", fontWeight: 600 }}
+          sx={{ bgcolor: "#1B2A4A", borderRadius: "10px", fontFamily: FONT, textTransform: "none", fontWeight: 600 }}
         >
           เพิ่มสินค้า
         </Button>
       </Box>
+
+      {error && (
+        <Alert severity="warning" sx={{ mb: 2, borderRadius: "12px", fontFamily: FONT }} onClose={() => setError("")}>{error}</Alert>
+      )}
 
       <TextField
         fullWidth placeholder="ค้นหาสินค้า" value={search} onChange={(e) => setSearch(e.target.value)}
@@ -55,46 +121,56 @@ export default function MerchantProductsPage() {
         sx={{ mb: 2, "& .MuiOutlinedInput-root": { bgcolor: "#FFFFFF", borderRadius: "12px", "& fieldset": { borderColor: "#E5DFD6" } } }}
       />
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-        {filtered.map((product, i) => (
-          <Card key={product.id} component={motion.div} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-            sx={{ border: "1px solid #E5DFD6", borderRadius: "14px", boxShadow: "none", opacity: product.active ? 1 : 0.65 }}
-          >
-            <Box sx={{ p: 2, display: "flex", gap: 2, alignItems: "center" }}>
-              {/* Image placeholder */}
-              <Box sx={{ width: 60, height: 60, borderRadius: "10px", bgcolor: "#F0EBE3", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.4rem" }}>🧵</Typography>
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", fontSize: "0.9rem" }}>
-                  {product.name}
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1, alignItems: "center", mt: 0.5, flexWrap: "wrap" }}>
-                  <Chip label={product.type} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.68rem", bgcolor: "#F0EBE3", color: "#1B2A4A", height: 20 }} />
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#C5A55A", fontSize: "0.85rem" }}>
-                    ฿{product.price.toLocaleString()}/ม.
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+          <CircularProgress sx={{ color: "#C5A55A" }} />
+        </Box>
+      ) : filtered.length === 0 ? (
+        <Box sx={{ textAlign: "center", py: 6, color: "#9CA3AF" }}>
+          <InventoryRoundedIcon sx={{ fontSize: 40, mb: 1 }} />
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem" }}>
+            {products.length === 0 ? "ยังไม่มีสินค้า — เริ่มลงขายสินค้าชิ้นแรกกันเลย" : "ไม่พบสินค้าที่ค้นหา"}
+          </Typography>
+        </Box>
+      ) : (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          {filtered.map((product, i) => (
+            <Card key={product.id} component={motion.div} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              sx={{ border: "1px solid #E5DFD6", borderRadius: "14px", boxShadow: "none", opacity: product.isActive ? 1 : 0.6 }}
+            >
+              <Box sx={{ p: 2, display: "flex", gap: 2, alignItems: "center" }}>
+                <Box sx={{ width: 60, height: 60, borderRadius: "10px", bgcolor: "#F0EBE3", flexShrink: 0, backgroundImage: product.images[0] ? `url(${product.images[0]})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }} />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography noWrap sx={{ fontFamily: FONT, fontWeight: 600, color: "#1B2A4A", fontSize: "0.9rem" }}>
+                    {product.name}
                   </Typography>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: product.stock === 0 ? "#EF4444" : "#6B7280" }}>
-                    {product.stock === 0 ? "หมดสต็อก" : `สต็อก ${product.stock} ม.`}
-                  </Typography>
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "center", mt: 0.5, flexWrap: "wrap" }}>
+                    <Chip label={categoryLabel(product.category)} size="small" sx={{ fontFamily: FONT, fontSize: "0.68rem", bgcolor: "#F0EBE3", color: "#1B2A4A", height: 20 }} />
+                    <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: "#C5A55A", fontSize: "0.85rem" }}>
+                      ฿{product.price.toLocaleString()}/{product.priceUnit}
+                    </Typography>
+                    <Typography sx={{ fontFamily: FONT, fontSize: "0.75rem", color: product.stock === 0 ? "#EF4444" : "#6B7280" }}>
+                      {product.stock === 0 ? "หมดสต็อก" : `สต็อก ${product.stock} ${product.priceUnit}`}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
+                  <Switch
+                    checked={product.isActive} onChange={() => toggleActive(product)} size="small"
+                    sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "#C5A55A" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#C5A55A" } }}
+                  />
+                  <IconButton size="small" component={Link} href={`/merchant/products/edit/${product.id}`} sx={{ color: "#6B7280" }}>
+                    <EditRoundedIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => handleDelete(product)} sx={{ color: "#EF4444" }}>
+                    <DeleteRoundedIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
                 </Box>
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
-                <Switch
-                  checked={product.active} onChange={() => toggleActive(product.id)} size="small"
-                  sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "#C5A55A" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#C5A55A" } }}
-                />
-                <IconButton size="small" component={Link} href={`/merchant/products/edit/${product.id}`} sx={{ color: "#6B7280" }}>
-                  <EditRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-                <IconButton size="small" sx={{ color: "#EF4444" }}>
-                  <DeleteRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Box>
-            </Box>
-          </Card>
-        ))}
-      </Box>
+            </Card>
+          ))}
+        </Box>
+      )}
     </Box>
   );
 }

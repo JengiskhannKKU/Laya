@@ -15,6 +15,7 @@ import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
@@ -30,6 +31,11 @@ import { products, type Product } from "@/lib/mock-data";
 import TraceabilityView from "./TraceabilityView";
 import DigitalCertificateView from "./DigitalCertificateView";
 import { useAuth } from "@/lib/auth-context";
+import { useWishlist } from "@/lib/wishlist-context";
+import { useCartStore } from "@/lib/cart-store";
+import { useAppModal } from "@/components/providers/AppModalProvider";
+import { useRouter } from "next/navigation";
+import AddShoppingCartRoundedIcon from "@mui/icons-material/AddShoppingCartRounded";
 
 const AVAILABLE_COLORS = [
   { id: "navy", name: "กรมท่า", hex: "#1C243B" },
@@ -48,6 +54,10 @@ const EDGE_FINISHES = ["ไม่เย็บริม", "เย็บริม�
 
 export default function ProductDetailView({ product }: { product: Product }) {
   const { user, openAuthModal } = useAuth();
+  const { isWishlisted, toggle: toggleWishlist } = useWishlist();
+  const router = useRouter();
+  const addItem = useCartStore((s) => s.addItem);
+  const { showConfirm, showToast } = useAppModal();
   const [currentImage, setCurrentImage] = useState(0);
   const [activeView, setActiveView] = useState<"detail" | "traceability" | "certificate">("detail");
   const [isPressing, setIsPressing] = useState(false);
@@ -57,6 +67,49 @@ export default function ProductDetailView({ product }: { product: Product }) {
   const [format, setFormat] = useState(FORMATS[0]);
   const [edgeFinish, setEdgeFinish] = useState(EDGE_FINISHES[0]);
   const [notes, setNotes] = useState("");
+
+  const isReadyMade = product.isCustomizable === false;
+
+  const addSnapshotToCart = () => {
+    addItem(
+      {
+        id: product.id,
+        name: product.name,
+        image: product.images[0] ?? null,
+        price: product.price,
+        priceUnit: product.priceUnit,
+        shopName: product.community,
+        stock: product.availableLength,
+      },
+      quantity
+    );
+  };
+
+  /** งานสั่งทำ → ชวนไปห้องออกแบบแทน (ไม่มี add to cart) */
+  const goToCustomFlow = async () => {
+    const ok = await showConfirm({
+      title: "สินค้านี้เป็นงานสั่งทำ",
+      message: "ออกแบบทรง เลือกผ้า และปรับดีเทลได้เองในห้องออกแบบ LAYA ก่อนสั่งตัดจริง",
+      confirmLabel: "ไปห้องออกแบบ",
+      cancelLabel: "ไว้ทีหลัง",
+    });
+    if (ok) router.push("/design-clothes");
+  };
+
+  /** เพิ่มลงตะกร้า (ไม่ต้องล็อกอิน — ตะกร้าเก็บในเครื่อง) */
+  const handleAddToCart = () => {
+    if (!isReadyMade) { goToCustomFlow(); return; }
+    addSnapshotToCart();
+    showToast("เพิ่มลงตะกร้าแล้ว", "cart");
+  };
+
+  /** สั่งซื้อเลย → เพิ่มลงตะกร้าแล้วไปหน้าตะกร้า (ต้องล็อกอิน) */
+  const handleBuyNow = () => {
+    if (!isReadyMade) { goToCustomFlow(); return; }
+    if (!user) { openAuthModal(); return; }
+    addSnapshotToCart();
+    router.push("/cart");
+  };
 
   const handlePressStart = () => {
     setIsPressing(true);
@@ -165,8 +218,15 @@ export default function ProductDetailView({ product }: { product: Product }) {
                 <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF", mr: -0.5 }} />
               </IconButton>
             </Link>
-            <IconButton sx={{ bgcolor: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}>
-              <FavoriteBorderRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />
+            <IconButton
+              onClick={() => { if (!user) { openAuthModal(); return; } toggleWishlist(product.id); }}
+              sx={{ bgcolor: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}
+            >
+              {isWishlisted(product.id) ? (
+                <FavoriteRoundedIcon sx={{ fontSize: 20, color: "#C5A55A" }} />
+              ) : (
+                <FavoriteBorderRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />
+              )}
             </IconButton>
           </Box>
 
@@ -618,12 +678,31 @@ export default function ProductDetailView({ product }: { product: Product }) {
           ))}
         </Box>
 
-        {/* Desktop: inline order button at bottom of right col */}
-        <Box sx={{ display: { xs: "none", md: "block" }, mt: 4 }}>
+        {/* Desktop: inline order buttons at bottom of right col */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1.5, mt: 4 }}>
+          {isReadyMade && (
+            <Button
+              onClick={handleAddToCart}
+              startIcon={<AddShoppingCartRoundedIcon sx={{ fontSize: 20 }} />}
+              sx={{
+                flex: 1,
+                border: "1.5px solid #1B2A4A",
+                color: "#1B2A4A",
+                borderRadius: "16px",
+                py: 1.7,
+                fontWeight: 600,
+                fontSize: "1rem",
+                textTransform: "none",
+                "&:hover": { bgcolor: "rgba(27,42,74,0.05)" },
+              }}
+            >
+              เพิ่มลงตะกร้า
+            </Button>
+          )}
           <Button
-            onClick={() => { if (!user) { openAuthModal(); } else { alert("ดำเนินการสั่งซื้อ..."); } }}
-            fullWidth
+            onClick={handleBuyNow}
             sx={{
+              flex: 1,
               bgcolor: "#D3A14A",
               color: "#FFFFFF",
               borderRadius: "16px",
@@ -635,7 +714,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
               "&:hover": { bgcolor: "#C19036", boxShadow: "none" },
             }}
           >
-            {product.isCustomizable === false ? "สั่งซื้อเลย" : "สั่งทำเลย"}
+            {isReadyMade ? "สั่งซื้อเลย" : "สั่งทำเลย"}
           </Button>
         </Box>
 
@@ -657,23 +736,41 @@ export default function ProductDetailView({ product }: { product: Product }) {
           borderTop: "1px solid rgba(0,0,0,0.05)",
         }}
       >
-        <Button
-          onClick={() => { if (!user) { openAuthModal(); } else { alert("ดำเนินการสั่งซื้อ..."); } }}
-          fullWidth
-          sx={{
-            bgcolor: "#D3A14A",
-            color: "#FFFFFF",
-            borderRadius: "24px",
-            py: 1.6,
-            fontWeight: 600,
-            fontSize: "1rem",
-            textTransform: "none",
-            boxShadow: "none",
-            "&:hover": { bgcolor: "#C19036", boxShadow: "none" },
-          }}
-        >
-          {product.isCustomizable === false ? "สั่งซื้อเลย" : "สั่งทำเลย"}
-        </Button>
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+          {isReadyMade && (
+            <Button
+              onClick={handleAddToCart}
+              aria-label="เพิ่มลงตะกร้า"
+              sx={{
+                minWidth: 54,
+                border: "1.5px solid #1B2A4A",
+                color: "#1B2A4A",
+                borderRadius: "24px",
+                py: 1.5,
+                "&:hover": { bgcolor: "rgba(27,42,74,0.05)" },
+              }}
+            >
+              <AddShoppingCartRoundedIcon sx={{ fontSize: 22 }} />
+            </Button>
+          )}
+          <Button
+            onClick={handleBuyNow}
+            fullWidth
+            sx={{
+              bgcolor: "#D3A14A",
+              color: "#FFFFFF",
+              borderRadius: "24px",
+              py: 1.6,
+              fontWeight: 600,
+              fontSize: "1rem",
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": { bgcolor: "#C19036", boxShadow: "none" },
+            }}
+          >
+            {isReadyMade ? "สั่งซื้อเลย" : "สั่งทำเลย"}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

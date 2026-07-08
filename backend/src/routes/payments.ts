@@ -45,20 +45,22 @@ router.get("/qr", (req: Request, res: Response) => {
 
 /**
  * POST /api/payments
- * ลูกค้าสร้างรายการชำระเงินสำหรับออเดอร์ตัด (orderId) หรือออเดอร์ทอ (weavingOrderId)
+ * ลูกค้าสร้างรายการชำระเงินสำหรับออเดอร์ตัด (orderId), ออเดอร์ทอ (weavingOrderId)
+ * หรือตะกร้าสินค้าพร้อมขาย (productOrderGroupId) — QR เดียวจ่ายทั้งตะกร้าแม้มีหลายร้าน
  * คำนวณ platform fee + shop payout และคืน PromptPay QR payload
  */
 router.post("/", requireAuth, async (req: Request, res: Response) => {
   try {
     const { userId } = req.user!;
-    const { orderId, weavingOrderId, method = "promptpay" } = req.body as {
+    const { orderId, weavingOrderId, productOrderGroupId, method = "promptpay" } = req.body as {
       orderId?: string;
       weavingOrderId?: string;
+      productOrderGroupId?: string;
       method?: string;
     };
 
-    if (!orderId && !weavingOrderId) {
-      res.status(400).json({ error: "ต้องระบุ orderId หรือ weavingOrderId" });
+    if (!orderId && !weavingOrderId && !productOrderGroupId) {
+      res.status(400).json({ error: "ต้องระบุ orderId, weavingOrderId หรือ productOrderGroupId" });
       return;
     }
 
@@ -80,6 +82,14 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
       if (!rows.length) { res.status(404).json({ error: "ไม่พบออเดอร์ทอผ้า" }); return; }
       if (rows[0].customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
       amount = Number(rows[0].final_price ?? rows[0].estimated_price);
+    } else if (productOrderGroupId) {
+      const rows = await query<{ customer_id: string; total: string }>(
+        "SELECT customer_id, total FROM product_order_groups WHERE id = $1",
+        [productOrderGroupId]
+      );
+      if (!rows.length) { res.status(404).json({ error: "ไม่พบออเดอร์สินค้า" }); return; }
+      if (rows[0].customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
+      amount = Number(rows[0].total);
     }
 
     if (!amount || !Number.isFinite(amount) || amount <= 0) {
@@ -91,9 +101,9 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     const existing = await query<Record<string, unknown>>(
       `SELECT * FROM payments
        WHERE status = 'pending' AND payer_id = $1
-         AND (order_id = $2 OR weaving_order_id = $3)
+         AND (order_id = $2 OR weaving_order_id = $3 OR product_order_group_id = $4)
        LIMIT 1`,
-      [userId, orderId ?? null, weavingOrderId ?? null]
+      [userId, orderId ?? null, weavingOrderId ?? null, productOrderGroupId ?? null]
     );
 
     if (existing.length) {
@@ -109,10 +119,10 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     const { platformFee, shopPayout } = calcFee(amount);
 
     const rows = await query<Record<string, unknown>>(
-      `INSERT INTO payments (order_id, weaving_order_id, payer_id, amount, platform_fee, shop_payout, method, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
+      `INSERT INTO payments (order_id, weaving_order_id, product_order_group_id, payer_id, amount, platform_fee, shop_payout, method, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')
        RETURNING *`,
-      [orderId ?? null, weavingOrderId ?? null, userId, amount, platformFee, shopPayout, method]
+      [orderId ?? null, weavingOrderId ?? null, productOrderGroupId ?? null, userId, amount, platformFee, shopPayout, method]
     );
 
     res.status(201).json({
@@ -190,6 +200,36 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
       }
     }
 
+    // ตะกร้าสินค้าพร้อมขาย: draft → pending_confirm ทุกออเดอร์ย่อย (อาจมีหลายร้าน), แจ้งเตือนแต่ละร้าน
+    if (payment.product_order_group_id) {
+      const productOrders = await query<{ id: string; status: string; shop_id: string }>(
+        "SELECT id, status, shop_id FROM product_orders WHERE order_group_id = $1",
+        [payment.product_order_group_id]
+      );
+      for (const po of productOrders) {
+        if (po.status === "draft") {
+          await query(
+            "UPDATE product_orders SET status = 'pending_confirm', updated_at = NOW() WHERE id = $1",
+            [po.id]
+          );
+          await query(
+            `INSERT INTO product_order_status_logs (product_order_id, old_status, new_status, changed_by, note)
+             VALUES ($1, 'draft', 'pending_confirm', $2, 'ชำระเงินแล้ว — รอร้านยืนยัน')`,
+            [po.id, userId]
+          );
+        }
+        const shopOwner = await query<{ user_id: string }>("SELECT user_id FROM shops WHERE id = $1", [po.shop_id]);
+        if (shopOwner.length) {
+          await notify(
+            shopOwner[0].user_id, "order_update",
+            "มีออเดอร์สินค้าใหม่รอยืนยัน",
+            `ลูกค้าชำระเงินแล้ว กรุณายืนยันออเดอร์`,
+            { productOrderId: po.id, paymentId: payment.id }
+          );
+        }
+      }
+    }
+
     // ออเดอร์ทอ: สร้างมาเป็น pending_confirm อยู่แล้ว — แจ้งเตือนร้านอย่างเดียว
     if (payment.weaving_order_id) {
       const wo = await query<{ shop_id: string }>(
@@ -216,7 +256,7 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
       userId as string, "order_update",
       "ชำระเงินสำเร็จ",
       `ยอด ฿${Number(payment.amount).toLocaleString()} — รอร้านยืนยันออเดอร์`,
-      { paymentId: payment.id, orderId: payment.order_id, weavingOrderId: payment.weaving_order_id }
+      { paymentId: payment.id, orderId: payment.order_id, weavingOrderId: payment.weaving_order_id, productOrderGroupId: payment.product_order_group_id }
     );
 
     res.json({ id: req.params.id, status: "paid", transactionRef: txRef });
@@ -240,9 +280,9 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
     } else if (role === "merchant" && shopId) {
       rows = await query(
         `SELECT p.* FROM payments p
-         LEFT JOIN orders o ON o.id = p.order_id
-         LEFT JOIN weaving_orders w ON w.id = p.weaving_order_id
-         WHERE o.shop_id = $1 OR w.shop_id = $1
+         WHERE p.order_id IN (SELECT id FROM orders WHERE shop_id = $1)
+            OR p.weaving_order_id IN (SELECT id FROM weaving_orders WHERE shop_id = $1)
+            OR p.product_order_group_id IN (SELECT order_group_id FROM product_orders WHERE shop_id = $1)
          ORDER BY p.created_at DESC`,
         [shopId]
       );
@@ -276,7 +316,14 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
 
     const p = rows[0];
     const isOwner = p.payer_id === userId;
-    const isShop = role === "merchant" && shopId && (p.order_shop_id === shopId || p.weaving_shop_id === shopId);
+    let isShop = role === "merchant" && shopId && (p.order_shop_id === shopId || p.weaving_shop_id === shopId);
+    if (!isShop && role === "merchant" && shopId && p.product_order_group_id) {
+      const linked = await query<{ id: string }>(
+        "SELECT id FROM product_orders WHERE order_group_id = $1 AND shop_id = $2 LIMIT 1",
+        [p.product_order_group_id, shopId]
+      );
+      isShop = linked.length > 0;
+    }
     if (!isOwner && !isShop && role !== "admin") {
       res.status(403).json({ error: "Forbidden" });
       return;
@@ -300,6 +347,7 @@ function mapPayment(row: Record<string, unknown>) {
     id: row.id,
     orderId: row.order_id ?? null,
     weavingOrderId: row.weaving_order_id ?? null,
+    productOrderGroupId: row.product_order_group_id ?? null,
     payerId: row.payer_id,
     amount: Number(row.amount),
     platformFee: Number(row.platform_fee),

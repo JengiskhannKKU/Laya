@@ -145,6 +145,59 @@
 
 ---
 
+## 2026-07-07 — Garment Builder MVP: Layer-Based + Asset-Driven (แทนที่เวอร์ชัน 3D)
+
+**ทำโดย**: Claude (Fable 5)
+
+### เปลี่ยนสถาปัตยกรรม `/design-clothes` เป็น dress-up game style (ตามสเปคทีม)
+
+- **ทิ้งแนวทาง 3D/GLB/parametric** — เปลี่ยนเป็น **Layer-Based Rendering**: เสื้อผ้า = เลเยอร์รูปภาพซ้อนกัน (absolute position)
+- **Asset-Driven ทั้งหมด**: รูปทรงเสื้อผ้าไม่มี hardcode ใน React —
+  - `frontend/public/assets/garments/**` — **27 ไฟล์ SVG placeholder** (tops/bottoms/skirts: body, collar, sleeves, pocket, buttons, decoration) พื้นหลังโปร่งใส ดีไซเนอร์แทนที่ไฟล์ได้เลย
+  - `catalog.json` — นิยามทุกอย่าง: options, layouts (%), ราคา, patterns 6, สี 12, **templates 10** (เสื้อผู้หญิง/เชิ้ตออฟฟิศ/ไทยร่วมสมัย/ลำลอง/โปโล/เดรส/กระโปรง/ขากว้าง/จ็อกเกอร์/คาร์โก้)
+  - สคริปต์สร้าง asset: scratchpad `gen-garment-assets.js`
+- **ไฟล์ใหม่**:
+  - `components/design-clothes/builder/types.ts` — schema + `resolveLayers()` (design+catalog → layers) + `calcPrice()`
+  - `components/design-clothes/builder/GarmentRenderer.tsx` — **renderer สลับได้** (`svg-layer` วันนี้ → png/3d อนาคต โดย UI ไม่เปลี่ยน) ใช้ CSS mask: asset = รูปทรง, ลายผ้า = background repeat (webp เดิม), สี = blend multiply | Framer Motion ต่อ layer: collar fade, sleeve slide, pocket scale
+  - `lib/stores/garment-store.ts` — **Zustand** (ติดตั้งใหม่): parts/pattern/color (global + override รายชิ้น), template, selection
+  - `ClothingDesigner.tsx` เขียนใหม่ทั้งหมด
+- **UX แบบ dress-up game**: เริ่มจาก template เสมอ (ไม่มีผ้าใบเปล่า) → คลิกชิ้นส่วนบนชุด (hover ฟ้า/เลือกทอง) → **popup ลอย** เลือกแบบเป็นการ์ดรูป + ลาย/สีเฉพาะส่วนนั้น → สลับเฉพาะ layer ทันที | คลังชิ้นส่วนเป็นการ์ดรูปแนวนอน (ไม่มี dropdown) | ลายผ้า 6 + สี 12 กดครั้งเดียวเปลี่ยนทันที
+- **AI ช่วยออกแบบ** (rule-based MVP): พิมพ์ลุคที่อยากได้ → แนะนำ คอ/แขน/ลาย/สี/กระดุม รายข้อ กด "ใช้" ทีละข้อหรือ "ใช้ทั้งหมด"
+- แก้ route `app/design-clothes/page.tsx`: ชี้กลับจาก `garment-creator/Loader` (เวอร์ชัน 3D — ยังอยู่ในโค้ดแต่ไม่ถูก route) มาที่ builder ใหม่ | ลบ `configurator/` (เวอร์ชัน parametric รอบก่อน)
+
+### ทดสอบใน preview ผ่านหมด
+- เทมเพลต 10 ใบ (พรีวิวสดจาก renderer เดียวกัน) สลับได้ ✓
+- คลิกคอบนชุด → popup "เลือกคอ / ปกเสื้อ" → กดคอวี → layer สลับ ✓
+- สีแดงเข้มเฉพาะคอ (ลำตัวยังทอง) ✓ | ลายครามทั้งชุด ✓
+- คลิกการ์ดในคลังชิ้นส่วน (ฮู้ด) apply ทันที ✓
+- AI preset "ชุดไทยหรูหรา" → ใช้ทั้งหมด → คอจีน/แขนยาว/ไหมไทย/ทอง/กระดุมไม้/แถบตกแต่ง (ราคา 3,890 ตรงสูตร) ✓
+- ราคาคำนวณสดถูกต้องทุกเคส (990+options+ลาย×2ม.) ✓ | `tsc` ผ่าน | console สะอาด
+
+---
+
+## 2026-07-07 (รอบสอง) — Creative Studio UX Pass: จาก configurator เป็น "เลือกสไตล์ที่ชอบ"
+
+**ทำโดย**: Claude (Fable 5)
+
+### ปรับ UX `/design-clothes` ทั้งหน้า (UI เท่านั้น — store/renderer/catalog/ราคา ไม่แตะ)
+
+**Flow ใหม่แบบทีละการตัดสินใจ (5 ขั้น):** เลือกสไตล์ → ปรับแต่ง → เลือกผ้า → เลือกสี → สรุป
+- **Stepper แบบเบา** บน top bar (จุด 5 จุด กดย้อนขั้นที่ผ่านแล้วได้) + ปุ่มถัดไป/ย้อนกลับใหญ่ชัดบอกปลายทาง ("ต่อไป — เลือกผ้า")
+- **ขั้นเลือกสไตล์**: เต็มจอ การ์ดเทมเพลตใหญ่ (aspect 4/5) จัดกลุ่ม เสื้อ&เดรส/กางเกง/กระโปรง หัวข้อเป็นคำถามเป็นกันเอง "วันนี้อยากใส่ชุดแบบไหน?" — เลือกแล้วเข้าขั้นปรับแต่งอัตโนมัติ
+- **ชุดคือพระเอก**: พรีวิว sticky ใหญ่สุดซ้ายมือทุกขั้น + ชิปราคา animate ทุกครั้งที่ปรับ (feedback ทันที) + ป้ายชื่อส่วนตอน hover
+- **ขั้นปรับแต่ง**: ไม่มี accordion/dropdown เหลืออยู่เลย — เมนู "อยากปรับส่วนไหน?" เป็นการ์ดใหญ่โชว์พรีวิวสิ่งที่ใส่อยู่ → กดส่วน (หรือแตะบนชุด) → การ์ดตัวเลือกใหญ่ 3 คอลัมน์ของส่วนนั้นอย่างเดียว
+- **Progressive disclosure**: ลาย/สีเฉพาะส่วน ซ่อนหลังลิงก์ "อยากให้ส่วนนี้ใช้ผ้า/สีต่างจากทั้งชุด?" — เปิดเมื่อขอเท่านั้น
+- **ขั้นเลือกผ้าแบบ Pinterest**: การ์ดรูปผ้าใหญ่ 2 คอลัมน์ + คำโปรยเข้าใจง่าย (เช่น "ย้อมครามธรรมชาติ · สกลนคร") ไม่มีศัพท์เทคนิค
+- **ขั้นเลือกสี**: สวอตช์ใหญ่พร้อมชื่อสีไทย — ไม่มี RGB/HEX
+- **ขั้นสรุป**: tags + ราคา + CTA "สั่งตัดชุดนี้" + แก้ไขเพิ่ม/เก็บแบบนี้ไว้
+- **AI ย้ายเป็น bottom sheet** เรียกจากปุ่ม "ให้ AI จัดให้" — ไม่กินพื้นที่จนกว่าจะอยากได้แรงบันดาลใจ
+
+### ทดสอบ end-to-end ใน preview ผ่านครบ
+เทมเพลต→ปรับแต่ง (การ์ดส่วน 6 ใบ + ปุ่ม AI) → ผ้าคราม applied บนชุด → สีแดงเข้ม applied → สรุป (ราคา 2,570 ตรงสูตร, tags ครบ, CTA อยู่) → แก้ไขเพิ่มย้อนกลับได้ → advanced ซ่อน/เปิดตามสั่ง | ไม่มี `select`/accordion ในทั้งหน้า | `tsc` ผ่าน | console สะอาด
+(หมายเหตุการทดสอบ: เช็คใน eval เดียวข้าม framer transition ไม่ได้เพราะ rAF โดน throttle — ต้องแยก eval ต่อขั้น)
+
+---
+
 ## 2026-07-07 — Garment Creator V2 (3D game-like) + ปรับ login/เส้นทางสั่งตัด
 
 **ทำโดย**: Claude (Fable 5)
@@ -196,3 +249,266 @@
   - เอฟเฟกต์การ์ด: stagger fade+scale เข้าตอน scroll (framer-motion variants, delay ตาม index), hover ยก+ขยาย (spring), เงา/ขอบเปลี่ยนเป็นสีของตราตอน hover, แถบสีบนขยายเต็มความกว้างตอน hover
   - เพิ่มปุ่ม "มาตรฐานฉบับเต็ม" ขยาย/ย่อ (AnimatePresence height animation) แสดงรายละเอียดมาตรฐานเต็มของแต่ละตรา (ที่ผู้ใช้แนบมา) โดยไม่ทำให้การ์ดรกตั้งแต่แรกเห็น
 - ตรวจแล้ว: `tsc --noEmit` ผ่าน, `next build` ผ่าน (`/community/heritage` ยัง static เหมือนเดิม), path รูป badge ทั้ง 4 ตรงกับไฟล์จริงครบ | ยังไม่ได้เปิดดูจริงใน browser จาก session นี้ (dev server ของอีก session ล็อกโฟลเดอร์เหมือนเดิม)
+
+---
+
+## 2026-07-07 (รอบสี่) — Marketplace: สินค้าพร้อมขาย + ตะกร้า + Checkout + PromptPay QR
+
+**ทำโดย**: Claude (Fable 5)
+
+**บริบท**: ผู้ใช้ให้เปลี่ยนโฟกัสจากงาน Garment Builder (3D/SVG) มาทำ flow ใหม่: สำหรับ "สินค้าที่มีอยู่แล้วไม่ต้องสั่งตัด/custom" ให้ทำเป็นรูปแบบ marketplace — ตะกร้า + checkout จ่ายด้วย QR พร้อมเพย์ (งาน garment-builder ที่ทำค้างไว้ถูกพักไว้ ไฟล์ที่มีอยู่ยังไม่ลบทิ้ง)
+
+### พบว่า schema เดิมรองรับไม่ได้
+สำรวจแล้วพบว่า `orders`/`payments` เดิมออกแบบมาสำหรับสั่งตัด/ทอแบบ 1 ออเดอร์ = 1 ร้านเท่านั้น ไม่มีตาราง `products`/`cart` สำหรับสินค้าพร้อมขายเลย — หน้า `/cart`, `/checkout` เดิมเป็น mock data ล้วน (ดู deflect.md D3 เดิม), และ `backend/src/routes/products.ts` เดิม map มาจาก `shop_fabrics` แต่ไม่มีใครเรียกใช้จริงจาก frontend (dead code)
+
+### Database (migration ใหม่ + apply ตรงกับ DB จริงบน Supabase)
+- `backend/migrations/003_marketplace_products.sql`: เพิ่ม `products` (ผูก shop_id), `product_order_groups` (1 checkout = 1 ที่อยู่/1 payment แม้มีของหลายร้าน), `product_orders` (แยกย่อยตามร้าน ใช้ `order_status` enum เดิมร่วมกับ orders/weaving_orders), `product_order_items`, `product_order_status_logs` + เพิ่มคอลัมน์ `payments.product_order_group_id` (ขยาย CHECK constraint เดิม)
+- `backend/_seed_demo_products.js` — seed สินค้าพร้อมขาย 10 รายการ (กระเป๋า/ผ้าไหม/ผ้าฝ้าย/ผ้าพันคอ ฯลฯ เนื้อหา/รูปคัดจาก mock-data) ผูกกับร้านสาธิต 4 ร้านเดิมตามจังหวัด
+
+### Backend (Express)
+- `products.ts` — เขียนใหม่ทั้งหมด query ตาราง `products` ใหม่ (เดิม dead code)
+- `product-orders.ts` (ใหม่) — `POST /` สร้างออเดอร์จากตะกร้าใน transaction เดียว: validate ราคา/สต็อกจริงจาก DB (กันลูกค้าปลอมยอด), หักสต็อกจริง, แยกเป็น sub-order อัตโนมัติตามร้าน (คนละร้าน = คนละ `product_orders` แต่อยู่ใน group เดียวกัน); `GET /group/:groupId`, `GET /` (role-based เหมือน orders.ts), `PATCH /:id/status` (state machine เดียวกัน)
+- `payments.ts` — ขยายรับ `productOrderGroupId` เพิ่มจาก orderId/weavingOrderId เดิม — **QR ใบเดียวจ่ายทั้งตะกร้าได้แม้มีของจากหลายร้าน**, ตอน confirm อัปเดตทุก sub-order ในกลุ่มเป็น pending_confirm + แจ้งเตือนทุกร้านที่เกี่ยวข้องแยกกัน
+- `db.ts` — เพิ่ม `getClient()` สำหรับ transaction (BEGIN/COMMIT/ROLLBACK)
+- Mount route ใหม่ใน `app.ts`
+
+### Frontend (Next.js)
+- `lib/cart-store.ts` (ใหม่) — ตะกร้าเก็บ localStorage ผ่าน zustand (add/remove/updateQuantity/clear)
+- `components/product/ProductDetailView.tsx` — ปุ่ม "สั่งซื้อเลย" เดิม `alert()` placeholder → ถ้าเป็นสินค้าจริงจาก backend (`isLive` + `isCustomizable === false`) เพิ่มลงตะกร้าจริงแล้วพาไปหน้าตะกร้า
+- `app/product/[id]/page.tsx` — ลองดึงสินค้าจริงจาก `GET /api/products/:id` ก่อน (ISR revalidate 60s) ถ้าไม่เจอ fallback เป็น mock-data เดิม (ไม่กระทบหน้าสินค้า mock เดิมที่มีอยู่)
+- `app/cart/page.tsx` — เขียนใหม่ใช้ cart store จริงแทน mock (`initialMockCartItems`) — ตัดฟีเจอร์ coupon/saved-for-later ที่เป็น mock ล้วนออกเพราะไม่ผูกกับอะไรจริง
+- `app/checkout/page.tsx` — เขียนใหม่: ฟอร์มที่อยู่ → สร้างออเดอร์จริง (`POST /api/product-orders`) → สร้าง payment จริง (`POST /api/payments`) → แสดง QR พร้อมเพย์จาก backend (ไม่ generate เองฝั่ง client เหมือนเดิม) → "ฉันโอนเงินแล้ว" ยืนยันจริง (`POST /api/payments/:id/confirm`) → เคลียร์ตะกร้า → หน้าสำเร็จ
+- `app/orders/product/[groupId]/success/page.tsx` (ใหม่) — หน้าสรุปหลังชำระเงิน ดึงข้อมูลจริงจาก `GET /api/product-orders/group/:groupId` แสดงแยกตามร้าน
+- `app/merchant/orders/page.tsx` — เพิ่ม `kind: "product"` เข้าไปในรายการออเดอร์ของร้าน (ดึงจาก `/api/product-orders` เพิ่มจาก orders/weaving-orders เดิม) ร้านยืนยัน/อัปเดตสถานะออเดอร์สินค้าพร้อมขายได้จากหน้าเดียวกัน
+- `lib/mock-data.ts` — เพิ่ม field `isLive?`, `shopId?` ใน `Product` interface (ใช้แยกสินค้าจริงจาก backend vs mock demo)
+
+### ทดสอบแล้ว
+- ✅ `_test_marketplace_flow.js` (ใหม่): ตะกร้าสินค้าจาก 2 ร้านต่างกัน → payment เดียว (fee 5%) → confirm → ทั้งสอง sub-order เป็น pending_confirm → ร้านหนึ่งยืนยัน อีกร้านไม่กระทบ → invalid transition ถูก reject → สต็อกหักถูกต้อง
+- ✅ รัน `_test_flow.js` เดิมซ้ำ (weaving + cutting flow) → ไม่มี regression จากการแก้ `payments.ts`
+- ✅ `tsc --noEmit` ทั้ง backend/frontend ผ่าน, `next build` ผ่านทุก route
+- ✅ ทดสอบใน browser: หน้าสินค้าโหลดข้อมูลจริงจาก DB ถูกต้อง (ราคา/สต็อก/ชื่อร้าน), `/cart`+`/checkout` redirect ไป login ถูกต้องเมื่อไม่ได้ล็อกอิน, ปุ่มสั่งซื้อ gate ด้วย auth ถูกต้อง ไม่มี console error
+- พบบั๊กเดิมที่ไม่เกี่ยวกับงานนี้ระหว่างตรวจ: `ProductDetailView.tsx` มี hardcoded "ชุมชนหริภุญชัย - ลำพูน" แทนที่จะโชว์ `product.community`/`product.province` จริง (ทุกหน้าสินค้าโชว์ข้อความเดียวกันหมด) — spawn task แยกไว้แล้ว ไม่แก้ในรอบนี้
+
+**ค้าง** (บันทึกไว้ใน deflect.md D3 ด้วย): หน้า merchant สร้างสินค้ายังไม่ต่อ API จริง (ใช้ seed script แทน), หน้า `/orders` ประวัติออเดอร์ลูกค้ายังเป็น mock ไม่รวม product_orders, ค่าส่งเป็นค่าคงที่ยังไม่คำนวณจริงตามระยะทาง/น้ำหนัก
+
+---
+
+## 2026-07-07 (รอบห้า) — ปุ่ม "เพิ่มลงตะกร้า" ทุก ProductCard + Modal ธีมเว็บแทน alert/confirm
+
+**ทำโดย**: Claude (Fable 5)
+
+**บริบท**: ต่อยอดจากรอบสี่ — เพิ่มปุ่มเพิ่มลงตะกร้าให้สินค้าทุกใบ (ไม่ใช่แค่หน้า detail) + เปลี่ยน `alert()`/`confirm()` ทั้งเว็บเป็น Modal/Toast ธีมเดียวกับเว็บ
+
+### AppModalProvider (ใหม่) — modal/toast กลาง แทน alert/confirm
+- `components/providers/AppModalProvider.tsx` — context ให้ `showAlert()`, `showConfirm()` (คืน Promise<boolean>), `showToast()` — ดีไซน์ธีม navy/gold, ฟอนต์ Kanit, มุมโค้ง, ไอคอนตาม tone (info/success/warning), ปุ่ม danger สีแดง; toast เป็น pill ลอยล่างมีไอคอนตะกร้า/เช็ค
+- mount ใน `app/layout.tsx` (ครอบใน AuthProviderWrapper)
+- แทน alert/confirm ครบทุกจุด: `gen-silk` (3), `orders/page` confirm ยกเลิกออเดอร์ → showConfirm danger, `orders/[id]` (3 alerts), `PatternGallery` (1 alert เบลนด์เกิน 3 ลาย), `ProductDetailView` (สั่งทำ → showConfirm ชวนไปห้องออกแบบ) — ตรวจแล้วไม่เหลือ raw alert/confirm ในโค้ด (เหลือแค่ comment)
+
+### ปุ่มเพิ่มลงตะกร้าทุก ProductCard
+- `components/home/ProductCard.tsx` — เพิ่มปุ่ม "เพิ่มลงตะกร้า" เต็มความกว้างใต้ราคา (ใช้ทุกที่ที่มี ProductCard: หน้าแรก NewArrivals/Recommended/Explore, ฯลฯ) — คลิกแล้ว `stopPropagation` กันไม่ให้เด้งเข้าหน้า detail, addItem + toast "เพิ่มลงตะกร้าแล้ว"
+- `ProductDetailView.tsx` — แยกปุ่มเป็น "เพิ่มลงตะกร้า" (outline) + "สั่งซื้อเลย" (ทอง) สำหรับสินค้าพร้อมขาย; งานสั่งทำแสดงปุ่มเดียว "สั่งทำเลย" → modal ชวนไปห้องออกแบบ (ทั้ง desktop 2 ปุ่ม + mobile bottom bar ปุ่มไอคอน+ปุ่มหลัก)
+
+### เชื่อมสินค้าจริงเข้าหน้าเว็บ (marketplace ใช้ได้จริงทั้งเว็บ)
+- `lib/live-products.ts` (ใหม่) — helper แชร์ระหว่าง server/client: `fetchLiveProducts()`, `fetchLiveProduct(id)`, `mapLiveProduct()` (map สินค้าจริงจาก backend → Product shape เดิม, isCustomizable:false + isLive:true)
+- `lib/use-live-products.ts` (ใหม่) — hook โหลดสินค้าจริงพร้อม module-level cache (หลาย section บนหน้าเดียว fetch ครั้งเดียว) + fallback เป็น mock อัตโนมัติเมื่อ backend ไม่พร้อม
+- เปลี่ยนหน้าแรก (NewArrivals/Recommended/Explore) + หน้า search มาใช้ `useLiveProducts()` → สินค้าที่โชว์เป็นของจริงจาก DB ที่ตะกร้า/checkout ใช้งานได้จริงครบวงจร
+- `product/[id]/page.tsx` — refactor ใช้ `fetchLiveProduct` จาก lib ใหม่ (เดิม inline)
+- `components/layout/TopNav.tsx` — badge ตะกร้าเดิม hardcode `MOCK_CART_COUNT=2` → อ่านจำนวนจริงจาก cart store (อ่านหลัง mount กัน hydration mismatch) + คลิกไอคอนตะกร้าไป `/cart`
+
+### ทดสอบแล้ว
+- ✅ `tsc --noEmit` + `next build` ผ่าน (prerender 80 หน้า)
+- ✅ browser จริง: หน้าแรกมีปุ่มเพิ่มลงตะกร้า 22 ปุ่ม, คลิกแล้ว toast เด้ง + badge ตะกร้าอัปเดต 0→1 + persist localStorage เป็นสินค้าจริงจาก DB ("ผ้าคลุมไหล่ลายขิด"), สินค้าพร้อมขายโชว์ปุ่ม เพิ่มลงตะกร้า+สั่งซื้อเลย, สินค้าสั่งทำโชว์ปุ่มเดียว→เปิด Modal ธีมเว็บ (title/ปุ่มไปห้องออกแบบ/ไว้ทีหลัง ครบ), ไม่มี console error
+
+---
+
+## 2026-07-07 (รอบสาม) — แก้ "Invalid or expired token" (ต้นตอจริง) + Redesign หน้า Checkout
+
+**ทำโดย**: Claude (Fable 5)
+
+### แก้บั๊ก token (ต้นตออยู่ backend ไม่ใช่ client)
+- **ต้นตอ**: Supabase เซ็น access token ด้วย ES256 (asymmetric keys — ค่า default โปรเจกต์ใหม่) แต่ `backend/src/middleware/auth.ts` verify ด้วย HS256 shared secret → token ถูกต้องก็โดน 401 ตลอด
+- **แก้ backend**: verify ผ่าน JWKS ด้วย `jose` (ลำดับ: JWKS ES256 → HS256 legacy → dev JWT) + เพิ่ม `SUPABASE_URL` ใน `.env` | ยืนยันแล้ว `/api/auth/me` ตอบ 200
+- **เสริม client**: `frontend/lib/api-auth.ts` — `authFetch` ดึง token สดจาก supabase ทุก request, refresh อัตโนมัติเมื่อใกล้หมดอายุ, retry เมื่อ 401, `SessionExpiredError` → ข้อความไทย + พาไป login | ใช้ใน checkout + weaving-order
+- แก้ checkout เด้งไป login ทั้งที่ล็อกอินอยู่: รอ `authLoading` เสร็จก่อนค่อยตัดสิน (เดิมเช็ค `user` ตอน auth ยังโหลดไม่เสร็จ)
+- สร้างบัญชีลูกค้าทดสอบจริงใน Supabase Auth: `demo@laya.test` / `laya-demo-1234` (`backend/_create_test_auth_user.js`)
+
+### Redesign หน้า Checkout (`app/checkout/page.tsx`)
+- 3 ขั้นในหน้าเดียว: **ที่อยู่ → ตรวจสอบ → สแกนจ่าย** — stepper ใหม่มี label + เช็คทอง, ป้าย "ปลอดภัย"
+- แถบสรุปตะกร้าย่อบนขั้นแรก (thumbnail ซ้อน + จำนวนชิ้น/ร้าน + ยอดรวม)
+- ขั้นตรวจสอบ**จัดกลุ่มสินค้าตามร้านค้า** + การ์ดที่อยู่แก้ไขได้ + hint "จ่ายครั้งเดียวครบทุกร้าน"
+- ขั้นจ่าย: การ์ด QR แบบ Thai QR Payment (header กรมท่า, กรอบทองเส้นประ, นับถอยหลัง, ปุ่มแสดง QR ใหม่เมื่อหมดเวลา) + ขั้นตอนจ่าย 3 ข้อ
+- Sticky CTA บอกยอด + เปลี่ยนสีทองในขั้นจ่าย | validate เบอร์โทร 10 หลักขึ้นต้น 0
+
+### ทดสอบ end-to-end จริง (login จริง demo@laya.test)
+- login → /checkout → กรอกที่อยู่ → ตรวจสอบ → สร้างออเดอร์ลง DB (total 6,500 = 850+2,800×2+50) → payment (fee 5% = 325, payout 6,175) → กด "ฉันโอนเงินแล้ว" → pay_status = paid → หน้า "สั่งซื้อสำเร็จ" → ตะกร้าเคลียร์ ✓
+- ยืนยันเคส 401: authFetch refresh + retry ทำงานจริง (เห็นใน network log) ก่อนแก้ backend
+- `tsc` ผ่านทั้งสองฝั่ง
+
+---
+
+## 2026-07-08 — Checkout map/geo, merchant CRUD, notifications จริง, หน้าหมวดหมู่, ย้ายแผนที่
+
+**ทำโดย**: Claude (Sonnet 5)
+
+โจทย์ต้นทาง (ผู้ใช้สรุปเป็นข้อความเดียวยาว): ปรับ checkout ให้ปักหมุด+เลือกจังหวัด/อำเภอ/ตำบล, redesign checkout, เปิดให้พ่อค้าแม่ค้าลงขายของจริง, เอา mock data ออกทั้งโปรเจกต์, notification ต่อของจริง, เพิ่มหน้าหมวดหมู่แยกจากชุมชน, ย่อแผนที่ให้พอดีจอแล้วย้ายไป `/community/heritage`, เอาปุ่มเพิ่มตะกร้าออกจากหน้ารายการเหลือแค่ `/product/[id]`
+
+### 1. Checkout: แผนที่ปักหมุด + จังหวัด/อำเภอ/ตำบลจริง — เสร็จ
+- ใช้ **OpenStreetMap/Leaflet** แทน Google Maps (ผู้ใช้เลือกเองเพราะไม่มี API key) — `components/checkout/LocationPickerMap.tsx` ปักหมุด + reverse geocode ผ่าน Nominatim
+- ข้อมูลภูมิศาสตร์จริง 77 จังหวัด/930 อำเภอ/7,452 ตำบล (จาก `kongvut/thai-province-data`) → ย่อเก็บที่ `public/thai-geo/*.json` (fetch ฝั่ง client ไม่ยัดใน JS bundle)
+- `components/checkout/AddressGeoFields.tsx` — cascading province→district→subdistrict พร้อม auto-fill รหัสไปรษณีย์ (แก้บั๊ก state ไม่ถูก populate ตอนโหลดหน้าใหม่ระหว่างทาง)
+- เพิ่มคอลัมน์ `lat/lng` ใน `product_order_groups` (migration `004_checkout_location.sql`) + ต่อเข้า `POST /api/product-orders`
+- ทดสอบเต็มวงจรจริง: login demo@laya.test → เลือกที่อยู่เชียงใหม่/จอมทอง/ข่วงเปา (auto zip 50160 ตรง) → ปักหมุดสวนอัมพร → สั่งซื้อ ฿6,500 จ่ายสำเร็จ
+
+### 2. ระบบพ่อค้าแม่ค้าลงขายสินค้าจริง — เสร็จ
+- `backend/src/routes/products.ts` เขียนใหม่ทั้งไฟล์: `GET/POST /api/products`, `GET /mine`, `PUT/PATCH status/DELETE /:id` (ลบแบบ soft-delete อัตโนมัติถ้าเคยมีออเดอร์อ้างอิง — กัน FK error)
+- `components/merchant/ProductForm.tsx` + หน้า create/edit ต่อ `authFetch` ครบ
+- **เจอบั๊กใหญ่ 2 ตัวที่บล็อกอยู่ก่อนหน้านี้ (ไม่เกี่ยวกับงานนี้โดยตรงแต่บล็อกการทดสอบ) และแก้ให้แล้ว**:
+  1. `auth-context.tsx` → `buildUser()` map field ผิด (`profile.shop_id` ที่จริง backend ส่ง `shopId`) → role ร้านค้าเพี้ยนเป็น "customer" เสมอมาตลอดทั้งโปรเจกต์ (RoleGuard เด้งร้านค้าออกจากหน้าตัวเอง)
+  2. `onAuthStateChange` ไม่มี guard กันซ้ำ → ยิง `/api/auth/sync` + `/api/auth/me` วนซ้ำเป็นร้อยครั้ง/วิ — ใส่ idempotency guard ด้วย `useRef`
+- ทดสอบเต็มวงจร: สร้าง/แก้ไข/ปิดขาย/ลบสินค้าจริงผ่านบัญชี merchant-demo@laya.test — ยืนยันผลใน DB ทุกขั้น
+
+### 3. Notifications ต่อของจริง — เสร็จ
+- `lib/notification-context.tsx` เขียนใหม่ (เดิม mock array ล้วน) — ดึงจาก `GET /api/notifications`, refresh ทุก 60s, Thai relative time, สร้าง href จาก payload
+- `TopNav` bell แสดง unread count จริง + คลิกไปหน้า `/notifications`
+- ทดสอบ: เห็นแจ้งเตือน "ชำระเงินสำเร็จ" จริงจากการสั่งซื้อก่อนหน้า, กด "อ่านทั้งหมด" แล้วยืนยัน `is_read=true` ใน DB
+
+### 4. เอาปุ่มเพิ่มตะกร้าออกจากหน้ารายการ — เสร็จ
+- ลบปุ่ม+logic ออกจาก `components/home/ProductCard.tsx` (ใช้ในหน้ารายการทุกหน้า: home, search, category) — เหลือปุ่มเดียวที่ `/product/[id]` (`ProductDetailView.tsx`) ยืนยันด้วย grep ว่าไม่มีจุดอื่นเรียก `useCartStore`/`addItem` แล้ว
+
+### 5. หน้าหมวดหมู่สินค้าใหม่ แยกจากหน้าชุมชน — เสร็จ
+- `app/category/page.tsx` ใหม่ — chip เลือกหมวด (ผ้าผืน/เสื้อผ้า/ผ้าพันคอ/กระเป๋า/ของฝาก/ของตกแต่งบ้าน/อื่นๆ) + grid สินค้า fetch ตรงจาก backend (`fetchLiveProducts({ category })`, ไม่ fallback mock เพื่อไม่ให้หมวดว่างโชว์สินค้าไม่เกี่ยวกัน)
+- เพิ่ม `category` field ใน `Product` + ให้ `mapLiveProduct` ส่งต่อค่าจริง + `fetchLiveProducts` รับ filter param (`category`/`province`/`search`) — backend รองรับอยู่แล้วไม่ต้องแก้
+- เปลี่ยนลิงก์ `CategorySection.tsx` (หน้าแรก) และ `TopNav` "หมวดหมู่" จาก `/community?category=` (พารามิเตอร์ตายที่หน้า community ไม่เคยอ่านเลย) → `/category`
+- ทดสอบ: filter "กระเป๋า" คืน 2 รายการถูกต้องจาก backend จริง
+
+### 6. ย้ายแผนที่ → `/community/heritage` + ย่อให้พอดีจอ — เสร็จ
+- แตกไฟล์ `/map/page.tsx` (~1,000 บรรทัด) เป็น component `components/community/ThailandFabricMap.tsx` แบบฝังได้ (ตัดโค้ดตายที่ไม่ได้ใช้ 2 ตัวออก: `ProvinceSheet`, `RegionFilter`)
+- **บั๊กจริงที่ทำให้แผนที่ล้นจอ**: SVG ไม่มี height กำหนด อาศัย intrinsic aspect ratio 520:700 (สูงกว่ากว้าง) แต่ container ใช้ `overflow-hidden` → แผนที่โดนตัดครึ่ง ไม่เห็นเต็ม — แก้ด้วย `flex flex-col h-full` + SVG `flex-1 min-h-0` + `preserveAspectRatio` แล้วครอบ section ด้วยความสูงคงที่ `min(78vh, 640px)`
+- ฝังเป็น section ใหม่ใน `HeritageStory.tsx` (คั่นระหว่างภาพผ้าแพรวากับส่วน "มรดกที่สืบทอด")
+- ลบ route `/map` ทิ้ง, อัปเดตลิงก์ `TopNav`/`BottomNav`/`sitemap.ts` ไปที่ `/community/heritage` ทั้งหมด
+- แถมแก้บั๊กเล็ก: `TopNav` ไฮไลต์ "ชุมชน" กับ "แผนที่" พร้อมกันตอนอยู่หน้า `/community/heritage` (path ซ้อนกัน) — แก้ให้เลือก path ที่ตรงที่สุดอันเดียว
+- ทดสอบ: โหลด GeoJSON + รูปลายผ้า 76 จังหวัดสำเร็จ, สลับ map/list view ได้, ไม่มี error ใน console/server, `tsc --noEmit` ผ่าน
+
+### ค้างไว้ (ดูรายละเอียดที่ deflect.md)
+- **ลบ mock data ทั้งหมด** — ยังไม่ได้ทำ ขอบเขตใหญ่ (28 ไฟล์ยัง import จาก `lib/mock-data.ts`) ตั้งใจแยกไปทำเป็นรอบเฉพาะ
+
+---
+
+## 2026-07-08 (รอบสอง) — Production readiness + สมุดที่อยู่ลูกค้า + แก้แผนที่ heritage
+
+**ทำโดย**: Claude (Sonnet 5)
+
+โจทย์: อ่าน history/deflect/backlog แล้วดำเนินงานต่อ, เช็ค API/token ให้พร้อม production, เอา "แผนที่" ออกจาก top bar, แก้แผนที่ `/community/heritage` โหลดช้า/ไม่โหลด, และหลักๆ คือทำให้ซื้อขายสะดวก + บันทึกที่อยู่ลูกค้าได้
+
+### 1. Production readiness — ตรวจแล้วพบ 2 ปัญหา แก้ได้ 1, อีก 1 ต้องตัดสินใจ
+- **แก้แล้ว**: CORS bug ใน `backend/src/app.ts` — ตั้งค่า `ALLOWED_ORIGINS` ไว้แต่โค้ดจริงใช้ `cors({ origin: true })` เปิดรับทุก origin เสมอไม่ว่า production หรือไม่ — เปลี่ยนให้ `NODE_ENV=production` เช็คกับ `ALLOWED_ORIGINS` จริง, dev ยังเปิดกว้างเหมือนเดิม
+- **ต้องตัดสินใจ (บันทึกใน deflect.md D11, D2)**: (1) backend ยังไม่มี hosting config เลย (ไม่มี render.yaml/railway.json/Dockerfile) — มีแค่ frontend ที่พร้อม deploy Vercel, (2) `PROMPTPAY_ID` ยังเป็นเลขทดสอบทั้งสองฝั่ง — ต้องรอเลขจริงจากเจ้าของธุรกิจ
+- Token/JWKS (แก้ไปแล้วรอบก่อน) ยังทำงานถูกต้อง — ไม่มีอะไรต้องแก้เพิ่ม
+
+### 2. เอา "แผนที่" ออกจาก TopNav (desktop) — เสร็จ
+- `components/layout/TopNav.tsx` — ลบ nav item "แผนที่" ออกจาก `navLinks` ตามคำขอ (เหลือ 4 เมนู: หน้าหลัก/สำรวจ/หมวดหมู่/ชุมชน) — คง Map icon ใน BottomNav (มือถือ) ไว้ตามเดิมเพราะผู้ใช้ระบุเจาะจง "top bar"
+
+### 3. แก้แผนที่ `/community/heritage` โหลดช้า/ไม่โหลด — เสร็จ
+- **ต้นตอที่แท้จริง**: `components/community/ThailandFabricMap.tsx` fetch GeoJSON (167KB) จาก `raw.githubusercontent.com` ตรงๆ ทุกครั้งที่เปิดหน้า — external dependency ไม่มี fallback, และเมื่อ fetch fail จะ catch เงียบๆ ปล่อยให้แผนที่ว่างเปล่าไม่มีข้อความ error ใดๆ (ดูเหมือน "ไม่โหลดเลย")
+- **แก้**: ดาวน์โหลดไฟล์เก็บไว้ในเครื่องเอง (`public/thai-geo/thailand-provinces.geojson`) โหลดจาก same-origin แทน — เร็วขึ้นและไม่พังเวลาเน็ตหลุด/GitHub ช้า/rate-limit
+- เพิ่ม UI แจ้ง error + ปุ่ม "ลองใหม่" แทนโชว์ว่างเงียบๆ เมื่อโหลดไม่สำเร็จจริงๆ
+
+### 4. สมุดที่อยู่ลูกค้า (US ใหม่ — ไม่มีใน backlog เดิม แต่ผู้ใช้ขอตรงๆ) — เสร็จ
+- Migration `005_customer_addresses.sql` — ตาราง `customer_addresses` (label, ผู้รับ, เบอร์, ที่อยู่เต็ม, lat/lng, is_default) apply เข้า DB จริงแล้ว
+- `backend/src/routes/addresses.ts` (ใหม่) — `GET/POST/PATCH/DELETE /api/addresses`: ที่อยู่แรกของ user เป็น default อัตโนมัติ, ตั้ง default ใหม่แล้วอันเก่าเปลี่ยนตาม, ลบ default แล้วอันล่าสุดที่เหลือขึ้นเป็น default แทนอัตโนมัติ (กันไม่มี default เลย) — mount ใน `app.ts`
+- `app/checkout/page.tsx` — โหลดสมุดที่อยู่ตอนเข้าหน้า (เลือก default ให้อัตโนมัติ), แสดงเป็นการ์ดเลือกได้ (ชื่อ/เบอร์/ที่อยู่/ป้าย default, ลบได้จากการ์ด), ปุ่ม "เพิ่มที่อยู่ใหม่" เปิดฟอร์มเดิม (แผนที่ปักหมุด + AddressGeoFields) พร้อม checkbox "บันทึกที่อยู่นี้ไว้ใช้ครั้งหน้า" (บันทึกแบบ best-effort ไม่บล็อกการสั่งซื้อถ้าเซฟไม่สำเร็จ)
+- ทดสอบ e2e จริงกับ DB (`_test_addresses_flow.js`): สร้างที่อยู่แรก→default อัตโนมัติ ✓, ที่อยู่ที่สอง→ไม่ default ✓, ตั้ง default ใหม่→อันเก่าเปลี่ยนตาม ✓, ลบ default→อันที่เหลือขึ้นแทนอัตโนมัติ ✓
+- `tsc --noEmit` + `next build` ผ่านทั้งสองฝั่ง — ยังไม่ได้เปิดดูจริงใน browser (dev server ของอีก session ล็อกพอร์ต 3000/4000 อยู่เหมือนเดิม)
+
+### ค้างไว้ / ยังไม่ทำ (ผู้ใช้ระบุเป็น "ต่อมา" — ขอบเขตใหญ่ ต้องแยกรอบ)
+1. **Flow สั่งตัด + ออกแบบลายผ้า + generate ลายผ้า** — ตาม 3 flow diagram ที่แนบ (สั่งตัดด้วยผ้าที่มี / สั่งตัดไม่มีผ้า+AI Stylist / สั่งทอผ้า+AI Pattern) — งานใหญ่ระดับ AI pipeline + UI multi-step ใหม่ทั้งหมด
+2. **Virtual Try-On แบบเต็ม** — อัปโหลดรูปเต็มตัว หรือกรอกน้ำหนัก/ส่วนสูง/รอบเอว ให้ AI ประมาณขนาดที่ใกล้เคียง — ต้องมี AI model/API สำหรับ body estimation
+3. **Theme redesign ทั้งเว็บ** — มินิมอล ลักชูรี พรีเมียม ไม่รก — กระทบทุกหน้า ต้องวางแนวทางดีไซน์ก่อนลงมือ
+
+ทั้ง 3 ข้อนี้เป็นงานขนาดใหญ่ที่ควรแยกเป็นรอบเฉพาะ ไม่ได้เริ่มในรอบนี้ (ดูสรุปในข้อความตอบกลับผู้ใช้)
+
+---
+
+## 2026-07-08 (รอบสาม) — เริ่ม Theme Redesign: มินิมอล/ลักชูรี/พรีเมียม/ไม่รก
+
+**ทำโดย**: Claude (Sonnet 5)
+
+โจทย์: ผู้ใช้เลือกให้เริ่มเฟส "Theme redesign" ก่อน (จาก 3 ตัวเลือก: theme / virtual try-on / tailoring flow) — ส่วน AI image generation รอบหน้าจะเปลี่ยนมาใช้ OpenAI (บันทึกไว้สำหรับตอนทำ flow สั่งตัด/ออกแบบลาย)
+
+### สำรวจก่อนแก้
+- ตรวจ `lib/theme.ts` (MUI theme) พบว่า foundation ดีอยู่แล้ว (navy #1B2A4A + gold #C5A55A, ฟอนต์ Kanit, radius/shadow tokens สม่ำเสมอ) — จุดที่ "รก" จริงๆ ไม่ใช่สีหรือ component styling แต่เป็น **โครงสร้างหน้าแรกที่มี 10 section ซ้อนกัน** ซึ่ง 2 ใน 10 ซ้ำซ้อนกับของที่มีอยู่แล้ว
+- ตรวจ `ProductCard.tsx` และ `TopNav.tsx` แล้วพบว่าออกแบบมาดีอยู่แล้ว (whitespace เพียงพอ, badge/ไอคอนจำกัดเฉพาะจำเป็น) — ไม่แตะ
+
+### 1. Declutter หน้าแรก — เสร็จ
+- `app/page.tsx`: ตัด `NewArrivalsSection` ออก (โชว์กริดสินค้าเดิมซ้ำกับ `RecommendedSection` แค่ label ต่างกัน) และตัด `ExploreSection` ออก (mini-browse เต็มรูปแบบ 393 บรรทัด มี filter/search/grid-list toggle ของตัวเอง ซ้ำซ้อนกับหน้า `/search` และ `/category` ที่มีอยู่แล้ว)
+- หน้าแรกเหลือ 8 section ที่ไม่ซ้ำกันเลย: Hero → Banner → Category → Recommended → Editorial (heritage) → Communities → Mission (quote) → Inspiration
+- ไฟล์ `NewArrivalsSection.tsx`/`ExploreSection.tsx` ยังอยู่ในโปรเจกต์ (ไม่ได้ลบ) เผื่อเอาไปใช้ที่อื่นภายหลัง — แค่เอาออกจากหน้าแรก
+
+### 2. ยกระดับ Typography ให้พรีเมียมขึ้น — เสร็จ
+- `components/home/SectionHeader.tsx` (component กลางที่ section ต่างๆ เรียกใช้ร่วมกัน) — เปลี่ยน title จาก Kanit bold ธรรมดา → **Cormorant Garamond ตัวเอียง** (serif italic) แบบเดียวกับที่ `EditorialSection`/`HeritageStory` ใช้อยู่แล้ว
+- แก้จุดเดียวแต่กระทบ 5 ไฟล์ที่เรียกใช้ `SectionHeader` ทันที (`CategorySection`, `CommunitiesSection`, `RecommendedSection`, `HeritageStory`, และเดิม `NewArrivalsSection`) → ภาษาภาพรวมทั้งเว็บเป็นแนวเดียวกันมากขึ้น (editorial/luxury แทนที่จะเป็น generic app font ธรรมดา)
+
+### ทดสอบแล้ว
+- `tsc --noEmit` + `next build` ผ่านทั้งหมด (prerender สำเร็จทุกหน้า)
+- รัน production build บนพอร์ตแยก (3099) ยืนยันด้วย curl ว่าหน้าแรกไม่มี "มาใหม่ล่าสุด" (NewArrivals) เหลืออยู่แล้วจริง, เหลือแค่ "คัดสรรสำหรับคุณ" (Recommended) เป็น product grid เดียว
+
+### ค้างไว้ (theme redesign เป็นงานต่อเนื่อง ยังไม่ครบทุกหน้า)
+- รอบนี้โฟกัสหน้าแรก + component กลาง (SectionHeader) เป็นจุดเริ่ม — หน้าอื่นๆ (checkout เพิ่งรีดีไซน์ไปแล้วรอบก่อนหน้าถือว่าอยู่ในธีมพรีเมียมอยู่แล้ว, product detail, community, profile ฯลฯ) ยังไม่ได้ไล่ตรวจทีละหน้า — ทำต่อได้ในรอบถัดไปถ้าต้องการเจาะจงหน้าไหนเพิ่ม
+
+---
+
+## 2026-07-08 (รอบสาม) — bug fixes ย่อย + Redesign Checkout/Cart แบบ luxury
+
+**ทำโดย**: Claude (Sonnet 5)
+
+หมายเหตุ: รอบนี้ทำงานคู่ขนานกับอีก session หนึ่งที่แก้ไฟล์เดียวกันอยู่ (เจอ D9/D13/D14 ที่คนอื่นทำไปแล้วระหว่างทาง) — ทุกจุดที่แก้ด้านล่างเช็คกับโค้ดปัจจุบันจริงก่อนแก้ ไม่ทับงานเดิม
+
+### Bug fixes ย่อย 4 จุดจาก feedback ผู้ใช้
+1. **Desktop ไม่มีปุ่มสั่งตัด/สั่งทอ** — เพิ่มลิงก์ "สั่งตัด/สั่งทอ" → `/services` ใน `TopNav.tsx` navLinks
+2. **Mobile BottomNav** — เปลี่ยนไอคอน "Map" (`/community/heritage`) เป็น "หมวดหมู่" (`/category`, ไอคอน LayoutGrid) ใน `BottomNav.tsx`
+3. **ปุ่ม fav กดไม่ได้** — `TopNav.tsx` ไอคอนหัวใจไม่มี `onClick` เลย เพิ่ม `router.push(user ? "/wishlist" : "/auth/login")` (หน้า `/wishlist` เป็น mock ล้วนอยู่แล้ว — บันทึกไว้ใน deflect.md ว่ายังไม่ต่อ backend จริง)
+4. **แผนที่ผ้า default zoom ดูเหมือน 71%** — ต้นตอไม่ใช่ zoom state (มันคือ 100% อยู่แล้ว) แต่เป็น container กว้างกว่าอัตราส่วนแผนที่ (520:700 แนวตั้ง) มาก ทำให้ `preserveAspectRatio="meet"` เหลือขอบขาวข้างเยอะ ดูเหมือนซูมออก — แก้ด้วยการครอบ wrapper ด้วย `aspectRatio: "520/700"` ให้กล่องพอดีเนื้อหาเป๊ะ (ทดสอบแล้ว: สัดส่วนที่ใช้จริงขึ้นจาก 38% เป็น 88% ของความกว้างกล่อง)
+
+### Redesign หน้า Checkout แบบพรีเมียม/หรู (`app/checkout/page.tsx`)
+ตามสเปกละเอียดที่ผู้ใช้ให้ (อ้างอิง Jim Thompson/COS/Apple/Stripe) — **ไม่แตะ business logic เดิมเลย** (สมุดที่อยู่, สร้างออเดอร์, payment, confirm — ทั้งหมดที่อีก session เพิ่งต่อเสร็จ) รีเขียนเฉพาะ layout/UI:
+- **เดสก์ท็อป: 2-column layout** ซ้าย 66% (เนื้อหาตามขั้น) + ขวา sticky order summary (แก้ปัญหาเดิม: checkout กว้างแค่ 430px คงที่แม้จอกว้าง 1440px เหลือพื้นที่ว่างมหาศาล)
+- Stepper ใหม่ใหญ่ขึ้น เส้นเชื่อมหนาขึ้น, gold=เสร็จ, navy=active
+- การ์ดที่อยู่: ไอคอนบ้าน, badge "ค่าเริ่มต้น", hover elevation, "เพิ่มที่อยู่ใหม่" เป็นการ์ดเส้นประ
+- ขั้นตรวจสอบ: เพิ่ม **quantity stepper + ปุ่มลบ** ต่อรายการ (ต่อกับ `cartStore.updateQuantity`/`removeItem` จริง ราคารวมคำนวณใหม่ทันที)
+- Payment method tabs (PromptPay ใช้งานได้, บัตร/โอน/wallet โชว์ "เร็วๆ นี้" — ยังไม่มี gateway จริงตาม deflect.md D1)
+- คูปอง: เพิ่ม UI (collapse + input + ปุ่มใช้) แต่ยังไม่มี backend รองรับ — กดแล้วขึ้นข้อความบอกตรงๆ ว่ายังไม่เปิดใช้งาน (ไม่ fake ว่าใช้ได้)
+- Trust badges (SSL/ปลอดภัย/รับประกัน/จัดส่ง) ใต้ปุ่ม CTA ทั้ง sidebar เดสก์ท็อปและแถบมือถือ
+- **เจอบั๊กจริงระหว่างทดสอบมือถือ**: ปุ่ม CTA ล่างสุด (`position:fixed bottom:0`) ถูก `BottomNav` (zIndex สูงกว่า, ก็ bottom:0) บังจนกดไม่ได้ — เป็นบั๊กเดิมที่มีอยู่ก่อนแล้ว (ไม่ใช่ผมทำพัง) เพราะ checkout ไม่เคยใส่ offset เหมือนหน้า `/cart` ที่ใช้ `bottom: 56` แก้ไปแล้วก่อนหน้า — แก้ให้ตรงกันแล้ว
+
+### Redesign หน้า Cart (`app/cart/page.tsx`) ให้ธีมเดียวกัน
+- อยู่ในสเปก deliverable เดียวกัน (#1 Shopping Cart) — เจอปัญหาเดียวกัน (คอลัมน์แคบ 430px บนจอกว้าง) แก้เป็น 2-column + sticky summary เหมือน checkout
+- **เจอบั๊กจริงอีกจุด**: หน้า cart เดิมไม่มีการรอ `authLoading` จาก `useAuth()` เลย (เช็คแค่ `hydrated && !user`) ทำให้ redirect ไป `/auth/login` ทันทีตอน auth ยังโหลดไม่เสร็จ แม้ล็อกอินอยู่จริง — เป็นบั๊กเดียวกับที่ checkout เคยเจอและแก้ไปแล้วเมื่อ 2026-07-06 แต่ไม่เคยพอร์ตมาแก้ที่ cart — แก้ให้เหมือนกันแล้ว
+- ทดสอบเต็มวงจรจริงอีกครั้งหลังแก้: login → seed ตะกร้า → `/cart` (ไม่เด้ง login แล้ว) → `/checkout` desktop 2-col ผ่านครบ 3 ขั้น → สร้างออเดอร์+payment จริง → ยืนยันจ่ายจริง → redirect หน้าสำเร็จ → ตะกร้าเคลียร์ ✓ (ทดสอบทั้ง 1440px และ 390px)
+
+### Dev environment note
+- Next.js บล็อกไม่ให้รัน dev server ซ้ำในโฟลเดอร์เดียวกัน (ไม่ใช่แค่ port ชนกัน) — ถ้ามีอีก session เปิด `next dev` ค้างอยู่ ต้องปิดของเดิมก่อนถึงจะเปิดใหม่ในเซสชันอื่นได้ ต่อให้ตั้ง `autoPort` ก็ไม่ช่วย (`.claude/launch.json` ตั้ง `autoPort: true` ไว้ให้ทั้งสอง service แล้วเผื่อใช้ port อื่นได้เวลาไม่ชนกัน)
+
+### ต่อระบบ wishlist (รายการโปรด) จริง — เริ่มเจาะ mock data removal (task #3) จาก entity แรก
+- Migration 006: ตาราง `wishlist_items` (user_id, product_id, unique constraint กันเพิ่มซ้ำ)
+- `backend/src/routes/wishlist.ts` ใหม่: `GET /ids` (เบา ใช้เช็คสถานะหัวใจทั่วแอป), `GET /` (รายละเอียดสินค้าเต็มสำหรับหน้า `/wishlist`), `POST /`, `DELETE /:productId`
+- `frontend/lib/wishlist-context.tsx` ใหม่ (pattern เดียวกับ `notification-context.tsx`) — mount ใน `AuthProviderWrapper` คู่กับ `NotificationProvider`
+- ต่อเข้าทุกจุดที่มีไอคอนหัวใจ: `ProductCard.tsx` (เดิม `useState(false)` local ไม่ persist ไปไหน), `ProductDetailView.tsx` (เดิม**ไม่มี `onClick` เลย** แค่ไอคอนตกแต่งเฉยๆ), หน้า `/wishlist` (เขียนใหม่ทั้งหน้า ดึงจาก `GET /api/wishlist` จริง แทน `mockFavoriteIds` hardcode เดิม + ปุ่ม "เพิ่มลงตะกร้า" ต่อ cartStore จริงด้วย)
+- ทดสอบเต็มวงจรจริง: กดหัวใจจากการ์ดหน้าแรก → ยืนยันด้วย query ตรง `/api/wishlist/ids` ว่าเพิ่มจริง → เข้าหน้า `/wishlist` เห็นสินค้าจริง → กดเอาออก → ยืนยันหายจริง → กดหัวใจจากหน้า product detail → ยืนยันเพิ่มจริงอีกครั้ง (ระวัง: ต้อง scope selector ไปที่ `main` ตอนทดสอบ เพราะ TopNav มีไอคอนหัวใจซ้ำ query ทั่วหน้าจะไปโดนอันของ TopNav แทน)
+- คงเหลือจาก task #3: ~27 ไฟล์ที่เหลือยังใช้ mock (ดู deflect.md D9) — ต้องทำทีละ entity ต่อไป
+
+### ต่อระบบ communities จริง — entity ที่สองของ mock data removal (task #3)
+- **เจอบั๊กใหญ่ที่ซ่อนอยู่นาน**: `GET /api/communities` เดิม query ตาราง `communities` ซึ่ง**ไม่มีอยู่จริงในฐานข้อมูลเลย** (เป็น route ค้างจาก `schema.sql` เวอร์ชันเก่าที่ถูกแทนที่ด้วย marketplace migrations ไปแล้ว) — endpoint นี้ 500 error มาตลอดถ้ามีใครเรียกจริง เพิ่งมาเจอตอนสำรวจ mock data removal นี้เอง
+- ตัดสินใจ: "ชุมชน" ในมุมมองลูกค้าใช้ตาราง `shops` จริงแทน (ร้านค้าที่อนุมัติแล้ว) แทนที่จะสร้างตาราง `communities` ใหม่ซ้ำซ้อน เพราะ `shops` มีข้อมูลจริงอยู่แล้ว (name, province, description, rating, review_count)
+- เขียนใหม่ `backend/src/routes/communities.ts`: `GET /` (list จาก shops + นับ product_count จริงต่อร้าน), `GET /:id` ใหม่ (รายละเอียด + description/address จริง)
+- Frontend: `lib/communities.ts` ใหม่ (pattern เดียวกับ `live-products.ts`), ต่อเข้า `CommunitiesSection.tsx` (หน้าแรก), `app/community/[id]/page.tsx` (เปลี่ยนจาก `generateStaticParams` แบบ static ที่ผูกกับ mock ID เป็น dynamic fetch จริง), เพิ่ม `shopId` filter ใน `fetchLiveProducts`
+- **เขียนใหม่ทั้งหมด `CommunityDetailView.tsx` (423 บรรทัด) — พบว่าเนื้อหาเกือบทั้งหน้าเป็นข้อมูลปลอมที่ซ้ำกันทุกชุมชน (bug เชิงความถูกต้องของข้อมูล ไม่ใช่แค่ "ยังเป็น mock")**:
+  - สถิติคงที่ (45 สมาชิก, 28 ผลิตภัณฑ์, 200+ ปี) — เหมือนกันทุกร้านไม่ว่าจะเป็นร้านไหน → แก้เป็นตัวเลขจริงต่อร้าน (product count, rating, review count)
+  - เรื่องราวชุมชน hardcode เป็นเรื่องผ้าลำพูนตำนาน 200 ปี — โชว์เหมือนกันแม้เข้าดูร้านอื่นที่ไม่ใช่ลำพูน → แก้เป็น `shops.description` จริงของแต่ละร้าน
+  - ที่อยู่ hardcode "ต.ศรีภูมิ อ.เมือง จ.ลำพูน" — เหมือนกันทุกร้าน → แก้เป็นแสดงเฉพาะเมื่อร้านกรอกที่อยู่จริงไว้ (`shops.address`) ไม่งั้นซ่อนไปเลย
+  - ช่างทอ 2 คนสมมติชื่อ-ประสบการณ์-ลายเฉพาะตัว เหมือนกันทุกร้าน — ลบออกทั้งหมด (ไม่มี backend entity รองรับข้อมูลช่างทอรายบุคคล ไม่ใช่แค่ยังไม่ต่อ API แต่ยังไม่มีตารางเลย)
+  - รีวิวปลอม 1 อัน ("คุณนภา") + กราฟกระจายดาวที่ตั้งค่าคงที่ (90% 5 ดาว) เหมือนกันทุกร้าน — ลบออก เหลือแค่คะแนนรวม/จำนวนรีวิวจริงจากร้าน (ยังไม่มีระบบรีวิวรายข้อความ)
+  - **ป้ายรับรอง "GI รับรอง" + "Fair Trade Certified" ที่ไม่มีข้อมูลรับรองจริงรองรับเลย — ลบออก** (นี่คือประเด็นที่สำคัญที่สุด: การอ้างว่าร้านค้าได้รับรอง GI/Fair Trade โดยไม่มีการยืนยันจริงเป็นความเสี่ยงด้านความถูกต้อง/กฎหมายสำหรับธุรกิจจริง ไม่ใช่แค่ "mock data" ธรรมดา)
+  - สินค้าที่โชว์เดิมใช้ `products.filter(p => p.hasGI).slice(0,4)` — สุ่มเอาสินค้า GI 4 ชิ้นแรกมาโชว์ไม่ว่าจะเป็นร้านไหน (ไม่ได้กรองตามร้านจริงเลย) → แก้เป็นดึงสินค้าจริงของร้านนั้นจาก `GET /api/products?shopId=`
+- แก้ `app/sitemap.ts` ด้วย (เจอว่าใช้ mock `products`/`communities` ทั้งคู่ — sitemap ส่ง URL ปลอมให้ Search Engine มาตลอด) เปลี่ยนเป็น fetch ข้อมูลจริงทั้งสองส่วน
+- ทดสอบจริง: `GET /api/communities` และ `/api/communities/:id` ผ่าน curl ตรง, เข้าหน้าแรกเห็น 5 ร้านจริง (4 ร้านจริง + 1 ร้าน demo), คลิกเข้าไปที่ "ชุมชนทอผ้าซิ่นลำพูน" เห็นข้อมูลจริงครบ (เรื่องราว, สถิติ, สินค้า 4 ชิ้นจริง) ไม่มี error
+- **ยังไม่แตะ**: `app/community/page.tsx` (ฟีดโซเชียล Pinterest-style) — เป็นฟีเจอร์ใหญ่แยกต่างหาก (โพสต์/ไลก์/คอมเมนต์ปลอมทั้งหมด) ตรงกับ US-509 ใน backlog ที่ยังไม่ทำ ต้องมีตาราง `community_posts` ใหม่ + ตัดสินใจเรื่องฟีเจอร์โซเชียลก่อน ไม่ใช่แค่ต่อ API

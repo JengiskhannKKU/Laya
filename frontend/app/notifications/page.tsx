@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
@@ -26,7 +27,7 @@ const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: stri
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
+  const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications();
 
   return (
     <MobileLayout>
@@ -56,7 +57,12 @@ export default function NotificationsPage() {
 
         {/* List */}
         <Box>
-          {notifications.length === 0 && (
+          {loading && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+              <CircularProgress size={28} sx={{ color: "#C5A55A" }} />
+            </Box>
+          )}
+          {!loading && notifications.length === 0 && (
             <Box sx={{ textAlign: "center", py: 10 }}>
               <NotificationsRoundedIcon sx={{ fontSize: 56, color: "#E5DFD6", mb: 2 }} />
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#9CA3AF" }}>ยังไม่มีการแจ้งเตือน</Typography>

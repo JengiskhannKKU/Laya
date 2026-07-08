@@ -10,12 +10,15 @@ import healthRouter from "./routes/health";
 import authRouter from "./routes/auth";
 import shopsRouter from "./routes/shops";
 import measurementsRouter from "./routes/measurements";
+import addressesRouter from "./routes/addresses";
+import wishlistRouter from "./routes/wishlist";
 import notificationsRouter from "./routes/notifications";
 import productsRouter from "./routes/products";
 import categoriesRouter from "./routes/categories";
 import bannersRouter from "./routes/banners";
 import communitiesRouter from "./routes/communities";
 import ordersRouter from "./routes/orders";
+import productOrdersRouter from "./routes/product-orders";
 import paymentsRouter from "./routes/payments";
 import weavingOrdersRouter from "./routes/weaving-orders";
 import weavePatternsRouter from "./routes/weave-patterns";
@@ -25,13 +28,26 @@ import nanobananaRouter from "./routes/nanobanana";
 const app = express();
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
+// Production: จำกัดเฉพาะโดเมนใน ALLOWED_ORIGINS (comma-separated ใน .env)
+// Development: เปิดกว้าง (origin: true) เพื่อความสะดวกตอน dev หลายพอร์ต/เครื่อง
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
   .split(",")
-  .map((o) => o.trim());
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 app.use(
   cors({
-    origin: true,
+    origin:
+      process.env.NODE_ENV === "production"
+        ? (origin, callback) => {
+            // อนุญาต request ที่ไม่มี origin (curl, server-to-server, mobile app)
+            if (!origin || allowedOrigins.includes(origin)) {
+              callback(null, true);
+            } else {
+              callback(new Error(`CORS blocked: ${origin} not in ALLOWED_ORIGINS`));
+            }
+          }
+        : true,
     credentials: true,
   })
 );
@@ -52,12 +68,15 @@ app.use("/health", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/shops", shopsRouter);
 app.use("/api/measurements", measurementsRouter);
+app.use("/api/addresses", addressesRouter);
+app.use("/api/wishlist", wishlistRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/banners", bannersRouter);
 app.use("/api/communities", communitiesRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/product-orders", productOrdersRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/weaving-orders", weavingOrdersRouter);
 app.use("/api/weave-patterns", weavePatternsRouter);

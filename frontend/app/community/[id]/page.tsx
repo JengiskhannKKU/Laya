@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { communities } from "@/lib/mock-data";
+import { fetchCommunity } from "@/lib/communities";
 import CommunityDetailView from "@/components/community/CommunityDetailView";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { notFound } from "next/navigation";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
-
-export function generateStaticParams() {
-  return communities.map((c) => ({ id: c.id }));
-}
 
 export async function generateMetadata({
   params,
@@ -15,7 +11,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const community = communities.find((c) => c.id === id);
+  const community = await fetchCommunity(id);
 
   if (!community) {
     return createPageMetadata({
@@ -28,9 +24,9 @@ export async function generateMetadata({
 
   return createPageMetadata({
     title: `${community.name} จังหวัด${community.province}`,
-    description: `${community.name} ชุมชนช่างทอจากจังหวัด${community.province} มีสมาชิก ${community.memberCount} คน และสินค้า ${community.productCount} รายการบน LAYA`,
+    description: community.description ?? `${community.name} ชุมชนช่างทอจากจังหวัด${community.province} บน LAYA`,
     path: `/community/${community.id}`,
-    image: community.image,
+    image: community.image ?? undefined,
   });
 }
 
@@ -40,7 +36,7 @@ export default async function CommunityPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const community = communities.find((c) => c.id === id);
+  const community = await fetchCommunity(id);
 
   if (!community) {
     notFound();
@@ -50,7 +46,7 @@ export default async function CommunityPage({
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: community.name,
-    image: absoluteUrl(community.image),
+    image: community.image ? absoluteUrl(community.image) : undefined,
     url: absoluteUrl(`/community/${community.id}`),
     address: {
       "@type": "PostalAddress",

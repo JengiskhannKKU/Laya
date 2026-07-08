@@ -1,17 +1,17 @@
 ﻿"use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
-import { communities } from "@/lib/mock-data";
+import { fetchCommunities, type LiveCommunity } from "@/lib/communities";
 import Image from "next/image";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
 
-function CommunityCard({ community }: { community: any }) {
-  const [imgSrc, setImgSrc] = useState(community.image);
+function CommunityCard({ community }: { community: LiveCommunity }) {
+  const [imgSrc, setImgSrc] = useState(community.image || "/placeholder.webp");
 
   return (
     <Link href={`/community/${community.id}`} style={{ textDecoration: "none" }}>
@@ -103,7 +103,7 @@ function CommunityCard({ community }: { community: any }) {
               mt: 0.4,
             }}
           >
-            {community.memberCount} สมาชิก · {community.productCount} ผลิตภัณฑ์
+            {community.productCount} ผลิตภัณฑ์{community.rating > 0 ? ` · ★ ${community.rating.toFixed(1)}` : ""}
           </Typography>
         </Box>
       </Box>
@@ -112,6 +112,18 @@ function CommunityCard({ community }: { community: any }) {
 }
 
 export default function CommunitiesSection() {
+  const [communities, setCommunities] = useState<LiveCommunity[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchCommunities()
+      .then((list) => { if (!cancelled) setCommunities(list); })
+      .catch(() => { if (!cancelled) setCommunities([]); });
+    return () => { cancelled = true; };
+  }, []);
+
+  if (communities.length === 0) return null;
+
   return (
     <Box
       component={motion.div}

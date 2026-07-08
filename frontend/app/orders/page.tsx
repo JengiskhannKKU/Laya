@@ -16,6 +16,7 @@ import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRound
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useAppModal } from "@/components/providers/AppModalProvider";
 import { mockOrders, Order, OrderStatus } from "@/lib/mock-data";
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -42,6 +43,7 @@ function OrderListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { showConfirm } = useAppModal();
 
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -80,8 +82,16 @@ function OrderListContent() {
     setTimeout(() => router.push("/cart"), 1500);
   };
 
-  const handleCancel = (id: string) => {
-    if (confirm("คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำสั่งซื้อนี้?")) {
+  const handleCancel = async (id: string) => {
+    const ok = await showConfirm({
+      title: "ยกเลิกคำสั่งซื้อ",
+      message: "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำสั่งซื้อนี้?",
+      confirmLabel: "ยกเลิกออเดอร์",
+      cancelLabel: "เก็บไว้ก่อน",
+      tone: "warning",
+      danger: true,
+    });
+    if (ok) {
       setOrders(prev => prev.map(o => o.id === id ? { ...o, status: "cancelled" } : o));
       setToastMsg("ยกเลิกคำสั่งซื้อสำเร็จ");
     }

@@ -44,7 +44,7 @@ export default function CategorySection() {
         eyebrow="Browse"
         title="หมวดหมู่"
         subtitle="Explore by craft and creation"
-        href="/categories"
+        href="/category"
       />
 
       {/* Category Container — horizontal scroll on mobile, centered wrap on desktop */}
@@ -69,7 +69,7 @@ export default function CategorySection() {
         {categories.map((cat, index) => (
           <Link
             key={cat.id}
-            href={`/community?category=${cat.id}`}
+            href={`/category?c=${cat.id}`}
             style={{ textDecoration: "none", flexShrink: 0 }}
           >
             <Box

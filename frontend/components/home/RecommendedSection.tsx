@@ -2,11 +2,12 @@
 
 import Box from "@mui/material/Box";
 import { motion } from "framer-motion";
-import { products } from "@/lib/mock-data";
+import { useLiveProducts } from "@/lib/use-live-products";
 import SectionHeader from "./SectionHeader";
 import ProductCard from "./ProductCard";
 
 export default function RecommendedSection() {
+  const { products } = useLiveProducts();
   return (
     <Box
       component={motion.div}

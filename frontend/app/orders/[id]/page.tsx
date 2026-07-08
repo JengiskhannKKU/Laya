@@ -19,6 +19,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useAppModal } from "@/components/providers/AppModalProvider";
 import { mockOrders, Order, OrderStatus } from "@/lib/mock-data";
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -44,6 +45,7 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
+  const { showAlert } = useAppModal();
   const orderId = params?.id as string;
 
   const [loading, setLoading] = useState(true);
@@ -179,7 +181,7 @@ export default function OrderDetailPage() {
                 <Box sx={{ textAlign: "right" }}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>หมายเลขติดตามพัสดุ</Typography>
                   <Typography
-                    onClick={() => alert(`กำลังนำคุณไปยังเว็บไซต์ ${order.courierName} เพื่อติดตามหมายเลข ${order.trackingNumber}`)}
+                    onClick={() => showAlert({ title: "ติดตามพัสดุ", message: `กำลังนำคุณไปยังเว็บไซต์ ${order.courierName} เพื่อติดตามหมายเลข ${order.trackingNumber}` })}
                     sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#0066CC", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
                   >
                     {order.trackingNumber}
@@ -267,18 +269,18 @@ export default function OrderDetailPage() {
               variant="outlined"
               fullWidth
               startIcon={<ChatBubbleOutlineRoundedIcon />}
-              onClick={() => alert("ระบบแชทเปิดใน LAYA Messenger")}
+              onClick={() => showAlert({ title: "ติดต่อช่างทอผู้ขาย", message: "ระบบแชทเปิดใน LAYA Messenger" })}
               sx={{ py: 1.2, borderRadius: "12px", borderColor: "#E5DFD6", color: "#1B2A4A", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}
             >
               ติดต่อช่างทอผู้ขาย
             </Button>
-            
+
             {order.status === "pending" || order.status === "confirmed" ? (
-              <Button onClick={() => alert("ระบบกำลังประมวลผลการขอยกเลิก...")} sx={{ py: 1.2, color: "#D32F2F", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
+              <Button onClick={() => showAlert({ title: "ขอยกเลิกคำสั่งซื้อ", message: "ระบบกำลังประมวลผลการขอยกเลิก ทีมงานจะติดต่อกลับโดยเร็วที่สุด", tone: "warning" })} sx={{ py: 1.2, color: "#D32F2F", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
                 ขอยกเลิกคำสั่งซื้อ
               </Button>
              ) : order.status === "delivered" ? (
-              <Button onClick={() => alert("การรส่งคืนเปิดเฉพาะกรณีมีปัญหาคุณภาพสินค้า")} sx={{ py: 1.2, color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
+              <Button onClick={() => showAlert({ title: "ขอคืนสินค้า/ขอคืนเงิน", message: "การส่งคืนเปิดเฉพาะกรณีมีปัญหาคุณภาพสินค้า ภายใน 7 วันหลังได้รับสินค้า" })} sx={{ py: 1.2, color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
                 ขอคืนสินค้า/ขอคืนเงิน (ภายใน 7 วัน)
               </Button>
             ) : null}

@@ -33,7 +33,7 @@ interface UIOrder {
   amount: number;
   status: string; // pending | confirmed | in_progress | ready | shipped | delivered | cancelled
   date: string;
-  kind: "cutting" | "weaving" | "mock";
+  kind: "cutting" | "weaving" | "product" | "mock";
   trackingNo?: string;
 }
 
@@ -56,12 +56,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: "warning" | "info" |
 };
 
 /** action ถัดไปของแต่ละสถานะ → สถานะ API ที่จะส่ง */
-const NEXT_ACTION: Record<string, { label: string; cutting: string; weaving: string } | undefined> = {
-  pending: { label: "ยืนยันออเดอร์", cutting: "confirmed", weaving: "confirmed" },
-  confirmed: { label: "เริ่มผลิต", cutting: "in_progress", weaving: "weaving" },
-  in_progress: { label: "ผลิตเสร็จแล้ว", cutting: "ready", weaving: "ready" },
-  ready: { label: "ส่งพัสดุ", cutting: "shipped", weaving: "shipped" },
-  shipped: { label: "จัดส่งสำเร็จ", cutting: "delivered", weaving: "delivered" },
+const NEXT_ACTION: Record<string, { label: string; cutting: string; weaving: string; product: string } | undefined> = {
+  pending: { label: "ยืนยันออเดอร์", cutting: "confirmed", weaving: "confirmed", product: "confirmed" },
+  confirmed: { label: "เริ่มเตรียมสินค้า", cutting: "in_progress", weaving: "weaving", product: "in_progress" },
+  in_progress: { label: "เตรียมเสร็จแล้ว", cutting: "ready", weaving: "ready", product: "ready" },
+  ready: { label: "ส่งพัสดุ", cutting: "shipped", weaving: "shipped", product: "shipped" },
+  shipped: { label: "จัดส่งสำเร็จ", cutting: "delivered", weaving: "delivered", product: "delivered" },
 };
 
 const TABS = ["ทั้งหมด", "รอยืนยัน", "กำลังผลิต", "จัดส่งแล้ว", "สำเร็จ"];
@@ -102,14 +102,16 @@ export default function MerchantOrdersPage() {
     }
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [cutRes, weaveRes] = await Promise.all([
+      const [cutRes, weaveRes, productRes] = await Promise.all([
         fetch(`${API_BASE}/api/orders`, { headers }),
         fetch(`${API_BASE}/api/weaving-orders`, { headers }),
+        fetch(`${API_BASE}/api/product-orders`, { headers }),
       ]);
-      if (!cutRes.ok || !weaveRes.ok) throw new Error("fetch failed");
+      if (!cutRes.ok || !weaveRes.ok || !productRes.ok) throw new Error("fetch failed");
 
       const cutting = (await cutRes.json()) as Record<string, unknown>[];
       const weaving = (await weaveRes.json()) as Record<string, unknown>[];
+      const productOrders = (await productRes.json()) as Record<string, unknown>[];
 
       const mapped: UIOrder[] = [
         ...cutting.map((o): UIOrder => ({
@@ -134,6 +136,21 @@ export default function MerchantOrdersPage() {
           date: new Date(String(o.createdAt)).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }),
           kind: "weaving",
         })),
+        ...productOrders.map((o): UIOrder => {
+          const items = (o.items as { productName: string; quantity: number }[]) ?? [];
+          const addr = o.shippingAddress as { recipientName?: string } | undefined;
+          return {
+            id: String(o.id),
+            displayId: `PRD-${String(o.id).slice(0, 8).toUpperCase()}`,
+            customer: addr?.recipientName ?? "-",
+            product: items.map((it) => `${it.productName} ×${it.quantity}`).join(", ") || "สินค้าพร้อมขาย",
+            meters: null,
+            amount: Number(o.total ?? 0),
+            status: toUIStatus(String(o.status)),
+            date: new Date(String(o.createdAt)).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }),
+            kind: "product",
+          };
+        }),
       ].sort((a, b) => (a.date < b.date ? 1 : -1));
 
       setOrders(mapped);
@@ -166,9 +183,10 @@ export default function MerchantOrdersPage() {
     setSubmitting(true);
     setActionError("");
     try {
-      const isConfirm = selected.status === "pending";
-      const base = selected.kind === "weaving" ? "weaving-orders" : "orders";
-      const nextStatus = selected.kind === "weaving" ? action.weaving : action.cutting;
+      // product-orders ไม่มี endpoint /confirm แยก — ใช้ PATCH /status เสมอ
+      const isConfirm = selected.status === "pending" && selected.kind !== "product";
+      const base = selected.kind === "weaving" ? "weaving-orders" : selected.kind === "product" ? "product-orders" : "orders";
+      const nextStatus = selected.kind === "weaving" ? action.weaving : selected.kind === "product" ? action.product : action.cutting;
       const note = nextStatus === "shipped" && trackingNo ? `เลขพัสดุ: ${trackingNo}` : undefined;
 
       const res = await fetch(
@@ -256,6 +274,7 @@ export default function MerchantOrdersPage() {
                       <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.78rem" }}>
                         {order.product}{order.meters ? ` · ${order.meters} เมตร` : ""} · {order.date}
                         {order.kind === "weaving" && " · สั่งทอ"}
+                        {order.kind === "product" && " · สินค้าพร้อมขาย"}
                       </Typography>
                     </Box>
                     <Chip label={cfg.label} color={cfg.color} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem" }} />

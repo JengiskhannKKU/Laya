@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { products } from "@/lib/mock-data";
+import { products, type Product } from "@/lib/mock-data";
 import ProductDetailView from "@/components/product/ProductDetailView";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { notFound } from "next/navigation";
@@ -9,6 +9,18 @@ import {
   siteName,
   truncateDescription,
 } from "@/lib/seo";
+
+import { fetchLiveProduct } from "@/lib/live-products";
+
+async function findProduct(id: string): Promise<Product | undefined> {
+  try {
+    const live = await fetchLiveProduct(id, { next: { revalidate: 60 } });
+    if (live) return live;
+  } catch {
+    // backend ไม่พร้อม — fallback เป็น mock ต่อไป
+  }
+  return products.find((p) => p.id === id);
+}
 
 export function generateStaticParams() {
   return products.map((p) => ({ id: p.id }));
@@ -20,7 +32,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const product = products.find((p) => p.id === id);
+  const product = await findProduct(id);
 
   if (!product) {
     return createPageMetadata({
@@ -47,7 +59,7 @@ export default async function ProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = products.find((p) => p.id === id);
+  const product = await findProduct(id);
 
   if (!product) {
     notFound();

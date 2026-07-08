@@ -6,9 +6,11 @@ import CategorySection from "@/components/home/CategorySection";
 import RecommendedSection from "@/components/home/RecommendedSection";
 import EditorialSection from "@/components/home/EditorialSection";
 import CommunitiesSection from "@/components/home/CommunitiesSection";
-import NewArrivalsSection from "@/components/home/NewArrivalsSection";
 import InspirationSection from "@/components/home/InspirationSection";
-import ExploreSection from "@/components/home/ExploreSection";
+
+// หมายเหตุ: ตัด NewArrivalsSection + ExploreSection ออกจากหน้าแรก (ธีม declutter)
+// ทั้งสองซ้ำซ้อนกับสิ่งที่มีอยู่แล้ว: NewArrivals โชว์กริดสินค้าเดิมซ้ำกับ Recommended,
+// Explore เป็น mini-browse เต็มรูปแบบที่ซ้ำกับหน้า /search และ /category — ไฟล์ยังอยู่เผื่อใช้ที่อื่น
 
 export default function HomePage() {
   return (
@@ -19,10 +21,8 @@ export default function HomePage() {
       <RecommendedSection />
       <EditorialSection />
       <CommunitiesSection />
-      <NewArrivalsSection />
       <MissionSection />
       <InspirationSection />
-      <ExploreSection />
     </MobileLayout>
   );
 }

@@ -1,6 +1,10 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect } from "react";
+/**
+ * รายการโปรด — ดึงจริงจาก /api/wishlist (แทน mockFavoriteIds เดิมทั้งหมด)
+ */
+
+import { useState, useEffect, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -21,34 +25,62 @@ import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded
 
 import MobileLayout from "@/components/layout/MobileLayout";
 import { useAuth } from "@/lib/auth-context";
-import { products, Product } from "@/lib/mock-data";
+import { authFetch } from "@/lib/api-auth";
+import { useWishlist } from "@/lib/wishlist-context";
+import { useCartStore } from "@/lib/cart-store";
+import { mapLiveProduct, type LiveProduct } from "@/lib/live-products";
+import type { Product } from "@/lib/mock-data";
 
-// Mock: first 5 products as favorites
-const mockFavoriteIds = ["1", "3", "teenager1", "bag2", "m1"];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 export default function WishlistPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading, session } = useAuth();
+  const { toggle } = useWishlist();
+  const addItem = useCartStore((s) => s.addItem);
   const [loading, setLoading] = useState(true);
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   const [toastMsg, setToastMsg] = useState("");
 
   useEffect(() => {
-    if (!user) {
-      router.push("/auth/login");
-      return;
-    }
-    // Simulate fetching favorites
-    setTimeout(() => {
-      const favs = products.filter((p) => mockFavoriteIds.includes(p.id));
-      setFavoriteProducts(favs);
+    if (authLoading) return; // รอ auth โหลดเสร็จก่อน — กัน redirect ทั้งที่ล็อกอินอยู่
+    if (!user) { router.push("/auth/login"); return; }
+  }, [authLoading, user, router]);
+
+  const fetchWishlist = useCallback(async () => {
+    if (!session?.access_token) return;
+    setLoading(true);
+    try {
+      const res = await authFetch(`${API_BASE}/api/wishlist`);
+      const data = (await res.json()) as LiveProduct[];
+      if (!res.ok) throw new Error();
+      setFavoriteProducts(data.map(mapLiveProduct));
+    } catch {
+      setFavoriteProducts([]);
+    } finally {
       setLoading(false);
-    }, 600);
-  }, [user, router]);
+    }
+  }, [session?.access_token]);
+
+  useEffect(() => { fetchWishlist(); }, [fetchWishlist]);
 
   const removeFromWishlist = (id: string) => {
     setFavoriteProducts((prev) => prev.filter((p) => p.id !== id));
+    toggle(id);
     setToastMsg("นำออกจากรายการโปรดแล้ว");
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      image: product.images[0] ?? null,
+      price: product.price,
+      priceUnit: product.priceUnit,
+      shopName: product.community,
+      stock: product.availableLength,
+    });
+    setToastMsg("เพิ่มลงตะกร้าแล้ว");
   };
 
   const handleShare = () => {
@@ -64,7 +96,7 @@ export default function WishlistPage() {
     }
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   return (
     <MobileLayout>
@@ -188,7 +220,7 @@ export default function WishlistPage() {
                         size="small"
                         variant="outlined"
                         startIcon={<ShoppingCartRoundedIcon sx={{ fontSize: 14 }} />}
-                        onClick={() => setToastMsg("เพิ่มลงตะกร้าแล้ว (Mock)")}
+                        onClick={() => handleAddToCart(product)}
                         sx={{
                           mt: 1, borderRadius: "8px", fontSize: "0.75rem", fontWeight: 600,
                           borderColor: "#1B2A4A", color: "#1B2A4A", textTransform: "none",

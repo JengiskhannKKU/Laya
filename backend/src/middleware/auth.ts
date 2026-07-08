@@ -1,6 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { query } from "../db";
+
+// Supabase โปรเจกต์ใหม่เซ็น access token ด้วย ES256 (asymmetric) — ต้อง verify ผ่าน JWKS
+// (HS256 shared secret ใช้ได้เฉพาะโปรเจกต์ legacy) — createRemoteJWKSet cache key ให้อัตโนมัติ
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const supabaseJwks = SUPABASE_URL
+  ? createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`))
+  : null;
 
 export interface JwtPayload {
   userId: string;
@@ -58,7 +66,7 @@ async function resolveUserPayload(supabaseUid: string, email: string): Promise<J
   };
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) {
     res.status(401).json({ error: "Unauthorized" });
@@ -66,32 +74,45 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   }
   const token = header.slice(7);
 
-  const supabaseSecret = process.env.SUPABASE_JWT_SECRET;
-
-  if (supabaseSecret) {
-    let claims: SupabaseClaims | null = null;
+  // 1) Supabase asymmetric (ES256/RS256) ผ่าน JWKS — โปรเจกต์ปัจจุบันใช้แบบนี้
+  if (supabaseJwks) {
     try {
-      claims = jwt.verify(token, supabaseSecret) as SupabaseClaims;
+      const { payload } = await jwtVerify(token, supabaseJwks);
+      const sub = String(payload.sub ?? "");
+      const email = String((payload as { email?: string }).email ?? "");
+      if (sub) {
+        try {
+          req.user = await resolveUserPayload(sub, email);
+        } catch {
+          // DB error — ปล่อยผ่านด้วย payload ขั้นต่ำ
+          req.user = { userId: sub, email, role: "customer" };
+        }
+        next();
+        return;
+      }
     } catch {
-      // Not a Supabase JWT — fall through
-    }
-
-    if (claims) {
-      resolveUserPayload(claims.sub, claims.email ?? "")
-        .then((payload) => {
-          req.user = payload;
-          next();
-        })
-        .catch(() => {
-          // DB error — still let request through with minimal payload
-          req.user = { userId: claims!.sub, email: claims!.email ?? "", role: "customer" };
-          next();
-        });
-      return;
+      // ไม่ใช่ token ที่เซ็นด้วย key ของโปรเจกต์ — ลองวิธีถัดไป
     }
   }
 
-  // Legacy / dev JWT (e.g. loginAsRole mock, or no SUPABASE_JWT_SECRET set)
+  // 2) Supabase legacy HS256 shared secret
+  const supabaseSecret = process.env.SUPABASE_JWT_SECRET;
+  if (supabaseSecret) {
+    try {
+      const claims = jwt.verify(token, supabaseSecret) as SupabaseClaims;
+      try {
+        req.user = await resolveUserPayload(claims.sub, claims.email ?? "");
+      } catch {
+        req.user = { userId: claims.sub, email: claims.email ?? "", role: "customer" };
+      }
+      next();
+      return;
+    } catch {
+      // fall through
+    }
+  }
+
+  // 3) Legacy / dev JWT (สำหรับสคริปต์ทดสอบ)
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     req.user = payload;

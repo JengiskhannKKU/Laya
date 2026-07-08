@@ -1,10 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import MobileLayout from "@/components/layout/MobileLayout";
-import { ArrowLeft, X, Search, ChevronRight, ShoppingBag, Users, BookOpen } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { products, weavers, Product, Weaver } from "@/lib/mock-data";
+import { X, ChevronRight, ShoppingBag, Users, BookOpen } from "lucide-react";
+import { products, weavers } from "@/lib/mock-data";
 
 // ─────────────────────────────────────────────
 // Data: 76 provinces + fabric metadata
@@ -237,221 +235,6 @@ function ImageLightbox({ src, alt, onClose }: { src: string; alt: string; onClos
 }
 
 // ─────────────────────────────────────────────
-// Province Detail Bottom Sheet
-// ─────────────────────────────────────────────
-function ProvinceSheet({ province, onClose }: { province: Province; onClose: () => void }) {
-  const region = REGIONS[province.region];
-  const [c1, c2, c3] = province.colors;
-
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [storyExpanded, setStoryExpanded] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [dragStartY, setDragStartY] = useState<number | null>(null);
-
-  // 🔒 Lock body overflow เท่านั้น (ไม่ lock touchAction เพราะจะบล็อก scroll ใน sheet)
-  useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    const prevPosition = document.body.style.position;
-    document.body.style.overflow = "hidden";
-    // iOS Safari: ต้อง fixed body ด้วย
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.position = prevPosition;
-      document.body.style.width = "";
-    };
-  }, []);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setDragStartY(e.touches[0].clientY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (dragStartY === null) return;
-    const deltaY = e.touches[0].clientY - dragStartY;
-    if (Math.abs(deltaY) > 10) e.preventDefault();
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (dragStartY === null) return;
-    const deltaY = e.changedTouches[0].clientY - dragStartY;
-    const threshold = 80;
-    if (deltaY < -threshold) {
-      setIsExpanded(true);
-    } else if (deltaY > threshold) {
-      if (isExpanded) setIsExpanded(false);
-      else onClose();
-    }
-    setDragStartY(null);
-  };
-
-  return (
-    <>
-      {lightboxOpen && province.image && (
-        <ImageLightbox
-          src={province.image}
-          alt={`ผ้า${province.fabric} จ.${province.name}`}
-          onClose={() => setLightboxOpen(false)}
-        />
-      )}
-
-      <div
-        className="fixed inset-0 flex items-end"
-        onClick={onClose}
-        onPointerDown={(e) => e.stopPropagation()}
-        onPointerUp={(e) => e.stopPropagation()}
-        style={{
-          background: "rgba(27,42,74,0.5)",
-          backdropFilter: "blur(2px)",
-          // ต้องสูงกว่า BottomNav (zIndex: 1200)
-          zIndex: 1300,
-        }}
-      >
-        <div
-          className="w-full rounded-t-3xl animate-[slideUp_0.3s_ease] transition-all duration-300"
-          style={{
-            background: "#FAF6F0",
-            maxHeight: isExpanded ? "96dvh" : "75dvh",
-            overflowY: "auto",
-            touchAction: "pan-y",
-            overscrollBehavior: "contain",
-            WebkitOverflowScrolling: "touch",
-            paddingLeft: "env(safe-area-inset-left, 0px)",
-            paddingRight: "env(safe-area-inset-right, 0px)",
-            // 80px = BottomNav height, 24px extra breathing room
-            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 104px)",
-          } as React.CSSProperties}
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          {/* Drag handle — พื้นที่กดกว้างขึ้น */}
-          <div
-            className="touch-none flex justify-center pt-4 pb-2 cursor-grab"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            <div className="w-10 h-1 rounded-full" style={{ background: "#E5DFD6" }} />
-          </div>
-
-          <div className="px-5">
-            {/* Fabric image — click to zoom */}
-            <button
-              className="w-full rounded-2xl mb-4 overflow-hidden relative group focus:outline-none"
-              style={{
-                height: "clamp(120px, 30vw, 160px)",
-                backgroundImage: province.image ? `url(${province.image})` : `linear-gradient(135deg, ${c1}, ${c2})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                display: "block",
-              }}
-              onClick={() => province.image && setLightboxOpen(true)}
-              aria-label="ขยายภาพ"
-            >
-              {province.image && (
-                <div
-                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-200"
-                  style={{ background: "rgba(0,0,0,0.32)" }}
-                >
-                  <div
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold"
-                    style={{ background: "rgba(255,255,255,0.18)", color: "#fff", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.25)" }}
-                  >
-                    🔍 <span>ขยายภาพ</span>
-                  </div>
-                </div>
-              )}
-            </button>
-
-            {/* Province name + close */}
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1 min-w-0 pr-3">
-                <h2 className="text-xl font-bold leading-tight" style={{ color: "#1B2A4A", fontFamily: "var(--font-kanit)" }}>
-                  {province.name}
-                </h2>
-                <span
-                  className="inline-block text-xs px-2 py-0.5 rounded-full font-medium mt-1"
-                  style={{ background: region.color + "20", color: region.color }}
-                >
-                  {region.label}
-                </span>
-              </div>
-              {/* ปุ่มปิด 44px touch target */}
-              <button
-                onClick={onClose}
-                className="flex-shrink-0 flex items-center justify-center rounded-full"
-                style={{ width: 44, height: 44, background: "#F0EBE3" }}
-              >
-                <X size={18} color="#1B2A4A" />
-              </button>
-            </div>
-
-            {/* Fabric name */}
-            <div className="p-3.5 rounded-2xl mb-1" style={{ background: "#F0EBE3" }}>
-              <p className="text-[11px] font-semibold mb-0.5 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>ลายผ้าเอกลักษณ์ประจำจังหวัด</p>
-              <p className="text-sm font-bold leading-snug" style={{ color: "#1B2A4A" }}>{province.fabric}</p>
-            </div>
-          </div>
-
-          {/* Story section with read-more */}
-          {province.story && (
-            <div className="mt-3 mx-5 rounded-2xl overflow-hidden" style={{ background: "#F0EBE3" }}>
-              <div className="p-4">
-                <p className="text-[11px] font-semibold mb-2 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>เรื่องราว</p>
-                <p className="text-sm leading-[1.75]" style={{ color: "#374151" }}>
-                  {storyExpanded
-                    ? province.story.history
-                    : province.story.history.slice(0, 100) + (province.story.history.length > 100 ? "..." : "")}
-                </p>
-              </div>
-
-              {/* Expanded sections */}
-              {storyExpanded && (
-                <div className="border-t space-y-0" style={{ borderColor: "#E5DFD6" }}>
-                  <div className="px-4 pt-4 pb-3">
-                    <p className="text-[11px] font-semibold mb-1.5 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>การจดทะเบียน</p>
-                    <p className="text-sm leading-[1.75]" style={{ color: "#374151" }}>{province.story.registration}</p>
-                  </div>
-                  <div className="border-t px-4 pt-4 pb-3" style={{ borderColor: "#E5DFD6" }}>
-                    <p className="text-[11px] font-semibold mb-1.5 uppercase tracking-wide" style={{ color: "#9CA3AF" }}>กรรมวิธีการทอ</p>
-                    <p className="text-sm leading-[1.75]" style={{ color: "#374151" }}>{province.story.weaving}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Read more / less — 48px touch target */}
-              {(province.story.history.length > 100 || storyExpanded) && (
-                <button
-                  className="w-full flex items-center justify-center gap-2 active:bg-[#E8E0D5] transition-colors"
-                  style={{ borderTop: "1px solid #E5DFD6", minHeight: 48 }}
-                  onClick={() => setStoryExpanded(!storyExpanded)}
-                >
-                  <span className="text-sm font-semibold" style={{ color: "#8B4513" }}>
-                    {storyExpanded ? "ย่อเรื่องราว" : "อ่านเพิ่มเติม"}
-                  </span>
-                  <span
-                    style={{
-                      color: "#8B4513",
-                      display: "inline-block",
-                      fontSize: 14,
-                      transition: "transform 0.2s",
-                      transform: storyExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                    }}
-                  >
-                    ▾
-                  </span>
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ─────────────────────────────────────────────
 // Province Card (list view)
 // ─────────────────────────────────────────────
 function ProvinceCard({ province, onClick }: { province: Province; onClick: () => void }) {
@@ -475,31 +258,11 @@ function ProvinceCard({ province, onClick }: { province: Province; onClick: () =
 }
 
 // ─────────────────────────────────────────────
-// Region Filter Chips
-// ─────────────────────────────────────────────
-function RegionFilter({ selected, onChange }: { selected: string; onChange: (r: string) => void }) {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-      <button onClick={() => onChange("all")}
-        className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-        style={{ background: selected === "all" ? "#1B2A4A" : "#F0EBE3", color: selected === "all" ? "#C5A55A" : "#6B7280" }}>
-        ทั้งหมด 76 จ.
-      </button>
-      {Object.entries(REGIONS).map(([key, val]) => (
-        <button key={key} onClick={() => onChange(key)}
-          className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors whitespace-nowrap"
-          style={{ background: selected === key ? val.color : "#F0EBE3", color: selected === key ? "#fff" : "#6B7280" }}>
-          {val.label.replace("ภาคตะวันออกเฉียงเหนือ", "อีสาน").replace("ภาค", "")}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
 // Interactive GeoJSON Thailand Map
 // ─────────────────────────────────────────────
-const GEOJSON_URL = "https://raw.githubusercontent.com/apisit/thailand.json/master/thailandWithName.json";
+// เดิม fetch จาก raw.githubusercontent.com ตรงๆ — ช้า/พังในบางเครือข่าย (external dependency ไม่มี fallback)
+// เก็บไฟล์ไว้ในเครื่องเองแทน โหลดเร็วกว่าและไม่พังเวลาเน็ตหลุด/GitHub ช้า
+const GEOJSON_URL = "/thai-geo/thailand-provinces.geojson";
 
 interface GeoFeature {
   type: string;
@@ -519,6 +282,8 @@ function ThailandGeoMap({
   const [geoData, setGeoData] = useState<any>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   // Zoom & pan state
   const [zoom, setZoom] = useState(1);
@@ -528,11 +293,15 @@ function ThailandGeoMap({
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(false);
     fetch(GEOJSON_URL)
-      .then(r => r.json())
-      .then(d => { setGeoData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(d => { if (cancelled) return; setGeoData(d); setLoading(false); })
+      .catch(() => { if (cancelled) return; setLoading(false); setLoadError(true); });
+    return () => { cancelled = true; };
+  }, [retryKey]);
 
   const cx = 101.5, cy = 13.2, scale = 56;
   const baseW = 520, baseH = 700;
@@ -644,8 +413,24 @@ function ThailandGeoMap({
     );
   }
 
+  if (loadError || !geoData) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="text-center px-6">
+          <p className="text-sm font-medium mb-2" style={{ color: "#6B4423" }}>โหลดแผนที่ไม่สำเร็จ</p>
+          <p className="text-xs mb-4" style={{ color: "#9CA3AF" }}>ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง</p>
+          <button onClick={() => setRetryKey(k => k + 1)}
+            className="px-4 py-2 rounded-xl text-xs font-semibold"
+            style={{ background: "#1B2A4A", color: "#C5A55A" }}>
+            ลองใหม่
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative" style={{ background: "#F0EBE3", borderRadius: 16, overflow: "hidden" }}>
+    <div className="relative h-full flex flex-col" style={{ background: "#F0EBE3", borderRadius: 16, overflow: "hidden" }}>
       {/* Zoom Controls */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1.5">
         <button onClick={handleZoomIn}
@@ -677,7 +462,8 @@ function ThailandGeoMap({
 
       <svg
         viewBox={viewBox}
-        className="w-full"
+        preserveAspectRatio="xMidYMid meet"
+        className="w-full flex-1 min-h-0"
         style={{ display: "block", cursor: isDragging ? "grabbing" : "grab", touchAction: "none" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -737,7 +523,7 @@ function ThailandGeoMap({
       )}
 
       {/* Legend */}
-      <div className="p-3 flex flex-wrap gap-2 justify-center border-t" style={{ borderColor: "#E5DFD6" }}>
+      <div className="p-2 flex-shrink-0 flex flex-wrap gap-2 justify-center border-t" style={{ borderColor: "#E5DFD6" }}>
         {Object.entries(REGIONS).map(([key, val]) => (
           <div key={key} className="flex items-center gap-1">
             <div className="w-2.5 h-2.5 rounded-full" style={{ background: val.color }} />
@@ -873,10 +659,10 @@ const MOCK_ACTIVITIES = [
 ];
 
 // ─────────────────────────────────────────────
-// Main Page
+// Embeddable section — แผนที่ลายผ้าประจำจังหวัดทั่วประเทศ
+// ใช้เป็นหนึ่งในเรื่องราวของผ้าในหน้า /community/heritage (เดิมเคยเป็นหน้า /map แยกต่างหาก)
 // ─────────────────────────────────────────────
-export default function MapPage() {
-  const router = useRouter();
+export default function ThailandFabricMap() {
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
   const [regionFilter, setRegionFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -909,20 +695,17 @@ export default function MapPage() {
   }, []);
 
   return (
-    <MobileLayout>
-      <div className="w-full h-full md:h-[calc(100vh-64px)] flex flex-col md:flex-row overflow-hidden relative">
-        
+    <div className="relative rounded-[24px] overflow-hidden border" style={{ borderColor: "#E5DFD6" }}>
+      <div className="w-full flex flex-col md:flex-row overflow-hidden relative" style={{ height: "min(78vh, 640px)" }}>
+
         {/* LEFT COLUMN: Map & Filters */}
         <div className="flex-1 flex flex-col h-full relative z-0">
           {/* Header */}
           <div className="flex flex-col gap-3 px-4 pt-4 pb-3 flex-shrink-0 bg-[#FAF6F0] z-10 relative">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.back()} className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-white shadow-sm hover:scale-105 transition-transform">
-                <ArrowLeft size={18} color="#1B2A4A" />
-              </button>
               <div className="flex-1">
-                <h1 className="text-xl font-bold text-[#1B2A4A]">Discovery Map</h1>
-                <p className="text-[10px] text-[#6B7280]">Interactive Commerce & AI Matching</p>
+                <h1 className="text-xl font-bold text-[#1B2A4A]">แผนที่ลายผ้าทั่วประเทศ</h1>
+                <p className="text-[10px] text-[#6B7280]">ลายผ้าเอกลักษณ์ประจำจังหวัด 77 จังหวัด</p>
               </div>
               <div className="flex rounded-xl overflow-hidden border border-[#E5DFD6]">
                 {(["map","list"] as const).map((v) => (
@@ -959,11 +742,11 @@ export default function MapPage() {
 
           {/* Map Container */}
           {view === "map" && (
-            <div className="flex-1 relative bg-[#F0EBE3] overflow-hidden md:rounded-tr-2xl">
-               {/* Wrapper so Map scales appropriately */}
-               <div className="absolute inset-0">
+            <div className="flex-1 relative bg-[#F0EBE3] overflow-hidden md:rounded-tr-2xl flex items-center justify-center">
+               {/* Wrapper แคบพอดีสัดส่วนแผนที่ (520:700) กันไม่ให้ preserveAspectRatio "meet" เหลือขอบว่างข้างเยอะจนดูเหมือนซูมออก */}
+               <div className="relative h-full" style={{ aspectRatio: "520 / 700", maxWidth: "100%" }}>
                  <ThailandGeoMap regionFilter={regionFilter} onSelect={setSelectedProvince} />
-                 
+
                  {/* Map Filter Overrides for AI matching dimming */}
                  {aiFilter && (
                    <div className="pointer-events-none absolute inset-0 bg-[#F0EBE3]/40 z-[5] animate-[fadeIn_0.3s_ease]" />
@@ -1031,6 +814,6 @@ export default function MapPage() {
         /* ป้องกัน overscroll ตอน sheet เปิด */
         body:has(.province-sheet-open) { overflow: hidden; touch-action: none; }
       `}</style>
-    </MobileLayout>
+    </div>
   );
 }

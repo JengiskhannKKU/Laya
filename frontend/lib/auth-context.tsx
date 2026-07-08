@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
@@ -59,21 +59,23 @@ async function apiFetch(path: string, token: string | null, options?: RequestIni
   return data;
 }
 
-/** Map Supabase + public.users profile into our User shape */
+/**
+ * Map GET /api/auth/me response into our User shape.
+ * backend/src/routes/auth.ts ส่ง camelCase มาแล้วพร้อมคำนวณ role ให้เสร็จ
+ * (เดิมโค้ดนี้อ่าน profile.shop_id/avatar_url/display_name แบบ snake_case ที่ไม่มีจริง
+ * ทำให้ merchant ทุกคนถูกจัดเป็น "customer" เสมอ — แก้ให้ตรงกับ response จริง)
+ */
 function buildUser(supabaseUser: { id: string; email?: string }, profile: Record<string, unknown>): User {
-  const role: UserRole =
-    profile.role === "admin" ? "admin"
-    : profile.shop_id ? "merchant"
-    : "customer";
+  const role = (profile.role as UserRole) ?? "customer";
 
   return {
     id: supabaseUser.id,
     email: supabaseUser.email ?? "",
-    name: (profile.display_name as string) ?? supabaseUser.email?.split("@")[0] ?? "User",
+    name: (profile.name as string) ?? supabaseUser.email?.split("@")[0] ?? "User",
     role,
-    avatar: (profile.avatar_url as string) ?? undefined,
-    shopId: (profile.shop_id as string) ?? undefined,
-    shopStatus: (profile.shop_status as string) ?? undefined,
+    avatar: (profile.avatar as string) ?? undefined,
+    shopId: (profile.shopId as string) ?? undefined,
+    shopStatus: (profile.shopStatus as string) ?? undefined,
   };
 }
 
@@ -82,6 +84,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  // กัน onAuthStateChange ยิงซ้ำ (sync+fetchProfile) เมื่อ access_token เดิม —
+  // Supabase JS ยิง event ซ้ำได้จากหลายจุด (visibility change, หลาย tab, ฯลฯ)
+  // ถ้าไม่กันไว้ sync/me จะถูกเรียกรัวไม่จบเป็นร้อยครั้งต่อวินาที
+  const processedTokenRef = useRef<string | null>(null);
 
   /** Fetch our custom profile from backend /api/auth/me */
   const fetchProfile = async (accessToken: string, supabaseUser: { id: string; email?: string }) => {
@@ -104,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       if (s?.user) {
+        processedTokenRef.current = s.access_token;
         fetchProfile(s.access_token, s.user).finally(() => setLoading(false));
       } else {
         setLoading(false);
@@ -114,6 +121,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       if (s?.user) {
+        // token เดิมที่เพิ่งประมวลผลไปแล้ว — ข้าม ไม่ต้องยิง sync/me ซ้ำ
+        if (processedTokenRef.current === s.access_token) return;
+        processedTokenRef.current = s.access_token;
+
         if (event === "SIGNED_IN") {
           // Upsert into public.users on every sign-in (idempotent).
           // Covers OAuth users in case the /auth/callback sync failed.
@@ -131,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fetchProfile(s.access_token, s.user);
         }
       } else {
+        processedTokenRef.current = null;
         setUser(null);
       }
     });
