@@ -578,3 +578,46 @@
 - ราคายังคำนวณถูกต้อง (3,890 บาท ตรงกับก่อนแก้) ทั้งสองจอ ไม่มี regression ต่อ business logic
 
 **ค้าง**: รอผู้ใช้ generate ภาพจริง 24 รูปตาม `image-prompts.md` แล้ววางไฟล์ที่ `frontend/public/studio/thai-dress/` — โค้ด map path ให้อัตโนมัติแล้ว ไม่ต้องแก้อะไรเพิ่มเมื่อไฟล์มาถึง (แค่ชื่อไฟล์ต้องตรงตามตารางใน .md)
+
+---
+
+## 2026-07-10 (รอบสาม) — จัดลำดับ `/tailor/with-fabric` ให้ตรงกับ flow_1.png + แก้บั๊กจริงที่เจอระหว่างทาง
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้แนบ `flow_1.png` (ผังงาน Flow 1 "สั่งตัดด้วยผ้าที่มีอยู่แล้ว" 15 ขั้นตอนเต็ม) แล้วให้จัดลำดับ `TailorWithFabricFlow` ให้ตรง พร้อมข้อสังเกต 2 จุด: (1) เพิ่มปุ่มข้าม (skip) ที่ขั้นอัปโหลดผ้า เพื่อ debug ขั้นถัดๆ ไปได้เร็วขึ้น (2) ขั้น "ถ่ายรูปตัวเอง/ส่งขนาด" (ข้อ 11 ใน mockup) ต้องมาก่อน "ลองใส่เสมือนจริง" (ข้อ 8) เสมอ — สลับตำแหน่งกันผิดใน mockup เดิม
+
+### เรียงลำดับใหม่ (`TailorWithFabricFlow.tsx`)
+`upload → ai_analysis → select_occasion → choose_shape → measurements → virtual_try_on → order_summary → select_shop → success` — ปรับ `TailorStep` type, `TailorOrderState`, `handleBack`, `getHeaderTitle`, และ JSX ให้ตรงกันทั้งหมด
+
+### "เลือกทรงที่ชอบ" กลับมาใหม่แบบไม่ซ้ำซ้อน (`ChooseShapeStep.tsx` ใหม่)
+ขั้นนี้เคยมี `PatternRecommendationStep` (mock MUI ปลอม) ซึ่งถูกลบไปแล้วเมื่อคุยกันรอบก่อนเพราะซ้ำกับ `/design-clothes` เป๊ะ — รอบนี้ผู้ใช้ขอให้เอาขั้นนี้กลับมาโดย **reuse ของจริงที่เคยลบไปแทน ไม่สร้าง mock ใหม่**: ดึง `catalog.json` จริง + ใช้ `GarmentRenderer`/`resolveLayers` เดียวกับ `/design-clothes` (เท่ากับฟื้นฟังก์ชัน `StepTemplates`/`TemplateCard` ที่ลบออกจาก `ClothingDesigner.tsx` ไปตอนต้น session) พร้อมจุดต่าง: **แทนที่ลายผ้าใน catalog ด้วยรูปผ้าจริงที่ผู้ใช้เพิ่งอัปโหลด** (เฉพาะ layer โหมด mask) ทำให้ได้ "ผ้าของคุณบนทรงที่เลือก" (ข้อ 6-7 ใน flow_1.png) ฟรีโดยไม่ต้องคิดเทคนิคใหม่
+
+### บั๊กจริงที่เจอระหว่างแก้ (ไม่ใช่แค่จัดลำดับ)
+- **`MeasurementsStep.tsx` ไม่มี input ไฟล์จริงเลย** — เดิมเป็นกล่องตกแต่งเฉยๆ ปุ่ม "ส่งให้ร้านค้า" กด `onNext()` ตรงๆ ไม่เก็บรูปอะไรทั้งนั้น ทั้งที่ควรเป็นขั้นถ่ายรูปตัวเอง — แก้ให้มี upload จริง (เทคนิค resize+compress เดียวกับ `UploadFabricStep`) เก็บที่ `orderState.bodyPhoto` ใหม่, ปุ่ม disable จนกว่าจะอัปโหลดจริง
+- **`VirtualTryOnStep.tsx` โชว์ `/images/fabric1.webp`** (รูปผ้าตัวอย่างที่ไม่เกี่ยวอะไรเลย) แทนที่จะเป็นรูปตัวผู้ใช้เอง — คือบั๊กที่ผู้ใช้ชี้มา แก้ให้ใช้ `orderState.bodyPhoto` จริง + สวอตช์ผ้าที่เลือกมุมล่างขวา พร้อม caption บอกตรงๆ ว่า AI compositing เต็มรูปแบบยังไม่เสร็จ (`/api/ai/tryon` ยัง TODO ตาม deflect.md) — ไม่ปั้นภาพลองใส่ปลอม
+- `OrderSummaryStep.tsx` เดิมโชว์ "ชุดไทยจิตรลดา" hardcode เสมอ (แม้ตอนที่ยังมี `PatternRecommendationStep` ก็ไม่เคยโชว์ค่าจริงเพราะ field `name` ไม่เคยถูกเซ็ต) — ตอนนี้โชว์ `orderState.shape?.name` จริงจาก `ChooseShapeStep`
+
+### ปุ่มข้าม (debug) — `UploadFabricStep.tsx`
+เพิ่มปุ่ม "ข้ามขั้นตอนนี้ (สำหรับทดสอบ)" ใต้ปุ่มอัปโหลดหลัก (สไตล์รอง ไม่ใช่ CTA เอก) ใส่รูปผ้าตัวอย่าง `/images/fabric1.webp` ให้แทนของจริงแล้ว `onNext()` — ทดสอบขั้นถัดไปได้เร็วโดยไม่ต้องอัปโหลดรูปจริงทุกรอบ
+
+### ทดสอบแล้วจริงในเบราว์เซอร์ (Playwright+Chromium ชั่วคราวใน scratchpad อีกรอบ, เดินครบทั้ง flow จริงด้วยไฟล์ทดสอบจริง)
+- `tsc --noEmit` ผ่านทั้งโปรเจกต์
+- เดินครบ 9 ขั้น: อัปโหลด(ข้าม) → AI วิเคราะห์(fallback เพราะ backend AI endpoint เดิมยังไม่พร้อม — ปัญหาเดิมไม่เกี่ยวกับรอบนี้) → เลือกโอกาส → **เลือกทรง (เห็นการ์ดจริงจาก catalog จัดกลุ่มตามหมวด, คลิก "ไทยร่วมสมัย" แล้ว render จริงด้วย GarmentRenderer)** → อัปโหลดรูปตัวเอง (ปุ่มติดจนกว่าจะอัปโหลดจริง) → ลองใส่เสมือนจริง (เห็นรูปที่เพิ่งอัปโหลด ไม่ใช่ fabric1.webp เดิม) → สรุปออเดอร์ (ยืนยันด้วย locator ว่ามีข้อความ "ไทยร่วมสมัย" จริง ไม่ใช่ fallback) → เลือกร้าน → สำเร็จ
+- ไม่มี error บล็อกการทำงาน (มีแค่ 500 จาก AI analyze endpoint เดิมที่ fallback อยู่แล้วก่อนหน้านี้)
+
+**ค้าง**: AI analysis endpoint (`localhost:5000/api/ai/analyze-fabric`) ยังไม่พร้อมใช้งานจริง (ปัญหาเดิม ไม่ได้เกิดจากรอบนี้ — มี fallback mock กันพังอยู่แล้ว), `/api/ai/tryon` (compositing ชุดบนรูปจริง) ยังไม่มี implementation ตามที่บันทึกไว้ใน deflect.md เดิม
+
+---
+
+## 2026-07-10 (รอบสี่) — ตัดขั้น "เลือกทรงที่ชอบ" ออกจาก `/tailor/with-fabric`
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ถามว่าทำไมต้องให้เลือกทรงอีกรอบทั้งที่ผู้ใช้อัปโหลด+ให้ AI วิเคราะห์ผ้าของตัวเองไปแล้ว — ยืนยันแล้วว่าให้ตัด `ChooseShapeStep` (เพิ่งสร้างในรอบก่อนหน้าตาม flow_1.png) ออกจาก flow นี้ทั้งหมด
+
+- ลบ `components/tailor/steps/ChooseShapeStep.tsx`
+- `TailorWithFabricFlow.tsx`: ตัด `choose_shape` ออกจาก `TailorStep`/`TailorOrderState`/`handleBack`/`getHeaderTitle`/JSX — `select_occasion` ไปต่อที่ `measurements` ตรงๆ
+- ลำดับใหม่: `upload → ai_analysis → select_occasion → measurements → virtual_try_on → order_summary → select_shop → success`
+- แก้ `OrderSummaryStep.tsx` ที่เพิ่งอ้าง `orderState.shape?.name` ไปตอนก่อน (ตอนนี้ field ไม่มีแล้ว) กลับไปใช้ข้อความ static เหมือนเดิมก่อนรอบที่แล้ว
+- ทดสอบจริงในเบราว์เซอร์: กด "ทำงานราชการ" (เลือกโอกาส) แล้วเด้งตรงไปหน้า "ถ่ายรูปเพื่อวัดสัดส่วน" ทันที ไม่มีหน้าเลือกทรงคั่นอยู่แล้ว, `tsc --noEmit` ผ่าน, ไม่มี reference ค้างของ `ChooseShapeStep`/`choose_shape`/`orderState.shape` เหลือในโค้ดเลย

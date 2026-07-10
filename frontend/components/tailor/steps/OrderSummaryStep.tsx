@@ -18,7 +18,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
           <Box>
             <Typography sx={{ fontSize: '0.8rem', color: '#6B7280' }}>ทรงที่เลือก</Typography>
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 600, color: '#1B2A4A' }}>
-              {orderState.pattern?.name || "ชุดไทยจิตรลดา"}
+              ชุดไทยจิตรลดา
             </Typography>
           </Box>
         </Box>

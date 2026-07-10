@@ -10,35 +10,38 @@ import { AnimatePresence } from "framer-motion";
 import UploadFabricStep from "./steps/UploadFabricStep";
 import AIAnalysisStep from "./steps/AIAnalysisStep";
 import SelectOccasionStep from "./steps/SelectOccasionStep";
-import PatternRecommendationStep from "./steps/PatternRecommendationStep";
+import MeasurementsStep from "./steps/MeasurementsStep";
 import VirtualTryOnStep from "./steps/VirtualTryOnStep";
 import OrderSummaryStep from "./steps/OrderSummaryStep";
 import SelectTailorShopStep from "./steps/SelectTailorShopStep";
-import MeasurementsStep from "./steps/MeasurementsStep";
 import OrderSuccessStep from "./steps/OrderSuccessStep";
 
-export type TailorStep = 
+// ลำดับตาม flow_1.png (Flow 1 — สั่งตัดด้วยผ้าที่มีอยู่แล้ว) ตัด "เลือกทรงที่ชอบ" ออกแล้ว —
+// ผู้ใช้อัปโหลด+ AI วิเคราะห์ผ้าของตัวเองอยู่แล้วในขั้นก่อนหน้า ไม่ต้องเลือกทรงจากแคตตาล็อกซ้ำอีกชั้น:
+// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → เลือกโอกาสใช้งาน → ถ่ายรูปตัวเอง/ส่งขนาด →
+// ลองใส่เสมือนจริง → สรุปออเดอร์ → เลือกร้านตัดเย็บ → สำเร็จ
+// (ถ่ายรูปตัวเองต้องมาก่อนลองใส่เสมือนจริงเสมอ — ใน mockup เดิมข้อ 11 อยู่หลังข้อ 8 ซึ่งสลับกันผิด)
+
+export type TailorStep =
   | "upload"
   | "ai_analysis"
   | "select_occasion"
-  | "pattern_recommendation"
+  | "measurements"
   | "virtual_try_on"
   | "order_summary"
   | "select_shop"
-  | "measurements"
   | "success";
 
 export interface TailorOrderState {
   fabricImage?: string;
   analysisResult?: any;
   occasion?: string;
-  pattern?: any;
+  bodyPhoto?: string;
   shop?: any;
-  measurements?: any;
 }
 
 export default function TailorWithFabricFlow() {
-  const [currentStep, setCurrentStep] = useState<TailorStep>("pattern_recommendation");
+  const [currentStep, setCurrentStep] = useState<TailorStep>("upload");
   const [orderState, setOrderState] = useState<TailorOrderState>({});
 
   const goNext = (step: TailorStep) => setCurrentStep(step);
@@ -46,12 +49,11 @@ export default function TailorWithFabricFlow() {
   const handleBack = () => {
     switch (currentStep) {
       case "ai_analysis": goNext("upload"); break;
-      case "select_occasion": goNext("upload"); break;
-      case "pattern_recommendation": goNext("select_occasion"); break;
-      case "virtual_try_on": goNext("pattern_recommendation"); break;
+      case "select_occasion": goNext("ai_analysis"); break;
+      case "measurements": goNext("select_occasion"); break;
+      case "virtual_try_on": goNext("measurements"); break;
       case "order_summary": goNext("virtual_try_on"); break;
       case "select_shop": goNext("order_summary"); break;
-      case "measurements": goNext("select_shop"); break;
       default: break;
     }
   };
@@ -61,11 +63,10 @@ export default function TailorWithFabricFlow() {
       case "upload": return "อัปโหลดรูปผ้า";
       case "ai_analysis": return "ผลการวิเคราะห์ผ้า";
       case "select_occasion": return "เลือกโอกาสใช้งาน";
-      case "pattern_recommendation": return "เลือกทรง";
+      case "measurements": return "ถ่ายรูปเพื่อวัดสัดส่วน";
       case "virtual_try_on": return "ลองใส่เสมือนจริง";
       case "order_summary": return "สรุปออเดอร์";
       case "select_shop": return "เลือกร้านตัดเย็บ";
-      case "measurements": return "ถ่ายรูปเพื่อวัดสัดส่วน";
       case "success": return "ร้านคอนเฟิร์มออเดอร์แล้ว!";
       default: return "";
     }
@@ -104,10 +105,10 @@ export default function TailorWithFabricFlow() {
             <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
           )}
           {currentStep === "select_occasion" && (
-            <SelectOccasionStep key="select_occasion" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("pattern_recommendation")} />
+            <SelectOccasionStep key="select_occasion" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("measurements")} />
           )}
-          {currentStep === "pattern_recommendation" && (
-            <PatternRecommendationStep key="pattern_recommendation" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("virtual_try_on")} />
+          {currentStep === "measurements" && (
+            <MeasurementsStep key="measurements" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("virtual_try_on")} />
           )}
           {currentStep === "virtual_try_on" && (
             <VirtualTryOnStep key="virtual_try_on" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("order_summary")} />
@@ -116,10 +117,7 @@ export default function TailorWithFabricFlow() {
             <OrderSummaryStep key="order_summary" orderState={orderState} onNext={() => goNext("select_shop")} />
           )}
           {currentStep === "select_shop" && (
-            <SelectTailorShopStep key="select_shop" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("measurements")} />
-          )}
-          {currentStep === "measurements" && (
-            <MeasurementsStep key="measurements" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("success")} />
+            <SelectTailorShopStep key="select_shop" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("success")} />
           )}
           {currentStep === "success" && (
             <OrderSuccessStep key="success" orderState={orderState} />

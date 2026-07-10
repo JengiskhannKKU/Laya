@@ -43,6 +43,12 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
     fileInputRef.current?.click();
   };
 
+  // ปุ่มข้าม (debug) — ใส่รูปผ้าตัวอย่างแทนของจริง ให้ทดสอบขั้นถัดๆ ไปได้เร็วโดยไม่ต้องอัปโหลดจริงทุกรอบ
+  const handleSkip = () => {
+    setOrderState({ ...orderState, fabricImage: orderState.fabricImage ?? "/images/fabric1.webp" });
+    onNext();
+  };
+
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', pt: 2 }}>
       
@@ -104,6 +110,19 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
         }}
       >
         ถ่ายหรือเลือกจากแกลเลอรี่
+      </Button>
+
+      <Button
+        onClick={handleSkip}
+        sx={{
+          color: '#9B958A',
+          fontFamily: '"Noto Serif Thai", serif',
+          fontSize: '0.75rem',
+          textTransform: 'none',
+          textDecoration: 'underline',
+        }}
+      >
+        ข้ามขั้นตอนนี้ (สำหรับทดสอบ)
       </Button>
 
     </Box>
