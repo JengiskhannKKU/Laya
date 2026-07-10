@@ -63,7 +63,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.564.0",
     "multer": "^2.1.1",
-    "next": "^16.2.9",
+    "next": "16.2.9",
     "next-themes": "^0.4.6",
     "qrcode.react": "^4.2.0",
     "react": "19.2.4",

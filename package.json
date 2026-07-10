@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "next": "^9.3.3"
+    "next": "^16.2.10"
   },
   "scripts": {
     "dev": "npm run dev:backend & npm run dev:frontend",
