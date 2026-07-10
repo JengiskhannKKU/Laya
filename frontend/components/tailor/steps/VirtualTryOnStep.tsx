@@ -1,42 +1,210 @@
-import { Box, Typography, Button } from "@mui/material";
-import { motion } from "framer-motion";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import Image from "next/image";
 
+import type { Perspective } from "./MeasurementsStep";
+
+// ตัด trailing slash กัน URL เพี้ยนเป็น // (NEXT_PUBLIC_API_URL ใน .env.local ลงท้ายด้วย / อยู่)
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
+
+const PERSPECTIVES: { key: Perspective; label: string }[] = [
+  { key: "front", label: "ด้านหน้า" },
+  { key: "back", label: "ด้านหลัง" },
+  { key: "side", label: "ด้านข้าง" },
+];
+
+type SlotState = { status: "idle" | "loading" | "done" | "error"; url?: string; mock?: boolean; error?: string };
+
 /**
- * เดิมโชว์ /images/fabric1.webp (รูปผ้าตัวอย่างที่ไม่เกี่ยวอะไรเลย) แทนที่จะเป็นรูปตัวผู้ใช้เอง — แก้ให้ใช้
- * orderState.bodyPhoto จริงที่เก็บมาจาก MeasurementsStep (ย้ายมาก่อนขั้นนี้แล้วตาม flow_1.png ข้อ 11→8)
- * ยังไม่มี AI compositing ใส่ชุดบนรูปจริง (ดู deflect.md: /api/ai/tryon ยัง TODO) — โชว์รูปจริงของผู้ใช้ตรงๆ
- * พร้อมสวอตช์ผ้าที่เลือกไว้มุมล่าง ไม่ปั้นภาพลองใส่ปลอม
+ * ลองใส่เสมือนจริงของจริง — AI (kie.ai gpt4o-image ผ่าน backend /api/tryon/*) ใส่ชุดจากผ้าที่อัปโหลดไว้
+ * ลงบนรูปตัวเองของผู้ใช้ ทีละมุม (หน้า/หลัง/ข้าง) จริง ไม่ใช่ placeholder แบบเดิมอีกต่อไป
+ *
+ * ขั้นตอน: อัปโหลดรูปตัวเอง 3 มุม + รูปผ้า ขึ้น Supabase Storage ให้ได้ URL public ก่อน (kie.ai ต้องการ
+ * URL ที่เข้าถึงได้จริง ไม่รับ base64) แล้วยิง generate ทีละมุมตามลำดับ (ไม่ขนาน — ทดสอบจริงแล้วพบว่า
+ * ยิงพร้อมกัน 3 มุมทำให้ kie.ai คืน error เพราะแอคเคาท์นี้จำกัด concurrency)
+ * ถ้า API หมดเครดิต backend จะ fallback เป็นรูปตัวอย่างเองแบบ graceful (mock:true) — โชว์ label บอกตรงๆ
  */
-export default function VirtualTryOnStep({ orderState, onNext }: any) {
+export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: any) {
+  const bodyPhotos = orderState.bodyPhotos as Record<Perspective, string> | undefined;
+  const [active, setActive] = useState<Perspective>("front");
+  const [slots, setSlots] = useState<Record<Perspective, SlotState>>({
+    front: { status: "idle" }, back: { status: "idle" }, side: { status: "idle" },
+  });
+  const uploadedUrls = useRef<{ body: Partial<Record<Perspective, string>>; fabric?: string }>({ body: {} });
+  const started = useRef(false);
+  const [elapsedSec, setElapsedSec] = useState(0);
+
+  const anyLoading = PERSPECTIVES.some((p) => slots[p.key].status === "loading");
+  const loadingPerspective = PERSPECTIVES.find((p) => slots[p.key].status === "loading")?.key;
+
+  // นับเวลาที่ผ่านไปตอนกำลัง generate — AI ใช้เวลาจริงได้ 2-5 นาทีต่อมุม (บางครั้งนานกว่านั้น) กันคนคิดว่าค้าง
+  useEffect(() => {
+    if (!loadingPerspective) { setElapsedSec(0); return; }
+    setElapsedSec(0);
+    const t = setInterval(() => setElapsedSec((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [loadingPerspective]);
+
+  const uploadOnce = async (dataUrl: string): Promise<string> => {
+    const res = await fetch(`${API_BASE}/api/tryon/upload`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageBase64: dataUrl }),
+    });
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error ?? "อัปโหลดรูปไม่สำเร็จ");
+    return json.url as string;
+  };
+
+  const runPerspective = async (p: Perspective) => {
+    setSlots((s) => ({ ...s, [p]: { status: "loading" } }));
+    try {
+      let bodyUrl = uploadedUrls.current.body[p];
+      if (!bodyUrl && bodyPhotos?.[p]) {
+        bodyUrl = await uploadOnce(bodyPhotos[p]);
+        uploadedUrls.current.body[p] = bodyUrl;
+      }
+      if (!bodyUrl) throw new Error("ไม่พบรูปตัวเองมุมนี้");
+
+      if (!uploadedUrls.current.fabric && orderState.fabricImage) {
+        uploadedUrls.current.fabric = await uploadOnce(orderState.fabricImage);
+      }
+
+      const res = await fetch(`${API_BASE}/api/tryon/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bodyPhotoUrl: bodyUrl,
+          fabricImageUrl: uploadedUrls.current.fabric,
+          perspective: p,
+          analysisResult: orderState.analysisResult,
+          occasion: orderState.occasion,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? "สร้างภาพไม่สำเร็จ");
+
+      setSlots((s) => ({ ...s, [p]: { status: "done", url: json.imageUrl, mock: json.mock } }));
+      setOrderState((prev: any) => ({
+        ...prev,
+        tryOnResults: { ...prev.tryOnResults, [p]: json.imageUrl },
+      }));
+    } catch (err: any) {
+      setSlots((s) => ({ ...s, [p]: { status: "error", error: err.message ?? "เกิดข้อผิดพลาด" } }));
+    }
+  };
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    // ทีละมุม ไม่ยิงพร้อมกัน — ทดสอบจริงแล้วพบว่ายิง 3 มุมพร้อมกันทำให้ kie.ai คืน "Internal Error"
+    // ทั้ง 3 งาน (แอคเคาท์นี้น่าจะจำกัด concurrency) ส่วนทีละงานสำเร็จปกติทุกครั้ง
+    (async () => {
+      for (const p of PERSPECTIVES) {
+        await runPerspective(p.key);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const activeSlot = slots[active];
+  const hasAnyMock = PERSPECTIVES.some((p) => slots[p.key].mock);
+
   return (
-    <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
+    <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch' }}>
 
-      <Box sx={{ width: '100%', height: 450, borderRadius: '16px', overflow: 'hidden', position: 'relative', bgcolor: '#E5DFD6' }}>
-        {orderState.bodyPhoto ? (
-          <Image src={orderState.bodyPhoto} alt="รูปตัวเองของคุณ" fill style={{ objectFit: 'cover' }} />
-        ) : (
-          <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280', textAlign: 'center', px: 3 }}>
-              ยังไม่มีรูปตัวเอง — ย้อนกลับไปถ่ายรูปก่อน
-            </Typography>
-          </Box>
-        )}
+      {anyLoading && (
+        <Box sx={{ bgcolor: '#F0EBE3', borderRadius: '10px', px: 2, py: 1.25 }}>
+          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontSize: '0.8rem', textAlign: 'center' }}>
+            AI ใช้เวลาสร้างภาพแต่ละมุมประมาณ 2-5 นาที (บางครั้งนานกว่านั้น) รวมทั้ง 3 มุมประมาณ 5-10 นาที
+            <br />ไม่ต้องปิดหน้านี้ระหว่างรอ
+          </Typography>
+        </Box>
+      )}
 
-        {orderState.fabricImage && (
-          <Box sx={{ position: 'absolute', bottom: 16, right: 16, width: 64, height: 64, borderRadius: '12px', overflow: 'hidden', border: '2px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-            <Image src={orderState.fabricImage} alt="ผ้าที่เลือก" fill style={{ objectFit: 'cover' }} />
-          </Box>
-        )}
+      {/* มุมสลับ */}
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        {PERSPECTIVES.map((p) => {
+          const s = slots[p.key];
+          return (
+            <Box key={p.key} onClick={() => setActive(p.key)}
+              sx={{
+                flex: 1, py: 1, textAlign: 'center', borderRadius: '10px', cursor: 'pointer',
+                bgcolor: active === p.key ? '#1B2A4A' : '#F0EBE3',
+                color: active === p.key ? 'white' : '#1B2A4A',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5,
+              }}>
+              {s.status === 'loading' && <CircularProgress size={12} sx={{ color: 'inherit' }} />}
+              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: '0.8rem', fontWeight: 600 }}>
+                {p.label}
+              </Typography>
+            </Box>
+          );
+        })}
       </Box>
 
-      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', textAlign: 'center', color: '#6B7280', fontSize: '0.8rem' }}>
-        ระบบลองใส่เสมือนจริงแบบเต็มรูปแบบกำลังพัฒนาอยู่ — ตอนนี้แสดงรูปตัวเองพร้อมผ้าที่เลือกไว้ให้เทียบกันก่อน
-      </Typography>
+      {/* พรีวิวหลัก */}
+      <Box sx={{ width: '100%', height: 450, borderRadius: '16px', overflow: 'hidden', position: 'relative', bgcolor: '#E5DFD6' }}>
+        <AnimatePresence mode="wait">
+          <motion.div key={active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ width: '100%', height: '100%', position: 'relative' }}>
+            {activeSlot.status === 'idle' && (
+              <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 3 }}>
+                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280', textAlign: 'center' }}>
+                  รอคิว — AI กำลังทำมุมอื่นอยู่ก่อน
+                </Typography>
+              </Box>
+            )}
+            {activeSlot.status === 'loading' && (
+              <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                <CircularProgress sx={{ color: '#1B2A4A' }} />
+                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', textAlign: 'center', px: 3 }}>
+                  AI กำลังใส่ชุดให้คุณ...
+                </Typography>
+                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280', fontSize: '0.75rem', textAlign: 'center' }}>
+                  ใช้เวลาไปแล้ว {String(Math.floor(elapsedSec / 60)).padStart(2, '0')}:{String(elapsedSec % 60).padStart(2, '0')} (ปกติ 2-5 นาที)
+                </Typography>
+              </Box>
+            )}
+            {activeSlot.status === 'error' && (
+              <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, px: 3 }}>
+                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#8B1A1A', textAlign: 'center' }}>
+                  สร้างภาพมุม{PERSPECTIVES.find(p => p.key === active)?.label}ไม่สำเร็จ: {activeSlot.error}
+                </Typography>
+                <Button startIcon={<RefreshRoundedIcon />} onClick={() => runPerspective(active)}
+                  sx={{ color: '#1B2A4A', fontFamily: '"Noto Serif Thai", serif' }}>
+                  ลองใหม่
+                </Button>
+              </Box>
+            )}
+            {activeSlot.status === 'done' && activeSlot.url && (
+              <>
+                <Image src={activeSlot.url} alt={`ลองใส่เสมือนจริง - ${active}`} fill style={{ objectFit: 'cover' }} />
+                {activeSlot.mock && (
+                  <Box sx={{ position: 'absolute', top: 10, left: 10, bgcolor: 'rgba(197,165,90,0.95)', color: '#1B2A4A', px: 1.5, py: 0.5, borderRadius: '999px' }}>
+                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: '0.7rem', fontWeight: 700 }}>ตัวอย่าง (โควต้า AI หมดชั่วคราว)</Typography>
+                  </Box>
+                )}
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </Box>
+
+      {hasAnyMock && (
+        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', textAlign: 'center', color: '#6B7280', fontSize: '0.75rem' }}>
+          ระบบ AI ลองใส่เสมือนจริงหมดโควต้าชั่วคราว — บางมุมแสดงภาพตัวอย่างแทนภาพจริง คำสั่งตัดของคุณยังดำเนินการต่อได้ตามปกติ
+        </Typography>
+      )}
 
       <Button
         variant="contained"
         fullWidth
+        disabled={anyLoading}
         onClick={onNext}
         sx={{
           bgcolor: '#1B2A4A',
@@ -45,10 +213,11 @@ export default function VirtualTryOnStep({ orderState, onNext }: any) {
           borderRadius: '12px',
           fontFamily: '"Noto Serif Thai", serif',
           fontWeight: 700,
-          '&:hover': { bgcolor: '#0f182b' }
+          '&:hover': { bgcolor: '#0f182b' },
+          '&:disabled': { bgcolor: '#E5DFD6', color: '#A09C95' },
         }}
       >
-        ถัดไป — สรุปออเดอร์
+        {anyLoading ? 'กำลังสร้างภาพ...' : 'ถัดไป — สรุปออเดอร์'}
       </Button>
 
     </Box>

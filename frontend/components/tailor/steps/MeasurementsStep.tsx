@@ -4,12 +4,66 @@ import { motion } from "framer-motion";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import Image from "next/image";
 
+export type Perspective = "front" | "back" | "side";
+
+const PERSPECTIVES: { key: Perspective; label: string; hint: string }[] = [
+  { key: "front", label: "ด้านหน้า", hint: "ยืนหันหน้าเข้ากล้องตรงๆ" },
+  { key: "back", label: "ด้านหลัง", hint: "หันหลังให้กล้อง" },
+  { key: "side", label: "ด้านข้าง", hint: "หันข้างลำตัว 90 องศา" },
+];
+
 /**
- * ถ่ายรูปตัวเอง + ส่งขนาด — เดิมเป็นกล่องตกแต่งเฉยๆ ไม่มี input ไฟล์จริงเลย (ปุ่มกด onNext ตรงๆ ไม่เก็บรูปอะไร)
- * แก้ให้อัปโหลดรูปจริง (เทคนิคเดียวกับ UploadFabricStep: resize+compress เป็น base64) เก็บที่ orderState.bodyPhoto
- * เพื่อให้ VirtualTryOnStep เอาไปใช้ต่อได้จริง — ต้องมาก่อน virtual try-on เสมอ (ตามลำดับใน flow_1.png ข้อ 11 ก่อน 8)
+ * ถ่ายรูปตัวเอง 3 มุม (หน้า/หลัง/ข้าง) — เดิมมีแค่มุมเดียวและเป็นกล่องตกแต่งเฉยๆ ไม่มี input จริง
+ * ตอนนี้ต้องอัปโหลดครบ 3 มุมก่อนไปขั้นลองใส่เสมือนจริง เพราะ AI ต้อง compositing ชุดแยกทีละมุมจริง
+ * เก็บที่ orderState.bodyPhotos = { front, back, side } (base64 ไว้พรีวิว — VirtualTryOnStep จะอัปโหลด
+ * ขึ้น Supabase Storage เพื่อได้ URL public ส่งให้ AI ต่อเอง)
  */
 export default function MeasurementsStep({ orderState, setOrderState, onNext }: any) {
+  const photos: Partial<Record<Perspective, string>> = orderState.bodyPhotos ?? {};
+  const allDone = PERSPECTIVES.every((p) => !!photos[p.key]);
+
+  const setPhoto = (key: Perspective, dataUrl: string) => {
+    setOrderState({ ...orderState, bodyPhotos: { ...photos, [key]: dataUrl } });
+  };
+
+  return (
+    <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch' }}>
+
+      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', textAlign: 'center', color: '#6B7280', fontSize: '0.85rem' }}>
+        ถ่ายรูปตัวเองให้ครบ 3 มุม เพื่อให้ AI ลองใส่ชุดให้เห็นทุกด้านก่อนตัดจริง
+      </Typography>
+
+      {PERSPECTIVES.map((p) => (
+        <PhotoSlot key={p.key} label={p.label} hint={p.hint} value={photos[p.key]} onCapture={(dataUrl) => setPhoto(p.key, dataUrl)} />
+      ))}
+
+      <Button
+        variant="contained"
+        fullWidth
+        disabled={!allDone}
+        onClick={onNext}
+        sx={{
+          bgcolor: '#1B2A4A',
+          color: 'white',
+          py: 1.5,
+          borderRadius: '12px',
+          fontFamily: '"Noto Serif Thai", serif',
+          fontWeight: 700,
+          mt: 1,
+          '&:hover': { bgcolor: '#0f182b' },
+          '&:disabled': { bgcolor: '#E5DFD6', color: '#A09C95' },
+        }}
+      >
+        {allDone ? 'ถัดไป — ลองใส่เสมือนจริง' : `ถ่ายให้ครบ 3 มุม (${Object.values(photos).filter(Boolean).length}/3)`}
+      </Button>
+
+    </Box>
+  );
+}
+
+function PhotoSlot({ label, hint, value, onCapture }: {
+  label: string; hint: string; value?: string; onCapture: (dataUrl: string) => void;
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,76 +83,46 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
-        setOrderState({ ...orderState, bodyPhoto: compressedBase64 });
+        onCapture(canvas.toDataURL("image/jpeg", 0.7));
       };
       img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
 
-  const handleClickUpload = () => fileInputRef.current?.click();
-
   return (
-    <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
+    <Box
+      onClick={() => fileInputRef.current?.click()}
+      sx={{
+        width: '100%', height: 190, bgcolor: '#E5DFD6', borderRadius: '16px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        position: 'relative', overflow: 'hidden', cursor: 'pointer',
+        border: value ? 'none' : '2px dashed #1B2A4A',
+      }}
+    >
+      <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
 
-      <input
-        type="file"
-        accept="image/*"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        style={{ display: 'none' }}
-      />
-
-      <Box
-        onClick={handleClickUpload}
-        sx={{
-          width: '100%', height: 400, bgcolor: '#E5DFD6', borderRadius: '16px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          position: 'relative', overflow: 'hidden', cursor: 'pointer',
-          border: orderState.bodyPhoto ? 'none' : '2px dashed #1B2A4A',
-        }}
-      >
-        {orderState.bodyPhoto ? (
-          <>
-            <Image src={orderState.bodyPhoto} alt="รูปตัวเองที่อัปโหลด" fill style={{ objectFit: 'cover' }} />
-            <Box sx={{ position: 'absolute', bottom: 16, right: 16, bgcolor: 'rgba(255,255,255,0.9)', p: 1, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-              <CameraAltRoundedIcon sx={{ color: '#1B2A4A' }} />
-            </Box>
-          </>
-        ) : (
-          <>
-            <CameraAltRoundedIcon sx={{ fontSize: 48, color: '#1B2A4A', mb: 2 }} />
-            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', textAlign: 'center', px: 3 }}>
-              ยืนให้เต็มตัวเพื่อให้ AI วัดสัดส่วนของคุณ
-            </Typography>
-          </>
-        )}
-      </Box>
-
-      <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', textAlign: 'center', color: '#6B7280' }}>
-        ถ่ายรูปและส่งข้อมูลสัดส่วนของคุณ
-      </Typography>
-
-      <Button
-        variant="contained"
-        fullWidth
-        disabled={!orderState.bodyPhoto}
-        onClick={onNext}
-        sx={{
-          bgcolor: '#1B2A4A',
-          color: 'white',
-          py: 1.5,
-          borderRadius: '12px',
-          fontFamily: '"Noto Serif Thai", serif',
-          fontWeight: 700,
-          '&:hover': { bgcolor: '#0f182b' },
-          '&:disabled': { bgcolor: '#E5DFD6', color: '#A09C95' },
-        }}
-      >
-        ถัดไป — ลองใส่เสมือนจริง
-      </Button>
-
+      {value ? (
+        <>
+          <Image src={value} alt={label} fill style={{ objectFit: 'cover' }} />
+          <Box sx={{ position: 'absolute', top: 10, left: 10, bgcolor: 'rgba(27,42,74,0.85)', color: 'white', px: 1.5, py: 0.5, borderRadius: '999px' }}>
+            <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: '0.7rem', fontWeight: 600 }}>{label}</Typography>
+          </Box>
+          <Box sx={{ position: 'absolute', bottom: 10, right: 10, bgcolor: 'rgba(255,255,255,0.9)', p: 1, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CameraAltRoundedIcon sx={{ color: '#1B2A4A', fontSize: 20 }} />
+          </Box>
+        </>
+      ) : (
+        <>
+          <CameraAltRoundedIcon sx={{ fontSize: 32, color: '#1B2A4A', mb: 1 }} />
+          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontWeight: 600, fontSize: '0.9rem' }}>
+            {label}
+          </Typography>
+          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280', fontSize: '0.7rem', textAlign: 'center', px: 2 }}>
+            {hint}
+          </Typography>
+        </>
+      )}
     </Box>
   );
 }

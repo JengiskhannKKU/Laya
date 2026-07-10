@@ -621,3 +621,58 @@
 - ลำดับใหม่: `upload → ai_analysis → select_occasion → measurements → virtual_try_on → order_summary → select_shop → success`
 - แก้ `OrderSummaryStep.tsx` ที่เพิ่งอ้าง `orderState.shape?.name` ไปตอนก่อน (ตอนนี้ field ไม่มีแล้ว) กลับไปใช้ข้อความ static เหมือนเดิมก่อนรอบที่แล้ว
 - ทดสอบจริงในเบราว์เซอร์: กด "ทำงานราชการ" (เลือกโอกาส) แล้วเด้งตรงไปหน้า "ถ่ายรูปเพื่อวัดสัดส่วน" ทันที ไม่มีหน้าเลือกทรงคั่นอยู่แล้ว, `tsc --noEmit` ผ่าน, ไม่มี reference ค้างของ `ChooseShapeStep`/`choose_shape`/`orderState.shape` เหลือในโค้ดเลย
+
+---
+
+## 2026-07-10 (รอบห้า) — Virtual Try-On ของจริง: ถ่ายรูป 3 มุม + AI ใส่ชุดจริงต่อรูป
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ขอให้ virtual try-on เป็นของจริง — ผู้ใช้ต้องอัปโหลดรูปตัวเอง 3 มุม (หน้า/หลัง/ข้าง) แล้ว AI ต้องใส่ชุดลงบนรูปจริงแต่ละมุมจริงๆ (ไม่ใช่โชว์ภาพ placeholder เหมือนก่อนหน้านี้)
+
+### พบว่า infra AI ที่มีอยู่ไม่เคยรองรับ image-to-image จริง แม้จะดูเหมือนรองรับ
+- `backend/src/routes/nanobanana.ts` เดิม destructure `imageUrls` จาก request body ไว้ แต่**ไม่เคยส่งต่อให้ kie.ai เลยในโค้ดจริง** (ยิงแค่ `{ prompt, size }`) — เป็น param ที่ดูเหมือนใช้งานได้แต่จริงๆ เป็น dead code มาตลอด
+- เช็ค kie.ai docs จริง (`docs.kie.ai/4o-image-api/generate-4-o-image`) พบว่าชื่อ field ที่ถูกต้องคือ `filesUrl` (ไม่ใช่ `imageUrls`) และ**รูปต้องเป็น URL ที่เข้าถึงได้จากอินเทอร์เน็ตจริง** ไม่รับ base64/data URL — แต่ทั้งโปรเจกต์ไม่เคยมี image hosting pipeline เลย (รูปทั้งหมดที่อัปโหลดในแอปเป็น base64 เก็บฝั่ง client ล้วน)
+
+### Backend ใหม่
+- `backend/src/utils/supabaseAdmin.ts` — Supabase client ฝั่ง server ใช้ service role key (bypass RLS) เฉพาะงานอัปโหลดเข้า Storage
+- `backend/src/utils/kieImage.ts` — ดึง logic submit+poll+credits-fallback ออกจาก `nanobanana.ts` มาเป็น helper กลาง (`generateImage()`) รองรับ `filesUrl` จริงแล้ว — `nanobanana.ts` เขียนใหม่ให้เรียก helper นี้แทน (ลด duplicate, ยังทำงานเหมือนเดิมทุกอย่างสำหรับ text-to-image เดิม)
+- `backend/src/routes/tryon.ts` (ใหม่) — `POST /api/tryon/upload` (base64 → Supabase Storage bucket `tryon-uploads` public, สร้าง bucket อัตโนมัติครั้งแรกที่ใช้แบบ idempotent) + `POST /api/tryon/generate` (bodyPhotoUrl + fabricImageUrl + perspective + analysisResult/occasion → prompt compositing เฉพาะมุมนั้นๆ ส่งเข้า `generateImage()`)
+- mount ที่ `/api/tryon` ใน `app.ts`
+
+### ทดสอบ backend ตรงด้วย curl ก่อนต่อ frontend (ยืนยันว่า pipeline ถูกต้องจริง ไม่ใช่แค่ผ่าน tsc)
+- อัปโหลดรูปทดสอบจริง → ได้ URL Supabase Storage จริง ยืนยัน public fetch ได้ (200)
+- เรียก kie.ai ตรงๆ (bypass wrapper) พบว่า API key **หมดเครดิตจริง** (`code:402 "Credits insufficient"`) — ยืนยันว่า auth/request ถูกต้องสมบูรณ์ แค่ไม่มีเงินในบัญชี kie.ai ไม่ใช่บั๊ก — ระบบ fallback เป็น mock image แบบ graceful ตามดีไซน์เดิมของโปรเจกต์ (เหมือน `analyze-fabric`/`nanobanana` เดิม)
+
+### Frontend
+- `MeasurementsStep.tsx` เขียนใหม่ทั้งหมด — เดิมถ่ายได้มุมเดียว ตอนนี้ต้องถ่ายให้ครบ 3 มุม (หน้า/หลัง/ข้าง) แยกช่องอัปโหลดอิสระ ปุ่มถัดไปโชว์ความคืบหน้า "ถ่ายให้ครบ 3 มุม (x/3)" จนกว่าจะครบ — เก็บที่ `orderState.bodyPhotos = { front, back, side }`
+- `VirtualTryOnStep.tsx` เขียนใหม่ทั้งหมด — auto อัปโหลดรูปตัวเอง 3 มุม + รูปผ้าขึ้น Supabase Storage (cache ไม่อัปโหลดซ้ำ) แล้วยิง generate แยกทีละมุมแบบขนานจริง มีแท็บสลับหน้า/หลัง/ข้าง แต่ละมุมมี loading/error state ของตัวเอง + ปุ่ม "ลองใหม่" เฉพาะมุมที่พัง, โชว์ badge "ตัวอย่าง (โควต้า AI หมดชั่วคราว)" ตรงๆ เมื่อ backend คืน mock (ไม่ปั้นว่าเป็นผลจริง)
+- **เจอบั๊กจริงระหว่างทดสอบ**: `NEXT_PUBLIC_API_URL` ใน `.env.local` ลงท้ายด้วย `/` ทำให้ URL เพี้ยนเป็น `http://localhost:4000//api/tryon/upload` (double slash) แล้ว Express คืน 404 (ยืนยันด้วย curl ตรงๆ ว่า Express ไม่ collapse double slash ให้) — แก้ใน `VirtualTryOnStep.tsx` ด้วยการ strip trailing slash ตอนสร้าง `API_BASE` (ไฟล์อื่นที่ใช้ pattern เดียวกัน เช่น `wishlist-context.tsx` อาจเจอปัญหาเดียวกันแต่ไม่ได้อยู่ในขอบเขตงานนี้ ไม่ได้แก้)
+
+### ทดสอบจริงในเบราว์เซอร์ (Playwright+Chromium, ใช้รูปคนจริงที่ผู้ใช้แนบมาเป็นไฟล์ทดสอบ)
+- เดินครบ flow: อัปโหลดผ้า(ข้าม) → AI วิเคราะห์(fallback) → เลือกโอกาส → **ถ่ายรูป 3 มุมจริง (เห็น label หน้า/หลัง/ข้างถูกต้อง)** → **ลองใส่เสมือนจริง: อัปโหลดขึ้น Storage จริง + เรียก generate จริงทั้ง 3 มุม, แท็บสลับมุมทำงาน, badge "ตัวอย่าง (โควต้า AI หมดชั่วคราว)" โชว์ถูกต้องเพราะ credits exhausted จริง** → สรุปออเดอร์ (ข้อมูลจริงครบ)
+- `tsc --noEmit` ผ่านทั้งสองฝั่ง, ไม่มี console error นอกจาก AI analyze endpoint เดิมที่ fallback อยู่แล้ว (ปัญหาเดิมไม่เกี่ยวกับรอบนี้)
+
+**ค้าง**: ต้องเติมเครดิตบัญชี kie.ai (`NANO_BANANA_API_KEY`) ถึงจะเห็นผล generate จริงแทน mock — โค้ด/pipeline พร้อมสมบูรณ์แล้ว ไม่ต้องแก้อะไรเพิ่มเมื่อเติมเครดิต
+
+---
+
+## 2026-07-10 (รอบหก) — ทดสอบ virtual try-on ด้วยเครดิต kie.ai จริง + แก้บั๊กจริงที่เจอ
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้เติมเครดิต/เปลี่ยน `NANO_BANANA_API_KEY` ใหม่แล้ว ให้ทดสอบ pipeline จากรอบก่อน
+
+### บั๊กจริงที่เจอระหว่างทดสอบด้วยเครดิตจริง (ไม่เจอตอนเครดิตหมดเพราะ error ทันทีไม่ทันถึง code path เหล่านี้)
+1. **`pollTask` timeout สั้นเกินไปและตีความผิด** — เดิม `maxWait=55s` แล้วถือว่า timeout = หมดเครดิต (สมเหตุสมผลตอนเครดิต=0 เพราะ API คืน 402 ทันที ไม่มีทาง timeout เพราะเหตุอื่น) แต่ทดสอบกับเครดิตจริงพบว่า generate ใช้เวลาจริงได้ถึง ~2.5-5 นาที (บางครั้งนานกว่านั้น) — ถ้ายัง treat timeout = หมดเครดิตต่อไป จะแอบโชว์ mock image ทับ generation ที่จริงๆ กำลังจะสำเร็จอยู่ (โกหกผู้ใช้แบบเงียบๆ) แก้เป็น: เพิ่ม `maxWait` เป็น 330s **และ**แยก timeout ออกจาก credits-exhausted อย่างชัดเจน (credits-exhausted ต้องเจอ code 402 จริงจาก API เท่านั้น ไม่ใช่เดาจาก timeout)
+2. **ยิง generate 3 มุมพร้อมกัน (concurrent) ทำให้ kie.ai คืน `"Internal Error, Please try again later."` ทั้ง 3 งาน** — ทดสอบแล้วพบว่าบัญชีนี้รับ concurrent generation ไม่ได้ (หรือ rate limit) ส่วนยิงทีละงาน (sequential) สำเร็จปกติทุกครั้งที่ทดสอบ — แก้ `VirtualTryOnStep.tsx` จาก `PERSPECTIVES.forEach(...)` (ยิงพร้อมกันหมด) เป็น sequential `for...of` loop พร้อม await ทีละมุม, เพิ่ม UI state "idle" (รอคิว) สำหรับมุมที่ยังไม่ถึงตา
+
+### ทดสอบจริงกับเครดิตจริง (ไม่ใช่ mock) — เห็นผลลัพธ์จริงจาก AI
+- ทดสอบตรงผ่าน backend `/api/tryon/generate` (ไม่ผ่าน UI) ด้วยรูปคนจริงที่ผู้ใช้แนบ + ลายผ้าจริงจาก `fabric_patterns/01.webp`
+- **มุมหน้า**: สำเร็จใน ~90 วินาที — ได้ภาพคนเดิม (ผมบลอนด์ หน้าเดิม) สวมชุดไทยจริงที่ตัดจากลายผ้าที่อัปโหลดจริง ทรงคอจีน กระดุมคาดเอว ถูกต้องตามพรอมต์ทุกจุด
+- **มุมหลัง**: สำเร็จใน ~5 นาที — คนเดิม มุมกล้องจากด้านหลังถูกต้อง ลายผ้า/โทนสีตรงกับที่อัปโหลด
+- **มุมข้าง**: ล้มเหลวจริงจากฝั่ง kie.ai เอง (`errorCode:500 "The upstream API service timed out and no results were returned"` หลัง ~16 นาที) — ไม่ใช่บั๊กโค้ดเรา เป็นความไม่เสถียรของบริการ third-party จริงๆ — ระบบจับ error ถูกต้อง โชว์ข้อความ+ปุ่ม "ลองใหม่" เฉพาะมุมนั้น ไม่บล็อกมุมอื่น/ทั้ง flow
+- ยืนยันด้วยว่ายิง 3 มุมพร้อมกันเจอ error ทั้ง 3 งานจริง (ทดสอบก่อนแก้เป็น sequential) — สนับสนุนสมมติฐาน concurrency limit
+- `tsc --noEmit` ผ่านทั้งสองฝั่งหลังแก้
+
+**สรุปสถานะ**: ฟีเจอร์ทำงานได้จริงกับเครดิตจริงแล้ว คุณภาพภาพสูง (คงหน้า/ตัวคนเป๊ะ, ชุด/ลายผ้าถูกต้องตามที่เลือก) — ความไม่แน่นอนของเวลา generate (1.5-16+ นาที) และโอกาส fail เป็นครั้งคราวเป็นคุณสมบัติของบริการ kie.ai เอง ไม่ใช่บั๊กในโค้ดเรา ผู้ใช้กด "ลองใหม่" ได้เมื่อมุมไหนพัง

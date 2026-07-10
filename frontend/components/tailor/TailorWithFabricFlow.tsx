@@ -36,7 +36,8 @@ export interface TailorOrderState {
   fabricImage?: string;
   analysisResult?: any;
   occasion?: string;
-  bodyPhoto?: string;
+  bodyPhotos?: { front?: string; back?: string; side?: string };
+  tryOnResults?: { front?: string; back?: string; side?: string };
   shop?: any;
 }
 
