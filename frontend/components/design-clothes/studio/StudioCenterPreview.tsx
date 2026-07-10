@@ -14,6 +14,7 @@ import { Undo2, Redo2, RotateCcw, Maximize2, Minimize2 } from 'lucide-react';
 import { useGarmentStore } from '@/lib/stores/garment-store';
 import type { Catalog, CategoryDef, GarmentDesign, RenderLayer } from '../builder/types';
 import GarmentRenderer from '../builder/GarmentRenderer';
+import GarmentPhotoStage from '../builder/GarmentPhotoStage';
 import { buildBackLayers, toSketchLayers } from './viewModes';
 
 export type PreviewMode = 'front' | 'back' | 'fabric' | 'sketch';
@@ -38,7 +39,6 @@ export default function StudioCenterPreview({ catalog, categoryDef, design, laye
   const hoveredPart = useGarmentStore(s => s.hoveredPart);
   const selectPart = useGarmentStore(s => s.selectPart);
   const hoverPart = useGarmentStore(s => s.hoverPart);
-  const templateId = useGarmentStore(s => s.templateId);
   const applyTemplate = useGarmentStore(s => s.applyTemplate);
 
   const [mode, setMode] = useState<PreviewMode>('front');
@@ -51,7 +51,7 @@ export default function StudioCenterPreview({ catalog, categoryDef, design, laye
   const activeLabel = categoryDef.parts.find(p => p.key === (selectedPart ?? hoveredPart))?.name;
 
   const handleReset = () => {
-    const t = catalog.templates.find(tp => tp.id === templateId) ?? catalog.templates.find(tp => tp.category === design.category);
+    const t = catalog.templates.find(tp => tp.id === 'thai-contemporary');
     if (t) applyTemplate(t);
   };
 
@@ -70,7 +70,27 @@ export default function StudioCenterPreview({ catalog, categoryDef, design, laye
         </div>
       );
     }
-    const activeLayers = m === 'back' ? backLayers : m === 'sketch' ? sketchLayers : layers;
+
+    // หน้า: ใช้ภาพถ่ายจริงถ้ามี (ดู lib/thai-dress-photo.ts), fallback SVG อัตโนมัติถ้าไม่มี
+    if (m === 'front') {
+      return (
+        <GarmentPhotoStage
+          design={design}
+          layers={layers}
+          canvas={catalog.canvas}
+          hideCaption={!interactive}
+          rendererProps={{
+            selectedPart: interactive ? selectedPart : null,
+            hoveredPart: interactive ? hoveredPart : null,
+            onSelectPart: interactive ? selectPart : undefined,
+            onHoverPart: interactive ? hoverPart : undefined,
+            interactive,
+          }}
+        />
+      );
+    }
+
+    const activeLayers = m === 'back' ? backLayers : sketchLayers;
     if (!activeLayers.length) {
       return (
         <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground text-center px-6">

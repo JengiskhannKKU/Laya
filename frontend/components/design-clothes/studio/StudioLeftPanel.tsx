@@ -2,17 +2,16 @@
 
 /**
  * StudioLeftPanel — "1. เลือกรูปแบบเสื้อ"
- * ประเภทชุด (top/pants/skirt — ข้อมูลจริงจาก catalog.categories) → ทรงเริ่มต้น (เทมเพลต) → ชิ้นส่วนแต่ละจุด (accordion)
- * ไม่มี "ประเภทเสื้อผู้หญิง/ผู้ชาย/ยูนิเซ็กส์" แบบใน mockup เพราะ catalog ไม่มีข้อมูลนี้จริง
+ * เหลือชุดเดียว: ไทยร่วมสมัย (thai-contemporary) — ไม่มี category/template picker แล้ว
+ * เพราะ scope ตอนนี้คือชุดนี้ชุดเดียวเท่านั้น (ไม่มีกางเกง/กระโปรง/ทรงอื่น)
  */
 
-import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Ban } from 'lucide-react';
 
 import { useGarmentStore } from '@/lib/stores/garment-store';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import type { Catalog, Category, GarmentDesign, CategoryDef } from '../builder/types';
+import type { Catalog, GarmentDesign, CategoryDef } from '../builder/types';
 import { PartPreview } from '../builder/GarmentRenderer';
 
 interface Props {
@@ -21,60 +20,16 @@ interface Props {
   design: GarmentDesign;
 }
 
-const CATEGORY_ORDER: Category[] = ['top', 'pants', 'skirt'];
-
 export default function StudioLeftPanel({ catalog, categoryDef, design }: Props) {
   const store = useGarmentStore();
   const selectedPart = useGarmentStore(s => s.selectedPart);
-  const templateId = useGarmentStore(s => s.templateId);
-
-  const templatesInCategory = useMemo(
-    () => catalog.templates.filter(t => t.category === design.category),
-    [catalog, design.category],
-  );
 
   return (
     <div id="studio-parts" className="space-y-4 scroll-mt-40">
       <div>
         <h2 className="text-sm font-bold text-primary">1. เลือกรูปแบบเสื้อ</h2>
-        <p className="text-[11px] text-muted-foreground">เลือกประเภท ทรง แล้วปรับแต่งทีละชิ้นส่วน</p>
+        <p className="text-[11px] text-muted-foreground">ไทยร่วมสมัย — ปรับแต่งทีละชิ้นส่วนได้เลย</p>
       </div>
-
-      {/* ประเภท */}
-      <div>
-        <p className="text-[11px] font-semibold text-primary mb-1.5">ประเภทชุด</p>
-        <div className="grid grid-cols-3 gap-2">
-          {CATEGORY_ORDER.filter(c => catalog.categories[c]).map(c => {
-            const active = design.category === c;
-            const t = catalog.templates.find(tp => tp.category === c);
-            return (
-              <button key={c} onClick={() => t && store.applyTemplate(t)}
-                className={`rounded-xl border-2 p-2 flex flex-col items-center gap-1 transition-all bg-white
-                  ${active ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:border-secondary/50'}`}>
-                <span className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {catalog.categories[c].name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ทรง — เทมเพลตเริ่มต้นของประเภทนี้ */}
-      {templatesInCategory.length > 0 && (
-        <div>
-          <p className="text-[11px] font-semibold text-primary mb-1.5">ทรง{categoryDef.name}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {templatesInCategory.map(t => (
-              <button key={t.id} onClick={() => store.applyTemplate(t)}
-                className={`rounded-xl border-2 px-2 py-2.5 text-center transition-all bg-white
-                  ${templateId === t.id ? 'border-secondary bg-secondary/5 shadow-sm' : 'border-border hover:border-secondary/50'}`}>
-                <span className="text-[11px] font-medium text-primary leading-tight block truncate">{t.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ชิ้นส่วน — accordion ต่อ part */}
       <div>

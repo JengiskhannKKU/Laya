@@ -547,3 +547,34 @@
 - ปิด dev server + ลบ Playwright ชั่วคราวออกจาก scratchpad หลังทดสอบเสร็จ (ไม่ทิ้งไว้ในโปรเจกต์)
 
 **ค้าง**: ยังไม่ได้ลองบนอุปกรณ์จริง/เบราว์เซอร์อื่นนอกจาก Chromium headless, ปุ่ม undo/redo ตั้งใจปิดไว้ (store ไม่มี history ตามแผน)
+
+---
+
+## 2026-07-10 (รอบสอง) — จำกัด `/design-clothes` เหลือ "ชุดไทยร่วมสมัย" ชุดเดียว + เตรียม photo-model swap
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ตัดสินใจ (หลังคุยเรื่อง token cost ของ AI-generate ต่อการเลือกแต่ละครั้ง) ว่าจะ **generate ภาพนางแบบจริงไว้ล่วงหน้าแบบ offline แล้ว swap ตอน runtime** แทนการเรียก AI ทุกครั้งที่กดเลือก — และให้ตัดขอบเขตเหลือแค่ชุด "ไทยร่วมสมัย" ในมockup ชุดเดียว ไม่มีกางเกง/กระโปรง/ทรงเสื้ออื่น
+
+### 1. `frontend/public/studio/thai-dress/image-prompts.md` (ใหม่)
+รายการ prompt สำหรับ generate ภาพ **24 รูป** (6 ลายผ้าจาก catalog × 4 สีคัดสรร: ทอง/แดงเข้ม/กรมท่า/ครีม) — โมเดล/โพส/แสง/พื้นหลังเดียวกันทุกภาพ (ระบุไว้เป็น "shared setup" ให้ก็อปวางท้าย prompt ทุกอัน กัน 24 รูปดูเหมือนคนละช็อต) ตั้งชื่อไฟล์ตรงกับ `patternId`/`colorSlug` ที่ catalog.json ใช้อยู่แล้ว (`thai-contemporary_{patternId}_{colorSlug}.webp`) เพื่อให้โค้ด map ได้ตรงๆ ไม่ต้อง rename ทีหลัง — ผู้ใช้จะเอา prompt ชุดนี้ไปรันกับเครื่องมือ generate ภาพเอง (ยังไม่มีไฟล์ภาพจริงตอนนี้)
+
+### 2. `frontend/lib/thai-dress-photo.ts` (ใหม่)
+- `getThaiDressPhotoUrl(design)` — คืน path ภาพถ่ายจริงเมื่อ design ตรงกับทรง thai-contemporary เดิมเป๊ะ (ไม่มีการปรับชิ้นส่วน/ผ้า/สีเฉพาะจุด) **และ** สีอยู่ใน 4 สีที่เตรียมภาพไว้ ไม่งั้นคืน `null` — ห้ามโชว์ภาพที่ไม่ตรงกับตัวเลือกจริง
+- `hasThaiDressPhotoShape(design)` — แยกเหตุผลตอน fallback (ทรงตรงแต่สีไม่มีภาพ vs ผู้ใช้ปรับทรงเอง) ไว้ตัดสินใจว่าจะโชว์ caption อธิบายหรือไม่
+
+### 3. `components/design-clothes/builder/GarmentPhotoStage.tsx` (ใหม่ — ใช้ร่วมกันทั้ง mobile/desktop)
+โชว์ `<img>` จริงถ้ามี path + โหลดสำเร็จ, `onError` หรือไม่มี path → fallback ไป `GarmentRenderer` (SVG) เดิมทันทีอัตโนมัติ พร้อม caption สั้นๆ "ยังไม่มีภาพตัวอย่างสำหรับสีนี้ — แสดงพรีวิวภาพร่างแทน" เมื่อทรงตรงแต่ไม่มีภาพ (ไม่โชว์ caption เวลาผู้ใช้ตั้งใจปรับทรงเอง เพราะเป็นพฤติกรรมที่คาดหวังอยู่แล้ว)
+
+### 4. ตัดขอบเขตเหลือชุดเดียว (ทั้ง mobile + desktop)
+- **Mobile** (`ClothingDesigner.tsx`): ลบขั้น "เลือกสไตล์" (StepTemplates/TemplateCard) ทิ้งทั้งหมด — เริ่ม flow ที่ "ปรับแต่ง" เลย (STEPS เหลือ 4 ขั้นจาก 5), ซ่อนปุ่ม "ย้อนกลับ" ตอนอยู่ขั้นแรก, แก้ `ensureTop()` ใน AI assistant ให้หาเทมเพลต `id==='thai-contemporary'` เจาะจง (เดิมหาแค่ `category==='top'` ตัวแรกที่เจอ ซึ่งอาจไม่ใช่ชุดนี้), สลับ preview หลักจาก `GarmentRenderer` ตรงๆ เป็น `GarmentPhotoStage`
+- **Desktop** (`StudioLeftPanel.tsx`): ลบตัวเลือก "ประเภทชุด" (เสื้อ/กางเกง/กระโปรง) และ "ทรง{ชื่อประเภท}" (เทมเพลตอื่นๆ) ออกทั้งคู่ — เหลือแค่ accordion ปรับชิ้นส่วนของชุดไทยร่วมสมัย
+- **Desktop** (`StudioCenterPreview.tsx`): มุมมอง "หน้า" (front) เปลี่ยนมาใช้ `GarmentPhotoStage` ทั้งพรีวิวหลักและ thumbnail, แก้ `handleReset` ให้รีเซ็ตกลับ `thai-contemporary` ตรงๆ (เดิม fallback หาเทมเพลตแรกของ category ซึ่งไม่มีความหมายแล้วเมื่อเหลือชุดเดียว)
+
+### ทดสอบแล้วจริงในเบราว์เซอร์ (Playwright+Chromium ชั่วคราวใน scratchpad อีกรอบ)
+- `tsc --noEmit` ผ่านทั้งโปรเจกต์
+- เดสก์ท็อป 1440px: ไม่มี "ประเภทชุด"/ตัวเลือกกางเกง-กระโปรงเหลืออยู่เลย, พรีวิวหลักโชว์ SVG fallback + caption ถูกต้อง (เพราะยังไม่มีไฟล์ภาพจริงในเครื่อง — 404 ตามคาด เห็นใน network log)
+- มือถือ 390px: ไม่มีขั้น "วันนี้อยากใส่ชุดแบบไหน" เหลืออยู่ เริ่มที่ "อยากปรับส่วนไหน?" ทันที พร้อม caption fallback เดียวกัน
+- ราคายังคำนวณถูกต้อง (3,890 บาท ตรงกับก่อนแก้) ทั้งสองจอ ไม่มี regression ต่อ business logic
+
+**ค้าง**: รอผู้ใช้ generate ภาพจริง 24 รูปตาม `image-prompts.md` แล้ววางไฟล์ที่ `frontend/public/studio/thai-dress/` — โค้ด map path ให้อัตโนมัติแล้ว ไม่ต้องแก้อะไรเพิ่มเมื่อไฟล์มาถึง (แค่ชื่อไฟล์ต้องตรงตามตารางใน .md)

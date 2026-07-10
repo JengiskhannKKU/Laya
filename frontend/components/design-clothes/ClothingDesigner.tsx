@@ -19,14 +19,15 @@ import {
 
 import { useGarmentStore } from '@/lib/stores/garment-store';
 import {
-  Catalog, GarmentDesign, PartDef, TemplateDef, Category,
+  Catalog, GarmentDesign, PartDef,
   resolveLayers, calcPrice,
 } from './builder/types';
-import GarmentRenderer, { PartPreview } from './builder/GarmentRenderer';
+import { PartPreview } from './builder/GarmentRenderer';
+import GarmentPhotoStage from './builder/GarmentPhotoStage';
 
 // ─── Flow ────────────────────────────────────────────────────────────────────
+// เหลือแค่ชุดไทยร่วมสมัย (thai-contemporary) ตัวเดียว — ตัดขั้น "เลือกสไตล์" ออก ไม่มีให้เลือกทรงอื่น/กางเกง/กระโปรง
 const STEPS = [
-  { key: 'template', label: 'เลือกสไตล์' },
   { key: 'customize', label: 'ปรับแต่ง' },
   { key: 'fabric', label: 'เลือกผ้า' },
   { key: 'color', label: 'เลือกสี' },
@@ -53,7 +54,7 @@ function buildAiSuggestions(prompt: string, catalog: Catalog): { theme: string; 
   const mk = (label: string, detail: string, apply: () => void): AiSuggestionItem => ({ label, detail, apply });
   const ensureTop = () => {
     if (useGarmentStore.getState().category !== 'top') {
-      const t = catalog.templates.find(tp => tp.category === 'top');
+      const t = catalog.templates.find(tp => tp.id === 'thai-contemporary');
       if (t) s.applyTemplate(t);
     }
   };
@@ -130,7 +131,7 @@ export default function ClothingDesigner() {
     templateId, selectedPart, hoveredPart,
   } = store;
 
-  const [step, setStep] = useState<StepKey>('template');
+  const [step, setStep] = useState<StepKey>('customize');
   const [savedNote, setSavedNote] = useState('');
   const [aiOpen, setAiOpen] = useState(false);
 
@@ -216,27 +217,24 @@ export default function ClothingDesigner() {
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}>
 
-            {step === 'template' && (
-              <StepTemplates catalog={catalog} activeId={templateId}
-                onPick={t => { store.applyTemplate(t); setStep('customize'); }} />
-            )}
-
-            {step !== 'template' && (
-              <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4 items-start">
                 {/* ── ชุดคือพระเอก ── */}
                 <div className="lg:sticky lg:top-16">
                   <div className="relative bg-gradient-to-b from-stone-50 to-stone-100 rounded-3xl overflow-hidden shadow-sm border border-border/60">
                     <div className="mx-auto max-w-[460px] px-8 pt-8 pb-4">
-                      <GarmentRenderer
+                      <GarmentPhotoStage
+                        design={design}
                         layers={layers}
                         canvas={catalog.canvas}
-                        selectedPart={selectedPart}
-                        hoveredPart={hoveredPart}
-                        onSelectPart={k => {
-                          if (step !== 'customize') setStep('customize');
-                          store.selectPart(selectedPart === k ? null : k);
+                        rendererProps={{
+                          selectedPart,
+                          hoveredPart,
+                          onSelectPart: k => {
+                            if (step !== 'customize') setStep('customize');
+                            store.selectPart(selectedPart === k ? null : k);
+                          },
+                          onHoverPart: k => store.hoverPart(k),
                         }}
-                        onHoverPart={k => store.hoverPart(k)}
                       />
                     </div>
 
@@ -285,10 +283,12 @@ export default function ClothingDesigner() {
 
                   {/* ปุ่มเดินหน้า/ถอยหลัง — ใหญ่ ชัด */}
                   <div className="flex items-center gap-2 mt-4">
-                    <button onClick={goBack}
-                      className="px-4 py-3 rounded-2xl border border-border text-sm font-medium text-primary hover:bg-muted transition-colors flex items-center gap-1">
-                      <ChevronLeft className="w-4 h-4" /> ย้อนกลับ
-                    </button>
+                    {stepIndex > 0 && (
+                      <button onClick={goBack}
+                        className="px-4 py-3 rounded-2xl border border-border text-sm font-medium text-primary hover:bg-muted transition-colors flex items-center gap-1">
+                        <ChevronLeft className="w-4 h-4" /> ย้อนกลับ
+                      </button>
+                    )}
                     {step !== 'done' && (
                       <button onClick={goNext}
                         className="flex-1 py-3 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:scale-[0.99] transition-all shadow-sm flex items-center justify-center gap-2">
@@ -299,7 +299,6 @@ export default function ClothingDesigner() {
                   </div>
                 </div>
               </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -310,65 +309,7 @@ export default function ClothingDesigner() {
   );
 }
 
-// ─── Step 1: เลือกสไตล์ (การ์ดใหญ่ ไม่เริ่มจากผ้าใบเปล่า) ─────────────────────
-function StepTemplates({ catalog, activeId, onPick }: {
-  catalog: Catalog; activeId: string | null; onPick: (t: TemplateDef) => void;
-}) {
-  const groups: { cat: Category; label: string }[] = [
-    { cat: 'top', label: 'เสื้อ & เดรส' },
-    { cat: 'pants', label: 'กางเกง' },
-    { cat: 'skirt', label: 'กระโปรง' },
-  ];
-
-  return (
-    <div className="space-y-6">
-      <div className="text-center pt-2">
-        <h1 className="text-2xl sm:text-3xl font-bold text-primary">วันนี้อยากใส่ชุดแบบไหน?</h1>
-        <p className="text-sm text-muted-foreground mt-1">เลือกสไตล์ที่ชอบก่อน แล้วค่อยปรับให้เป็นตัวคุณ</p>
-      </div>
-
-      {groups.map(({ cat, label }) => {
-        const templates = catalog.templates.filter(t => t.category === cat);
-        if (!templates.length) return null;
-        return (
-          <div key={cat}>
-            <h2 className="text-sm font-bold text-primary mb-2.5">{label}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {templates.map(t => (
-                <TemplateCard key={t.id} template={t} catalog={catalog} active={activeId === t.id} onPick={() => onPick(t)} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function TemplateCard({ template, catalog, active, onPick }: {
-  template: TemplateDef; catalog: Catalog; active: boolean; onPick: () => void;
-}) {
-  const layers = useMemo(() => resolveLayers(catalog, {
-    category: template.category, parts: template.parts,
-    partPattern: {}, partColor: {}, pattern: template.pattern, color: template.color,
-  }), [catalog, template]);
-
-  return (
-    <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.97 }} onClick={onPick}
-      className={`rounded-2xl border-2 overflow-hidden transition-all bg-gradient-to-b from-stone-50 to-stone-100 text-left shadow-sm
-        ${active ? 'border-secondary shadow-[0_0_0_3px_rgba(197,165,90,0.25)]' : 'border-transparent hover:border-secondary/50 hover:shadow-md'}`}>
-      <div className="w-full aspect-[4/5] pointer-events-none p-3">
-        <GarmentRenderer layers={layers} canvas={catalog.canvas} interactive={false} />
-      </div>
-      <div className="px-3 py-2 bg-white">
-        <p className="text-sm font-semibold text-primary truncate">{template.name}</p>
-        <p className="text-[11px] text-muted-foreground">เริ่มจากแบบนี้</p>
-      </div>
-    </motion.button>
-  );
-}
-
-// ─── Step 2: ปรับแต่ง (ทีละส่วน — ไม่มี accordion) ───────────────────────────
+// ─── Step 1: ปรับแต่ง (ทีละส่วน — ไม่มี accordion) ───────────────────────────
 function StepCustomize({ catalog, categoryDef, design, onOpenAi }: {
   catalog: Catalog; categoryDef: { name: string; parts: PartDef[] }; design: GarmentDesign; onOpenAi: () => void;
 }) {
