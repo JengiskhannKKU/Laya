@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ClothingDesigner from "@/components/design-clothes/ClothingDesigner";
+import DesignStudioRoot from "@/components/design-clothes/DesignStudioRoot";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
@@ -10,5 +10,5 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default function DesignClothesPage() {
-  return <ClothingDesigner />;
+  return <DesignStudioRoot />;
 }

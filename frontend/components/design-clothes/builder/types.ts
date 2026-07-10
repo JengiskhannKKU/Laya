@@ -150,3 +150,29 @@ export function calcPrice(catalog: Catalog, design: GarmentDesign): number {
   total += Math.round((pattern?.pricePerM ?? 0) * 2);
   return total;
 }
+
+export interface PriceBreakdown {
+  base: number;
+  options: number;
+  fabric: number;
+  total: number;
+}
+
+/** ราคาแยกรายการ (base/options/ผ้า) — สูตรเดียวกับ calcPrice ทุกประการ แค่แยกที่มาให้ UI แสดงได้ */
+export function calcPriceBreakdown(catalog: Catalog, design: GarmentDesign): PriceBreakdown {
+  const cat = catalog.categories[design.category];
+  if (!cat) return { base: 0, options: 0, fabric: 0, total: 0 };
+
+  const base = cat.basePrice;
+  let options = 0;
+  for (const part of cat.parts) {
+    const optionId = design.parts[part.key];
+    if (!optionId || optionId === 'none') continue;
+    const option = (catalog.options[part.options] ?? []).find(o => o.id === optionId);
+    options += option?.price ?? 0;
+  }
+  const pattern = catalog.patterns.find(pt => pt.id === design.pattern);
+  const fabric = Math.round((pattern?.pricePerM ?? 0) * 2);
+
+  return { base, options, fabric, total: base + options + fabric };
+}

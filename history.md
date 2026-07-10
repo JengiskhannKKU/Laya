@@ -512,3 +512,38 @@
 - แก้ `app/sitemap.ts` ด้วย (เจอว่าใช้ mock `products`/`communities` ทั้งคู่ — sitemap ส่ง URL ปลอมให้ Search Engine มาตลอด) เปลี่ยนเป็น fetch ข้อมูลจริงทั้งสองส่วน
 - ทดสอบจริง: `GET /api/communities` และ `/api/communities/:id` ผ่าน curl ตรง, เข้าหน้าแรกเห็น 5 ร้านจริง (4 ร้านจริง + 1 ร้าน demo), คลิกเข้าไปที่ "ชุมชนทอผ้าซิ่นลำพูน" เห็นข้อมูลจริงครบ (เรื่องราว, สถิติ, สินค้า 4 ชิ้นจริง) ไม่มี error
 - **ยังไม่แตะ**: `app/community/page.tsx` (ฟีดโซเชียล Pinterest-style) — เป็นฟีเจอร์ใหญ่แยกต่างหาก (โพสต์/ไลก์/คอมเมนต์ปลอมทั้งหมด) ตรงกับ US-509 ใน backlog ที่ยังไม่ทำ ต้องมีตาราง `community_posts` ใหม่ + ตัดสินใจเรื่องฟีเจอร์โซเชียลก่อน ไม่ใช่แค่ต่อ API
+
+---
+
+## 2026-07-10 — `/design-clothes` Desktop Studio Layout (ทำต่อจาก session ก่อนที่ค้างด้วย API error)
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: session ก่อนหน้า (บันทึกไว้ใน `frontend/2026-07-10-165515-hi.txt`) สำรวจ+วางแผนไว้ครบแล้วและผู้ใช้อนุมัติแผน (`~/.claude/plans/precious-percolating-catmull.md`) แต่ยังไม่ได้ implement ไฟล์ไหนเลยตอนโดน API error (`daily limit`) ระหว่างทาง — รอบนี้อ่านแผนที่อนุมัติแล้ว + ทรานสคริปต์เดิมทั้งหมด แล้วเดินหน้า implement ต่อตามลำดับที่วางไว้
+
+### โจทย์
+ทำ desktop layout ให้ `/design-clothes` ตาม `design-mockup.jpg` (สตูดิโอจอเดียว: ซ้ายเลือกชิ้นส่วน กลางพรีวิวใหญ่ ขวาเลือกผ้า/สี ล่างสรุป+ราคา) — คงหน้ามือถือ (wizard เดิม) ไว้ไม่แตะเลย
+
+### ไฟล์ใหม่ (ตามแผนที่อนุมัติ ไม่มีอะไรนอกแผน)
+- `hooks/use-desktop.ts` — `useIsDesktop()` breakpoint 1024px เลียนแบบ `use-mobile.ts`
+- `components/design-clothes/builder/types.ts` — เพิ่ม `calcPriceBreakdown()` (additive, สูตรเดียวกับ `calcPrice()` เป๊ะ แค่แยกที่มา base/options/fabric)
+- `components/design-clothes/studio/viewModes.ts` — `buildBackLayers()` (ตัด collar/pocket/buttons/decoration ออกแล้วพลิกที่เหลือ) + `toSketchLayers()` (ล้างสี/ลายเป็นขาว)
+- `components/design-clothes/studio/StudioCenterPreview.tsx` — toolbar (undo/redo disabled, reset ใช้งานจริง, fullscreen) + พรีวิวกลาง + แถบมุมมอง 4 แบบ (หน้า/หลัง/ซูมผ้า/แพทเทิร์น) เป็น live render จริงทุกอัน ไม่ใช่ไอคอนนิ่ง
+- `components/design-clothes/studio/StudioLeftPanel.tsx` — ประเภทชุด (จริงจาก `catalog.categories` ไม่ใช่ "เสื้อผู้หญิง/ผู้ชาย/ยูนิเซ็กส์" ตาม mockup เพราะ catalog ไม่มีข้อมูลนี้) → ทรงเริ่มต้น (เทมเพลต) → accordion รายชิ้นส่วน
+- `components/design-clothes/studio/StudioRightPanel.tsx` — เลือกผ้า (ค้นหาใช้งานจริง client-side filter) + สี — แท็บผ้าไหม/ผ้าฝ้าย และ filter ภูมิภาค/เทคนิคใน mockup ไม่มี metadata รองรับจริงใน catalog.json เลยทำเป็น decorative-but-inert (จางลง + "ยังไม่เปิดใช้งาน" ไม่ใช่ปุ่มปลอมที่กดแล้วดูเหมือนทำงาน)
+- `components/design-clothes/studio/StudioSummaryBar.tsx` — tags สรุปแบบ + ราคาแยกรายการ + "สั่งตัดชุดนี้" → `/tailor/with-fabric` — ปุ่ม "บันทึกไว้ในรายการโปรด" ผูกกับ localStorage draft เดิม **ไม่ใช่** `wishlist-context` ตามแผน เพราะ wishlist ผูกกับ `product_id` จริงในฐานข้อมูล ใช้กับดีไซน์ที่กำลังปรับแต่งอยู่ (ไม่มี id จริง) ไม่ได้ — เบี่ยงจากแผนตรงจุดนี้เพื่อไม่ให้เป็นฟีเจอร์ปลอม
+- `components/design-clothes/studio/StudioHeader.tsx` + `StudioStepBar.tsx` — breadcrumb/บันทึกแบบร่าง/โหลดแบบเดิม + ไอคอนตะกร้า/แจ้งเตือนผูกจำนวนจริงจาก `cart-store`/`notification-context` + แถบ orientation 4 จุด (คลิกแล้ว scroll-anchor ไม่ gate การแก้ไข)
+- `components/design-clothes/studio/DesktopStudio.tsx` — ประกอบทุกส่วน, ใช้ `useGarmentStore`/`resolveLayers`/`calcPrice` เดียวกับมือถือทุกประการ
+- `components/design-clothes/DesignStudioRoot.tsx` — สวิตช์ mobile/desktop รอ `mounted` ก่อนกัน hydration mismatch
+- `app/design-clothes/page.tsx` — เปลี่ยนมา render `<DesignStudioRoot/>` (แก้จุดเดียว ทำเป็นลำดับสุดท้ายตามแผน กัน mobile route ล่มระหว่างทำ)
+
+### ทดสอบแล้วจริงในเบราว์เซอร์ (ติดตั้ง Playwright+Chromium ชั่วคราวใน scratchpad เพราะไม่มี `chromium-cli` ในเครื่องนี้)
+- `tsc --noEmit` ผ่าน, dev server รัน `/design-clothes` ได้ 200 ไม่มี error
+- เดสก์ท็อป 1440px: เลือกชิ้นส่วนจาก accordion (คอจีน) → พรีวิวกลาง+callout label อัปเดตทันที, สลับประเภทชุด เสื้อ→กางเกง → ทรง/ราคาเปลี่ยนถูกต้อง (3,890→2,290)
+- มุมมองตัวอย่าง 4 แบบ (หน้า/หลัง/ซูมผ้า/แพทเทิร์น) เรนเดอร์ได้จริงทุกแบบ ไม่มีจอว่าง — ซูมผ้าโชว์ลายจริง, แพทเทิร์นโชว์ silhouette ขาว-ดำแบบ technical flat
+- Resize เดสก์ท็อป→มือถือ (390px)→เดสก์ท็อป: แบบกางเกงที่เลือกไว้คงอยู่ครบ (state ไม่หาย, mobile wizard render ถูกต้องไม่พัง)
+- ราคาสรุปด้านล่าง (breakdown: ผ้า 2,360 + ตัดเย็บ 990 + ดีเทล 540 = 3,890) ตรงกับราคาบนพรีวิว 100%
+- `console --errors` ว่างเปล่าทุกสถานการณ์ที่ทดสอบ
+- ปิด dev server + ลบ Playwright ชั่วคราวออกจาก scratchpad หลังทดสอบเสร็จ (ไม่ทิ้งไว้ในโปรเจกต์)
+
+**ค้าง**: ยังไม่ได้ลองบนอุปกรณ์จริง/เบราว์เซอร์อื่นนอกจาก Chromium headless, ปุ่ม undo/redo ตั้งใจปิดไว้ (store ไม่มี history ตามแผน)
