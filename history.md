@@ -676,3 +676,36 @@
 - `tsc --noEmit` ผ่านทั้งสองฝั่งหลังแก้
 
 **สรุปสถานะ**: ฟีเจอร์ทำงานได้จริงกับเครดิตจริงแล้ว คุณภาพภาพสูง (คงหน้า/ตัวคนเป๊ะ, ชุด/ลายผ้าถูกต้องตามที่เลือก) — ความไม่แน่นอนของเวลา generate (1.5-16+ นาที) และโอกาส fail เป็นครั้งคราวเป็นคุณสมบัติของบริการ kie.ai เอง ไม่ใช่บั๊กในโค้ดเรา ผู้ใช้กด "ลองใหม่" ได้เมื่อมุมไหนพัง
+
+---
+
+## 2026-07-11 — Deploy จริงขึ้น VPS + CI/CD auto-deploy ผ่าน GitHub Actions
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ซื้อ VPS ใหม่ (Ubuntu 24.04, 2 vCPU/3.8GB RAM, `45.91.134.199`) ให้ deploy โปรเจกต์จริง + ตั้ง CI/CD ให้ push ขึ้น `main` แล้ว deploy อัตโนมัติ โดเมนที่จะใช้: `laya-th.com`
+
+### เซิร์ฟเวอร์ (ทำตรงบน VPS ไม่ได้อยู่ใน repo)
+- สร้างผู้ใช้ `deploy` (ไม่ใช่ root) มี sudo NOPASSWD + SSH key เฉพาะสำหรับ deploy — ทดสอบ login ด้วย key ก่อนเชื่อว่าใช้ได้จริง (ยังไม่ปิด root password login ตามที่ผู้ใช้เลือกไว้ — เก็บเป็น fallback)
+- ติดตั้ง Node.js 22 (NodeSource), nginx, PM2 (global), certbot + python3-certbot-nginx
+- ufw firewall เปิดเฉพาะ 22/80/443
+- Clone repo ไปที่ `/home/deploy/laya`, สร้าง `backend/.env` + `frontend/.env.local` เวอร์ชัน production (คัดลอกค่าจริงจากเครื่อง local, ปรับ `NODE_ENV=production`, `ALLOWED_ORIGINS=https://laya-th.com,https://www.laya-th.com`, `NEXT_PUBLIC_API_URL=https://laya-th.com` ไม่มี trailing slash กันบั๊ก double-slash ที่เจอไปแล้วรอบก่อน) — chmod 600
+- Build ทั้งสองฝั่งสำเร็จ (`tsc` ฝั่ง backend, `next build` ฝั่ง frontend prerender ครบทุกหน้า) รันด้วย PM2 (`laya-backend` :4000, `laya-frontend` :3000) + `pm2 startup systemd` ให้รอดรีบูต
+- **สถาปัตยกรรม routing**: nginx `server_name laya-th.com www.laya-th.com` — `/api/*` proxy ตรงไป backend :4000 (มี `proxy_read_timeout 600s` รองรับ virtual try-on ที่ใช้เวลานาน), ที่เหลือ proxy ไป frontend :3000 — ตรงกับ pattern เดิมที่โค้ด client fetch `${NEXT_PUBLIC_API_URL}/api/...` ตรงอยู่แล้ว ไม่ต้องพึ่ง Next rewrites
+- ทดสอบผ่าน curl ด้วย `Host: laya-th.com` ยิงตรง IP ยืนยัน frontend/backend/API ตอบ 200 ครบก่อนต่อ DNS จริง
+
+### CI/CD (เพิ่มเข้า repo)
+- `ecosystem.config.js` — นิยาม PM2 process ทั้งสอง (เก็บ config เดียวกับที่ตั้งบนเซิร์ฟเวอร์ไว้ใน repo ด้วย ไม่ใช่มีแต่บนเซิร์ฟเวอร์)
+- `deploy.sh` — สคริปต์รันบน VPS (`git reset --hard origin/main` → `npm run install:all` → build ทั้งสองฝั่ง → `pm2 restart ecosystem.config.js --update-env` → `pm2 save`)
+- `.github/workflows/deploy.yml` — SSH เข้า VPS แล้วรัน `deploy.sh` ทุกครั้งที่ push เข้า `main` (ใช้ `appleboy/ssh-action`, มี `workflow_dispatch` ให้ trigger มือได้ด้วย)
+- ตั้ง GitHub Secrets ผ่าน `gh secret set`: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (private key เฉพาะของ deploy user ไม่ใช่ root)
+
+### ทดสอบจริง — push ขึ้น main แล้วดู CI/CD รันจริง
+- Commit+push ไฟล์ deploy ทั้งหมด → GitHub Actions รันอัตโนมัติทันที → **สำเร็จตั้งแต่รอบแรก** (`gh run watch` ยืนยัน `success`)
+- ตรวจบน VPS: `git log -1` ตรงกับ commit ที่เพิ่ง push, PM2 ทั้งสอง process restart จริง (`↺ 1`, uptime ตรงกับเวลา deploy), เว็บตอบ 200 ทั้ง frontend/backend หลัง deploy
+
+**ค้าง (ต้องทำโดยผู้ใช้)**: DNS ของ `laya-th.com` ยังชี้ไปที่ IP เดิมของ Hostinger (`2.57.91.91`) ไม่ใช่ VPS ใหม่ (`45.91.134.199`) — ต้องอัปเดต A record (`laya-th.com` และ `www.laya-th.com`) ก่อนถึงจะ:
+1. เข้าเว็บผ่านโดเมนได้จริง (ตอนนี้เข้าได้แค่ผ่าน IP + Host header เท่านั้น)
+2. ออก SSL cert ได้ (`certbot --nginx -d laya-th.com -d www.laya-th.com` — ยังไม่ได้รันเพราะ HTTP-01 challenge ต้องการให้โดเมนชี้มาที่เซิร์ฟเวอร์นี้ก่อน ไม่งั้น validation fail แน่นอน)
+
+หลัง DNS อัปเดตแล้ว แค่รันคำสั่ง certbot ด้านบนบน VPS ก็เสร็จ ไม่ต้องแก้ config อื่นเพิ่ม (nginx config เตรียมพร้อมรองรับ SSL redirect ที่ certbot จะเพิ่มให้อัตโนมัติอยู่แล้ว)
