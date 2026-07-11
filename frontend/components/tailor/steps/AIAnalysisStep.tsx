@@ -9,13 +9,17 @@ import HiveRoundedIcon from "@mui/icons-material/HiveRounded";
 import ColorLensRoundedIcon from "@mui/icons-material/ColorLensRounded";
 import LayersRoundedIcon from "@mui/icons-material/LayersRounded";
 
+// เดิม hardcode ผิดเป็น localhost:5000 (backend จริงรันที่ 4000 ทั้ง local dev และ production ผ่าน nginx /api/)
+// ตัด trailing slash กัน URL เพี้ยนเป็น // เหมือนบั๊กที่เจอใน VirtualTryOnStep.tsx ก่อนหน้านี้
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
+
 export default function AIAnalysisStep({ orderState, setOrderState, onNext }: any) {
   const [analyzing, setAnalyzing] = useState(true);
 
   useEffect(() => {
     const analyzeFabric = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/ai/analyze-fabric", {
+        const response = await fetch(`${API_BASE}/api/ai/analyze-fabric`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ imageBase64: orderState.fabricImage })
