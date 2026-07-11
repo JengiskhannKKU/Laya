@@ -709,3 +709,17 @@
 2. ออก SSL cert ได้ (`certbot --nginx -d laya-th.com -d www.laya-th.com` — ยังไม่ได้รันเพราะ HTTP-01 challenge ต้องการให้โดเมนชี้มาที่เซิร์ฟเวอร์นี้ก่อน ไม่งั้น validation fail แน่นอน)
 
 หลัง DNS อัปเดตแล้ว แค่รันคำสั่ง certbot ด้านบนบน VPS ก็เสร็จ ไม่ต้องแก้ config อื่นเพิ่ม (nginx config เตรียมพร้อมรองรับ SSL redirect ที่ certbot จะเพิ่มให้อัตโนมัติอยู่แล้ว)
+
+---
+
+## 2026-07-11 (รอบสอง) — DNS ชี้ถูกแล้ว + ออก SSL จริง + แก้บั๊ก mixed content
+
+**ทำโดย**: Claude (Sonnet 5)
+
+- ยืนยัน DNS `laya-th.com`/`www.laya-th.com` ชี้มาที่ `45.91.134.199` แล้วจริง (เช็คผ่านหลาย resolver: 8.8.8.8, 1.1.1.1)
+- SSL cert ออกสำเร็จแล้ว (`certbot --nginx`) — `https://laya-th.com` ตอบ 200 จริง, cert ถูกต้อง (`CN=laya-th.com`, Let's Encrypt, หมดอายุ 2026-10-08, ตั้ง auto-renew ผ่าน `certbot.timer` ไว้แล้ว), nginx redirect http→https อัตโนมัติ
+- **เจอบั๊กจริง**: หลังเปิด https ผู้ใช้เจอ "connection not secure" ในเบราว์เซอร์ — ตรวจแล้วพบ mixed content จริง: หน้าเว็บมี absolute URL เป็น `http://localhost:3000` ฝังอยู่ในหลายจุด (favicon `<link>`, Open Graph image, search action URL ใน JSON-LD) เพราะ `frontend/lib/seo.ts` อ่าน `NEXT_PUBLIC_SITE_URL` แล้ว fallback เป็น `http://localhost:3000` เมื่อไม่ได้ตั้งค่า — ตอน deploy ครั้งแรกไม่ได้ใส่ตัวแปรนี้ไว้ใน production `.env.local`
+- แก้: เพิ่ม `NEXT_PUBLIC_SITE_URL=https://laya-th.com` เข้า `frontend/.env.local` บน VPS แล้ว rebuild (`next build` ฝังค่า `NEXT_PUBLIC_*` ตอน build ไม่ใช่ runtime เลยต้อง build ใหม่ ไม่ใช่แค่ restart) + `pm2 restart --update-env`
+- ทดสอบแล้ว: ไม่มี `http://` เหลือในหน้าเว็บเลยแม้แต่จุดเดียว (grep ตรงจาก response จริง) ทุกจุดชี้ `https://laya-th.com` ถูกต้อง
+
+**หมายเหตุสำหรับ deploy รอบถัดไป**: `deploy.sh` ไม่แตะไฟล์ `.env`/`.env.local` เลย (ไม่ได้ tracked ใน git) เพราะงั้นตัวแปรที่เพิ่งเติมจะอยู่ถาวรบนเซิร์ฟเวอร์ ไม่ต้องเติมซ้ำทุกรอบ deploy
