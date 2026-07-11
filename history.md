@@ -723,3 +723,23 @@
 - ทดสอบแล้ว: ไม่มี `http://` เหลือในหน้าเว็บเลยแม้แต่จุดเดียว (grep ตรงจาก response จริง) ทุกจุดชี้ `https://laya-th.com` ถูกต้อง
 
 **หมายเหตุสำหรับ deploy รอบถัดไป**: `deploy.sh` ไม่แตะไฟล์ `.env`/`.env.local` เลย (ไม่ได้ tracked ใน git) เพราะงั้นตัวแปรที่เพิ่งเติมจะอยู่ถาวรบนเซิร์ฟเวอร์ ไม่ต้องเติมซ้ำทุกรอบ deploy
+
+---
+
+## 2026-07-11 (รอบสาม) — แก้ 2 บั๊กจริงที่เจอบนเว็บ production: `AIAnalysisStep` fetch พัง + `analyze-fabric` โมเดลปลดระวาง
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้แจ้งเออเรอร์จริงจากหน้าเว็บ (`TypeError: Failed to fetch` ที่ `AIAnalysisStep.tsx:18`) — ไล่แก้จนเจอ 2 ชั้นบั๊กซ้อนกัน
+
+### บั๊กชั้นที่ 1 — Frontend เรียกผิด URL (ตรงกับที่ผู้ใช้เจอ)
+- `AIAnalysisStep.tsx` hardcode `http://localhost:5000/api/ai/analyze-fabric` มาตั้งแต่แรก — backend จริงรันที่ port 4000 (local) หรือผ่าน nginx `/api/` (production) ไม่เคยตรงกับ URL นี้เลย เรียกไม่ได้ 100% ของเวลา แล้ว fallback เงียบๆ เป็น mock data (`"ผ้าไหม (Fallback)"`) — ไม่มีใครสังเกตเพราะ UI ยังทำงานต่อได้ปกติ จนกระทั่งมี error overlay ของ Next.js dev แสดงให้เห็น
+- แก้ให้ใช้ `NEXT_PUBLIC_API_URL` เหมือนไฟล์อื่นๆ ในโปรเจกต์ (พร้อม strip trailing slash กันบั๊ก `//` ที่เจอไปแล้วรอบก่อนใน `VirtualTryOnStep.tsx`)
+- เจอบั๊กคล้ายกันอีกจุดที่ `/gen-silk` (ชี้ `localhost:5000/api/generate` ผิด path ด้วย ควรเป็น `/api/ai/generate`) — **ไม่แก้** เพราะเป็น prototype ที่ถูกบันทึกไว้แล้วใน `deflect.md` D24 ว่าซ้ำซ้อนกับ `/design-clothes`/`/custom/*` และพักงานไว้รอตัดสินใจเลือกทางเดียว ไม่ใช่บั๊กเดี่ยวๆ ที่แก้แล้วจบ
+
+### บั๊กชั้นที่ 2 — พอ URL ถูกแล้ว เจอว่า backend เองพังอีกชั้น (ซ่อนอยู่เพราะบั๊กชั้น 1 บังไว้ตลอด)
+- ทดสอบตรงกับ KKU AI Gateway (`gen.ai.kku.ac.th`) พบว่า **API เดิมตอบ HTTP 200 แต่ body เป็น error จริง**: `"No endpoints found for google/gemini-2.5-flash-lite-preview-09-2025"` — โมเดล `gemini-2.5-flash-lite` ที่ hardcode ไว้ map ไปรุ่น snapshot ที่ปลดระวางไปแล้วฝั่ง provider (ยังอยู่ใน `/models` list แต่เรียกจริงไม่ได้)
+- เช็ค `/api/v1/models` จริงแล้วทดสอบยิงตรงหลายโมเดล พบว่า `gemini-2.5-flash` ใช้งานได้จริง (`gemini-flash`/`gemini-flash-lite` ตอบ "No models provided" แปลกๆ ไม่ใช้) — เปลี่ยนไปใช้ `gemini-2.5-flash` ใน `backend/src/routes/ai.ts`
+- แก้เพิ่ม: โค้ดเดิม `data.choices[0].message.content` ไม่เช็ค shape เลย พอ API ตอบ 200-แต่-error แบบนี้จะ throw `TypeError` ที่ไม่มีใครจับตั้งใจ ต้องพึ่ง catch-all เดิมที่ตอบ 500 generic แทนที่จะ fallback เป็น mock เหมือน error path อื่นๆ ในไฟล์เดียวกัน — เพิ่มเช็ค `data.choices?.[0]` แล้ว fallback เหมือน `!response.ok` branch ให้สอดคล้องกัน
+- ทดสอบจริงกับรูปผ้าจริงผ่าน `https://laya-th.com/api/ai/analyze-fabric` หลัง deploy: ได้ผลวิเคราะห์จริงจาก AI (`{"type":"ผ้าไหม","technique":"พิมพ์ลาย","pattern":"ลายประยุกต์พร้อมอักษร","tone":"ทอง-แดงเข้ม","thickness":"ปานกลาง"}`) ไม่ใช่ mock อีกต่อไป
+- `tsc --noEmit` ผ่าน, push 2 ครั้งแยกกัน (frontend fix, backend fix) ทั้งคู่ deploy อัตโนมัติสำเร็จผ่าน CI/CD ที่ตั้งไว้
