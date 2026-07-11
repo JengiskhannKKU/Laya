@@ -24,6 +24,18 @@ import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import BackupRoundedIcon from "@mui/icons-material/BackupRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import PaidRoundedIcon from "@mui/icons-material/PaidRounded";
+import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
+import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
+import BuildRoundedIcon from "@mui/icons-material/BuildRounded";
+import FiberManualRecordRoundedIcon from "@mui/icons-material/FiberManualRecordRounded";
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
+import LightbulbRoundedIcon from "@mui/icons-material/LightbulbRounded";
 
 import {
   mockSystemSettings, SystemSettings,
@@ -63,7 +75,7 @@ export default function SettingsPage() {
       setMaintenanceConfirm(true);
     } else {
       setSys(s => ({ ...s, maintenanceMode: false }));
-      showToast("ปิด Maintenance Mode แล้ว ✅");
+      showToast("ปิด Maintenance Mode แล้ว");
     }
   };
   const confirmMaintenance = () => {
@@ -71,10 +83,10 @@ export default function SettingsPage() {
     setMaintenanceConfirm(false);
     showToast("เปิด Maintenance Mode — Website ปิดชั่วคราว", "info");
   };
-  const saveSystem = () => { showToast("บันทึกการตั้งค่าระบบสำเร็จ ✅"); };
+  const saveSystem = () => { showToast("บันทึกการตั้งค่าระบบสำเร็จ"); };
   const doBackup = () => {
     setSys(s => ({ ...s, lastBackup: new Date().toLocaleString("th-TH") }));
-    showToast("สำรองข้อมูลเรียบร้อย ✅");
+    showToast("สำรองข้อมูลเรียบร้อย");
   };
 
   // ── Commission Actions ──
@@ -94,7 +106,7 @@ export default function SettingsPage() {
   };
   const confirmSaveCommission = () => {
     setSaveConfirm(false);
-    showToast("บันทึกค่าคอมมิชชันสำเร็จ ✅");
+    showToast("บันทึกค่าคอมมิชชันสำเร็จ");
   };
 
   // ── Live Preview Calc ──
@@ -103,35 +115,39 @@ export default function SettingsPage() {
   const layaEarns = Math.round(price * commRate / 100);
   const weaverGets = price - layaEarns;
 
-  const tabs: { key: SettingsTab; label: string; icon: string }[] = [
-    { key: "system", label: "⚙️ System Settings", icon: "⚙️" },
-    { key: "commission", label: "💸 Commission Settings", icon: "💸" },
+  const tabs: { key: SettingsTab; label: string; icon: typeof SettingsRoundedIcon }[] = [
+    { key: "system", label: "System Settings", icon: SettingsRoundedIcon },
+    { key: "commission", label: "Commission Settings", icon: PaidRoundedIcon },
   ];
 
   return (
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
-          ⚙️ Settings
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}>
+          <SettingsRoundedIcon sx={{ fontSize: 20 }} /> Settings
         </Typography>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
           Manage platform configuration and business rules
         </Typography>
         <Box sx={{ display: "flex", gap: 0.5, bgcolor: c.bgCard, borderRadius: "12px", p: 0.5, border: `1px solid ${c.borderCard}` }}>
-          {tabs.map(tab => (
-            <Box key={tab.key} onClick={() => setActiveTab(tab.key)}
-              sx={{
-                px: 2.5, py: 1, borderRadius: "10px", cursor: "pointer",
-                bgcolor: activeTab === tab.key ? c.goldSubtle : "transparent",
-                color: activeTab === tab.key ? c.gold : c.textMuted,
-                fontWeight: activeTab === tab.key ? 700 : 500, fontSize: "0.85rem", transition: tr,
-                display: "flex", alignItems: "center", gap: 1,
-                "&:hover": { bgcolor: activeTab === tab.key ? c.goldSubtle : c.bgCardHover },
-              }}>
-              {tab.label}
-            </Box>
-          ))}
+          {tabs.map(tab => {
+            const TabIcon = tab.icon;
+            return (
+              <Box key={tab.key} onClick={() => setActiveTab(tab.key)}
+                sx={{
+                  px: 2.5, py: 1, borderRadius: "10px", cursor: "pointer",
+                  bgcolor: activeTab === tab.key ? c.goldSubtle : "transparent",
+                  color: activeTab === tab.key ? c.gold : c.textMuted,
+                  fontWeight: activeTab === tab.key ? 700 : 500, fontSize: "0.85rem", transition: tr,
+                  display: "flex", alignItems: "center", gap: 1,
+                  "&:hover": { bgcolor: activeTab === tab.key ? c.goldSubtle : c.bgCardHover },
+                }}>
+                <TabIcon sx={{ fontSize: 16 }} />
+                {tab.label}
+              </Box>
+            );
+          })}
         </Box>
       </Box>
 
@@ -147,7 +163,7 @@ export default function SettingsPage() {
                 {/* Platform Info */}
                 <Box sx={card}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                    🏢 Platform Information
+                    <BusinessRoundedIcon sx={{ fontSize: 18 }} /> Platform Information
                   </Typography>
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <TextField fullWidth label="Platform Name" value={sys.platformName} onChange={e => setSys(s => ({ ...s, platformName: e.target.value }))} sx={inputSx} />
@@ -160,7 +176,7 @@ export default function SettingsPage() {
                 {/* Notification Settings */}
                 <Box sx={card}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                    🔔 Notification Settings
+                    <NotificationsRoundedIcon sx={{ fontSize: 18 }} /> Notification Settings
                   </Typography>
                   {[
                     { key: "emailNotifications" as const, label: "Email Notifications", desc: "ส่งอีเมลแจ้งเตือนเมื่อมีออเดอร์ใหม่" },
@@ -184,12 +200,13 @@ export default function SettingsPage() {
                 {/* Maintenance Mode */}
                 <Box sx={{ ...card, ...(sys.maintenanceMode && { borderColor: "#EF4444", boxShadow: "0 0 20px rgba(239,68,68,0.15)" }) }}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                    🔧 Maintenance Mode
+                    <BuildRoundedIcon sx={{ fontSize: 18 }} /> Maintenance Mode
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, borderRadius: "10px", bgcolor: sys.maintenanceMode ? "rgba(239,68,68,0.1)" : c.bgStatBox, border: `1px solid ${sys.maintenanceMode ? "#EF444440" : c.borderCard}` }}>
                     <Box>
-                      <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: sys.maintenanceMode ? "#EF4444" : "#22C55E" }}>
-                        {sys.maintenanceMode ? "🔴 Maintenance Mode — ON" : "🟢 Website ใช้งานปกติ"}
+                      <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: sys.maintenanceMode ? "#EF4444" : "#22C55E", display: "flex", alignItems: "center", gap: 0.7 }}>
+                        <FiberManualRecordRoundedIcon sx={{ fontSize: 10, color: sys.maintenanceMode ? "#EF4444" : "#22C55E" }} />
+                        {sys.maintenanceMode ? "Maintenance Mode — ON" : "Website ใช้งานปกติ"}
                       </Typography>
                       <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>
                         {sys.maintenanceMode ? "Website ปิดชั่วคราว ลูกค้าไม่สามารถเข้าถึงได้" : "เปิดใช้เมื่อต้องการปิดเว็บไซต์ชั่วคราว"}
@@ -203,7 +220,7 @@ export default function SettingsPage() {
                 {/* Security */}
                 <Box sx={card}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                    🔒 Security
+                    <LockRoundedIcon sx={{ fontSize: 18 }} /> Security
                   </Typography>
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <TextField fullWidth type="number" label="Session Timeout (นาที)" value={sys.sessionTimeout} onChange={e => setSys(s => ({ ...s, sessionTimeout: Number(e.target.value) }))} sx={inputSx} />
@@ -221,7 +238,7 @@ export default function SettingsPage() {
                 {/* Backup */}
                 <Box sx={card}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                    💾 Backup
+                    <BackupRoundedIcon sx={{ fontSize: 18 }} /> Backup
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, borderRadius: "10px", bgcolor: c.bgStatBox }}>
                     <Box>
@@ -275,8 +292,8 @@ export default function SettingsPage() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {/* Default Commission */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
-                    📊 Default Commission Rate
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                    <BarChartRoundedIcon sx={{ fontSize: 18 }} /> Default Commission Rate
                   </Typography>
                   <TextField fullWidth type="number" value={comm.defaultRate}
                     onChange={e => setComm(prev => ({ ...prev, defaultRate: Number(e.target.value) }))}
@@ -285,15 +302,15 @@ export default function SettingsPage() {
                   {comm.defaultRate > 20 && (
                     <Box sx={{ mt: 1.5, p: 1.5, borderRadius: "8px", bgcolor: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", display: "flex", gap: 1 }}>
                       <WarningAmberRoundedIcon sx={{ fontSize: 16, color: "#F59E0B", mt: 0.2 }} />
-                      <Typography sx={{ fontSize: "0.75rem", color: "#F59E0B" }}>⚠ ค่าคอมมิชชันสูงอาจส่งผลต่อ conversion ของ seller</Typography>
+                      <Typography sx={{ fontSize: "0.75rem", color: "#F59E0B" }}>ค่าคอมมิชชันสูงอาจส่งผลต่อ conversion ของ seller</Typography>
                     </Box>
                   )}
                 </Box>
 
                 {/* Category Commission */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
-                    📦 Category-specific Commission
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                    <Inventory2RoundedIcon sx={{ fontSize: 18 }} /> Category-specific Commission
                   </Typography>
                   <Box sx={{ borderRadius: "10px", border: `1px solid ${c.borderCard}`, overflow: "hidden" }}>
                     <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr 40px", px: 2, py: 1, bgcolor: c.bgTableHeader }}>
@@ -328,8 +345,8 @@ export default function SettingsPage() {
 
                 {/* Weaver Tier Commission */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
-                    🧑‍🌾 Weaver Tier Commission
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                    <PersonRoundedIcon sx={{ fontSize: 18 }} /> Weaver Tier Commission
                   </Typography>
                   <Box sx={{ borderRadius: "10px", border: `1px solid ${c.borderCard}`, overflow: "hidden" }}>
                     <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr", px: 2, py: 1, bgcolor: c.bgTableHeader }}>
@@ -356,8 +373,8 @@ export default function SettingsPage() {
 
                 {/* Withdrawal Fee */}
                 <Box sx={card}>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
-                    💳 Withdrawal Fee
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                    <CreditCardRoundedIcon sx={{ fontSize: 18 }} /> Withdrawal Fee
                   </Typography>
                   <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
                     <TextField fullWidth type="number" label="Fixed Fee" value={comm.withdrawalFeeFixed}
@@ -377,7 +394,7 @@ export default function SettingsPage() {
                 {/* Live Preview Card */}
                 <Box sx={{ ...card, background: `linear-gradient(135deg, ${c.bgCard}, rgba(197,165,90,0.08))`, border: `1px solid ${c.gold}33`, position: "sticky", top: 80 }}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.gold, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                    💡 Live Calculator
+                    <LightbulbRoundedIcon sx={{ fontSize: 18 }} /> Live Calculator
                   </Typography>
                   <TextField fullWidth type="number" label="ราคาสินค้า (฿)" value={previewPrice} onChange={e => setPreviewPrice(e.target.value)}
                     InputProps={{ startAdornment: <InputAdornment position="start"><Typography sx={{ color: c.textMuted }}>฿</Typography></InputAdornment> }}
@@ -463,7 +480,10 @@ export default function SettingsPage() {
           <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>
             การเปิด Maintenance Mode จะทำให้ลูกค้าไม่สามารถเข้าถึงเว็บไซต์ได้ จนกว่าจะปิด
           </Typography>
-          <Typography sx={{ fontSize: "0.75rem", color: "#EF4444", mt: 1 }}>⚠️ การดำเนินการนี้จะส่งผลต่อ user ทั้งหมด</Typography>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.6, mt: 1 }}>
+            <WarningAmberRoundedIcon sx={{ fontSize: 14, color: "#EF4444", mt: 0.2 }} />
+            <Typography sx={{ fontSize: "0.75rem", color: "#EF4444" }}>การดำเนินการนี้จะส่งผลต่อ user ทั้งหมด</Typography>
+          </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
           <Button onClick={() => setMaintenanceConfirm(false)} sx={{ color: c.textMuted, textTransform: "none" }}>ยกเลิก</Button>
@@ -478,7 +498,7 @@ export default function SettingsPage() {
       <Dialog open={saveConfirm} onClose={() => setSaveConfirm(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
         <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{ width: 40, height: 40, borderRadius: "10px", bgcolor: c.goldSubtle, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Typography sx={{ fontSize: "1.2rem" }}>💸</Typography>
+            <PaidRoundedIcon sx={{ color: c.gold, fontSize: 22 }} />
           </Box>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem" }}>ยืนยันการเปลี่ยนแปลงค่าคอมมิชชัน?</Typography>
         </DialogTitle>

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
@@ -12,6 +12,27 @@ import { useAdminTheme } from "@/lib/admin-theme-context";
 
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
+import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
+import PaletteRoundedIcon from "@mui/icons-material/PaletteRounded";
+import TextureRoundedIcon from "@mui/icons-material/TextureRounded";
+import HourglassBottomRoundedIcon from "@mui/icons-material/HourglassBottomRounded";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import PsychologyRoundedIcon from "@mui/icons-material/PsychologyRounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import LightbulbRoundedIcon from "@mui/icons-material/LightbulbRounded";
+import AgricultureRoundedIcon from "@mui/icons-material/AgricultureRounded";
+import FiberManualRecordRoundedIcon from "@mui/icons-material/FiberManualRecordRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import PaidRoundedIcon from "@mui/icons-material/PaidRounded";
+import CampaignRoundedIcon from "@mui/icons-material/CampaignRounded";
+import FactoryRoundedIcon from "@mui/icons-material/FactoryRounded";
+import HandshakeRoundedIcon from "@mui/icons-material/HandshakeRounded";
+import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
+import AdjustRoundedIcon from "@mui/icons-material/AdjustRounded";
 
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -35,11 +56,11 @@ import {
 type AnalyticsTab = "sales" | "trends" | "insights";
 
 // ─── Reusable Components ──────────────────────────────────────
-const CardTitle = ({ children, emoji }: { children: string; emoji?: string }) => {
+const CardTitle = ({ children, icon }: { children: string; icon?: ReactNode }) => {
   const { c } = useAdminTheme();
   return (
     <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-      {emoji && <span>{emoji}</span>}{children}
+      {icon && <Box component="span" sx={{ display: "flex", alignItems: "center", fontSize: "1.1rem" }}>{icon}</Box>}{children}
     </Typography>
   );
 };
@@ -49,7 +70,21 @@ const priorityConfig: Record<string, { label: string; color: string; bg: string 
   high: { label: "สำคัญ", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
   medium: { label: "ปานกลาง", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
 };
-const recTypeIcons: Record<string, string> = { product: "📦", pricing: "💰", marketing: "📣", stock: "🏭", community: "🤝" };
+const recTypeIcons: Record<string, ReactNode> = {
+  product: <Inventory2RoundedIcon sx={{ fontSize: 18 }} />,
+  pricing: <PaidRoundedIcon sx={{ fontSize: 18 }} />,
+  marketing: <CampaignRoundedIcon sx={{ fontSize: 18 }} />,
+  stock: <FactoryRoundedIcon sx={{ fontSize: 18 }} />,
+  community: <HandshakeRoundedIcon sx={{ fontSize: 18 }} />,
+};
+
+const insightTypeIcons: Record<string, ReactNode> = {
+  trend: <LocalFireDepartmentRoundedIcon sx={{ fontSize: 18 }} />,
+  location: <PlaceRoundedIcon sx={{ fontSize: 18 }} />,
+  alert: <WarningAmberRoundedIcon sx={{ fontSize: 18 }} />,
+  insight: <LightbulbRoundedIcon sx={{ fontSize: 18 }} />,
+  metric: <AdjustRoundedIcon sx={{ fontSize: 18 }} />,
+};
 
 const searchTrendLines = [
   { key: "ผ้าไหมมัดหมี่", color: "#C5A55A" },
@@ -72,10 +107,10 @@ export default function AnalyticsPage() {
 
   const revenueData = revenueRange === "7d" ? mockRevenue7Days : revenueRange === "30d" ? mockRevenue30Days : mockRevenue1Year;
 
-  const tabs: { key: AnalyticsTab; label: string; icon: string }[] = [
-    { key: "sales", label: "Sales Dashboard", icon: "💰" },
-    { key: "trends", label: "Trends Dashboard", icon: "🔥" },
-    { key: "insights", label: "Insights Dashboard", icon: "🧠" },
+  const tabs: { key: AnalyticsTab; label: string; icon: ReactNode }[] = [
+    { key: "sales", label: "Sales Dashboard", icon: <PaidRoundedIcon sx={{ fontSize: 16 }} /> },
+    { key: "trends", label: "Trends Dashboard", icon: <LocalFireDepartmentRoundedIcon sx={{ fontSize: 16 }} /> },
+    { key: "insights", label: "Insights Dashboard", icon: <PsychologyRoundedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   // ─── KPI values for Sales ───────────────────────────────────
@@ -90,8 +125,8 @@ export default function AnalyticsPage() {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
-          📊 Analytics
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}>
+          <BarChartRoundedIcon sx={{ fontSize: 20 }} /> Analytics
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
           <Typography sx={{ fontSize: "0.8rem", color: c.textMuted }}>
@@ -117,7 +152,7 @@ export default function AnalyticsPage() {
                 "&:hover": { bgcolor: activeTab === tab.key ? c.goldSubtle : c.bgCardHover },
               }}
             >
-              <span>{tab.icon}</span> {tab.label}
+              <Box sx={{ display: "flex", alignItems: "center" }}>{tab.icon}</Box> {tab.label}
             </Box>
           ))}
         </Box>
@@ -167,7 +202,7 @@ export default function AnalyticsPage() {
             {/* Revenue Chart */}
             <Box sx={{ ...card, mb: 3 }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 1 }}>
-                <CardTitle emoji="📈">Revenue</CardTitle>
+                <CardTitle icon={<TrendingUpRoundedIcon sx={{ fontSize: 18 }} />}>Revenue</CardTitle>
                 <Box sx={{ display: "flex", gap: 0.5 }}>
                   {(["7d", "30d", "1y"] as const).map(r => (
                     <Box key={r} onClick={() => setRevenueRange(r)}
@@ -195,7 +230,7 @@ export default function AnalyticsPage() {
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
               {/* Top Products */}
               <Box sx={card}>
-                <CardTitle emoji="🏆">Top Products</CardTitle>
+                <CardTitle icon={<EmojiEventsRoundedIcon sx={{ fontSize: 18 }} />}>Top Products</CardTitle>
                 {mockTopProducts.map((p, i) => (
                   <Box key={p.id} sx={{ display: "flex", alignItems: "center", gap: 2, py: 1.5, borderBottom: i < mockTopProducts.length - 1 ? `1px solid ${c.borderCard}` : "none" }}>
                     <Typography sx={{ color: c.textMuted, fontWeight: 700, fontSize: "0.9rem", width: 20 }}>{i + 1}</Typography>
@@ -214,7 +249,7 @@ export default function AnalyticsPage() {
 
               {/* Sales by Location */}
               <Box sx={card}>
-                <CardTitle emoji="🌍">Sales by Location (จังหวัด)</CardTitle>
+                <CardTitle icon={<PublicRoundedIcon sx={{ fontSize: 18 }} />}>Sales by Location (จังหวัด)</CardTitle>
                 {mockDemandHeatmap.map((pv, i) => (
                   <Box key={pv.province} sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.2 }}>
                     <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: c.textMuted, width: 18, textAlign: "right" }}>{i + 1}</Typography>
@@ -232,7 +267,7 @@ export default function AnalyticsPage() {
             {/* Category Revenue Pie */}
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2 }}>
               <Box sx={card}>
-                <CardTitle emoji="📊">สัดส่วนประเภทสินค้า</CardTitle>
+                <CardTitle icon={<BarChartRoundedIcon sx={{ fontSize: 18 }} />}>สัดส่วนประเภทสินค้า</CardTitle>
                 <ResponsiveContainer width="100%" height={240}>
                   <PieChart>
                     <Pie data={mockCategoryRevenue} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3}>
@@ -244,7 +279,7 @@ export default function AnalyticsPage() {
                 </ResponsiveContainer>
               </Box>
               <Box sx={card}>
-                <CardTitle emoji="🧵">ยอดขายตามประเภทผ้า</CardTitle>
+                <CardTitle icon={<TextureRoundedIcon sx={{ fontSize: 18 }} />}>ยอดขายตามประเภทผ้า</CardTitle>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={mockFabricTypeSales} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
@@ -275,7 +310,7 @@ export default function AnalyticsPage() {
                 border: `1px solid ${c.gold}44`,
               }}>
               <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "center", gap: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
-                <Typography sx={{ fontSize: "1rem" }}>🔥</Typography>
+                <LocalFireDepartmentRoundedIcon sx={{ fontSize: "1rem", color: c.gold }} />
                 <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>Trending Now</Typography>
                 <Chip label="LIVE" size="small" sx={{ bgcolor: "rgba(34,197,94,0.2)", color: "#22C55E", fontWeight: 700, fontSize: "0.65rem", height: 20, ml: "auto",
                   animation: "pulse 2s infinite", "@keyframes pulse": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.6 } },
@@ -291,12 +326,16 @@ export default function AnalyticsPage() {
                   <Typography sx={{ fontSize: "1.3rem", fontWeight: 700, color: "#22C55E" }}>+32%</Typography>
                 </Box>
                 <Box sx={{ p: 2, borderRadius: "12px", bgcolor: c.bgCardHover, border: `1px solid ${c.borderCard}` }}>
-                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1 }}>🧵 ลายยอดนิยม</Typography>
+                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <TextureRoundedIcon sx={{ fontSize: 15 }} /> ลายยอดนิยม
+                  </Typography>
                   <Typography sx={{ fontSize: "0.75rem", color: c.textMuted }}>ลายที่ Growth สูงสุด</Typography>
                   <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: c.gold }}>ลายนาคราช +45%</Typography>
                 </Box>
                 <Box sx={{ p: 2, borderRadius: "12px", bgcolor: c.bgCardHover, border: `1px solid ${c.borderCard}` }}>
-                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1 }}>🔍 Keyword ร้อนแรง</Typography>
+                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <SearchRoundedIcon sx={{ fontSize: 15 }} /> Keyword ร้อนแรง
+                  </Typography>
                   <Typography sx={{ fontSize: "0.75rem", color: c.textMuted }}>เติบโตเร็วที่สุด</Typography>
                   <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: "#EF4444" }}>&ldquo;ชุดผ้าไทย วัยรุ่น&rdquo; +65%</Typography>
                 </Box>
@@ -307,7 +346,7 @@ export default function AnalyticsPage() {
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
               {/* Color Bar Chart */}
               <Box sx={card}>
-                <CardTitle emoji="🎨">Color Trends (ความนิยมตามสี)</CardTitle>
+                <CardTitle icon={<PaletteRoundedIcon sx={{ fontSize: 18 }} />}>Color Trends (ความนิยมตามสี)</CardTitle>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={mockColorPopularity}>
                     <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
@@ -323,7 +362,7 @@ export default function AnalyticsPage() {
 
               {/* Fabric Type Pie */}
               <Box sx={card}>
-                <CardTitle emoji="🧵">Fabric Type Trends</CardTitle>
+                <CardTitle icon={<TextureRoundedIcon sx={{ fontSize: 18 }} />}>Fabric Type Trends</CardTitle>
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
                     <Pie data={mockFabricTypeSales.map(f => ({ name: f.type, value: f.pct }))} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3}>
@@ -338,7 +377,7 @@ export default function AnalyticsPage() {
 
             {/* Search Trends (Chips + Line Chart) */}
             <Box sx={{ ...card, mb: 3 }}>
-              <CardTitle emoji="📊">Search Trends (keyword ยอดนิยม)</CardTitle>
+              <CardTitle icon={<BarChartRoundedIcon sx={{ fontSize: 18 }} />}>Search Trends (keyword ยอดนิยม)</CardTitle>
               {/* Keyword Chips */}
               <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 3 }}>
                 {mockSearchKeywords.slice(0, 6).map(kw => (
@@ -351,7 +390,7 @@ export default function AnalyticsPage() {
 
             {/* Trend Over Time */}
             <Box sx={card}>
-              <CardTitle emoji="⏳">Trend Over Time (keyword vs time)</CardTitle>
+              <CardTitle icon={<HourglassBottomRoundedIcon sx={{ fontSize: 18 }} />}>Trend Over Time (keyword vs time)</CardTitle>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={mockSearchTrendsOverTime}>
                   <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
@@ -384,7 +423,7 @@ export default function AnalyticsPage() {
               <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "center", gap: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
                 <AutoAwesomeRoundedIcon sx={{ color: c.gold, fontSize: 22 }} />
                 <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>
-                  🧠 AI Insight วันนี้
+                  AI Insight วันนี้
                 </Typography>
                 <Chip label="LIVE" size="small" sx={{ bgcolor: "rgba(34,197,94,0.2)", color: "#22C55E", fontWeight: 700, fontSize: "0.65rem", height: 20, ml: "auto",
                   animation: "pulse 2s infinite", "@keyframes pulse": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.6 } },
@@ -394,7 +433,7 @@ export default function AnalyticsPage() {
                 <Box sx={{ p: 2.5, borderRadius: "12px", background: `linear-gradient(135deg, rgba(197,165,90,0.15), rgba(197,165,90,0.05))`, mb: 2 }}>
                   {mockAIInsights.slice(0, 4).map((insight, i) => (
                     <Box key={i} sx={{ display: "flex", gap: 1.5, py: 1, borderBottom: i < 3 ? `1px solid ${c.borderCard}` : "none" }}>
-                      <Typography sx={{ fontSize: "1rem" }}>{insight.icon}</Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", color: c.gold }}>{insightTypeIcons[insight.type] || insightTypeIcons.insight}</Box>
                       <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, lineHeight: 1.6 }}>{insight.text}</Typography>
                     </Box>
                   ))}
@@ -406,7 +445,7 @@ export default function AnalyticsPage() {
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
               {/* Demand vs Supply */}
               <Box sx={card}>
-                <CardTitle emoji="📉">Demand vs Supply</CardTitle>
+                <CardTitle icon={<TrendingDownRoundedIcon sx={{ fontSize: 18 }} />}>Demand vs Supply</CardTitle>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={mockDemandVsSupply}>
                     <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
@@ -418,14 +457,15 @@ export default function AnalyticsPage() {
                     <Legend formatter={(value: string) => <span style={{ color: c.legendText, fontSize: 11 }}>{value}</span>} />
                   </BarChart>
                 </ResponsiveContainer>
-                <Typography sx={{ fontSize: "0.75rem", color: c.textMuted, mt: 1, textAlign: "center" }}>
-                  🔴 แดง = Demand (ต้องการ)&nbsp;&nbsp;🟢 เขียว = Supply (มีของ)&nbsp;&nbsp;→ ช่องว่าง = โอกาส!
+                <Typography sx={{ fontSize: "0.75rem", color: c.textMuted, mt: 1, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
+                  <FiberManualRecordRoundedIcon sx={{ fontSize: 10, color: "#EF4444", mx: 0.5 }} /> แดง = Demand (ต้องการ)&nbsp;&nbsp;
+                  <FiberManualRecordRoundedIcon sx={{ fontSize: 10, color: "#22C55E", mx: 0.5 }} /> เขียว = Supply (มีของ)&nbsp;&nbsp;→ ช่องว่าง = โอกาส!
                 </Typography>
               </Box>
 
               {/* Predictive Analytics */}
               <Box sx={card}>
-                <CardTitle emoji="📊">Predictive Analytics</CardTitle>
+                <CardTitle icon={<BarChartRoundedIcon sx={{ fontSize: 18 }} />}>Predictive Analytics</CardTitle>
                 <Box sx={{ p: 2, borderRadius: "12px", background: `linear-gradient(135deg, rgba(197,165,90,0.1), rgba(197,165,90,0.03))`, border: `1px solid ${c.gold}33`, mb: 2 }}>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mb: 0.5 }}>คาดการณ์รายรับเดือนหน้า</Typography>
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
@@ -442,7 +482,9 @@ export default function AnalyticsPage() {
                     {mockPredictiveAnalytics.nextQuarterTrend}
                   </Typography>
                 </Box>
-                <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: c.textPrimary, mb: 1 }}>⚠️ Risk Factors</Typography>
+                <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <WarningAmberRoundedIcon sx={{ fontSize: 14 }} /> Risk Factors
+                </Typography>
                 {mockPredictiveAnalytics.riskFactors.map((risk, i) => (
                   <Box key={i} sx={{ display: "flex", gap: 1, mb: 0.8 }}>
                     <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>•</Typography>
@@ -454,7 +496,7 @@ export default function AnalyticsPage() {
 
             {/* Recommendations */}
             <Box sx={{ ...card, mb: 3 }}>
-              <CardTitle emoji="💡">AI Recommendations</CardTitle>
+              <CardTitle icon={<LightbulbRoundedIcon sx={{ fontSize: 18 }} />}>AI Recommendations</CardTitle>
               <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 1.5 }}>
                 {mockRecommendations.map((rec, i) => {
                   const pr = priorityConfig[rec.priority] || priorityConfig.medium;
@@ -462,7 +504,7 @@ export default function AnalyticsPage() {
                     <Box key={i} component={motion.div} {...cardAnim} transition={{ delay: i * 0.06 }}
                       sx={{ p: 2, borderRadius: "12px", border: `1px solid ${c.borderCard}`, "&:hover": { bgcolor: c.bgCardHover }, transition: tr }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.8 }}>
-                        <Typography sx={{ fontSize: "1.1rem" }}>{recTypeIcons[rec.type]}</Typography>
+                        <Box sx={{ display: "flex", alignItems: "center", color: c.gold }}>{recTypeIcons[rec.type]}</Box>
                         <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, flex: 1 }}>{rec.title}</Typography>
                         <Chip label={pr.label} size="small" sx={{ bgcolor: pr.bg, color: pr.color, fontWeight: 700, fontSize: "0.65rem", height: 20 }} />
                       </Box>
@@ -475,7 +517,7 @@ export default function AnalyticsPage() {
 
             {/* Community Opportunity */}
             <Box sx={card}>
-              <CardTitle emoji="🧑‍🌾">Community Opportunity (โอกาสชุมชน)</CardTitle>
+              <CardTitle icon={<AgricultureRoundedIcon sx={{ fontSize: 18 }} />}>Community Opportunity (โอกาสชุมชน)</CardTitle>
               <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
                 {mockCommunityOpportunity.map((co, i) => (
                   <Box key={i} component={motion.div} {...cardAnim} transition={{ delay: i * 0.06 }}
@@ -495,8 +537,8 @@ export default function AnalyticsPage() {
                         <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: "#22C55E" }}>+{co.demandGrowth}%</Typography>
                       </Box>
                     </Box>
-                    <Typography sx={{ fontSize: "0.7rem", color: c.textSecondary, lineHeight: 1.5, p: 1.5, borderRadius: "8px", bgcolor: c.bgCardHover }}>
-                      💡 {co.reason}
+                    <Typography sx={{ fontSize: "0.7rem", color: c.textSecondary, lineHeight: 1.5, p: 1.5, borderRadius: "8px", bgcolor: c.bgCardHover, display: "flex", alignItems: "flex-start", gap: 0.5 }}>
+                      <LightbulbRoundedIcon sx={{ fontSize: 13, mt: 0.1, flexShrink: 0 }} /> {co.reason}
                     </Typography>
                   </Box>
                 ))}

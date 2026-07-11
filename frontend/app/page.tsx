@@ -34,7 +34,7 @@ export default function HomePage() {
     <MobileLayout>
       <HeroSearch />
       <BannerCarousel />
-      <CategorySection />
+   
       <RecommendedSection />
       <EditorialSection />
       <CommunitiesSection />

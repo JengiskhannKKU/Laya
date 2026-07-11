@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { fetchCommunities, type LiveCommunity } from "@/lib/communities";
 import Image from "next/image";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
 
@@ -101,9 +102,17 @@ function CommunityCard({ community }: { community: LiveCommunity }) {
               fontSize: "0.68rem",
               color: "rgba(255,255,255,0.8)",
               mt: 0.4,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.2,
             }}
           >
-            {community.productCount} ผลิตภัณฑ์{community.rating > 0 ? ` · ★ ${community.rating.toFixed(1)}` : ""}
+            {community.productCount} ผลิตภัณฑ์
+            {community.rating > 0 && (
+              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.2, ml: 0.3 }}>
+                · <StarRoundedIcon sx={{ fontSize: "0.8rem" }} /> {community.rating.toFixed(1)}
+              </Box>
+            )}
           </Typography>
         </Box>
       </Box>

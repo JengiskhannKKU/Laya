@@ -29,6 +29,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -438,7 +439,16 @@ export default function WeavingOrderPage() {
                       {community === c.id && <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 20 }} />}
                     </Box>
                     <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
-                      <Chip label={`★ ${c.rating}`} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#FDF8EE", color: "#92652A", fontWeight: 700 }} />
+                      <Chip
+                        label={
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
+                            <StarRoundedIcon sx={{ fontSize: 12 }} />
+                            {c.rating}
+                          </Box>
+                        }
+                        size="small"
+                        sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#FDF8EE", color: "#92652A", fontWeight: 700 }}
+                      />
                       <Chip label={c.specialty} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#EEF3FF", color: "#1B2A4A" }} />
                       <Chip label={`ใช้เวลา ${c.leadTime}`} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#F3F4F6", color: "#6B7280" }} />
                     </Box>

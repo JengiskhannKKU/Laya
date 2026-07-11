@@ -30,6 +30,15 @@ import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded";
+import CampaignRoundedIcon from "@mui/icons-material/CampaignRounded";
+import FiberManualRecordRoundedIcon from "@mui/icons-material/FiberManualRecordRounded";
+import HourglassBottomRoundedIcon from "@mui/icons-material/HourglassBottomRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import EventRoundedIcon from "@mui/icons-material/EventRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
 
 import {
   mockPromotions, AdminPromotion,
@@ -44,10 +53,10 @@ const promoStatusStyles: Record<string, { label: string; color: string; bg: stri
   expired: { label: "Expired", color: "#6B7280", bg: "rgba(107,114,128,0.15)" },
   draft: { label: "Draft", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
 };
-const campaignStatusStyles: Record<string, { label: string; color: string; bg: string }> = {
-  active: { label: "🟢 Active", color: "#22C55E", bg: "rgba(34,197,94,0.15)" },
-  upcoming: { label: "🔵 Upcoming", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
-  ended: { label: "⚪ Ended", color: "#6B7280", bg: "rgba(107,114,128,0.15)" },
+const campaignStatusStyles: Record<string, { label: string; color: string; bg: string; icon: JSX.Element }> = {
+  active: { label: "Active", color: "#22C55E", bg: "rgba(34,197,94,0.15)", icon: <FiberManualRecordRoundedIcon sx={{ fontSize: 10 }} /> },
+  upcoming: { label: "Upcoming", color: "#3B82F6", bg: "rgba(59,130,246,0.15)", icon: <FiberManualRecordRoundedIcon sx={{ fontSize: 10 }} /> },
+  ended: { label: "Ended", color: "#6B7280", bg: "rgba(107,114,128,0.15)", icon: <FiberManualRecordRoundedIcon sx={{ fontSize: 10 }} /> },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -136,7 +145,7 @@ export default function MarketingPage() {
     setPromotions(prev => [newP, ...prev]);
     setCreatePromoOpen(false);
     setPromoForm({ name: "", code: "", type: "percent", value: "", minSpend: "", usageLimit: "", perUserLimit: "1", startDate: "", endDate: "", applyTo: "all", applyTarget: "" });
-    showToast(`สร้างโปรโมชั่น "${newP.code}" สำเร็จ! ${conflict ? "⚠️ อาจซ้อนกับโปรอื่น" : ""}`, conflict ? "info" : "success");
+    showToast(`สร้างโปรโมชั่น "${newP.code}" สำเร็จ! ${conflict ? "อาจซ้อนกับโปรอื่น" : ""}`, conflict ? "info" : "success");
   };
 
   // ── Create Campaign ──
@@ -161,9 +170,9 @@ export default function MarketingPage() {
     return diff > 0 ? diff : 0;
   };
 
-  const tabs: { key: MarketingTab; label: string; icon: string }[] = [
-    { key: "promotions", label: "Promotions", icon: "🎫" },
-    { key: "campaigns", label: "Campaigns", icon: "📣" },
+  const tabs: { key: MarketingTab; label: string; icon: JSX.Element }[] = [
+    { key: "promotions", label: "Promotions", icon: <ConfirmationNumberRoundedIcon sx={{ fontSize: 16 }} /> },
+    { key: "campaigns", label: "Campaigns", icon: <CampaignRoundedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   const inputSx = { "& .MuiOutlinedInput-root": { color: c.textPrimary, "& fieldset": { borderColor: c.borderInput } }, "& .MuiInputLabel-root": { color: c.textMuted } };
@@ -173,8 +182,8 @@ export default function MarketingPage() {
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
-          📣 Marketing
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}>
+          <CampaignRoundedIcon sx={{ fontSize: 20 }} /> Marketing
         </Typography>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
           จัดการโปรโมชั่น, คูปอง และแคมเปญเพื่อเพิ่มยอดขาย
@@ -190,7 +199,7 @@ export default function MarketingPage() {
                 display: "flex", alignItems: "center", gap: 1,
                 "&:hover": { bgcolor: activeTab === tab.key ? c.goldSubtle : c.bgCardHover },
               }}>
-              <span>{tab.icon}</span> {tab.label}
+              <Box sx={{ display: "flex", alignItems: "center" }}>{tab.icon}</Box> {tab.label}
             </Box>
           ))}
         </Box>
@@ -241,7 +250,7 @@ export default function MarketingPage() {
               </Box>
               {filteredPromos.length === 0 ? (
                 <Box sx={{ p: 5, textAlign: "center" }}>
-                  <Typography sx={{ fontSize: "1.5rem", mb: 1 }}>🎫</Typography>
+                  <ConfirmationNumberRoundedIcon sx={{ fontSize: "1.5rem", mb: 1, color: c.textMuted }} />
                   <Typography sx={{ fontSize: "0.9rem", color: c.textMuted }}>ยังไม่มีโปรโมชั่น</Typography>
                 </Box>
               ) : filteredPromos.map((promo, idx) => {
@@ -322,7 +331,7 @@ export default function MarketingPage() {
             {/* Campaign Grid */}
             {filteredCampaigns.length === 0 ? (
               <Box sx={{ ...card, p: 5, textAlign: "center" }}>
-                <Typography sx={{ fontSize: "2rem", mb: 1 }}>📣</Typography>
+                <CampaignRoundedIcon sx={{ fontSize: "2rem", mb: 1, color: c.textMuted }} />
                 <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: c.textPrimary, mb: 0.5 }}>ยังไม่มีแคมเปญ</Typography>
                 <Typography sx={{ fontSize: "0.85rem", color: c.textMuted }}>เริ่มสร้างแคมเปญแรกของคุณ!</Typography>
               </Box>
@@ -339,9 +348,9 @@ export default function MarketingPage() {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={cam.bannerImage} alt={cam.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         <Box sx={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 50%)" }} />
-                        <Chip label={sts.label} size="small" sx={{ position: "absolute", top: 12, right: 12, bgcolor: sts.bg, color: sts.color, fontWeight: 700, fontSize: "0.7rem" }} />
+                        <Chip icon={sts.icon} label={sts.label} size="small" sx={{ position: "absolute", top: 12, right: 12, bgcolor: sts.bg, color: sts.color, fontWeight: 700, fontSize: "0.7rem", "& .MuiChip-icon": { color: sts.color } }} />
                         {cam.status === "active" && days > 0 && (
-                          <Chip label={`⏳ เหลือ ${days} วัน`} size="small"
+                          <Chip icon={<HourglassBottomRoundedIcon sx={{ fontSize: 12, color: "#FFF !important" }} />} label={`เหลือ ${days} วัน`} size="small"
                             sx={{ position: "absolute", top: 12, left: 12, bgcolor: "rgba(0,0,0,0.6)", color: "#FFF", fontWeight: 600, fontSize: "0.65rem" }} />
                         )}
                         <Typography sx={{ position: "absolute", bottom: 12, left: 16, fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#FFF" }}>
@@ -372,15 +381,16 @@ export default function MarketingPage() {
                         {/* Meta */}
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
                           {cam.linkedPromoCode && (
-                            <Chip label={`🎫 ${cam.linkedPromoCode}`} size="small" sx={{ bgcolor: c.goldSubtle, color: c.gold, fontWeight: 600, fontSize: "0.7rem" }} />
+                            <Chip icon={<ConfirmationNumberRoundedIcon sx={{ fontSize: 12 }} />} label={cam.linkedPromoCode} size="small" sx={{ bgcolor: c.goldSubtle, color: c.gold, fontWeight: 600, fontSize: "0.7rem" }} />
                           )}
-                          <Chip label={`📦 ${cam.productCount} สินค้า`} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
-                          <Chip label={cam.visibility === "public" ? "🌐 Public" : "🔒 Private"} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
+                          <Chip icon={<Inventory2RoundedIcon sx={{ fontSize: 12 }} />} label={`${cam.productCount} สินค้า`} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
+                          <Chip icon={cam.visibility === "public" ? <PublicRoundedIcon sx={{ fontSize: 12 }} /> : <LockRoundedIcon sx={{ fontSize: 12 }} />}
+                            label={cam.visibility === "public" ? "Public" : "Private"} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
                         </Box>
 
                         {/* Date */}
-                        <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>
-                          📅 {cam.startDate} — {cam.endDate}
+                        <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, display: "flex", alignItems: "center", gap: 0.5 }}>
+                          <EventRoundedIcon sx={{ fontSize: 12 }} /> {cam.startDate} — {cam.endDate}
                         </Typography>
 
                         {/* Actions */}
@@ -410,7 +420,9 @@ export default function MarketingPage() {
 
       {/* Create Promotion Dialog */}
       <Dialog open={createPromoOpen} onClose={() => setCreatePromoOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>🎫 สร้างโปรโมชั่นใหม่</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
+          <ConfirmationNumberRoundedIcon sx={{ fontSize: 20 }} /> สร้างโปรโมชั่นใหม่
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
             {/* Basic */}
@@ -444,8 +456,8 @@ export default function MarketingPage() {
             {/* Preview */}
             {promoForm.value && (
               <Box sx={{ p: 1.5, borderRadius: "8px", bgcolor: c.goldSubtle, border: `1px solid ${c.gold}33` }}>
-                <Typography sx={{ fontSize: "0.8rem", color: c.gold, fontWeight: 600 }}>
-                  👁 Preview: ลูกค้าจะได้ส่วนลด {promoForm.type === "percent" ? `${promoForm.value}%` : `฿${promoForm.value}`}
+                <Typography sx={{ fontSize: "0.8rem", color: c.gold, fontWeight: 600, display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <VisibilityRoundedIcon sx={{ fontSize: 16 }} /> Preview: ลูกค้าจะได้ส่วนลด {promoForm.type === "percent" ? `${promoForm.value}%` : `฿${promoForm.value}`}
                 </Typography>
               </Box>
             )}
@@ -491,7 +503,9 @@ export default function MarketingPage() {
 
       {/* Create Campaign Dialog */}
       <Dialog open={createCampOpen} onClose={() => setCreateCampOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>📣 สร้างแคมเปญใหม่</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
+          <CampaignRoundedIcon sx={{ fontSize: 20 }} /> สร้างแคมเปญใหม่
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
             <TextField fullWidth label="ชื่อแคมเปญ" value={campForm.name} onChange={e => setCampForm(f => ({ ...f, name: e.target.value }))} sx={inputSx} />
@@ -511,8 +525,8 @@ export default function MarketingPage() {
             <FormControl>
               <FormLabel sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 0.5 }}>Visibility</FormLabel>
               <RadioGroup row value={campForm.visibility} onChange={e => setCampForm(f => ({ ...f, visibility: e.target.value as "public" | "private" }))}>
-                <FormControlLabel value="public" control={<Radio sx={{ color: c.textMuted, "&.Mui-checked": { color: c.gold } }} />} label={<Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>🌐 Public</Typography>} />
-                <FormControlLabel value="private" control={<Radio sx={{ color: c.textMuted, "&.Mui-checked": { color: c.gold } }} />} label={<Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>🔒 Private</Typography>} />
+                <FormControlLabel value="public" control={<Radio sx={{ color: c.textMuted, "&.Mui-checked": { color: c.gold } }} />} label={<Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, display: "flex", alignItems: "center", gap: 0.5 }}><PublicRoundedIcon sx={{ fontSize: 15 }} /> Public</Typography>} />
+                <FormControlLabel value="private" control={<Radio sx={{ color: c.textMuted, "&.Mui-checked": { color: c.gold } }} />} label={<Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, display: "flex", alignItems: "center", gap: 0.5 }}><LockRoundedIcon sx={{ fontSize: 15 }} /> Private</Typography>} />
               </RadioGroup>
             </FormControl>
           </Box>
@@ -529,8 +543,8 @@ export default function MarketingPage() {
       {/* Campaign Detail Dialog */}
       <Dialog open={!!viewCampaign} onClose={() => setViewCampaign(null)} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
         <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          📣 {viewCampaign?.name}
-          {viewCampaign && <Chip label={campaignStatusStyles[viewCampaign.status]?.label} size="small" sx={{ bgcolor: campaignStatusStyles[viewCampaign.status]?.bg, color: campaignStatusStyles[viewCampaign.status]?.color, fontWeight: 700 }} />}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}><CampaignRoundedIcon sx={{ fontSize: 20 }} /> {viewCampaign?.name}</Box>
+          {viewCampaign && <Chip icon={campaignStatusStyles[viewCampaign.status]?.icon} label={campaignStatusStyles[viewCampaign.status]?.label} size="small" sx={{ bgcolor: campaignStatusStyles[viewCampaign.status]?.bg, color: campaignStatusStyles[viewCampaign.status]?.color, fontWeight: 700, "& .MuiChip-icon": { color: campaignStatusStyles[viewCampaign.status]?.color } }} />}
         </DialogTitle>
         <DialogContent>
           {viewCampaign && (
@@ -543,16 +557,19 @@ export default function MarketingPage() {
                 </Box>
                 <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, lineHeight: 1.6, mb: 2 }}>{viewCampaign.description}</Typography>
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                  <Chip label={`📅 ${viewCampaign.startDate} — ${viewCampaign.endDate}`} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
-                  {viewCampaign.linkedPromoCode && <Chip label={`🎫 ${viewCampaign.linkedPromoCode}`} size="small" sx={{ bgcolor: c.goldSubtle, color: c.gold, fontSize: "0.7rem" }} />}
-                  <Chip label={`📦 ${viewCampaign.productCount} สินค้า`} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
-                  <Chip label={viewCampaign.visibility === "public" ? "🌐 Public" : "🔒 Private"} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
+                  <Chip icon={<EventRoundedIcon sx={{ fontSize: 13 }} />} label={`${viewCampaign.startDate} — ${viewCampaign.endDate}`} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
+                  {viewCampaign.linkedPromoCode && <Chip icon={<ConfirmationNumberRoundedIcon sx={{ fontSize: 13 }} />} label={viewCampaign.linkedPromoCode} size="small" sx={{ bgcolor: c.goldSubtle, color: c.gold, fontSize: "0.7rem" }} />}
+                  <Chip icon={<Inventory2RoundedIcon sx={{ fontSize: 13 }} />} label={`${viewCampaign.productCount} สินค้า`} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
+                  <Chip icon={viewCampaign.visibility === "public" ? <PublicRoundedIcon sx={{ fontSize: 13 }} /> : <LockRoundedIcon sx={{ fontSize: 13 }} />}
+                    label={viewCampaign.visibility === "public" ? "Public" : "Private"} size="small" sx={{ bgcolor: c.bgStatBox, color: c.textSecondary, fontSize: "0.7rem" }} />
                 </Box>
               </Box>
 
               {/* Right: Performance */}
               <Box>
-                <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1.5 }}>📊 Performance</Typography>
+                <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1.5, display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <BarChartRoundedIcon sx={{ fontSize: 16 }} /> Performance
+                </Typography>
                 {[
                   { label: "Revenue", value: `฿${viewCampaign.stats.revenue.toLocaleString()}`, color: c.gold },
                   { label: "Orders", value: viewCampaign.stats.orders.toString(), color: c.textPrimary },
@@ -565,8 +582,8 @@ export default function MarketingPage() {
                 ))}
                 {viewCampaign.status === "active" && (
                   <Box sx={{ p: 1.5, borderRadius: "8px", bgcolor: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
-                    <Typography sx={{ fontSize: "0.75rem", color: "#22C55E", fontWeight: 600 }}>
-                      ⏳ เหลือเวลาอีก {daysRemaining(viewCampaign.endDate)} วัน
+                    <Typography sx={{ fontSize: "0.75rem", color: "#22C55E", fontWeight: 600, display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <HourglassBottomRoundedIcon sx={{ fontSize: 14 }} /> เหลือเวลาอีก {daysRemaining(viewCampaign.endDate)} วัน
                     </Typography>
                   </Box>
                 )}

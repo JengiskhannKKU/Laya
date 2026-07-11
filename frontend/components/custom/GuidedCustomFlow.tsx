@@ -20,6 +20,18 @@ import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import CelebrationRoundedIcon from "@mui/icons-material/CelebrationRounded";
+import WorkRoundedIcon from "@mui/icons-material/WorkRounded";
+import BeachAccessRoundedIcon from "@mui/icons-material/BeachAccessRounded";
+import StyleRoundedIcon from "@mui/icons-material/StyleRounded";
+import PaletteRoundedIcon from "@mui/icons-material/PaletteRounded";
+import TextureRoundedIcon from "@mui/icons-material/TextureRounded";
+import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
+import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
+import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
+import DryCleaningRoundedIcon from "@mui/icons-material/DryCleaningRounded";
+import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 
 // Data options
 const patternStyles = [
@@ -52,10 +64,10 @@ const regions = [
 ];
 
 const moods = [
-  { id: "wedding", name: "Wedding", icon: "💒", description: "งานแต่งงาน พิธีการ" },
-  { id: "formal", name: "Formal", icon: "👔", description: "ชุดทางการ สุภาพบุรุษ" },
-  { id: "casual", name: "Casual", icon: "🏖️", description: "ลำลอง ใส่ทุกวัน" },
-  { id: "streetwear", name: "Streetwear", icon: "🎽", description: "สไตล์วัยรุ่น มินิมอล" },
+  { id: "wedding", name: "Wedding", icon: CelebrationRoundedIcon, description: "งานแต่งงาน พิธีการ" },
+  { id: "formal", name: "Formal", icon: WorkRoundedIcon, description: "ชุดทางการ สุภาพบุรุษ" },
+  { id: "casual", name: "Casual", icon: BeachAccessRoundedIcon, description: "ลำลอง ใส่ทุกวัน" },
+  { id: "streetwear", name: "Streetwear", icon: StyleRoundedIcon, description: "สไตล์วัยรุ่น มินิมอล" },
 ];
 
 interface GuidedCustomFlowProps {
@@ -158,7 +170,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                       justifyContent: "center",
                     }}
                   >
-                    <Typography sx={{ fontSize: 24 }}>🎨</Typography>
+                    <PaletteRoundedIcon sx={{ fontSize: 24, color: "#1B2A4A" }} />
                   </Box>
                   <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
                     {style.name}
@@ -290,7 +302,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                         transition: "opacity 0.2s",
                       }}
                     >
-                      <Typography sx={{ fontSize: 24 }}>🧵</Typography>
+                      <TextureRoundedIcon sx={{ fontSize: 24, color: "#1B2A4A" }} />
                     </Box>
                   </Box>
                 </Box>
@@ -345,13 +357,14 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                         e.stopPropagation();
                         handleRegionClick(region.id);
                       }}
+                      startIcon={<AutoStoriesRoundedIcon sx={{ fontSize: "0.9rem" }} />}
                       sx={{
                         fontSize: "0.7rem",
                         color: "#C5A55A",
                         textTransform: "none",
                       }}
                     >
-                      📖 เรื่องราว
+                      เรื่องราว
                     </Button>
                   </Box>
                 </Box>
@@ -509,7 +522,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                     transition: "all 0.2s",
                   }}
                 >
-                  <Typography sx={{ fontSize: 32, mb: 1 }}>{mood.icon}</Typography>
+                  <mood.icon sx={{ fontSize: 32, mb: 1, color: "#1B2A4A" }} />
                   <Typography sx={{ fontWeight: 700, color: "#1B2A4A" }}>{mood.name}</Typography>
                   <Typography sx={{ fontSize: "0.7rem", color: "#6B7280" }}>{mood.description}</Typography>
                 </Box>
@@ -526,8 +539,8 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-              📋 AI สรุปความต้องการ
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1, display: "flex", alignItems: "center", gap: 0.8 }}>
+              <AssignmentRoundedIcon sx={{ fontSize: "1.3rem" }} /> AI สรุปความต้องการ
             </Typography>
             <Typography variant="body2" sx={{ color: "#6B7280", mb: 3 }}>
               ตรวจสอบความถูกต้องก่อน Generate
@@ -567,7 +580,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                 }}
                 onClick={() => setStep(7)}
               >
-                ✅ Confirm
+                Confirm
               </Button>
               <Button
                 variant="outlined"
@@ -579,7 +592,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                 }}
                 onClick={() => setStep(0)}
               >
-                ✏️ Edit
+                Edit
               </Button>
             </Box>
           </motion.div>
@@ -593,8 +606,8 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-              🎨 AI กำลังสร้างลายผ้า
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1, display: "flex", alignItems: "center", gap: 0.8 }}>
+              <PaletteRoundedIcon sx={{ fontSize: "1.3rem" }} /> AI กำลังสร้างลายผ้า
             </Typography>
             <Typography variant="body2" sx={{ color: "#6B7280", mb: 3 }}>
               กรุณารอสักครู่...
@@ -635,6 +648,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
               variant="contained"
               disabled={isGenerating}
               onClick={handleGenerate}
+              startIcon={!isGenerating ? <PaletteRoundedIcon /> : undefined}
               sx={{
                 bgcolor: "#C5A55A",
                 color: "#1B2A4A",
@@ -643,7 +657,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                 "&:hover": { bgcolor: "#B89545" },
               }}
             >
-              {isGenerating ? "กำลังสร้าง..." : "🎨 Generate"}
+              {isGenerating ? "กำลังสร้าง..." : "Generate"}
             </Button>
           </motion.div>
         );
@@ -656,18 +670,18 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-              👗 Preview
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1, display: "flex", alignItems: "center", gap: 0.8 }}>
+              <CheckroomRoundedIcon sx={{ fontSize: "1.3rem" }} /> Preview
             </Typography>
             <Typography variant="body2" sx={{ color: "#6B7280", mb: 3 }}>
               ดูตัวอย่างผ้าในรูปแบบต่างๆ
             </Typography>
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1.5 }}>
               {[
-                { name: "Fabric Swatch", icon: "🧵" },
-                { name: "เสื้อ", icon: "👕" },
-                { name: "ผ้าพันคอ", icon: "🧣" },
-                { name: "Poster", icon: "🖼️" },
+                { name: "Fabric Swatch", icon: TextureRoundedIcon },
+                { name: "เสื้อ", icon: CheckroomRoundedIcon },
+                { name: "ผ้าพันคอ", icon: DryCleaningRoundedIcon },
+                { name: "Poster", icon: ImageRoundedIcon },
               ].map((item, i) => (
                 <Box
                   key={i}
@@ -680,7 +694,7 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                   }}
                 >
-                  <Typography sx={{ fontSize: 36, mb: 1 }}>{item.icon}</Typography>
+                  <item.icon sx={{ fontSize: 36, mb: 1, color: "#1B2A4A" }} />
                   <Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}>{item.name}</Typography>
                 </Box>
               ))}
@@ -696,8 +710,8 @@ export default function GuidedCustomFlow({ onBack }: GuidedCustomFlowProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-              💾 เลือกการดำเนินการ
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1B2A4A", mb: 1, display: "flex", alignItems: "center", gap: 0.8 }}>
+              <SaveRoundedIcon sx={{ fontSize: "1.3rem" }} /> เลือกการดำเนินการ
             </Typography>
             <Typography variant="body2" sx={{ color: "#6B7280", mb: 3 }}>
               บันทึกหรือแชร์ผลงานของคุณ

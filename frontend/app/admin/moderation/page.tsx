@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ReactNode, type ReactElement } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -29,6 +29,21 @@ import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import FlagRoundedIcon from "@mui/icons-material/FlagRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import CircleRoundedIcon from "@mui/icons-material/CircleRounded";
+import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUncheckedRounded";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import ReportRoundedIcon from "@mui/icons-material/ReportRounded";
+import CelebrationRoundedIcon from "@mui/icons-material/CelebrationRounded";
+import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
+import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
+import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
+import TimelineRoundedIcon from "@mui/icons-material/TimelineRounded";
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 
 import {
   mockReports, AdminReport,
@@ -38,22 +53,26 @@ import {
 
 type ModerationTab = "reports" | "reviews";
 
-const reportStatusStyles: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: "🟡 Pending", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  investigating: { label: "🔵 Investigating", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
-  resolved: { label: "🟢 Resolved", color: "#22C55E", bg: "rgba(34,197,94,0.15)" },
-  rejected: { label: "⚪ Rejected", color: "#6B7280", bg: "rgba(107,114,128,0.15)" },
+const reportStatusStyles: Record<string, { label: string; color: string; bg: string; icon: ReactElement }> = {
+  pending: { label: "Pending", color: "#F59E0B", bg: "rgba(245,158,11,0.15)", icon: <CircleRoundedIcon sx={{ fontSize: 10 }} /> },
+  investigating: { label: "Investigating", color: "#3B82F6", bg: "rgba(59,130,246,0.15)", icon: <CircleRoundedIcon sx={{ fontSize: 10 }} /> },
+  resolved: { label: "Resolved", color: "#22C55E", bg: "rgba(34,197,94,0.15)", icon: <CircleRoundedIcon sx={{ fontSize: 10 }} /> },
+  rejected: { label: "Rejected", color: "#6B7280", bg: "rgba(107,114,128,0.15)", icon: <RadioButtonUncheckedRoundedIcon sx={{ fontSize: 10 }} /> },
 };
-const reviewStatusStyles: Record<string, { label: string; color: string; bg: string }> = {
-  approved: { label: "✅ Approved", color: "#22C55E", bg: "rgba(34,197,94,0.15)" },
-  pending: { label: "🟡 Pending", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  hidden: { label: "👁 Hidden", color: "#6B7280", bg: "rgba(107,114,128,0.15)" },
-  deleted: { label: "🗑 Deleted", color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
+const reviewStatusStyles: Record<string, { label: string; color: string; bg: string; icon: ReactElement }> = {
+  approved: { label: "Approved", color: "#22C55E", bg: "rgba(34,197,94,0.15)", icon: <CheckCircleRoundedIcon sx={{ fontSize: 14 }} /> },
+  pending: { label: "Pending", color: "#F59E0B", bg: "rgba(245,158,11,0.15)", icon: <CircleRoundedIcon sx={{ fontSize: 10 }} /> },
+  hidden: { label: "Hidden", color: "#6B7280", bg: "rgba(107,114,128,0.15)", icon: <VisibilityOffRoundedIcon sx={{ fontSize: 14 }} /> },
+  deleted: { label: "Deleted", color: "#EF4444", bg: "rgba(239,68,68,0.15)", icon: <DeleteRoundedIcon sx={{ fontSize: 14 }} /> },
 };
-const typeIcons: Record<string, string> = { product: "📦", user: "👤", review: "💬" };
-const priorityStyles: Record<string, { label: string; color: string; bg: string }> = {
-  high: { label: "🔥 High", color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
-  medium: { label: "⚡ Medium", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
+const typeIcons: Record<string, ReactNode> = {
+  product: <Inventory2RoundedIcon sx={{ fontSize: 16 }} />,
+  user: <PersonRoundedIcon sx={{ fontSize: 16 }} />,
+  review: <ChatBubbleRoundedIcon sx={{ fontSize: 16 }} />,
+};
+const priorityStyles: Record<string, { label: string; color: string; bg: string; icon?: ReactElement }> = {
+  high: { label: "High", color: "#EF4444", bg: "rgba(239,68,68,0.15)", icon: <LocalFireDepartmentRoundedIcon sx={{ fontSize: 12 }} /> },
+  medium: { label: "Medium", color: "#F59E0B", bg: "rgba(245,158,11,0.15)", icon: <BoltRoundedIcon sx={{ fontSize: 12 }} /> },
   low: { label: "Low", color: "#6B7280", bg: "rgba(107,114,128,0.12)" },
 };
 
@@ -119,7 +138,7 @@ export default function ModerationPage() {
   // ── Report Actions ──
   const resolveReport = (id: string) => {
     setReports(prev => prev.map(r => r.id === id ? { ...r, status: "resolved" as const, adminNote: adminNote || r.adminNote, timeline: [...r.timeline, { time: new Date().toLocaleString("th-TH"), action: "Mark as Resolved", actor: "Admin A" }] } : r));
-    setViewReport(null); setAdminNote(""); showToast("Report resolved ✅");
+    setViewReport(null); setAdminNote(""); showToast("Report resolved");
   };
   const rejectReport = (id: string) => {
     setReports(prev => prev.map(r => r.id === id ? { ...r, status: "rejected" as const, adminNote: adminNote || r.adminNote, timeline: [...r.timeline, { time: new Date().toLocaleString("th-TH"), action: "Rejected report", actor: "Admin A" }] } : r));
@@ -137,7 +156,7 @@ export default function ModerationPage() {
   };
   const bulkResolve = () => {
     setReports(prev => prev.map(r => selectedReports.has(r.id) ? { ...r, status: "resolved" as const, timeline: [...r.timeline, { time: new Date().toLocaleString("th-TH"), action: "Bulk resolved", actor: "Admin A" }] } : r));
-    showToast(`Resolved ${selectedReports.size} reports ✅`);
+    showToast(`Resolved ${selectedReports.size} reports`);
     setSelectedReports(new Set());
   };
   const toggleReportSelect = (id: string) => {
@@ -151,29 +170,32 @@ export default function ModerationPage() {
   // ── Review Actions ──
   const approveReview = (id: string) => {
     setReviews(prev => prev.map(r => r.id === id ? { ...r, status: "approved" as const, flagged: false } : r));
-    showToast("Review approved ✅");
+    showToast("Review approved");
   };
   const hideReview = (id: string) => {
     setReviews(prev => prev.map(r => r.id === id ? { ...r, status: "hidden" as const } : r));
-    showToast("Review hidden 👁");
+    showToast("Review hidden");
   };
   const deleteReview = (id: string) => {
     setReviews(prev => prev.map(r => r.id === id ? { ...r, status: "deleted" as const } : r));
-    showToast("Review deleted 🗑", "error");
+    showToast("Review deleted", "error");
   };
 
-  const tabs: { key: ModerationTab; label: string; icon: string; badge?: number }[] = [
-    { key: "reports", label: "Reports", icon: "🚨", badge: pendingReports > 0 ? pendingReports : undefined },
-    { key: "reviews", label: "Reviews", icon: "⭐", badge: pendingReviews > 0 ? pendingReviews : undefined },
+  const tabs: { key: ModerationTab; label: string; icon: ReactNode; badge?: number }[] = [
+    { key: "reports", label: "Reports", icon: <ReportRoundedIcon sx={{ fontSize: 16 }} />, badge: pendingReports > 0 ? pendingReports : undefined },
+    { key: "reviews", label: "Reviews", icon: <StarRoundedIcon sx={{ fontSize: 16 }} />, badge: pendingReviews > 0 ? pendingReviews : undefined },
   ];
 
   return (
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
-          🛡️ Moderation
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+          <SecurityRoundedIcon sx={{ fontSize: 20, color: c.textPrimary }} />
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>
+            Moderation
+          </Typography>
+        </Box>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
           จัดการรายงานปัญหา, ตรวจสอบรีวิว และปกป้องคุณภาพของ platform
         </Typography>
@@ -188,7 +210,7 @@ export default function ModerationPage() {
                 display: "flex", alignItems: "center", gap: 1,
                 "&:hover": { bgcolor: activeTab === tab.key ? c.goldSubtle : c.bgCardHover },
               }}>
-              <span>{tab.icon}</span> {tab.label}
+              {tab.icon} {tab.label}
               {tab.badge && (
                 <Box sx={{ minWidth: 20, height: 20, borderRadius: "10px", px: 0.5, bgcolor: "#EF4444", color: "#FFF", fontSize: "0.65rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {tab.badge}
@@ -208,12 +230,14 @@ export default function ModerationPage() {
             {/* KPI Cards */}
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, mb: 3 }}>
               {[
-                { label: "Pending", value: pendingReports, color: "#F59E0B", icon: "🟡" },
-                { label: "Resolved", value: resolvedReports, color: "#22C55E", icon: "🟢" },
-                { label: "High Priority", value: highPriority, color: "#EF4444", icon: "🔥" },
+                { label: "Pending", value: pendingReports, color: "#F59E0B", icon: <CircleRoundedIcon sx={{ fontSize: 10 }} /> },
+                { label: "Resolved", value: resolvedReports, color: "#22C55E", icon: <CircleRoundedIcon sx={{ fontSize: 10 }} /> },
+                { label: "High Priority", value: highPriority, color: "#EF4444", icon: <LocalFireDepartmentRoundedIcon sx={{ fontSize: 12 }} /> },
               ].map(kpi => (
                 <Box key={kpi.label} sx={{ ...card, p: 2, textAlign: "center" }}>
-                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600 }}>{kpi.icon} {kpi.label}</Typography>
+                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+                    <Box component="span" sx={{ display: "flex", color: kpi.color }}>{kpi.icon}</Box> {kpi.label}
+                  </Typography>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
                 </Box>
               ))}
@@ -246,9 +270,9 @@ export default function ModerationPage() {
                 sx={{ minWidth: 110, color: c.textPrimary, fontSize: "0.8rem", bgcolor: c.bgCard, borderRadius: "10px", "& fieldset": { borderColor: c.borderCard }, "& .MuiSelect-icon": { color: c.textMuted } }}
                 MenuProps={{ PaperProps: { sx: { bgcolor: c.bgCard, color: c.textPrimary } } }}>
                 <MenuItem value="all">ทุกประเภท</MenuItem>
-                <MenuItem value="product">📦 Product</MenuItem>
-                <MenuItem value="user">👤 User</MenuItem>
-                <MenuItem value="review">💬 Review</MenuItem>
+                <MenuItem value="product"><Inventory2RoundedIcon sx={{ fontSize: 16, mr: 0.75 }} />Product</MenuItem>
+                <MenuItem value="user"><PersonRoundedIcon sx={{ fontSize: 16, mr: 0.75 }} />User</MenuItem>
+                <MenuItem value="review"><ChatBubbleRoundedIcon sx={{ fontSize: 16, mr: 0.75 }} />Review</MenuItem>
               </Select>
               <Select size="small" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
                 sx={{ minWidth: 130, color: c.textPrimary, fontSize: "0.8rem", bgcolor: c.bgCard, borderRadius: "10px", "& fieldset": { borderColor: c.borderCard }, "& .MuiSelect-icon": { color: c.textMuted } }}
@@ -260,9 +284,9 @@ export default function ModerationPage() {
                 <MenuItem value="rejected">Rejected</MenuItem>
               </Select>
               {selectedReports.size > 0 && (
-                <Button variant="contained" size="small" onClick={bulkResolve}
+                <Button variant="contained" size="small" onClick={bulkResolve} startIcon={<CheckCircleRoundedIcon sx={{ fontSize: 16 }} />}
                   sx={{ bgcolor: "#22C55E", color: "#FFF", borderRadius: "8px", textTransform: "none", fontWeight: 700, "&:hover": { bgcolor: "#16A34A" } }}>
-                  ✅ Resolve {selectedReports.size} รายการ
+                  Resolve {selectedReports.size} รายการ
                 </Button>
               )}
             </Box>
@@ -277,7 +301,7 @@ export default function ModerationPage() {
               </Box>
               {filteredReports.length === 0 ? (
                 <Box sx={{ p: 5, textAlign: "center" }}>
-                  <Typography sx={{ fontSize: "2rem", mb: 1 }}>🎉</Typography>
+                  <CelebrationRoundedIcon sx={{ fontSize: 32, mb: 1, color: c.gold }} />
                   <Typography sx={{ fontSize: "0.95rem", fontWeight: 600, color: c.textPrimary }}>ไม่มีรายงานปัญหา</Typography>
                   <Typography sx={{ fontSize: "0.8rem", color: c.textMuted }}>ยินดีด้วย! ไม่มีปัญหาที่ต้องจัดการ</Typography>
                 </Box>
@@ -298,17 +322,17 @@ export default function ModerationPage() {
                     <Checkbox size="small" checked={selectedReports.has(rpt.id)} onClick={e => { e.stopPropagation(); toggleReportSelect(rpt.id); }}
                       sx={{ p: 0, color: c.textMuted, "&.Mui-checked": { color: c.gold } }} />
                     <Typography sx={{ fontSize: "0.8rem", fontWeight: 700, color: c.textPrimary, fontFamily: "monospace" }}>{rpt.id}</Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <Typography sx={{ fontSize: "0.9rem" }}>{typeIcons[rpt.type]}</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: c.textSecondary }}>
+                      {typeIcons[rpt.type]}
                       <Typography sx={{ fontSize: "0.75rem", color: c.textSecondary, textTransform: "capitalize" }}>{rpt.type}</Typography>
                     </Box>
                     <Box>
                       <Typography noWrap sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary }}>{rpt.targetName}</Typography>
-                      <Chip label={pri.label} size="small" sx={{ bgcolor: pri.bg, color: pri.color, fontWeight: 700, fontSize: "0.6rem", height: 18, mt: 0.3 }} />
+                      <Chip icon={pri.icon} label={pri.label} size="small" sx={{ bgcolor: pri.bg, color: pri.color, fontWeight: 700, fontSize: "0.6rem", height: 18, mt: 0.3, "& .MuiChip-icon": { color: pri.color } }} />
                     </Box>
                     <Typography sx={{ fontSize: "0.8rem", color: c.textMuted }}>{rpt.reporterName}</Typography>
                     <Typography sx={{ fontSize: "0.75rem", color: c.textMuted }}>{rpt.date}</Typography>
-                    <Chip label={sts.label} size="small" sx={{ bgcolor: sts.bg, color: sts.color, fontWeight: 700, fontSize: "0.65rem", height: 24 }} />
+                    <Chip icon={sts.icon} label={sts.label} size="small" sx={{ bgcolor: sts.bg, color: sts.color, fontWeight: 700, fontSize: "0.65rem", height: 24, "& .MuiChip-icon": { color: sts.color } }} />
                   </Box>
                 );
               })}
@@ -324,12 +348,14 @@ export default function ModerationPage() {
             {/* KPIs */}
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, mb: 3 }}>
               {[
-                { label: "Pending Reviews", value: pendingReviews, color: "#F59E0B", icon: "🟡" },
-                { label: "Flagged", value: flaggedReviews, color: "#EF4444", icon: "🚩" },
-                { label: "Approved", value: reviews.filter(r => r.status === "approved").length, color: "#22C55E", icon: "✅" },
+                { label: "Pending Reviews", value: pendingReviews, color: "#F59E0B", icon: <CircleRoundedIcon sx={{ fontSize: 10 }} /> },
+                { label: "Flagged", value: flaggedReviews, color: "#EF4444", icon: <FlagRoundedIcon sx={{ fontSize: 12 }} /> },
+                { label: "Approved", value: reviews.filter(r => r.status === "approved").length, color: "#22C55E", icon: <CheckCircleRoundedIcon sx={{ fontSize: 12 }} /> },
               ].map(kpi => (
                 <Box key={kpi.label} sx={{ ...card, p: 2, textAlign: "center" }}>
-                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600 }}>{kpi.icon} {kpi.label}</Typography>
+                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+                    <Box component="span" sx={{ display: "flex", color: kpi.color }}>{kpi.icon}</Box> {kpi.label}
+                  </Typography>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: kpi.color }}>{kpi.value}</Typography>
                 </Box>
               ))}
@@ -345,8 +371,8 @@ export default function ModerationPage() {
               <Select size="small" value={ratingFilter} onChange={e => setRatingFilter(e.target.value)}
                 sx={{ minWidth: 100, color: c.textPrimary, fontSize: "0.8rem", bgcolor: c.bgCard, borderRadius: "10px", "& fieldset": { borderColor: c.borderCard }, "& .MuiSelect-icon": { color: c.textMuted } }}
                 MenuProps={{ PaperProps: { sx: { bgcolor: c.bgCard, color: c.textPrimary } } }}>
-                <MenuItem value="all">ทุก ⭐</MenuItem>
-                {[5, 4, 3, 2, 1].map(r => <MenuItem key={r} value={r}>{r} ⭐</MenuItem>)}
+                <MenuItem value="all">ทุก <StarRoundedIcon sx={{ fontSize: 14, ml: 0.5 }} /></MenuItem>
+                {[5, 4, 3, 2, 1].map(r => <MenuItem key={r} value={r}>{r} <StarRoundedIcon sx={{ fontSize: 14, ml: 0.5 }} /></MenuItem>)}
               </Select>
               <Select size="small" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
                 sx={{ minWidth: 120, color: c.textPrimary, fontSize: "0.8rem", bgcolor: c.bgCard, borderRadius: "10px", "& fieldset": { borderColor: c.borderCard }, "& .MuiSelect-icon": { color: c.textMuted } }}
@@ -385,7 +411,7 @@ export default function ModerationPage() {
                       </Box>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Rating value={rv.rating} readOnly size="small" sx={{ fontSize: "0.9rem" }} />
-                        <Chip label={sts.label} size="small" sx={{ bgcolor: sts.bg, color: sts.color, fontWeight: 700, fontSize: "0.65rem", height: 22 }} />
+                        <Chip icon={sts.icon} label={sts.label} size="small" sx={{ bgcolor: sts.bg, color: sts.color, fontWeight: 700, fontSize: "0.65rem", height: 22, "& .MuiChip-icon": { color: sts.color } }} />
                       </Box>
                     </Box>
 
@@ -402,7 +428,7 @@ export default function ModerationPage() {
                     {rv.flagged && rv.flagReason && (
                       <Box sx={{ display: "flex", gap: 1, mb: 1.5, p: 1, borderRadius: "6px", bgcolor: "rgba(239,68,68,0.06)" }}>
                         <WarningAmberRoundedIcon sx={{ fontSize: 14, color: "#EF4444", mt: 0.2 }} />
-                        <Typography sx={{ fontSize: "0.75rem", color: "#EF4444" }}>🚩 {rv.flagReason} ({rv.reportCount} reports)</Typography>
+                        <Typography sx={{ fontSize: "0.75rem", color: "#EF4444" }}>{rv.flagReason} ({rv.reportCount} reports)</Typography>
                       </Box>
                     )}
 
@@ -442,8 +468,11 @@ export default function ModerationPage() {
       {/* Report Detail Dialog */}
       <Dialog open={!!viewReport} onClose={() => setViewReport(null)} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
         <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          🚨 Report Detail — {viewReport?.id}
-          {viewReport && <Chip label={reportStatusStyles[viewReport.status]?.label} size="small" sx={{ bgcolor: reportStatusStyles[viewReport.status]?.bg, color: reportStatusStyles[viewReport.status]?.color, fontWeight: 700 }} />}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <ReportRoundedIcon sx={{ fontSize: 18, color: "#EF4444" }} />
+            Report Detail — {viewReport?.id}
+          </Box>
+          {viewReport && <Chip icon={reportStatusStyles[viewReport.status]?.icon} label={reportStatusStyles[viewReport.status]?.label} size="small" sx={{ bgcolor: reportStatusStyles[viewReport.status]?.bg, color: reportStatusStyles[viewReport.status]?.color, fontWeight: 700, "& .MuiChip-icon": { color: reportStatusStyles[viewReport.status]?.color } }} />}
         </DialogTitle>
         <DialogContent>
           {viewReport && (
@@ -451,9 +480,9 @@ export default function ModerationPage() {
               {/* Left: Report Info */}
               <Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                  <Typography sx={{ fontSize: "1rem" }}>{typeIcons[viewReport.type]}</Typography>
+                  <Box sx={{ display: "flex", color: c.textSecondary }}>{typeIcons[viewReport.type]}</Box>
                   <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textSecondary, textTransform: "capitalize" }}>{viewReport.type} Report</Typography>
-                  <Chip label={priorityStyles[viewReport.priority]?.label} size="small" sx={{ bgcolor: priorityStyles[viewReport.priority]?.bg, color: priorityStyles[viewReport.priority]?.color, fontWeight: 700, fontSize: "0.65rem", height: 20 }} />
+                  <Chip icon={priorityStyles[viewReport.priority]?.icon} label={priorityStyles[viewReport.priority]?.label} size="small" sx={{ bgcolor: priorityStyles[viewReport.priority]?.bg, color: priorityStyles[viewReport.priority]?.color, fontWeight: 700, fontSize: "0.65rem", height: 20, "& .MuiChip-icon": { color: priorityStyles[viewReport.priority]?.color } }} />
                 </Box>
                 <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: c.textPrimary, mb: 1 }}>{viewReport.targetName}</Typography>
                 <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, lineHeight: 1.6, p: 2, borderRadius: "10px", bgcolor: c.bgStatBox, mb: 2 }}>
@@ -463,7 +492,9 @@ export default function ModerationPage() {
                 {/* Evidence */}
                 {viewReport.evidence.length > 0 && (
                   <Box sx={{ mb: 2 }}>
-                    <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1 }}>📎 Evidence</Typography>
+                    <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <AttachFileRoundedIcon sx={{ fontSize: 14 }} /> Evidence
+                    </Typography>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       {viewReport.evidence.map((ev, i) => (
                         <Box key={i} sx={{ width: 120, height: 80, borderRadius: "8px", overflow: "hidden", border: `1px solid ${c.borderCard}` }}>
@@ -479,14 +510,18 @@ export default function ModerationPage() {
 
                 {/* Admin Note */}
                 <Divider sx={{ borderColor: c.borderDivider, my: 2 }} />
-                <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1 }}>📝 Admin Note</Typography>
+                <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <EditNoteRoundedIcon sx={{ fontSize: 16 }} /> Admin Note
+                </Typography>
                 <TextField fullWidth multiline minRows={2} placeholder="เขียน note สำหรับ report นี้..." value={adminNote} onChange={e => setAdminNote(e.target.value)}
                   sx={{ "& .MuiOutlinedInput-root": { color: c.dialogText, "& fieldset": { borderColor: c.borderInput } }, "& .MuiInputLabel-root": { color: c.textMuted } }} />
               </Box>
 
               {/* Right: Timeline + Actions */}
               <Box>
-                <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1.5 }}>📋 Timeline</Typography>
+                <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, mb: 1.5, display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <TimelineRoundedIcon sx={{ fontSize: 16 }} /> Timeline
+                </Typography>
                 <Box sx={{ pl: 2, borderLeft: `2px solid ${c.borderCard}` }}>
                   {viewReport.timeline.map((t, i) => (
                     <Box key={i} sx={{ mb: 2, position: "relative" }}>
@@ -501,26 +536,28 @@ export default function ModerationPage() {
                 {/* Action Buttons */}
                 {(viewReport.status === "pending" || viewReport.status === "investigating") && (
                   <Box sx={{ mt: 3 }}>
-                    <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1.5 }}>⚡ Actions</Typography>
+                    <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1.5, display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <BoltRoundedIcon sx={{ fontSize: 14 }} /> Actions
+                    </Typography>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                       <Button variant="contained" fullWidth startIcon={<CheckCircleRoundedIcon />} onClick={() => resolveReport(viewReport.id)}
                         sx={{ bgcolor: "#22C55E", color: "#FFF", textTransform: "none", fontWeight: 700, borderRadius: "8px", justifyContent: "flex-start", "&:hover": { bgcolor: "#16A34A" } }}>
-                        ✅ Mark as Resolved
+                        Mark as Resolved
                       </Button>
-                      <Button variant="outlined" fullWidth onClick={() => rejectReport(viewReport.id)}
+                      <Button variant="outlined" fullWidth startIcon={<CancelRoundedIcon />} onClick={() => rejectReport(viewReport.id)}
                         sx={{ color: c.textMuted, borderColor: c.borderInput, textTransform: "none", fontWeight: 600, borderRadius: "8px", justifyContent: "flex-start" }}>
-                        ❌ Reject Report
+                        Reject Report
                       </Button>
                       {viewReport.type === "user" && (
                         <Button variant="contained" fullWidth startIcon={<BlockRoundedIcon />} onClick={() => { setViewReport(null); setConfirmDialog({ type: "suspend", target: viewReport }); }}
                           sx={{ bgcolor: "#EF4444", color: "#FFF", textTransform: "none", fontWeight: 700, borderRadius: "8px", justifyContent: "flex-start", "&:hover": { bgcolor: "#DC2626" } }}>
-                          ⛔ Suspend User
+                          Suspend User
                         </Button>
                       )}
                       {viewReport.type === "product" && (
                         <Button variant="contained" fullWidth startIcon={<DeleteRoundedIcon />} onClick={() => { setViewReport(null); setConfirmDialog({ type: "remove", target: viewReport }); }}
                           sx={{ bgcolor: "#EF4444", color: "#FFF", textTransform: "none", fontWeight: 700, borderRadius: "8px", justifyContent: "flex-start", "&:hover": { bgcolor: "#DC2626" } }}>
-                          🗑 Remove Product
+                          Remove Product
                         </Button>
                       )}
                     </Box>
@@ -551,7 +588,9 @@ export default function ModerationPage() {
               ? `คุณต้องการระงับบัญชี "${confirmDialog.target?.targetName}" หรือไม่?`
               : `คุณต้องการลบสินค้า "${confirmDialog.target?.targetName}" หรือไม่?`}
           </Typography>
-          <Typography sx={{ fontSize: "0.75rem", color: "#EF4444", mt: 1 }}>⚠️ การดำเนินการนี้ไม่สามารถย้อนกลับได้</Typography>
+          <Typography sx={{ fontSize: "0.75rem", color: "#EF4444", mt: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+            <WarningAmberRoundedIcon sx={{ fontSize: 14 }} /> การดำเนินการนี้ไม่สามารถย้อนกลับได้
+          </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
           <Button onClick={() => setConfirmDialog({ type: "", target: null })} sx={{ color: c.textMuted, textTransform: "none" }}>ยกเลิก</Button>

@@ -18,17 +18,21 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
+import WomanRoundedIcon from "@mui/icons-material/WomanRounded";
+import DryCleaningRoundedIcon from "@mui/icons-material/DryCleaningRounded";
+import WorkRoundedIcon from "@mui/icons-material/WorkRounded";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 const BASE_SHAPES = [
-  { id: "shirt",  label: "เสื้อเชิ้ต",    icon: "👔", desc: "ทรงคลาสสิก ปกคอ แขนยาว/สั้น" },
-  { id: "blouse", label: "เสื้อสตรี",      icon: "👗", desc: "ทรงสวมหัว หลวมสบาย" },
-  { id: "dress",  label: "ชุดเดรส",        icon: "👘", desc: "ทรงชุดยาว เหมาะพิธีการ" },
-  { id: "suit",   label: "ชุดสูท",         icon: "🧥", desc: "ทรงสูทสากล ทางการ" },
-  { id: "jacket", label: "เสื้อแจ็กเก็ต", icon: "🥋", desc: "ทรงแจ็กเก็ต มีซับใน" },
-  { id: "skirt",  label: "กระโปรง",       icon: "👗", desc: "กระโปรงทรงต่างๆ" },
+  { id: "shirt",  label: "เสื้อเชิ้ต",    icon: CheckroomRoundedIcon, desc: "ทรงคลาสสิก ปกคอ แขนยาว/สั้น" },
+  { id: "blouse", label: "เสื้อสตรี",      icon: WomanRoundedIcon, desc: "ทรงสวมหัว หลวมสบาย" },
+  { id: "dress",  label: "ชุดเดรส",        icon: DryCleaningRoundedIcon, desc: "ทรงชุดยาว เหมาะพิธีการ" },
+  { id: "suit",   label: "ชุดสูท",         icon: WorkRoundedIcon, desc: "ทรงสูทสากล ทางการ" },
+  { id: "jacket", label: "เสื้อแจ็กเก็ต", icon: CheckroomRoundedIcon, desc: "ทรงแจ็กเก็ต มีซับใน" },
+  { id: "skirt",  label: "กระโปรง",       icon: WomanRoundedIcon, desc: "กระโปรงทรงต่างๆ" },
 ];
 
 const COLLAR_TYPES  = ["คอปก", "คอจีน", "คอวี", "คอกลม", "คอเต่า", "ไม่มีปก"];
@@ -153,7 +157,7 @@ function DesignContent() {
                       transition: "all 0.15s",
                     }}
                   >
-                    <Typography sx={{ fontSize: "2rem", mb: 0.5 }}>{shape.icon}</Typography>
+                    <shape.icon sx={{ fontSize: "2rem", mb: 0.5, color: "#1B2A4A" }} />
                     <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", fontSize: "0.9rem" }}>
                       {shape.label}
                     </Typography>

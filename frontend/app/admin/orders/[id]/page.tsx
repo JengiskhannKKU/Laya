@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -28,17 +28,24 @@ import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
+import FiberManualRecordRoundedIcon from "@mui/icons-material/FiberManualRecordRounded";
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
+import PrecisionManufacturingRoundedIcon from "@mui/icons-material/PrecisionManufacturingRounded";
+import CelebrationRoundedIcon from "@mui/icons-material/CelebrationRounded";
+import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
+import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
+import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 
 import { mockAdminOrders, AdminOrder, AdminOrderTimelineEvent } from "@/lib/mock-admin-data";
 
-const statusStyles: Record<string, { label: string; color: string; bgcolor: string }> = {
-  pending: { label: "🟡 Pending Payment", color: "#F59E0B", bgcolor: "rgba(245,158,11,0.15)" },
-  paid: { label: "🟢 Paid", color: "#22C55E", bgcolor: "rgba(34,197,94,0.15)" },
-  producing: { label: "🟣 In Production", color: "#8B5CF6", bgcolor: "rgba(139,92,246,0.15)" },
-  shipped: { label: "🔵 Shipped", color: "#06B6D4", bgcolor: "rgba(6,182,212,0.15)" },
-  delivered: { label: "⚫ Delivered", color: "#4B5563", bgcolor: "rgba(75,85,99,0.15)" },
-  completed: { label: "✅ Completed", color: "#059669", bgcolor: "rgba(5,150,105,0.15)" },
-  cancelled: { label: "❌ Cancelled", color: "#EF4444", bgcolor: "rgba(239,68,68,0.15)" },
+const statusStyles: Record<string, { label: string; color: string; bgcolor: string; icon: typeof FiberManualRecordRoundedIcon }> = {
+  pending: { label: "Pending Payment", color: "#F59E0B", bgcolor: "rgba(245,158,11,0.15)", icon: FiberManualRecordRoundedIcon },
+  paid: { label: "Paid", color: "#22C55E", bgcolor: "rgba(34,197,94,0.15)", icon: FiberManualRecordRoundedIcon },
+  producing: { label: "In Production", color: "#8B5CF6", bgcolor: "rgba(139,92,246,0.15)", icon: FiberManualRecordRoundedIcon },
+  shipped: { label: "Shipped", color: "#06B6D4", bgcolor: "rgba(6,182,212,0.15)", icon: FiberManualRecordRoundedIcon },
+  delivered: { label: "Delivered", color: "#4B5563", bgcolor: "rgba(75,85,99,0.15)", icon: FiberManualRecordRoundedIcon },
+  completed: { label: "Completed", color: "#059669", bgcolor: "rgba(5,150,105,0.15)", icon: CheckCircleRoundedIcon },
+  cancelled: { label: "Cancelled", color: "#EF4444", bgcolor: "rgba(239,68,68,0.15)", icon: CancelRoundedIcon },
 };
 
 export default function OrderDetailPage() {
@@ -51,7 +58,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<AdminOrder | null>(null);
 
   // States
-  const [toastMsg, setToastMsg] = useState("");
+  const [toastMsg, setToastMsg] = useState<ReactNode>("");
   const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
   
   // Modals
@@ -70,7 +77,7 @@ export default function OrderDetailPage() {
 
   if (!order) return <Box sx={{ p: 4, color: c.textPrimary }}>Loading Order Details...</Box>;
 
-  const showToast = (msg: string, type: "success" | "error" | "info" = "success") => { setToastMsg(msg); setToastType(type); };
+  const showToast = (msg: ReactNode, type: "success" | "error" | "info" = "success") => { setToastMsg(msg); setToastType(type); };
 
   const pushTimeline = (status: AdminOrder["status"], desc: string) => {
     const ts = new Date().toLocaleString("th-TH");
@@ -101,7 +108,7 @@ export default function OrderDetailPage() {
         timeline: [...prev.timeline, pushTimeline("producing", "Weaver started production")]
       };
     });
-    showToast("สถานะเปลี่ยนเป็น In Production 🧵");
+    showToast(<>สถานะเปลี่ยนเป็น In Production <PrecisionManufacturingRoundedIcon sx={{ fontSize: 16, verticalAlign: "middle", ml: 0.3 }} /></>);
   };
 
   const submitTracking = () => {
@@ -120,7 +127,7 @@ export default function OrderDetailPage() {
       };
     });
     setShowAddTracking(false);
-    showToast("บันทึกการจัดส่งสำเร็จ 🚚");
+    showToast(<>บันทึกการจัดส่งสำเร็จ <LocalShippingRoundedIcon sx={{ fontSize: 16, verticalAlign: "middle", ml: 0.3 }} /></>);
   };
 
   const markDelivered = () => {
@@ -132,7 +139,7 @@ export default function OrderDetailPage() {
         timeline: [...prev.timeline, pushTimeline("delivered", "Order marked as Delivered")]
       };
     });
-    showToast("ออเดอร์ถูกทำเครื่องหมายว่าได้รับแล้ว ✅");
+    showToast(<>ออเดอร์ถูกทำเครื่องหมายว่าได้รับแล้ว <CheckCircleRoundedIcon sx={{ fontSize: 16, verticalAlign: "middle", ml: 0.3 }} /></>);
   };
 
   const sts = statusStyles[order.status] || statusStyles.pending;
@@ -152,7 +159,7 @@ export default function OrderDetailPage() {
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>
             Order {order.id}
           </Typography>
-          <Chip label={sts.label} size="small" sx={{ bgcolor: sts.bgcolor, color: sts.color, fontWeight: 700, fontSize: "0.75rem", height: 26, ml: 2 }} />
+          <Chip icon={<sts.icon sx={{ fontSize: 14, color: `${sts.color} !important` }} />} label={sts.label} size="small" sx={{ bgcolor: sts.bgcolor, color: sts.color, fontWeight: 700, fontSize: "0.75rem", height: 26, ml: 2 }} />
         </Box>
       </Box>
 
@@ -202,8 +209,12 @@ export default function OrderDetailPage() {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                 <Typography sx={{ fontSize: "0.9rem", fontWeight: 600, color: c.textPrimary }}>{order.customerName}</Typography>
-                <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>📞 {order.customerPhone}</Typography>
-                <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary }}>✉️ {order.customerEmail}</Typography>
+                <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <PhoneRoundedIcon sx={{ fontSize: 14 }} /> {order.customerPhone}
+                </Typography>
+                <Typography sx={{ fontSize: "0.85rem", color: c.textSecondary, display: "flex", alignItems: "center", gap: 0.6 }}>
+                  <EmailRoundedIcon sx={{ fontSize: 14 }} /> {order.customerEmail}
+                </Typography>
               </Box>
             </Box>
 
@@ -272,8 +283,8 @@ export default function OrderDetailPage() {
                       {isCompleted && !isActive && <CheckCircleRoundedIcon sx={{ color: "#FFF", fontSize: 18 }} />}
                     </Box>
                     <Box sx={{ mt: 0.5 }}>
-                      <Typography sx={{ fontSize: "0.95rem", ...labelStyle }}>
-                        {displayLabels[step]} {isActive && "📍"}
+                      <Typography sx={{ fontSize: "0.95rem", ...labelStyle, display: "flex", alignItems: "center", gap: 0.4 }}>
+                        {displayLabels[step]} {isActive && <PlaceRoundedIcon sx={{ fontSize: 15 }} />}
                       </Typography>
                       {eventData && (
                         <Box sx={{ mt: 0.5 }}>
@@ -301,36 +312,37 @@ export default function OrderDetailPage() {
             </Typography>
             
             {order.status === "pending" && (
-              <Button fullWidth variant="contained" onClick={() => setShowConfirmPayment(true)}
+              <Button fullWidth variant="contained" startIcon={<CheckCircleRoundedIcon />} onClick={() => setShowConfirmPayment(true)}
                 sx={{ bgcolor: "#22C55E", color: "#FFF", fontWeight: 700, borderRadius: "8px", py: 1.5, "&:hover": { bgcolor: "#16A34A" } }}>
-                ✅ Confirm Payment
+                Confirm Payment
               </Button>
             )}
-            
+
             {order.status === "paid" && (
-              <Button fullWidth variant="contained" onClick={startProduction}
+              <Button fullWidth variant="contained" startIcon={<PrecisionManufacturingRoundedIcon />} onClick={startProduction}
                 sx={{ bgcolor: "#8B5CF6", color: "#FFF", fontWeight: 700, borderRadius: "8px", py: 1.5, "&:hover": { bgcolor: "#7C3AED" } }}>
-                🧵 Start Production
+                Start Production
               </Button>
             )}
 
             {order.status === "producing" && (
-              <Button fullWidth variant="contained" onClick={() => setShowAddTracking(true)}
+              <Button fullWidth variant="contained" startIcon={<LocalShippingRoundedIcon />} onClick={() => setShowAddTracking(true)}
                 sx={{ bgcolor: "#06B6D4", color: "#FFF", fontWeight: 700, borderRadius: "8px", py: 1.5, "&:hover": { bgcolor: "#0891B2" } }}>
-                🚚 Add Tracking Info
+                Add Tracking Info
               </Button>
             )}
 
             {order.status === "shipped" && (
-              <Button fullWidth variant="contained" onClick={markDelivered}
+              <Button fullWidth variant="contained" startIcon={<Inventory2RoundedIcon />} onClick={markDelivered}
                 sx={{ bgcolor: "#4B5563", color: "#FFF", fontWeight: 700, borderRadius: "8px", py: 1.5, "&:hover": { bgcolor: "#374151" } }}>
-                📦 Mark as Delivered
+                Mark as Delivered
               </Button>
             )}
 
             {(order.status === "delivered" || order.status === "completed") && (
-              <Box sx={{ p: 1.5, bgcolor: c.bgStatBox, borderRadius: "8px", textAlign: "center" }}>
-                <Typography sx={{ fontSize: "0.9rem", color: c.textSecondary, fontWeight: 600 }}>🎉 Order is Complete</Typography>
+              <Box sx={{ p: 1.5, bgcolor: c.bgStatBox, borderRadius: "8px", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 0.6 }}>
+                <CelebrationRoundedIcon sx={{ fontSize: 18, color: c.textSecondary }} />
+                <Typography sx={{ fontSize: "0.9rem", color: c.textSecondary, fontWeight: 600 }}>Order is Complete</Typography>
               </Box>
             )}
           </Box>

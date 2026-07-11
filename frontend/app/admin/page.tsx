@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
@@ -32,6 +32,33 @@ import {
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
 import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import PsychologyRoundedIcon from "@mui/icons-material/PsychologyRounded";
+import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
+import MapRoundedIcon from "@mui/icons-material/MapRounded";
+import PaletteRoundedIcon from "@mui/icons-material/PaletteRounded";
+import TextureRoundedIcon from "@mui/icons-material/TextureRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
+import UndoRoundedIcon from "@mui/icons-material/UndoRounded";
+import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
+import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import AgricultureRoundedIcon from "@mui/icons-material/AgricultureRounded";
+import SmartToyRoundedIcon from "@mui/icons-material/SmartToyRounded";
+import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import GpsFixedRoundedIcon from "@mui/icons-material/GpsFixedRounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import LightbulbRoundedIcon from "@mui/icons-material/LightbulbRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import CampaignRoundedIcon from "@mui/icons-material/CampaignRounded";
+import FactoryRoundedIcon from "@mui/icons-material/FactoryRounded";
+import HandshakeRoundedIcon from "@mui/icons-material/HandshakeRounded";
 
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -39,11 +66,11 @@ import {
 } from "recharts";
 
 // ─── Helpers ──────────────────────────────────────────────────
-const SectionTitle = ({ children, emoji }: { children: string; emoji: string }) => {
+const SectionTitle = ({ children, icon }: { children: string; icon: ReactNode }) => {
   const { c } = useAdminTheme();
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2.5, mt: 1 }}>
-      <Typography sx={{ fontSize: "1.2rem" }}>{emoji}</Typography>
+      {icon}
       <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: c.textPrimary }}>
         {children}
       </Typography>
@@ -51,11 +78,11 @@ const SectionTitle = ({ children, emoji }: { children: string; emoji: string }) 
   );
 };
 
-const CardTitle = ({ children }: { children: string }) => {
+const CardTitle = ({ children, icon }: { children: string; icon?: ReactNode }) => {
   const { c } = useAdminTheme();
   return (
-    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2 }}>
-      {children}
+    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: c.textPrimary, mb: 2, display: "flex", alignItems: "center", gap: 0.75 }}>
+      {icon}{children}
     </Typography>
   );
 };
@@ -73,8 +100,12 @@ const priorityConfig: Record<string, { label: string; color: string; bg: string 
   medium: { label: "ปานกลาง", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
 };
 
-const recTypeIcons: Record<string, string> = {
-  product: "📦", pricing: "💰", marketing: "📣", stock: "🏭", community: "🤝",
+const recTypeIcons: Record<string, ReactNode> = {
+  product: <Inventory2RoundedIcon sx={{ fontSize: 18 }} />,
+  pricing: <AttachMoneyRoundedIcon sx={{ fontSize: 18 }} />,
+  marketing: <CampaignRoundedIcon sx={{ fontSize: 18 }} />,
+  stock: <FactoryRoundedIcon sx={{ fontSize: 18 }} />,
+  community: <HandshakeRoundedIcon sx={{ fontSize: 18 }} />,
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -88,7 +119,7 @@ function AdminDashboardContent() {
   return (
     <Box>
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 🔥 AI INSIGHT BOX (Hero Highlight) */}
+      {/* AI INSIGHT BOX (Hero Highlight) */}
       {/* ═══════════════════════════════════════════════════════════ */}
       <Box
         component={motion.div} {...cardAnim}
@@ -100,8 +131,8 @@ function AdminDashboardContent() {
       >
         <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "center", gap: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
           <AutoAwesomeRoundedIcon sx={{ color: c.gold, fontSize: 22 }} />
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.gold }}>
-            🧠 AI Insights วันนี้
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.gold, display: "flex", alignItems: "center", gap: 0.75 }}>
+            <PsychologyRoundedIcon sx={{ fontSize: 18 }} /> AI Insights วันนี้
           </Typography>
           <Chip label="LIVE" size="small" sx={{ bgcolor: "rgba(34,197,94,0.2)", color: "#22C55E", fontWeight: 700, fontSize: "0.65rem", height: 20, ml: "auto",
             animation: "pulse 2s infinite",
@@ -128,9 +159,9 @@ function AdminDashboardContent() {
       </Box>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 💰 BUSINESS KPIs */}
+      {/* BUSINESS KPIs */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="💰">Business KPIs</SectionTitle>
+      <SectionTitle icon={<AttachMoneyRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>Business KPIs</SectionTitle>
 
       {/* KPI Cards (existing) */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr 1fr 1fr", md: "repeat(6, 1fr)" }, gap: 2, mb: 3 }}>
@@ -204,9 +235,9 @@ function AdminDashboardContent() {
       </Box>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 📈 SALES PERFORMANCE */}
+      {/* SALES PERFORMANCE */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="📈">Sales Performance</SectionTitle>
+      <SectionTitle icon={<TrendingUpRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>Sales Performance</SectionTitle>
 
       {/* Fabric Type Sales + Demand Heatmap */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
@@ -228,7 +259,7 @@ function AdminDashboardContent() {
 
         {/* Demand Heatmap */}
         <Box sx={card}>
-          <CardTitle>🗺️ Demand Heatmap (จังหวัด)</CardTitle>
+          <CardTitle icon={<MapRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Demand Heatmap (จังหวัด)</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {mockDemandHeatmap.slice(0, 8).map((pv, i) => (
               <Box key={pv.province} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -257,14 +288,14 @@ function AdminDashboardContent() {
       </Box>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 🎨 TREND INSIGHTS */}
+      {/* TREND INSIGHTS */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="🎨">Trend Insights</SectionTitle>
+      <SectionTitle icon={<PaletteRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>Trend Insights</SectionTitle>
 
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" }, gap: 2, mb: 3 }}>
         {/* Trending Colors */}
         <Box sx={card}>
-          <CardTitle>🎨 สีที่กำลังมา</CardTitle>
+          <CardTitle icon={<PaletteRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>สีที่กำลังมา</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {mockTrendInsights.trendingColors.map((cl) => (
               <Box key={cl.name} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -280,7 +311,7 @@ function AdminDashboardContent() {
 
         {/* Trending Patterns */}
         <Box sx={card}>
-          <CardTitle>🧶 ลายที่ค้นหาเยอะ</CardTitle>
+          <CardTitle icon={<TextureRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>ลายที่ค้นหาเยอะ</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {mockTrendInsights.trendingPatterns.map((pt, i) => (
               <Box key={pt.name} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -297,7 +328,7 @@ function AdminDashboardContent() {
 
         {/* Seasonal Trends */}
         <Box sx={card}>
-          <CardTitle>📅 Seasonal Trends</CardTitle>
+          <CardTitle icon={<CalendarMonthRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Seasonal Trends</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {mockTrendInsights.seasonalTrends.map((st) => {
               const demandColor = st.demand === "สูงมาก" ? "#22C55E" : st.demand === "สูง" ? c.gold : "#3B82F6";
@@ -316,21 +347,21 @@ function AdminDashboardContent() {
       </Box>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 👥 USER & BEHAVIOR */}
+      {/* USER & BEHAVIOR */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="👥">User & Behavior</SectionTitle>
+      <SectionTitle icon={<GroupRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>User & Behavior</SectionTitle>
 
       {/* User Activity KPIs */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(5, 1fr)" }, gap: 2, mb: 3 }}>
         {[
-          { label: "DAU", value: mockUserActivity.dau.toLocaleString(), icon: "👀" },
-          { label: "MAU", value: mockUserActivity.mau.toLocaleString(), icon: "📊" },
-          { label: "Session Time", value: mockUserActivity.avgSessionTime, icon: "⏱️" },
-          { label: "Bounce Rate", value: `${mockUserActivity.bounceRate}%`, icon: "↩️" },
-          { label: "Returning Users", value: `${mockUserActivity.returningUsers}%`, icon: "🔄" },
+          { label: "DAU", value: mockUserActivity.dau.toLocaleString(), icon: <VisibilityRoundedIcon sx={{ fontSize: 20, color: c.textMuted }} /> },
+          { label: "MAU", value: mockUserActivity.mau.toLocaleString(), icon: <BarChartRoundedIcon sx={{ fontSize: 20, color: c.textMuted }} /> },
+          { label: "Session Time", value: mockUserActivity.avgSessionTime, icon: <TimerRoundedIcon sx={{ fontSize: 20, color: c.textMuted }} /> },
+          { label: "Bounce Rate", value: `${mockUserActivity.bounceRate}%`, icon: <UndoRoundedIcon sx={{ fontSize: 20, color: c.textMuted }} /> },
+          { label: "Returning Users", value: `${mockUserActivity.returningUsers}%`, icon: <AutorenewRoundedIcon sx={{ fontSize: 20, color: c.textMuted }} /> },
         ].map((item) => (
           <Box key={item.label} component={motion.div} {...cardAnim} sx={card}>
-            <Typography sx={{ fontSize: "1rem", mb: 0.5 }}>{item.icon}</Typography>
+            <Box sx={{ mb: 0.5 }}>{item.icon}</Box>
             <Typography sx={{ fontSize: "0.65rem", color: c.textMuted, fontWeight: 600 }}>{item.label}</Typography>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary }}>{item.value}</Typography>
           </Box>
@@ -341,7 +372,7 @@ function AdminDashboardContent() {
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
         {/* DAU Trend */}
         <Box sx={card}>
-          <CardTitle>👀 Daily Active Users (สัปดาห์นี้)</CardTitle>
+          <CardTitle icon={<VisibilityRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Daily Active Users (สัปดาห์นี้)</CardTitle>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={mockUserActivity.dauTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke={c.chartGrid} />
@@ -355,7 +386,7 @@ function AdminDashboardContent() {
 
         {/* Customer Funnel */}
         <Box sx={card}>
-          <CardTitle>🛒 Customer Journey Funnel</CardTitle>
+          <CardTitle icon={<ShoppingCartRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Customer Journey Funnel</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {mockCustomerFunnel.map((step, i) => (
               <Box key={step.stage}>
@@ -384,7 +415,7 @@ function AdminDashboardContent() {
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
         {/* Search Keywords */}
         <Box sx={card}>
-          <CardTitle>🔍 Search Keywords ยอดนิยม</CardTitle>
+          <CardTitle icon={<SearchRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Search Keywords ยอดนิยม</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {mockSearchKeywords.map((kw, i) => (
               <Box key={kw.keyword} sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 0.8, borderBottom: i < mockSearchKeywords.length - 1 ? `1px solid ${c.borderCard}` : "none" }}>
@@ -405,7 +436,7 @@ function AdminDashboardContent() {
 
         {/* Wishlist vs Purchase */}
         <Box sx={card}>
-          <CardTitle>❤️ Wishlist vs ซื้อจริง</CardTitle>
+          <CardTitle icon={<FavoriteRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Wishlist vs ซื้อจริง</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {mockWishlistData.map((item, i) => (
               <Box key={item.name} sx={{ py: 1, borderBottom: i < mockWishlistData.length - 1 ? `1px solid ${c.borderCard}` : "none" }}>
@@ -418,8 +449,12 @@ function AdminDashboardContent() {
                   }} />
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>❤️ Save: {item.saves}</Typography>
-                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>🛒 ซื้อ: {item.purchases}</Typography>
+                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, display: "flex", alignItems: "center", gap: 0.4 }}>
+                    <FavoriteRoundedIcon sx={{ fontSize: 12 }} /> Save: {item.saves}
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, display: "flex", alignItems: "center", gap: 0.4 }}>
+                    <ShoppingCartRoundedIcon sx={{ fontSize: 12 }} /> ซื้อ: {item.purchases}
+                  </Typography>
                 </Box>
                 <LinearProgress variant="determinate" value={item.convRate}
                   sx={{ height: 6, borderRadius: 3, mt: 0.8, bgcolor: c.bgStatBox, "& .MuiLinearProgress-bar": { borderRadius: 3, bgcolor: item.convRate > 30 ? "#22C55E" : "#F59E0B" } }}
@@ -431,13 +466,13 @@ function AdminDashboardContent() {
       </Box>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 🏡 SUPPLY SIDE (Community) */}
+      {/* SUPPLY SIDE (Community) */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="🏡">Supply Side (ฝั่งชุมชน)</SectionTitle>
+      <SectionTitle icon={<HomeRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>Supply Side (ฝั่งชุมชน)</SectionTitle>
 
       {/* Community Performance */}
       <Box sx={{ ...card, mb: 3, overflow: "hidden" }}>
-        <CardTitle>🧑‍🌾 Community Performance</CardTitle>
+        <CardTitle icon={<AgricultureRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Community Performance</CardTitle>
         {/* Header */}
         <Box sx={{ display: { xs: "none", md: "grid" }, gridTemplateColumns: "2.5fr 1fr 1fr 0.7fr 0.7fr", gap: 2, px: 1, pb: 1.5, borderBottom: `1px solid ${c.borderCard}` }}>
           {["ชุมชน", "รายรับ", "คำสั่งซื้อ", "ช่างทอ", "Growth"].map((h) => (
@@ -467,7 +502,7 @@ function AdminDashboardContent() {
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
         {/* Production */}
         <Box sx={card}>
-          <CardTitle>⏱️ Production vs Sales</CardTitle>
+          <CardTitle icon={<TimerRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Production vs Sales</CardTitle>
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1.5, mb: 2 }}>
             <Box sx={{ p: 1.5, borderRadius: "10px", bgcolor: c.bgCardHover, textAlign: "center" }}>
               <Typography sx={{ fontSize: "0.65rem", color: c.textMuted }}>เฉลี่ยทอ</Typography>
@@ -497,7 +532,7 @@ function AdminDashboardContent() {
 
         {/* Supply vs Demand Gap */}
         <Box sx={card}>
-          <CardTitle>📉 Supply vs Demand Gap</CardTitle>
+          <CardTitle icon={<TrendingDownRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Supply vs Demand Gap</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {mockSupplyDemandGap.map((item) => {
               const u = urgencyColor[item.urgency] || urgencyColor.medium;
@@ -526,7 +561,7 @@ function AdminDashboardContent() {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* AI Usage & Payment Mix (existing) */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="🤖">AI & Payments</SectionTitle>
+      <SectionTitle icon={<SmartToyRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>AI & Payments</SectionTitle>
 
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
         <Box sx={card}>
@@ -558,7 +593,7 @@ function AdminDashboardContent() {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* Top Products & Top Weavers (existing) */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="🏆">Top Performers</SectionTitle>
+      <SectionTitle icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>Top Performers</SectionTitle>
 
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
         <Box sx={card}>
@@ -589,7 +624,7 @@ function AdminDashboardContent() {
               <Avatar sx={{ width: 36, height: 36, bgcolor: i === 0 ? c.gold : c.bgStatBox, fontSize: "0.85rem", fontWeight: 700, color: i === 0 ? c.textOnGold : c.textPrimary }}>{w.avatar}</Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography noWrap sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary }}>{w.name}</Typography>
-                <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>{w.province} • ⭐ {w.rating}</Typography>
+                <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, display: "flex", alignItems: "center", gap: 0.3 }}>{w.province} • <StarRoundedIcon sx={{ fontSize: 12, color: c.gold }} /> {w.rating}</Typography>
               </Box>
               <Box sx={{ textAlign: "right" }}>
                 <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.gold }}>฿{(w.revenue / 1000).toFixed(0)}k</Typography>
@@ -601,14 +636,14 @@ function AdminDashboardContent() {
       </Box>
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* 🎯 SMART DASHBOARD */}
+      {/* SMART DASHBOARD */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <SectionTitle emoji="🎯">Smart Dashboard</SectionTitle>
+      <SectionTitle icon={<GpsFixedRoundedIcon sx={{ fontSize: 20, color: c.gold }} />}>Smart Dashboard</SectionTitle>
 
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2, mb: 3 }}>
         {/* Predictive Analytics */}
         <Box sx={card}>
-          <CardTitle>📊 Predictive Analytics</CardTitle>
+          <CardTitle icon={<BarChartRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>Predictive Analytics</CardTitle>
           <Box sx={{ p: 2, borderRadius: "12px", background: `linear-gradient(135deg, rgba(197,165,90,0.1), rgba(197,165,90,0.03))`, border: `1px solid ${c.gold}33`, mb: 2 }}>
             <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mb: 0.5 }}>คาดการณ์รายรับเดือนหน้า</Typography>
             <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
@@ -625,7 +660,9 @@ function AdminDashboardContent() {
               {mockPredictiveAnalytics.nextQuarterTrend}
             </Typography>
           </Box>
-          <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: c.textPrimary, mb: 1 }}>⚠️ Risk Factors</Typography>
+          <Typography sx={{ fontSize: "0.75rem", fontWeight: 600, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+            <WarningAmberRoundedIcon sx={{ fontSize: 14 }} /> Risk Factors
+          </Typography>
           {mockPredictiveAnalytics.riskFactors.map((risk, i) => (
             <Box key={i} sx={{ display: "flex", gap: 1, mb: 0.8 }}>
               <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>•</Typography>
@@ -636,7 +673,7 @@ function AdminDashboardContent() {
 
         {/* Recommendations */}
         <Box sx={card}>
-          <CardTitle>💡 AI Recommendations</CardTitle>
+          <CardTitle icon={<LightbulbRoundedIcon sx={{ fontSize: 16, color: c.gold }} />}>AI Recommendations</CardTitle>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {mockRecommendations.map((rec, i) => {
               const pr = priorityConfig[rec.priority] || priorityConfig.medium;
@@ -644,7 +681,7 @@ function AdminDashboardContent() {
                 <Box key={i} component={motion.div} {...cardAnim} transition={{ delay: i * 0.06 }}
                   sx={{ p: 2, borderRadius: "12px", border: `1px solid ${c.borderCard}`, "&:hover": { bgcolor: c.bgCardHover }, transition: t }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.8 }}>
-                    <Typography sx={{ fontSize: "1.1rem" }}>{recTypeIcons[rec.type]}</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", color: c.textSecondary }}>{recTypeIcons[rec.type]}</Box>
                     <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: c.textPrimary, flex: 1 }}>{rec.title}</Typography>
                     <Chip label={pr.label} size="small" sx={{ bgcolor: pr.bg, color: pr.color, fontWeight: 700, fontSize: "0.65rem", height: 20 }} />
                   </Box>

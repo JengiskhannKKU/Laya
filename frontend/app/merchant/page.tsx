@@ -12,6 +12,7 @@ import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import FiberNewRoundedIcon from "@mui/icons-material/FiberNewRounded";
+import WavingHandRoundedIcon from "@mui/icons-material/WavingHandRounded";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 
@@ -42,8 +43,8 @@ export default function MerchantDashboardPage() {
     <Box>
       {/* Greeting */}
       <Box component={motion.div} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.4rem", fontWeight: 700, color: "#1B2A4A" }}>
-          สวัสดี, {user?.name ?? "ร้านค้า"} 👋
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.4rem", fontWeight: 700, color: "#1B2A4A", display: "flex", alignItems: "center", gap: 0.6 }}>
+          สวัสดี, {user?.name ?? "ร้านค้า"} <WavingHandRoundedIcon sx={{ fontSize: "1.3rem", color: "#C5A55A" }} />
         </Typography>
         <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.9rem" }}>
           สรุปภาพรวมร้านค้าของคุณ

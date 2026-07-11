@@ -15,6 +15,7 @@ import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
+import TextureRoundedIcon from "@mui/icons-material/TextureRounded";
 import { useAuth } from "@/lib/auth-context";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 
@@ -139,7 +140,7 @@ export default function MerchantSettingsPage() {
       {/* Shop Logo */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, p: 2.5, bgcolor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E5DFD6" }}>
         <Box sx={{ position: "relative" }}>
-          <Avatar sx={{ width: 72, height: 72, bgcolor: "#1B2A4A", fontSize: "1.8rem" }}>🧵</Avatar>
+          <Avatar sx={{ width: 72, height: 72, bgcolor: "#1B2A4A", fontSize: "1.8rem" }}><TextureRoundedIcon sx={{ fontSize: "1.8rem" }} /></Avatar>
           <Box sx={{
             position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: "50%",
             bgcolor: "#C5A55A", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",

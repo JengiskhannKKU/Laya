@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import CookieRoundedIcon from "@mui/icons-material/CookieRounded";
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 
 const COOKIE_CONSENT_KEY = "laya_cookie_consent";
 
@@ -118,7 +123,7 @@ export default function CookieConsentBanner() {
                       flexShrink: 0,
                     }}
                   >
-                    <span style={{ fontSize: "18px" }}>🍪</span>
+                    <CookieRoundedIcon style={{ fontSize: "18px", color: "#D4BA7A" }} />
                   </div>
                   <div>
                     <h2
@@ -187,9 +192,9 @@ export default function CookieConsentBanner() {
                       ประเภท Cookie ที่เราใช้
                     </p>
                     {[
-                      { icon: "🔐", name: "Cookie ที่จำเป็น", desc: "สำหรับการเข้าสู่ระบบและความปลอดภัย" },
-                      { icon: "⚙️", name: "Cookie การตั้งค่า", desc: "จดจำภาษาและการตั้งค่าส่วนตัว" },
-                      { icon: "📊", name: "Cookie วิเคราะห์", desc: "วัดประสิทธิภาพและปรับปรุงระบบ" },
+                      { icon: LockRoundedIcon, name: "Cookie ที่จำเป็น", desc: "สำหรับการเข้าสู่ระบบและความปลอดภัย" },
+                      { icon: SettingsRoundedIcon, name: "Cookie การตั้งค่า", desc: "จดจำภาษาและการตั้งค่าส่วนตัว" },
+                      { icon: BarChartRoundedIcon, name: "Cookie วิเคราะห์", desc: "วัดประสิทธิภาพและปรับปรุงระบบ" },
                     ].map((item) => (
                       <div
                         key={item.name}
@@ -200,7 +205,7 @@ export default function CookieConsentBanner() {
                           alignItems: "flex-start",
                         }}
                       >
-                        <span style={{ fontSize: "13px", flexShrink: 0 }}>{item.icon}</span>
+                        <item.icon style={{ fontSize: "13px", flexShrink: 0, color: "#1B2A4A" }} />
                         <div>
                           <span style={{ fontSize: "12px", fontWeight: 500, color: "#1B2A4A" }}>
                             {item.name}
@@ -272,6 +277,10 @@ export default function CookieConsentBanner() {
                     boxShadow: "0 4px 14px rgba(27, 42, 74, 0.3)",
                     transition: "transform 0.15s ease, box-shadow 0.15s ease",
                     letterSpacing: "0.02em",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-1px)";
@@ -282,7 +291,7 @@ export default function CookieConsentBanner() {
                     e.currentTarget.style.boxShadow = "0 4px 14px rgba(27, 42, 74, 0.3)";
                   }}
                 >
-                  ✓ ยอมรับ Cookie ทั้งหมด
+                  <CheckRoundedIcon style={{ fontSize: "16px" }} /> ยอมรับ Cookie ทั้งหมด
                 </button>
 
                 <button

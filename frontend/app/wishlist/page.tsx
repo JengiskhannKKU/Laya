@@ -129,8 +129,8 @@ export default function WishlistPage() {
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
               ยังไม่มีรายการโปรด
             </Typography>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
-              กดหัวใจ ❤️ ที่สินค้าที่ชอบเพื่อบันทึกไว้ดูภายหลัง
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.4 }}>
+              กดหัวใจ <FavoriteRoundedIcon sx={{ fontSize: 14, color: "#EF4444" }} /> ที่สินค้าที่ชอบเพื่อบันทึกไว้ดูภายหลัง
             </Typography>
             <Button
               variant="contained"

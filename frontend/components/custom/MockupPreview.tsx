@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import { type CustomPatternData } from "@/lib/custom-order-config";
 
 interface MockupPreviewProps {
@@ -37,9 +38,12 @@ export default function MockupPreview({ patternData, onStartMatching }: MockupPr
             fontSize: "1.4rem",
             color: "#1B2A4A",
             mb: 0.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.6,
           }}
         >
-          Your Pattern ✨
+          Your Pattern <AutoAwesomeRoundedIcon sx={{ fontSize: "1.2rem", color: "#C5A55A" }} />
         </Typography>
         <Typography
           sx={{

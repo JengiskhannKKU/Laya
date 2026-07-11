@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Box, Typography, Avatar, TextField, Button, Divider } from "@mui/material";
 import { motion } from "framer-motion";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { type CustomPatternData } from "@/lib/custom-order-config";
 import type { ShopMatch } from "./types";
 import { useAuth } from "@/lib/auth-context";
@@ -62,8 +63,8 @@ export default function OrderConfirmationView({ patternData, selectedWeaver, onC
             <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{selectedWeaver.province ?? "ไม่ระบุจังหวัด"}</Typography>
           </Box>
         </Box>
-        <Typography sx={{ fontSize: "0.8rem", fontWeight: 700, color: "#C5A55A" }}>
-          ★ {selectedWeaver.rating.toFixed(1)}
+        <Typography sx={{ fontSize: "0.8rem", fontWeight: 700, color: "#C5A55A", display: "flex", alignItems: "center", gap: 0.2 }}>
+          <StarRoundedIcon sx={{ fontSize: "1rem" }} /> {selectedWeaver.rating.toFixed(1)}
         </Typography>
       </Box>
 

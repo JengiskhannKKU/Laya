@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import CreateRoundedIcon from "@mui/icons-material/CreateRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import PaletteRoundedIcon from "@mui/icons-material/PaletteRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
 
 interface ModeSelectionProps {
   onSelectMode: (mode: "guided" | "prompt") => void;
@@ -47,8 +49,8 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
 
       {/* ── Pattern Gallery ── */}
       <Box>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", color: "#6B7280", mb: 1.2, fontWeight: 600 }}>
-          🎨 ตัวอย่างลายผ้าไทย Pixel Art ({PIXEL_PATTERNS.length} ลาย)
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", color: "#6B7280", mb: 1.2, fontWeight: 600, display: "flex", alignItems: "center", gap: 0.4 }}>
+          <PaletteRoundedIcon sx={{ fontSize: "0.95rem" }} /> ตัวอย่างลายผ้าไทย Pixel Art ({PIXEL_PATTERNS.length} ลาย)
         </Typography>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(5, 1fr)", md: "repeat(10, 1fr)" }, gap: 1 }}>
           {PIXEL_PATTERNS.map((p, i) => (
@@ -115,8 +117,8 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
           <AutoAwesomeRoundedIcon sx={{ color: "#C5A55A", fontSize: 28 }} />
         </Box>
         <Box>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
-            Guided Custom ✨
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", display: "flex", alignItems: "center", gap: 0.5 }}>
+            Guided Custom <AutoAwesomeRoundedIcon sx={{ fontSize: "1rem", color: "#C5A55A" }} />
           </Typography>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
             สำหรับมือใหม่ ทำตามทีละขั้นตอน เลือกสไตล์ สี และเรื่องราว ง่ายดายและสนุก
@@ -141,8 +143,8 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
           <CreateRoundedIcon sx={{ color: "#1B2A4A", fontSize: 28 }} />
         </Box>
         <Box>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
-            Prompt Custom ✍️
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", display: "flex", alignItems: "center", gap: 0.5 }}>
+            Prompt Custom <EditRoundedIcon sx={{ fontSize: "1rem", color: "#1B2A4A" }} />
           </Typography>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
             สำหรับสาย Pro พิมพ์ความต้องการของคุณอย่างอิสระ แล้วให้ AI จัดการให้
@@ -196,9 +198,10 @@ export default function ModeSelection({ onSelectMode }: ModeSelectionProps) {
                     background: "linear-gradient(135deg, #C5A55A, #D4BA7A)",
                     color: "#fff", fontFamily: '"Kanit", sans-serif',
                     fontWeight: 600, fontSize: "0.95rem", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 0.6,
                   }}
                 >
-                  ✨ ใช้ลายนี้เริ่มต้น
+                  <AutoAwesomeRoundedIcon sx={{ fontSize: "1rem" }} /> ใช้ลายนี้เริ่มต้น
                 </Box>
               </Box>
             </motion.div>

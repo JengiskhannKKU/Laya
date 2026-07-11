@@ -9,6 +9,7 @@ import Divider from "@mui/material/Divider";
 import { motion } from "framer-motion";
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import EventRoundedIcon from "@mui/icons-material/EventRounded";
 
 const PAYOUTS = [
   { id: "PAY-042", date: "20 มิ.ย. 67", amount: 18400, orders: 6, status: "paid" },
@@ -58,9 +59,10 @@ export default function MerchantPayoutsPage() {
       </Box>
 
       {/* Info */}
-      <Box sx={{ bgcolor: "#FFF8E7", border: "1px solid #F0D080", borderRadius: "12px", p: 2, mb: 3 }}>
+      <Box sx={{ bgcolor: "#FFF8E7", border: "1px solid #F0D080", borderRadius: "12px", p: 2, mb: 3, display: "flex", alignItems: "flex-start", gap: 1 }}>
+        <EventRoundedIcon sx={{ color: "#92700A", fontSize: "1.1rem", mt: 0.2, flexShrink: 0 }} />
         <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#92700A" }}>
-          📅 LAYA โอนเงินทุกวันที่ 1 และ 20 ของเดือน หลังหักค่าบริการแพลตฟอร์ม 5%
+          LAYA โอนเงินทุกวันที่ 1 และ 20 ของเดือน หลังหักค่าบริการแพลตฟอร์ม 5%
         </Typography>
       </Box>
 

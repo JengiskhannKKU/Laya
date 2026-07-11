@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Box, Typography, IconButton } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 
@@ -174,8 +176,16 @@ export default function CustomGenerator() {
             }}
           >
             {currentMode === "select" && "Custom Design"}
-            {currentMode === "guided" && "Guided Mode ✨"}
-            {currentMode === "prompt" && "Prompt Mode ✍️"}
+            {currentMode === "guided" && (
+              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                Guided Mode <AutoAwesomeRoundedIcon sx={{ fontSize: "1.1rem", color: "#C5A55A" }} />
+              </Box>
+            )}
+            {currentMode === "prompt" && (
+              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                Prompt Mode <EditRoundedIcon sx={{ fontSize: "1.1rem", color: "#C5A55A" }} />
+              </Box>
+            )}
             {currentMode === "generating" && "AI กำลังสร้างลายผ้า"}
             {currentMode === "preview" && "ผลลัพธ์ของคุณ"}
             {currentMode === "matching" && "Weaver Matching"}

@@ -7,6 +7,9 @@ import LocalFloristRoundedIcon from "@mui/icons-material/LocalFloristRounded";
 import ScienceRoundedIcon from "@mui/icons-material/ScienceRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import PsychologyRoundedIcon from "@mui/icons-material/PsychologyRounded";
 import { type CustomPatternData, WEAVER_COLORS } from "@/lib/custom-order-config";
 import PatternGallery from "./PatternGallery";
 
@@ -146,8 +149,8 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                   <Typography sx={{ fontSize: "0.78rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
                     ภูมิปัญญาชาวบ้าน สีออร์แกนิก ปลอดภัยต่อผิว
                   </Typography>
-                  <Typography sx={{ fontSize: "0.72rem", color: "#8B5A2B", mt: 1, fontWeight: 600, fontStyle: "italic" }}>
-                    ⚠️ สีอาจมีความคลาดเคลื่อนเล็กน้อยตามล็อตการย้อมและวัตถุดิบธรรมชาติในแต่ละฤดูกาล
+                  <Typography sx={{ fontSize: "0.72rem", color: "#8B5A2B", mt: 1, fontWeight: 600, fontStyle: "italic", display: "flex", alignItems: "center", gap: 0.4 }}>
+                    <WarningAmberRoundedIcon sx={{ fontSize: "0.9rem" }} /> สีอาจมีความคลาดเคลื่อนเล็กน้อยตามล็อตการย้อมและวัตถุดิบธรรมชาติในแต่ละฤดูกาล
                   </Typography>
                 </Box>
                 {patternData.dyeType === "natural" && <CheckCircleRoundedIcon sx={{ color: "#1B2A4A", position: "absolute", top: 12, right: 12 }} />}
@@ -179,8 +182,8 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
                   <Typography sx={{ fontSize: "0.78rem", color: "#6B7280", mt: 0.5, lineHeight: 1.4 }}>
                     สีมาตรฐานอุตสาหกรรม ติดทน สีฉูดฉาดโดดเด่น
                   </Typography>
-                  <Typography sx={{ fontSize: "0.72rem", color: "#4B7355", mt: 1, fontWeight: 600 }}>
-                    ✨ สีแม่นยำ ตรงตามที่คุณเลือก 100%
+                  <Typography sx={{ fontSize: "0.72rem", color: "#4B7355", mt: 1, fontWeight: 600, display: "flex", alignItems: "center", gap: 0.4 }}>
+                    <AutoAwesomeRoundedIcon sx={{ fontSize: "0.9rem" }} /> สีแม่นยำ ตรงตามที่คุณเลือก 100%
                   </Typography>
                 </Box>
                 {patternData.dyeType === "chemical" && <CheckCircleRoundedIcon sx={{ color: "#1B2A4A", position: "absolute", top: 12, right: 12 }} />}
@@ -523,8 +526,8 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
       case 7: // Summary
         return (
           <motion.div key="step7" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 3 }}>
-              🧠 สรุปแบบลายผ้าของคุณ
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 3, display: "flex", alignItems: "center", gap: 0.8 }}>
+              <PsychologyRoundedIcon sx={{ fontSize: "1.4rem" }} /> สรุปแบบลายผ้าของคุณ
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2, bgcolor: "#FFFFFF", p: 3, borderRadius: 4, border: "1px solid #E5DFD6" }}>
               <Box>
@@ -620,6 +623,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
             variant="contained"
             onClick={handleNext}
             disabled={!canProceed()}
+            startIcon={activeStep === steps.length - 1 ? <CheckRoundedIcon /> : undefined}
             sx={{
               flex: 2,
               bgcolor: "#1B2A4A",
@@ -630,7 +634,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
               "&.Mui-disabled": { bgcolor: "#E5DFD6", color: "#9CA3AF" },
             }}
           >
-            {activeStep === steps.length - 1 ? "✅ ยืนยัน (Generate)" : "ถัดไป"}
+            {activeStep === steps.length - 1 ? "ยืนยัน (Generate)" : "ถัดไป"}
           </Button>
         </Box>
       )}

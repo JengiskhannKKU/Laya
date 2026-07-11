@@ -13,19 +13,24 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import StraightenRoundedIcon from "@mui/icons-material/StraightenRounded";
+import MonitorWeightRoundedIcon from "@mui/icons-material/MonitorWeightRounded";
+import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
+import SquareFootRoundedIcon from "@mui/icons-material/SquareFootRounded";
+import SwapHorizRoundedIcon from "@mui/icons-material/SwapHorizRounded";
+import FitnessCenterRoundedIcon from "@mui/icons-material/FitnessCenterRounded";
 import { useRouter } from "next/navigation";
 import MobileLayout from "@/components/layout/MobileLayout";
 
 const MEASUREMENT_FIELDS = [
-  { key: "height", label: "ส่วนสูง", unit: "ซม.", icon: "📏" },
-  { key: "weight", label: "น้ำหนัก", unit: "กก.", icon: "⚖️" },
-  { key: "chest", label: "รอบอก", unit: "ซม.", icon: "👕" },
-  { key: "waist", label: "รอบเอว", unit: "ซม.", icon: "📐" },
-  { key: "hip", label: "รอบสะโพก", unit: "ซม.", icon: "📐" },
-  { key: "shoulder", label: "ความกว้างไหล่", unit: "ซม.", icon: "↔️" },
-  { key: "armLength", label: "ความยาวแขน", unit: "ซม.", icon: "💪" },
-  { key: "backLength", label: "ความยาวหลัง", unit: "ซม.", icon: "📏" },
-  { key: "inseam", label: "ความยาวขาใน", unit: "ซม.", icon: "📏" },
+  { key: "height", label: "ส่วนสูง", unit: "ซม.", icon: StraightenRoundedIcon },
+  { key: "weight", label: "น้ำหนัก", unit: "กก.", icon: MonitorWeightRoundedIcon },
+  { key: "chest", label: "รอบอก", unit: "ซม.", icon: CheckroomRoundedIcon },
+  { key: "waist", label: "รอบเอว", unit: "ซม.", icon: SquareFootRoundedIcon },
+  { key: "hip", label: "รอบสะโพก", unit: "ซม.", icon: SquareFootRoundedIcon },
+  { key: "shoulder", label: "ความกว้างไหล่", unit: "ซม.", icon: SwapHorizRoundedIcon },
+  { key: "armLength", label: "ความยาวแขน", unit: "ซม.", icon: FitnessCenterRoundedIcon },
+  { key: "backLength", label: "ความยาวหลัง", unit: "ซม.", icon: StraightenRoundedIcon },
+  { key: "inseam", label: "ความยาวขาใน", unit: "ซม.", icon: StraightenRoundedIcon },
 ];
 
 type MeasurementProfile = {
@@ -97,8 +102,8 @@ export default function MeasurementsPage() {
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 3 }}>
           {MEASUREMENT_FIELDS.map((field) => (
             <Box key={field.key} sx={{ bgcolor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5DFD6", p: 2 }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF", mb: 0.5 }}>
-                {field.icon} {field.label}
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF", mb: 0.5, display: "flex", alignItems: "center", gap: 0.4 }}>
+                <field.icon sx={{ fontSize: "0.9rem" }} /> {field.label}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <TextField

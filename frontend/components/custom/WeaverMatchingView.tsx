@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from "react";
 import { Box, Typography, Avatar, Rating, Button, Chip, Skeleton } from "@mui/material";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import { authFetch } from "@/lib/api-auth";
 import type { CustomPatternData } from "@/lib/custom-order-config";
@@ -128,9 +129,10 @@ export default function WeaverMatchingView({ patternData, onSelectWeaver, onBack
               }}
             >
               {idx === 0 && shop.matchScore > 0 && (
-                <Box sx={{ bgcolor: "#C5A55A", py: 0.8, px: 2 }}>
+                <Box sx={{ bgcolor: "#C5A55A", py: 0.8, px: 2, display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <StarRoundedIcon sx={{ fontSize: "1rem", color: "#FFFFFF" }} />
                   <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: "#FFFFFF" }}>
-                    ★ แนะนำอันดับ 1 — เชี่ยวชาญลายที่คุณเลือก
+                    แนะนำอันดับ 1 — เชี่ยวชาญลายที่คุณเลือก
                   </Typography>
                 </Box>
               )}

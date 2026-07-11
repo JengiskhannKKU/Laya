@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { Box, Typography, TextField, Button, CircularProgress, Chip } from "@mui/material";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import GpsFixedRoundedIcon from "@mui/icons-material/GpsFixedRounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import { type CustomPatternData } from "@/lib/custom-order-config";
 
@@ -44,8 +48,8 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", pt: 2 }}>
-      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 1 }}>
-        สร้างลายผ้าด้วย Prompt ✍️
+      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: "#1B2A4A", mb: 1, display: "flex", alignItems: "center", gap: 0.6 }}>
+        สร้างลายผ้าด้วย Prompt <EditRoundedIcon sx={{ fontSize: "1.1rem", color: "#C5A55A" }} />
       </Typography>
       <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 3 }}>
         พิมพ์สิ่งที่คุณจินตนาการ เช่น "Thai silk, mudmee pattern, pastel pink floral, Isan style, elegant wedding"
@@ -78,6 +82,7 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
               variant="contained"
               onClick={handleParse}
               disabled={!prompt.trim()}
+              startIcon={<AutoAwesomeRoundedIcon />}
               sx={{
                 width: "100%",
                 mt: 3,
@@ -89,7 +94,7 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
                 "&.Mui-disabled": { bgcolor: "#E5DFD6", color: "#9CA3AF" },
               }}
             >
-              ✨ ให้ AI วิเคราะห์ Prompt
+              ให้ AI วิเคราะห์ Prompt
             </Button>
           </motion.div>
         )}
@@ -106,8 +111,8 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
         {parsedData && !isParsing && (
           <motion.div key="parsed" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Box sx={{ mt: 4, bgcolor: "#FFFFFF", p: 3, borderRadius: 4, border: "1px solid #E5DFD6" }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", mb: 2 }}>
-                🎯 AI เข้าใจความต้องการของคุณดังนี้:
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", mb: 2, display: "flex", alignItems: "center", gap: 0.6 }}>
+                <GpsFixedRoundedIcon sx={{ fontSize: "1.1rem", color: "#C5A55A" }} /> AI เข้าใจความต้องการของคุณดังนี้:
               </Typography>
               
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
@@ -122,16 +127,18 @@ export default function PromptWizard({ onGenerate }: PromptWizardProps) {
                 <Button
                   variant="outlined"
                   onClick={() => setParsedData(null)}
+                  startIcon={<EditRoundedIcon />}
                   sx={{ flex: 1, borderColor: "#E5DFD6", color: "#1B2A4A", borderRadius: 3 }}
                 >
-                  ✏️ แก้ไข Prompt
+                  แก้ไข Prompt
                 </Button>
                 <Button
                   variant="contained"
                   onClick={handleConfirm}
+                  startIcon={<CheckRoundedIcon />}
                   sx={{ flex: 1.5, bgcolor: "#1B2A4A", borderRadius: 3, "&:hover": { bgcolor: "#0F1A30" } }}
                 >
-                  ✅ Confirm (Generate)
+                  Confirm (Generate)
                 </Button>
               </Box>
             </Box>

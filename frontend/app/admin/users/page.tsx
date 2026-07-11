@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -35,6 +35,13 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
+import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
+import PhotoCameraFrontRoundedIcon from "@mui/icons-material/PhotoCameraFrontRounded";
 
 import {
   mockAdminWeavers, AdminWeaver,
@@ -57,13 +64,13 @@ const kycStatusStyles: Record<string, { label: string; color: string; bgcolor: s
   rejected: { label: "ปฏิเสธ", color: "#EF4444", bgcolor: "rgba(239,68,68,0.15)" },
 };
 
-const logTypeIcons: Record<string, { icon: string; color: string }> = {
-  approve: { icon: "✅", color: "#22C55E" },
-  reject: { icon: "❌", color: "#EF4444" },
-  suspend: { icon: "⛔", color: "#EF4444" },
-  create: { icon: "➕", color: "#3B82F6" },
-  update: { icon: "✏️", color: "#F59E0B" },
-  delete: { icon: "🗑️", color: "#EF4444" },
+const logTypeIcons: Record<string, { icon: ReactNode; color: string }> = {
+  approve: { icon: <CheckCircleRoundedIcon sx={{ fontSize: 16 }} />, color: "#22C55E" },
+  reject: { icon: <CancelRoundedIcon sx={{ fontSize: 16 }} />, color: "#EF4444" },
+  suspend: { icon: <BlockRoundedIcon sx={{ fontSize: 16 }} />, color: "#EF4444" },
+  create: { icon: <AddCircleRoundedIcon sx={{ fontSize: 16 }} />, color: "#3B82F6" },
+  update: { icon: <EditRoundedIcon sx={{ fontSize: 16 }} />, color: "#F59E0B" },
+  delete: { icon: <DeleteRoundedIcon sx={{ fontSize: 16 }} />, color: "#EF4444" },
 };
 
 type TabType = "customers" | "weavers" | "kyc" | "roles";
@@ -114,7 +121,7 @@ export default function UsersManagementPage() {
   // ── Weaver actions ──
   const approveWeaver = (id: string) => {
     setWeavers(prev => prev.map(w => w.id === id ? { ...w, status: "active" as const, kycVerified: true } : w));
-    showToast("อนุมัติช่างทอสำเร็จ ✅");
+    showToast("อนุมัติช่างทอสำเร็จ");
   };
   const confirmSuspend = () => {
     if (!suspendDialog) return;
@@ -126,7 +133,7 @@ export default function UsersManagementPage() {
   // ── KYC actions ──
   const approveKYC = (id: string) => {
     setKycList(prev => prev.map(k => k.id === id ? { ...k, status: "approved" as const, reviewedBy: "Admin A", reviewedDate: new Date().toISOString().slice(0, 10) } : k));
-    showToast("อนุมัติ KYC สำเร็จ ✅");
+    showToast("อนุมัติ KYC สำเร็จ");
   };
   const confirmRejectKYC = () => {
     if (!rejectDialog) return;
@@ -172,8 +179,8 @@ export default function UsersManagementPage() {
     <Box>
       {/* ── Header + Tabs ── */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5 }}>
-          👥 User Management
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.2rem", color: c.textPrimary, mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}>
+          <GroupsRoundedIcon sx={{ fontSize: 20 }} /> User Management
         </Typography>
         <Typography sx={{ fontSize: "0.8rem", color: c.textMuted, mb: 2.5 }}>
           จัดการลูกค้า, ช่างทอ, ยืนยันตัวตน และสิทธิ์การใช้งาน
@@ -411,18 +418,26 @@ export default function UsersManagementPage() {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={kyc.idCardImage} alt="ID Card" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
                         <Box className="overlay" sx={{ position: "absolute", inset: 0, bgcolor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: tr }}>
-                          <Typography sx={{ color: "#FFF", fontSize: "0.8rem", fontWeight: 600 }}>🔍 ดูเต็ม</Typography>
+                          <Typography sx={{ color: "#FFF", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: 0.5 }}>
+                            <SearchRoundedIcon sx={{ fontSize: 14 }} /> ดูเต็ม
+                          </Typography>
                         </Box>
-                        <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, textAlign: "center", py: 0.5, bgcolor: c.bgStatBox }}>📄 บัตรประชาชน</Typography>
+                        <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, textAlign: "center", py: 0.5, bgcolor: c.bgStatBox, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+                          <BadgeRoundedIcon sx={{ fontSize: 13 }} /> บัตรประชาชน
+                        </Typography>
                       </Box>
                       <Box sx={{ borderRadius: "10px", overflow: "hidden", border: `1px solid ${c.borderCard}`, cursor: "pointer", position: "relative", "&:hover .overlay": { opacity: 1 } }}
                         onClick={() => setPreviewKYC(kyc)}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={kyc.selfieImage} alt="Selfie" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
                         <Box className="overlay" sx={{ position: "absolute", inset: 0, bgcolor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: tr }}>
-                          <Typography sx={{ color: "#FFF", fontSize: "0.8rem", fontWeight: 600 }}>🔍 ดูเต็ม</Typography>
+                          <Typography sx={{ color: "#FFF", fontSize: "0.8rem", fontWeight: 600, display: "flex", alignItems: "center", gap: 0.5 }}>
+                            <SearchRoundedIcon sx={{ fontSize: 14 }} /> ดูเต็ม
+                          </Typography>
                         </Box>
-                        <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, textAlign: "center", py: 0.5, bgcolor: c.bgStatBox }}>🤳 รูปหน้าตรง</Typography>
+                        <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, textAlign: "center", py: 0.5, bgcolor: c.bgStatBox, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+                          <PhotoCameraFrontRoundedIcon sx={{ fontSize: 13 }} /> รูปหน้าตรง
+                        </Typography>
                       </Box>
                     </Box>
 
@@ -496,7 +511,7 @@ export default function UsersManagementPage() {
                         bgcolor: perm ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.1)",
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}>
-                        <Typography sx={{ fontSize: "0.7rem" }}>{perm ? "✅" : "—"}</Typography>
+                        {perm ? <CheckCircleRoundedIcon sx={{ fontSize: 14, color: "#22C55E" }} /> : <Typography sx={{ fontSize: "0.7rem", color: c.textMuted }}>—</Typography>}
                       </Box>
                     </Box>
                   ))}
@@ -516,7 +531,7 @@ export default function UsersManagementPage() {
                 const lt = logTypeIcons[log.type] || logTypeIcons.update;
                 return (
                   <Box key={log.id} sx={{ px: 3, py: 1.5, borderBottom: `1px solid ${c.borderCard}`, display: "flex", alignItems: "center", gap: 2, "&:hover": { bgcolor: c.bgCardHover } }}>
-                    <Typography sx={{ fontSize: "1rem" }}>{lt.icon}</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", color: lt.color }}>{lt.icon}</Box>
                     <Box sx={{ flex: 1 }}>
                       <Typography sx={{ fontSize: "0.8rem", color: c.textPrimary }}>
                         <strong>{log.actor}</strong> {log.action} <strong style={{ color: c.gold }}>{log.target}</strong>
@@ -562,15 +577,15 @@ export default function UsersManagementPage() {
 
                 <Box sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "center" }}>
                   {viewWeaver.status === "pending" && (
-                    <Button size="small" variant="contained" onClick={() => { approveWeaver(viewWeaver.id); setViewWeaver(null); }}
+                    <Button size="small" variant="contained" startIcon={<CheckCircleRoundedIcon sx={{ fontSize: 16 }} />} onClick={() => { approveWeaver(viewWeaver.id); setViewWeaver(null); }}
                       sx={{ bgcolor: "#22C55E", color: "#FFF", textTransform: "none", fontWeight: 700, borderRadius: "8px", "&:hover": { bgcolor: "#16A34A" } }}>
-                      ✅ Approve
+                      Approve
                     </Button>
                   )}
                   {viewWeaver.status === "active" && (
-                    <Button size="small" variant="contained" onClick={() => { setViewWeaver(null); setSuspendDialog(viewWeaver); }}
+                    <Button size="small" variant="contained" startIcon={<BlockRoundedIcon sx={{ fontSize: 16 }} />} onClick={() => { setViewWeaver(null); setSuspendDialog(viewWeaver); }}
                       sx={{ bgcolor: "#EF4444", color: "#FFF", textTransform: "none", fontWeight: 700, borderRadius: "8px", "&:hover": { bgcolor: "#DC2626" } }}>
-                      ⛔ Suspend
+                      Suspend
                     </Button>
                   )}
                 </Box>
@@ -582,8 +597,8 @@ export default function UsersManagementPage() {
                   {[
                     { label: "รายรับรวม", value: `฿${viewWeaver.totalRevenue.toLocaleString()}`, color: c.gold },
                     { label: "ออเดอร์", value: `${viewWeaver.totalOrders}`, color: c.textPrimary },
-                    { label: "Rating", value: `⭐ ${viewWeaver.rating || "-"}`, color: c.textPrimary },
-                    { label: "KYC", value: viewWeaver.kycVerified ? "✓ ยืนยัน" : "รอตรวจ", color: viewWeaver.kycVerified ? "#22C55E" : "#F59E0B" },
+                    { label: "Rating", value: <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}><StarRoundedIcon sx={{ fontSize: 16, color: c.gold }} /> {viewWeaver.rating || "-"}</Box>, color: c.textPrimary },
+                    { label: "KYC", value: viewWeaver.kycVerified ? <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}><CheckCircleRoundedIcon sx={{ fontSize: 16 }} /> ยืนยัน</Box> : "รอตรวจ", color: viewWeaver.kycVerified ? "#22C55E" : "#F59E0B" },
                   ].map(item => (
                     <Box key={item.label} sx={{ p: 2, borderRadius: "10px", bgcolor: c.bgStatBox }}>
                       <Typography sx={{ fontSize: "0.65rem", color: c.textMuted, mb: 0.3 }}>{item.label}</Typography>
@@ -666,12 +681,16 @@ export default function UsersManagementPage() {
           {previewKYC && (
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
               <Box>
-                <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1 }}>📄 บัตรประชาชน</Typography>
+                <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <BadgeRoundedIcon sx={{ fontSize: 16 }} /> บัตรประชาชน
+                </Typography>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={previewKYC.idCardImage} alt="ID Card" style={{ width: "100%", borderRadius: 12, objectFit: "cover" }} />
               </Box>
               <Box>
-                <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1 }}>🤳 รูปหน้าตรง</Typography>
+                <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: c.textPrimary, mb: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <PhotoCameraFrontRoundedIcon sx={{ fontSize: 16 }} /> รูปหน้าตรง
+                </Typography>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={previewKYC.selfieImage} alt="Selfie" style={{ width: "100%", borderRadius: 12, objectFit: "cover" }} />
               </Box>
@@ -681,13 +700,13 @@ export default function UsersManagementPage() {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           {previewKYC?.status === "pending" && (
             <>
-              <Button variant="contained" onClick={() => { approveKYC(previewKYC.id); setPreviewKYC(null); }}
+              <Button variant="contained" startIcon={<CheckCircleRoundedIcon sx={{ fontSize: 16 }} />} onClick={() => { approveKYC(previewKYC.id); setPreviewKYC(null); }}
                 sx={{ bgcolor: "#22C55E", color: "#FFF", textTransform: "none", fontWeight: 700, borderRadius: "8px" }}>
-                ✅ อนุมัติ
+                อนุมัติ
               </Button>
-              <Button variant="contained" onClick={() => { setPreviewKYC(null); setRejectDialog(previewKYC); }}
+              <Button variant="contained" startIcon={<CancelRoundedIcon sx={{ fontSize: 16 }} />} onClick={() => { setPreviewKYC(null); setRejectDialog(previewKYC); }}
                 sx={{ bgcolor: "#EF4444", color: "#FFF", textTransform: "none", fontWeight: 700, borderRadius: "8px" }}>
-                ❌ ปฏิเสธ
+                ปฏิเสธ
               </Button>
             </>
           )}
@@ -697,7 +716,9 @@ export default function UsersManagementPage() {
 
       {/* Create Role Dialog */}
       <Dialog open={createRoleDialog} onClose={() => setCreateRoleDialog(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { bgcolor: c.dialogBg, color: c.dialogText, borderRadius: "16px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>➕ สร้าง Role ใหม่</DialogTitle>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
+          <AddCircleRoundedIcon sx={{ fontSize: 20 }} /> สร้าง Role ใหม่
+        </DialogTitle>
         <DialogContent>
           <TextField fullWidth label="ชื่อ Role" placeholder="e.g. Community Manager" value={newRoleName} onChange={e => setNewRoleName(e.target.value)}
             sx={{ mb: 2, mt: 1, "& .MuiOutlinedInput-root": { color: c.dialogText, "& fieldset": { borderColor: c.borderInput } }, "& .MuiInputLabel-root": { color: c.textMuted } }} />

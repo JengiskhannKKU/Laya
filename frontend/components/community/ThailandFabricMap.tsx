@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { X, ChevronRight, ShoppingBag, Store, BookOpen } from "lucide-react";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import EnergySavingsLeafRoundedIcon from "@mui/icons-material/EnergySavingsLeafRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { fetchLiveProducts, type Product } from "@/lib/live-products";
 import { fetchCommunities, type LiveCommunity } from "@/lib/communities";
 import { REGIONS, PROVINCES, type Province } from "@/lib/fabric-origins";
@@ -474,7 +477,7 @@ function ProvinceDetailPanel({ province, onClose }: { province: Province; onClos
           <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined, backgroundSize: "cover" }} />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-[#1B2A4A] truncate">{c.name}</p>
-            <p className="text-[10px] text-[#6B7280] truncate">{c.productCount} สินค้า · {c.rating.toFixed(1)} ★ ({c.reviewCount})</p>
+            <p className="text-[10px] text-[#6B7280] truncate flex items-center gap-0.5">{c.productCount} สินค้า · {c.rating.toFixed(1)} <StarRoundedIcon style={{ fontSize: 12 }} /> ({c.reviewCount})</p>
           </div>
         </a>
       )) : (
@@ -589,17 +592,17 @@ export default function ThailandFabricMap() {
 
             {/* Smart Filters (AI Matching / Colors) */}
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
-              <button 
+              <button
                 onClick={() => setAiFilter(aiFilter === "pastel" ? null : "pastel")}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${aiFilter === "pastel" ? "border-pink-300 bg-pink-50 text-pink-700" : "border-[#E5DFD6] bg-white text-[#6B7280]"}`}
+                className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${aiFilter === "pastel" ? "border-pink-300 bg-pink-50 text-pink-700" : "border-[#E5DFD6] bg-white text-[#6B7280]"}`}
               >
-                ✨ สไตล์พาสเทล
+                <AutoAwesomeRoundedIcon style={{ fontSize: 14 }} /> สไตล์พาสเทล
               </button>
-              <button 
+              <button
                 onClick={() => setAiFilter(aiFilter === "earth" ? null : "earth")}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${aiFilter === "earth" ? "border-amber-300 bg-amber-50 text-amber-700" : "border-[#E5DFD6] bg-white text-[#6B7280]"}`}
+                className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${aiFilter === "earth" ? "border-amber-300 bg-amber-50 text-amber-700" : "border-[#E5DFD6] bg-white text-[#6B7280]"}`}
               >
-                🍂 เอิร์ธโทน
+                <EnergySavingsLeafRoundedIcon style={{ fontSize: 14 }} /> เอิร์ธโทน
               </button>
               <div className="w-[1px] h-6 bg-[#E5DFD6] mx-1" />
               <input 

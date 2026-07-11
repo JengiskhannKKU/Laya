@@ -37,6 +37,12 @@ import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
+import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
+import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
+import AttachMoneyRoundedIcon from "@mui/icons-material/AttachMoneyRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import RocketLaunchRoundedIcon from "@mui/icons-material/RocketLaunchRounded";
+import CelebrationRoundedIcon from "@mui/icons-material/CelebrationRounded";
 
 // ═══════════════════════════════════════════════════════════════
 // Constants
@@ -380,8 +386,8 @@ export default function CreateProductPage() {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {/* ── General Info Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} sx={cardSx}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr }}>
-                  📋 ข้อมูลทั่วไป
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr, display: "flex", alignItems: "center", gap: 1 }}>
+                  <AssignmentRoundedIcon sx={{ fontSize: 18 }} /> ข้อมูลทั่วไป
                 </Typography>
 
                 {/* Product Name */}
@@ -464,8 +470,8 @@ export default function CreateProductPage() {
 
               {/* ── Attributes Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} sx={cardSx}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr }}>
-                  🏷️ คุณลักษณะ
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: c.textPrimary, mb: 2.5, transition: tr, display: "flex", alignItems: "center", gap: 1 }}>
+                  <LocalOfferRoundedIcon sx={{ fontSize: 18 }} /> คุณลักษณะ
                 </Typography>
                 <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
                   <Box>
@@ -512,8 +518,8 @@ export default function CreateProductPage() {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {/* ── Pricing Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} sx={cardSx}>
-                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 2, transition: tr }}>
-                  💰 ราคา
+                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 2, transition: tr, display: "flex", alignItems: "center", gap: 1 }}>
+                  <AttachMoneyRoundedIcon sx={{ fontSize: 18 }} /> ราคา
                 </Typography>
                 <TextField
                   fullWidth
@@ -533,8 +539,8 @@ export default function CreateProductPage() {
 
               {/* ── Stock Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} sx={cardSx}>
-                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 2, transition: tr }}>
-                  📦 จำนวนสต็อก
+                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 2, transition: tr, display: "flex", alignItems: "center", gap: 1 }}>
+                  <Inventory2RoundedIcon sx={{ fontSize: 18 }} /> จำนวนสต็อก
                 </Typography>
                 <TextField
                   fullWidth
@@ -554,8 +560,8 @@ export default function CreateProductPage() {
 
               {/* ── Status Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} sx={cardSx}>
-                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 1, transition: tr }}>
-                  🚀 สถานะ
+                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 1, transition: tr, display: "flex", alignItems: "center", gap: 1 }}>
+                  <RocketLaunchRoundedIcon sx={{ fontSize: 18 }} /> สถานะ
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <Box>
@@ -598,8 +604,8 @@ export default function CreateProductPage() {
 
               {/* ── Image Upload Card ── */}
               <Box component={motion.div} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} sx={cardSx}>
-                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 2, transition: tr }}>
-                  🖼️ รูปภาพสินค้า
+                <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: c.textPrimary, mb: 2, transition: tr, display: "flex", alignItems: "center", gap: 1 }}>
+                  <ImageRoundedIcon sx={{ fontSize: 18 }} /> รูปภาพสินค้า
                 </Typography>
 
                 <input
@@ -828,7 +834,7 @@ export default function CreateProductPage() {
             "& .MuiAlert-icon": { color: "#34D399" },
           }}
         >
-          เพิ่มสินค้าสำเร็จ 🎉
+          เพิ่มสินค้าสำเร็จ <CelebrationRoundedIcon sx={{ fontSize: 16, verticalAlign: "middle", ml: 0.3 }} />
         </Alert>
       </Snackbar>
     </Box>

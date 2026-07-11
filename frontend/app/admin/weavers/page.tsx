@@ -194,8 +194,8 @@ export default function AdminWeaversPage() {
                 </Box>
                 <Box>
                   <Typography sx={{ fontSize: "0.7rem", color: c.textMuted, mb: 0.5 }}>KYC</Typography>
-                  <Typography sx={{ fontSize: "0.9rem", color: viewWeaver.kycVerified ? "#22C55E" : "#F59E0B" }}>
-                    {viewWeaver.kycVerified ? "✓ ยืนยันแล้ว" : "รอตรวจสอบ"}
+                  <Typography sx={{ fontSize: "0.9rem", color: viewWeaver.kycVerified ? "#22C55E" : "#F59E0B", display: "flex", alignItems: "center", gap: 0.4 }}>
+                    {viewWeaver.kycVerified ? (<><CheckCircleRoundedIcon sx={{ fontSize: 14 }} /> ยืนยันแล้ว</>) : "รอตรวจสอบ"}
                   </Typography>
                 </Box>
                 <Box>
