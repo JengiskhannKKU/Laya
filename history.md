@@ -709,3 +709,109 @@
 2. ออก SSL cert ได้ (`certbot --nginx -d laya-th.com -d www.laya-th.com` — ยังไม่ได้รันเพราะ HTTP-01 challenge ต้องการให้โดเมนชี้มาที่เซิร์ฟเวอร์นี้ก่อน ไม่งั้น validation fail แน่นอน)
 
 หลัง DNS อัปเดตแล้ว แค่รันคำสั่ง certbot ด้านบนบน VPS ก็เสร็จ ไม่ต้องแก้ config อื่นเพิ่ม (nginx config เตรียมพร้อมรองรับ SSL redirect ที่ certbot จะเพิ่มให้อัตโนมัติอยู่แล้ว)
+
+---
+
+## 2026-07-11 (รอบสอง) — DNS ชี้ถูกแล้ว + ออก SSL จริง + แก้บั๊ก mixed content
+
+**ทำโดย**: Claude (Sonnet 5)
+
+- ยืนยัน DNS `laya-th.com`/`www.laya-th.com` ชี้มาที่ `45.91.134.199` แล้วจริง (เช็คผ่านหลาย resolver: 8.8.8.8, 1.1.1.1)
+- SSL cert ออกสำเร็จแล้ว (`certbot --nginx`) — `https://laya-th.com` ตอบ 200 จริง, cert ถูกต้อง (`CN=laya-th.com`, Let's Encrypt, หมดอายุ 2026-10-08, ตั้ง auto-renew ผ่าน `certbot.timer` ไว้แล้ว), nginx redirect http→https อัตโนมัติ
+- **เจอบั๊กจริง**: หลังเปิด https ผู้ใช้เจอ "connection not secure" ในเบราว์เซอร์ — ตรวจแล้วพบ mixed content จริง: หน้าเว็บมี absolute URL เป็น `http://localhost:3000` ฝังอยู่ในหลายจุด (favicon `<link>`, Open Graph image, search action URL ใน JSON-LD) เพราะ `frontend/lib/seo.ts` อ่าน `NEXT_PUBLIC_SITE_URL` แล้ว fallback เป็น `http://localhost:3000` เมื่อไม่ได้ตั้งค่า — ตอน deploy ครั้งแรกไม่ได้ใส่ตัวแปรนี้ไว้ใน production `.env.local`
+- แก้: เพิ่ม `NEXT_PUBLIC_SITE_URL=https://laya-th.com` เข้า `frontend/.env.local` บน VPS แล้ว rebuild (`next build` ฝังค่า `NEXT_PUBLIC_*` ตอน build ไม่ใช่ runtime เลยต้อง build ใหม่ ไม่ใช่แค่ restart) + `pm2 restart --update-env`
+- ทดสอบแล้ว: ไม่มี `http://` เหลือในหน้าเว็บเลยแม้แต่จุดเดียว (grep ตรงจาก response จริง) ทุกจุดชี้ `https://laya-th.com` ถูกต้อง
+
+**หมายเหตุสำหรับ deploy รอบถัดไป**: `deploy.sh` ไม่แตะไฟล์ `.env`/`.env.local` เลย (ไม่ได้ tracked ใน git) เพราะงั้นตัวแปรที่เพิ่งเติมจะอยู่ถาวรบนเซิร์ฟเวอร์ ไม่ต้องเติมซ้ำทุกรอบ deploy
+
+---
+
+## 2026-07-11 (รอบสาม) — แก้ 2 บั๊กจริงที่เจอบนเว็บ production: `AIAnalysisStep` fetch พัง + `analyze-fabric` โมเดลปลดระวาง
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้แจ้งเออเรอร์จริงจากหน้าเว็บ (`TypeError: Failed to fetch` ที่ `AIAnalysisStep.tsx:18`) — ไล่แก้จนเจอ 2 ชั้นบั๊กซ้อนกัน
+
+### บั๊กชั้นที่ 1 — Frontend เรียกผิด URL (ตรงกับที่ผู้ใช้เจอ)
+- `AIAnalysisStep.tsx` hardcode `http://localhost:5000/api/ai/analyze-fabric` มาตั้งแต่แรก — backend จริงรันที่ port 4000 (local) หรือผ่าน nginx `/api/` (production) ไม่เคยตรงกับ URL นี้เลย เรียกไม่ได้ 100% ของเวลา แล้ว fallback เงียบๆ เป็น mock data (`"ผ้าไหม (Fallback)"`) — ไม่มีใครสังเกตเพราะ UI ยังทำงานต่อได้ปกติ จนกระทั่งมี error overlay ของ Next.js dev แสดงให้เห็น
+- แก้ให้ใช้ `NEXT_PUBLIC_API_URL` เหมือนไฟล์อื่นๆ ในโปรเจกต์ (พร้อม strip trailing slash กันบั๊ก `//` ที่เจอไปแล้วรอบก่อนใน `VirtualTryOnStep.tsx`)
+- เจอบั๊กคล้ายกันอีกจุดที่ `/gen-silk` (ชี้ `localhost:5000/api/generate` ผิด path ด้วย ควรเป็น `/api/ai/generate`) — **ไม่แก้** เพราะเป็น prototype ที่ถูกบันทึกไว้แล้วใน `deflect.md` D24 ว่าซ้ำซ้อนกับ `/design-clothes`/`/custom/*` และพักงานไว้รอตัดสินใจเลือกทางเดียว ไม่ใช่บั๊กเดี่ยวๆ ที่แก้แล้วจบ
+
+### บั๊กชั้นที่ 2 — พอ URL ถูกแล้ว เจอว่า backend เองพังอีกชั้น (ซ่อนอยู่เพราะบั๊กชั้น 1 บังไว้ตลอด)
+- ทดสอบตรงกับ KKU AI Gateway (`gen.ai.kku.ac.th`) พบว่า **API เดิมตอบ HTTP 200 แต่ body เป็น error จริง**: `"No endpoints found for google/gemini-2.5-flash-lite-preview-09-2025"` — โมเดล `gemini-2.5-flash-lite` ที่ hardcode ไว้ map ไปรุ่น snapshot ที่ปลดระวางไปแล้วฝั่ง provider (ยังอยู่ใน `/models` list แต่เรียกจริงไม่ได้)
+- เช็ค `/api/v1/models` จริงแล้วทดสอบยิงตรงหลายโมเดล พบว่า `gemini-2.5-flash` ใช้งานได้จริง (`gemini-flash`/`gemini-flash-lite` ตอบ "No models provided" แปลกๆ ไม่ใช้) — เปลี่ยนไปใช้ `gemini-2.5-flash` ใน `backend/src/routes/ai.ts`
+- แก้เพิ่ม: โค้ดเดิม `data.choices[0].message.content` ไม่เช็ค shape เลย พอ API ตอบ 200-แต่-error แบบนี้จะ throw `TypeError` ที่ไม่มีใครจับตั้งใจ ต้องพึ่ง catch-all เดิมที่ตอบ 500 generic แทนที่จะ fallback เป็น mock เหมือน error path อื่นๆ ในไฟล์เดียวกัน — เพิ่มเช็ค `data.choices?.[0]` แล้ว fallback เหมือน `!response.ok` branch ให้สอดคล้องกัน
+- ทดสอบจริงกับรูปผ้าจริงผ่าน `https://laya-th.com/api/ai/analyze-fabric` หลัง deploy: ได้ผลวิเคราะห์จริงจาก AI (`{"type":"ผ้าไหม","technique":"พิมพ์ลาย","pattern":"ลายประยุกต์พร้อมอักษร","tone":"ทอง-แดงเข้ม","thickness":"ปานกลาง"}`) ไม่ใช่ mock อีกต่อไป
+- `tsc --noEmit` ผ่าน, push 2 ครั้งแยกกัน (frontend fix, backend fix) ทั้งคู่ deploy อัตโนมัติสำเร็จผ่าน CI/CD ที่ตั้งไว้
+
+---
+
+## 2026-07-11 (รอบสี่) — Redesign `/services/tailor` + flow สั่งตัดด้วยผ้าที่มีอยู่แล้วทั้งหมด (11 ไฟล์)
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ขอให้ปรับ `/services/tailor` และ endpoint ลึกๆ ให้ดูทันสมัยขึ้น ดีไซน์เดียวกับที่อื่นในเว็บ (checkout/design-clothes ที่ปรับไปแล้ว) — ก่อนเริ่มพบเรื่องสำคัญที่ต้องถามผู้ใช้ก่อน
+
+### พบก่อนเริ่ม: "มีผ้า" ไม่ได้ชี้ไป flow ที่สร้างไว้ทั้ง session
+`/services/tailor` ปุ่ม "มีผ้า" ชี้ไป `/design-clothes` (ห้องออกแบบชุดจากศูนย์) ไม่ใช่ `/tailor/with-fabric` (flow อัปโหลดผ้า+AI วิเคราะห์+ลองใส่เสมือนจริงที่เพิ่งสร้าง/แก้บั๊กไปทั้ง session ก่อนหน้า) — เท่ากับ flow เด่นของ session นี้เข้าถึงไม่ได้จากเมนูจริงเลย ถามผู้ใช้แล้วยืนยันให้ rewire กลับไปที่ `/tailor/with-fabric` และ redesign ทั้งสองส่วน
+
+### ไฟล์ใหม่/แก้ทั้งหมด (ดีไซน์อ้างอิงจาก checkout ที่ทำไว้ก่อนหน้า: navy/gold, Kanit, การ์ดขาวขอบบาง+เงานุ่ม, stepper วงกลมเลข+เช็คทอง)
+- `components/tailor/TailorStepper.tsx` (ใหม่) — stepper 7 ขั้นแบบ checkout
+- `app/services/page.tsx` — จากกล่อง gradient เป็นการ์ดขาว icon วงกลม
+- `app/services/tailor/page.tsx` — การ์ดสไตล์เดียวกัน + **แก้ href "มีผ้า" → `/tailor/with-fabric`**
+- `components/tailor/TailorWithFabricFlow.tsx` — header sticky แบบ checkout, ใส่ stepper, container กึ่งกลางจอ (แก้ layout conflict กับ MobileLayout เดิมที่ห่อ full-viewport Box ซ้อนกันอยู่)
+- 8 step component ทั้งหมด (`UploadFabricStep`, `AIAnalysisStep`, `SelectOccasionStep`, `MeasurementsStep`, `VirtualTryOnStep`, `OrderSummaryStep`, `SelectTailorShopStep`, `OrderSuccessStep`) — ปรับ visual ล้วน (การ์ด/สี/ฟอนต์/shadow) **ไม่แตะ logic** โดยเฉพาะ `VirtualTryOnStep.tsx` ที่มี AI generation/timer/sequential-loop logic ซับซ้อนจาก session ก่อน — แก้เฉพาะ sx styling ทีละจุดด้วย Edit เจาะจง ไม่ rewrite ทั้งไฟล์ กันเผลอทำ logic พัง
+
+### เจอบั๊กจริงตอนทดสอบ: stepper ล้นจอมือถือ ขั้นแรกๆ เลื่อนหลุดจอ
+Stepper 7 ขั้นพร้อม label เต็มยาวเกินความกว้างจอมือถือ (~430px) — `overflowX:auto` + `justifyContent:center` ทำให้ browser scroll ไปกลางๆ โดยอัตโนมัติ ขั้น 1-2 เลื่อนหลุดจอไปทั้งที่เพิ่งเข้าขั้นแรก (เห็นจาก screenshot จริงตอนทดสอบ) — แก้โดยซ่อน label รายจุดบนมือถือ เหลือแค่วงกลม+เส้น (กว้างพอดีจอเสมอ ไม่ต้อง scroll) แล้วโชว์ "ขั้นตอนที่ X จาก 7 — {label}" เป็นบรรทัดเดียวใต้ stepper แทน — เดสก์ท็อปมีที่พอยังโชว์ label เต็มทุกจุดตามเดิม
+
+### ทดสอบจริงในเบราว์เซอร์ (Playwright, เดินครบ flow ด้วยรูปคนจริงที่ผู้ใช้เคยแนบ)
+- ยืนยัน `href="/tailor/with-fabric"` ของปุ่ม "มีผ้า" ถูกต้อง
+- เดินผ่านทุกขั้น: services → services/tailor → upload(ข้าม) → AI analysis → occasion → 3 มุมถ่ายรูป(ครบ+เช็คทอง) → virtual try-on(loading state+timer) — screenshot ทุกขั้นตรวจด้วยตาจริง ไม่ใช่แค่ tsc ผ่าน
+- ไอคอน MUI ที่ดูเหมือนไม่ขึ้นในสกรีนช็อตแรก ตรวจซ้ำด้วย zoom ที่ deviceScaleFactor สูง → จริงๆ render ถูกต้อง (แค่เล็กในภาพย่อ) ไม่ใช่บั๊ก
+- `tsc --noEmit` ผ่านทั้งโปรเจกต์, ไม่มี console error
+
+---
+
+## 2026-07-11 (รอบห้า) — เอา "เลือกทรงที่ชอบ" กลับมาอีกครั้ง วางไว้ก่อน "เลือกโอกาสใช้งาน"
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ถามหา `/design-clothes` ที่ "หายไป" — จริงๆ ไม่ได้ลบ แค่ไม่มีลิงก์เข้าถึงจาก `/services/tailor` แล้วเพราะ "มีผ้า" ถูก rewire ไป `/tailor/with-fabric` ตามที่ผู้ใช้เคยขอเอง (ยืนยันด้วย `grep` ว่า path เดียวที่ยังลิงก์ไป `/design-clothes` คือปุ่ม "สั่งทำเลย" ใน `ProductDetailView.tsx`) — ถามผู้ใช้ว่าจะเพิ่มทางเข้ากลับไหม ผู้ใช้ขอให้เพิ่ม "เลือกทรง" กลับเข้า flow `/tailor/with-fabric` แทน โดยวางไว้ที่ตำแหน่ง 3 ก่อน "เลือกโอกาสใช้งาน" (ต่างจาก `flow_1.png` ที่วางไว้หลัง — ยืนยันแล้วว่าเป็นการตัดสินใจของผู้ใช้เองไม่ใช่ทำตาม mockup)
+
+- คืนไฟล์ `components/tailor/steps/ChooseShapeStep.tsx` (เคยลบไปตามคำขอรอบก่อน) — ตรรกะเดิม: เทมเพลตจริงจาก `catalog.json` + `GarmentRenderer` เดียวกับ `/design-clothes`, พรีวิวด้วยรูปผ้าที่อัปโหลดจริงทับลายผ้าใน catalog — ปรับดีไซน์ให้ตรงกับระบบใหม่ที่เพิ่งทำ (Kanit, การ์ดขาวขอบทอง hover)
+- `TailorWithFabricFlow.tsx`: เพิ่ม `choose_shape` กลับเข้า `TailorStep`/`TailorOrderState.shape`/`handleBack`/`getHeaderTitle`/JSX — ลำดับใหม่: `upload → ai_analysis → choose_shape → select_occasion → measurements → virtual_try_on → order_summary → select_shop → success` (9 ขั้น)
+- `TailorStepper.tsx`: เพิ่ม "เลือกทรง" เป็นขั้นที่ 3 จาก 8 (`TAILOR_STEPS`/`STEP_INDEX` อัปเดตให้ตรง)
+- `OrderSummaryStep.tsx`: กลับไปโชว์ `orderState.shape?.name` จริง (จาก hardcode "ชุดไทยจิตรลดา")
+- ทดสอบจริงในเบราว์เซอร์: เดินผ่าน upload(ข้าม) → AI analysis → **เลือกทรง (เห็นการ์ดจริงจาก catalog ผ้าจริงที่อัปโหลดขึ้นไปฟิตบนทรงจริง คลิก "ไทยร่วมสมัย")** → โอกาสใช้งาน (ยืนยันมาหลังเลือกทรงจริงตามที่ขอ) → ถ่ายรูป 3 มุม — stepper โชว์ถูกต้อง "ขั้นตอนที่ 3 จาก 8" / "4 จาก 8" ตามลำดับ, `tsc --noEmit` ผ่าน, ไม่มี console error
+
+---
+
+## 2026-07-11 (รอบหก) — ยกระดับ "เลือกทรง" เป็น full part-by-part select เหมือน /design-clothes จริง
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้บอกว่าอยาก "previous full select" ที่ขั้นเลือกทรง — ถามชัดเจนแล้วว่าหมายถึงปรับได้ทีละชิ้นส่วน (คอ/แขน/กระเป๋า ฯลฯ) แบบเดียวกับ `/design-clothes` ไม่ใช่แค่เลือกเทมเพลตสำเร็จรูปเหมือนที่ทำไว้ก่อนหน้า
+
+### เขียนใหม่ `ChooseShapeStep.tsx` ทั้งหมด — เพิ่มขั้นย่อยในตัว
+- **ขั้นย่อย 1 "เลือกทรงเริ่มต้น"** — เหมือนเดิม (การ์ดเทมเพลตจริงจาก catalog จัดกลุ่มตามหมวด)
+- **ขั้นย่อย 2 "ปรับแต่งทีละส่วน"** (ใหม่) — พรีวิวสดด้านบน (คลิกที่ตัวชุดเลือกชิ้นส่วนได้โดยตรงผ่าน `GarmentRenderer` เดิม) + กริดชิ้นส่วนทั้งหมดของหมวดนั้น (คอ/แขน/ตัวเสื้อ/กระเป๋า/กระดุม/งานตกแต่ง) แต่ละชิ้นโชว์ตัวเลือกปัจจุบัน → คลิกเข้าไปเลือกตัวเลือกของชิ้นนั้น (การ์ดพร้อมเช็คทองเมื่อเลือกอยู่) → กลับมาที่กริดหลัก → "ยืนยันแบบนี้" เมื่อพอใจ
+- **จงใจไม่ใช้ `useGarmentStore`** (store กลางเดียวกับ `/design-clothes`) เพราะเป็น global store — ถ้าใช้ร่วมกันแบบที่ปรับใน flow นี้จะไปปนกับแบบที่ผู้ใช้ทำค้างไว้ใน `/design-clothes` จริงคนละหน้าคนละบริบท ใช้ local state ในคอมโพเนนต์เองแทน แต่ยังเรียก `resolveLayers`/`GarmentRenderer`/`PartPreview`/`catalog.json` ชุดเดียวกันเป๊ะ ไม่ mock
+- ทุกชิ้นส่วน (ทั้งพรีวิวหลักและการ์ดตัวเลือก) ใช้รูปผ้าจริงที่อัปโหลดไว้แทนลายผ้าใน catalog เสมอ (เหมือนเดิม)
+
+### ทดสอบจริงในเบราว์เซอร์
+- เลือกเทมเพลต "ไทยร่วมสมัย" → เห็นกริด 6 ชิ้นส่วนจริง (แขนเสื้อ/ตัวเสื้อ/คอปกเสื้อ/กระเป๋า/กระดุม/งานตกแต่ง)
+- คลิก "คอ / ปกเสื้อ" → เห็นตัวเลือกคอจริง 6 แบบ (ไม่ใส่/คอจีน/คอกลม/คอวี/คอปกเชิ้ต/สูท) พร้อมเช็คทองที่ตัวเลือกปัจจุบัน (คอจีน)
+- คลิก "คอวี" → **พรีวิวด้านบนเปลี่ยนทรงคอจริงทันที** (จากคอจีนตั้งเป็นคอวีเปิด) ยืนยันว่า live preview ทำงานจริงไม่ใช่แค่ mark selected เฉยๆ
+- กด "ยืนยันแบบนี้" → ไปขั้น "เลือกโอกาสใช้งาน" ถูกต้อง ไม่มี console error, `tsc --noEmit` ผ่าน
+
+---
+
+## 2026-07-11 (รอบเจ็ด) — จำกัด "เลือกทรง" เหลือแค่ไทยร่วมสมัยชุดเดียว
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ขอตัดกางเกง/กระโปรงออกก่อน (รอบแรก — เหลือแค่ "เสื้อ & เดรส") แล้วขอต่อทันทีให้ตัดเสื้อผู้หญิง/เชิ้ตออฟฟิศ/ลำลอง/โปโล/เดรสออกด้วย เหลือแค่ "ไทยร่วมสมัย" (thai-contemporary) ชุดเดียว — ตรงกับที่ `/design-clothes` ถูกจำกัดไว้แบบเดียวกันไปแล้วก่อนหน้านี้ในช่วงต้น session
+
+- แก้ `ChooseShapeStep.tsx`: ตัดขั้นย่อย "เลือกทรงเริ่มต้น" ออกทั้งหมด (`CATEGORY_GROUPS`, `TemplateCard`, `SubStep` type, ปุ่ม "เปลี่ยนทรงเริ่มต้น") — โหลด catalog แล้ว auto-init เป็น `thai-contemporary` ทันที เข้าหน้าปรับแต่งทีละชิ้นส่วนเลย ไม่มีให้เลือกทรงอื่น
+- ทดสอบจริง: เข้าขั้น "เลือกทรง" แล้วเจอหน้าปรับแต่งทันที (ไม่มีการ์ดเทมเพลตให้เลือกเลย), grep ยืนยันไม่มีข้อความ "เชิ้ตออฟฟิศ"/"เดรส"/"กางเกง"/"กระโปรง" เหลือในหน้าเลย, `tsc --noEmit` ผ่าน, ไม่มี console error

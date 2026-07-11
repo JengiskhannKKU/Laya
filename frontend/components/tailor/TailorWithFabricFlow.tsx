@@ -9,22 +9,29 @@ import { AnimatePresence } from "framer-motion";
 // Import all step components
 import UploadFabricStep from "./steps/UploadFabricStep";
 import AIAnalysisStep from "./steps/AIAnalysisStep";
+import ChooseShapeStep from "./steps/ChooseShapeStep";
 import SelectOccasionStep from "./steps/SelectOccasionStep";
 import MeasurementsStep from "./steps/MeasurementsStep";
 import VirtualTryOnStep from "./steps/VirtualTryOnStep";
 import OrderSummaryStep from "./steps/OrderSummaryStep";
 import SelectTailorShopStep from "./steps/SelectTailorShopStep";
 import OrderSuccessStep from "./steps/OrderSuccessStep";
+import TailorStepper from "./TailorStepper";
 
-// ลำดับตาม flow_1.png (Flow 1 — สั่งตัดด้วยผ้าที่มีอยู่แล้ว) ตัด "เลือกทรงที่ชอบ" ออกแล้ว —
-// ผู้ใช้อัปโหลด+ AI วิเคราะห์ผ้าของตัวเองอยู่แล้วในขั้นก่อนหน้า ไม่ต้องเลือกทรงจากแคตตาล็อกซ้ำอีกชั้น:
-// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → เลือกโอกาสใช้งาน → ถ่ายรูปตัวเอง/ส่งขนาด →
+const FONT = '"Kanit", sans-serif';
+const NAVY = "#1B2A4A";
+const IVORY = "#FAF6F0";
+
+// ลำดับ (ต่างจาก flow_1.png ตรงตำแหน่ง "เลือกทรงที่ชอบ" — mockup วางไว้หลังเลือกโอกาสใช้งาน แต่ผู้ใช้
+// ขอให้ย้ายมาก่อนแทน เป็นการตัดสินใจของผู้ใช้เอง):
+// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → เลือกทรงที่ชอบ → เลือกโอกาสใช้งาน → ถ่ายรูปตัวเอง/ส่งขนาด →
 // ลองใส่เสมือนจริง → สรุปออเดอร์ → เลือกร้านตัดเย็บ → สำเร็จ
 // (ถ่ายรูปตัวเองต้องมาก่อนลองใส่เสมือนจริงเสมอ — ใน mockup เดิมข้อ 11 อยู่หลังข้อ 8 ซึ่งสลับกันผิด)
 
 export type TailorStep =
   | "upload"
   | "ai_analysis"
+  | "choose_shape"
   | "select_occasion"
   | "measurements"
   | "virtual_try_on"
@@ -35,6 +42,7 @@ export type TailorStep =
 export interface TailorOrderState {
   fabricImage?: string;
   analysisResult?: any;
+  shape?: { id: string; name: string; category: string; parts: Record<string, string>; pattern: string; color: string };
   occasion?: string;
   bodyPhotos?: { front?: string; back?: string; side?: string };
   tryOnResults?: { front?: string; back?: string; side?: string };
@@ -50,7 +58,8 @@ export default function TailorWithFabricFlow() {
   const handleBack = () => {
     switch (currentStep) {
       case "ai_analysis": goNext("upload"); break;
-      case "select_occasion": goNext("ai_analysis"); break;
+      case "choose_shape": goNext("ai_analysis"); break;
+      case "select_occasion": goNext("choose_shape"); break;
       case "measurements": goNext("select_occasion"); break;
       case "virtual_try_on": goNext("measurements"); break;
       case "order_summary": goNext("virtual_try_on"); break;
@@ -63,6 +72,7 @@ export default function TailorWithFabricFlow() {
     switch (currentStep) {
       case "upload": return "อัปโหลดรูปผ้า";
       case "ai_analysis": return "ผลการวิเคราะห์ผ้า";
+      case "choose_shape": return "เลือกทรงที่ชอบ";
       case "select_occasion": return "เลือกโอกาสใช้งาน";
       case "measurements": return "ถ่ายรูปเพื่อวัดสัดส่วน";
       case "virtual_try_on": return "ลองใส่เสมือนจริง";
@@ -74,36 +84,45 @@ export default function TailorWithFabricFlow() {
   };
 
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#FAF6F0", position: "relative" }}>
-      {/* Header */}
+    <Box sx={{ minHeight: "100vh", bgcolor: IVORY }}>
+      {/* Header — sticky, ดีไซน์เดียวกับ checkout */}
       {currentStep !== "success" && (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 2, pt: 3, pb: 1 }}>
-          {currentStep === "upload" ? (
-            <Link href="/services/tailor">
-              <IconButton size="small">
-                <ArrowBackIosNewRoundedIcon sx={{ fontSize: 16, color: "#1B2A4A" }} />
+        <Box sx={{
+          px: { xs: 1.5, md: 4 }, pt: { xs: 4, md: 3 }, pb: { xs: 1.5, md: 2 }, display: "flex", alignItems: "center",
+          bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #EFE9DD",
+        }}>
+          <Box sx={{ display: "flex", alignItems: "center", maxWidth: 960, width: "100%", mx: "auto" }}>
+            {currentStep === "upload" ? (
+              <Link href="/services/tailor">
+                <IconButton sx={{ color: NAVY }}>
+                  <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Link>
+            ) : (
+              <IconButton onClick={handleBack} sx={{ color: NAVY }}>
+                <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
               </IconButton>
-            </Link>
-          ) : (
-            <IconButton size="small" onClick={handleBack}>
-              <ArrowBackIosNewRoundedIcon sx={{ fontSize: 16, color: "#1B2A4A" }} />
-            </IconButton>
-          )}
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", flex: 1, textAlign: "center" }}>
-            {getHeaderTitle()}
-          </Typography>
-          <Box sx={{ width: 32 }} />
+            )}
+            <Typography sx={{ flex: 1, textAlign: "center", mr: 5, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY }}>
+              {getHeaderTitle()}
+            </Typography>
+          </Box>
         </Box>
       )}
 
-      {/* Main Content Area */}
-      <Box sx={{ px: 2, py: 1, pb: 10 }}>
-        <AnimatePresence>
+      {/* เนื้อหา — จำกัดความกว้างสูงสุด กึ่งกลางจอ พร้อม stepper บอกความคืบหน้า */}
+      <Box sx={{ maxWidth: 640, width: "100%", mx: "auto", px: { xs: 2, md: 3 }, pt: { xs: 1, md: 2 }, pb: { xs: 8, md: 6 } }}>
+        {currentStep !== "success" && <TailorStepper currentStep={currentStep} />}
+
+        <AnimatePresence mode="wait">
           {currentStep === "upload" && (
             <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
           )}
           {currentStep === "ai_analysis" && (
-            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
+            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("choose_shape")} />
+          )}
+          {currentStep === "choose_shape" && (
+            <ChooseShapeStep key="choose_shape" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
           )}
           {currentStep === "select_occasion" && (
             <SelectOccasionStep key="select_occasion" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("measurements")} />

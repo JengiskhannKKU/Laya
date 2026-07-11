@@ -1,83 +1,107 @@
-﻿import type { Metadata } from "next";
-import MobileLayout from "@/components/layout/MobileLayout";
+"use client";
+
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import Link from "next/link";
-import { createPageMetadata } from "@/lib/seo";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
+import AutoAwesomeMosaicRoundedIcon from "@mui/icons-material/AutoAwesomeMosaicRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
-export const metadata: Metadata = createPageMetadata({
-  title: "สั่งตัด / สั่งทอผ้าไทย — บริการ Thai Fashion",
-  description:
-    "เลือกบริการสั่งตัดชุดจากผ้าที่คุณมี หรือสั่งทอผ้าไทยลายใหม่กับชุมชนช่างทอโดยตรง บน LAYA แพลตฟอร์ม Fashion Tech",
-  path: "/services",
-});
+import MobileLayout from "@/components/layout/MobileLayout";
+
+const FONT = '"Kanit", sans-serif';
+const NAVY = "#1B2A4A";
+const GOLD = "#C5A55A";
+const IVORY = "#FAF6F0";
+
+const SERVICES = [
+  {
+    href: "/services/tailor",
+    icon: CheckroomRoundedIcon,
+    title: "สั่งตัด",
+    desc: "ออกแบบและสั่งตัดชุดจากผ้าที่คุณเลือก ไม่ว่าจะมีผ้าอยู่แล้วหรือยังไม่มี",
+  },
+  {
+    href: "/gen-silk",
+    icon: AutoAwesomeMosaicRoundedIcon,
+    title: "สั่งทอผ้า",
+    desc: "ออกแบบลายผ้าด้วย AI แล้วสั่งทอกับช่างทอในชุมชนโดยตรง",
+  },
+];
 
 export default function ServicesPage() {
+  const router = useRouter();
+
   return (
     <MobileLayout>
-      <Box sx={{ p: 3, pt: 6, minHeight: '80vh', display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            fontFamily: '"Kanit", sans-serif', 
-            fontWeight: 700, 
-            color: "#1B2A4A",
-            textAlign: 'center',
-            mb: 2
-          }}
-        >
-          เลือกบริการ
-        </Typography>
-
-        <Link href="/services/tailor" style={{ textDecoration: 'none' }}>
-          <Box
-            sx={{
-              p: 4,
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, #1B2A4A 0%, #2A4073 100%)',
-              color: 'white',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(27,42,74,0.15)',
-              transition: 'transform 0.2s',
-              '&:active': { transform: 'scale(0.98)' }
-            }}
-          >
-            <Typography variant="h6" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}>
-              สั่งตัด
-            </Typography>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: '0.85rem', mt: 1, opacity: 0.8, textAlign: 'center' }}>
-              ออกแบบและสั่งตัดชุดจากผ้าที่คุณเลือก
+      <Box sx={{ minHeight: "100vh", bgcolor: IVORY }}>
+        {/* Header */}
+        <Box sx={{
+          px: { xs: 1.5, md: 4 }, pt: { xs: 4, md: 3 }, pb: { xs: 2, md: 2.5 }, display: "flex", alignItems: "center",
+          bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #EFE9DD",
+        }}>
+          <Box sx={{ display: "flex", alignItems: "center", maxWidth: 720, width: "100%", mx: "auto" }}>
+            <IconButton onClick={() => router.push("/")} sx={{ color: NAVY }}>
+              <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+            <Typography sx={{ flex: 1, textAlign: "center", mr: 5, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY }}>
+              เลือกบริการ
             </Typography>
           </Box>
-        </Link>
+        </Box>
 
-        <Link href="/services/weave" style={{ textDecoration: 'none' }}>
-          <Box
-            sx={{
-              p: 4,
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, #C5A55A 0%, #D4BA7A 100%)',
-              color: '#1B2A4A',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(197,165,90,0.25)',
-              transition: 'transform 0.2s',
-              '&:active': { transform: 'scale(0.98)' }
-            }}
-          >
-            <Typography variant="h6" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700 }}>
-              สั่งทอผ้า
-            </Typography>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: '0.85rem', mt: 1, opacity: 0.8, textAlign: 'center' }}>
-              ออกแบบลายผ้าและสั่งทอกับชุมชนโดยตรง
-            </Typography>
+        <Box sx={{ maxWidth: 720, width: "100%", mx: "auto", px: { xs: 2, md: 4 }, pt: { xs: 3, md: 5 }, pb: 6 }}>
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
+            เลือกบริการที่ต้องการ — ทีมช่างและชุมชนทอผ้าทั่วไทยพร้อมดูแลคุณ
+          </Typography>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+            {SERVICES.map(({ href, icon: Icon, title, desc }, i) => (
+              <motion.div key={href} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, duration: 0.3 }}>
+                <Link href={href} style={{ textDecoration: "none" }}>
+                  <Box
+                    component={motion.div}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ scale: 0.99 }}
+                    sx={{
+                      p: { xs: 3, md: 4 },
+                      borderRadius: "20px",
+                      bgcolor: "#FFFFFF",
+                      border: "1px solid #EFE9DD",
+                      boxShadow: "0 4px 20px rgba(27,42,74,0.06)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2.5,
+                      cursor: "pointer",
+                      transition: "box-shadow 0.25s, border-color 0.25s",
+                      "&:hover": { boxShadow: "0 12px 32px rgba(27,42,74,0.12)", borderColor: GOLD },
+                    }}
+                  >
+                    <Box sx={{
+                      width: 64, height: 64, borderRadius: "18px", flexShrink: 0,
+                      bgcolor: `${NAVY}0D`, display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Icon sx={{ fontSize: 30, color: GOLD }} />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1.15rem", color: NAVY }}>
+                        {title}
+                      </Typography>
+                      <Typography sx={{ fontFamily: FONT, fontSize: "0.82rem", color: "#6B7280", mt: 0.5, lineHeight: 1.5 }}>
+                        {desc}
+                      </Typography>
+                    </Box>
+                    <ArrowForwardRoundedIcon sx={{ color: "#C9C2B4", fontSize: 22, flexShrink: 0 }} />
+                  </Box>
+                </Link>
+              </motion.div>
+            ))}
           </Box>
-        </Link>
+        </Box>
       </Box>
     </MobileLayout>
   );
