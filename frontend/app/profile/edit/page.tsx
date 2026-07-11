@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -15,6 +13,7 @@ import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import MobileLayout from "@/components/layout/MobileLayout";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 const sx = {
   field: {
@@ -28,30 +27,85 @@ const sx = {
   },
 };
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
 export default function ProfileEditPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, session, refreshProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   const [form, setForm] = useState({
     name: user?.name ?? "",
     email: user?.email ?? "",
-    phone: "",
+    phone: user?.phone ?? "",
     address: "",
     city: "",
     province: "",
     postalCode: "",
   });
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar ?? null);
+
+  const { uploadFile, uploading: avatarUploading } = useImageUpload({
+    bucket: "avatars",
+    folder: user?.id,
+    onSuccess: (res) => {
+      setAvatarUrl(res.url);
+    },
+    onError: (msg) => {
+      setErrorMsg(msg);
+    },
+  });
+
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadFile(file);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setErrorMsg("");
+
+    try {
+      const token = session?.access_token;
+      const res = await fetch(`${API_BASE}/api/auth/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          displayName: form.name,
+          avatarUrl: avatarUrl,
+          phone: form.phone,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error ?? "Failed to save profile");
+      }
+
+      await refreshProfile();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setErrorMsg(err.message ?? "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -68,18 +122,38 @@ export default function ProfileEditPage() {
         </Box>
 
         {saved && <Alert severity="success" sx={{ mb: 2, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>บันทึกเรียบร้อยแล้ว</Alert>}
+        {errorMsg && <Alert severity="error" sx={{ mb: 2, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>{errorMsg}</Alert>}
+
+        {/* Hidden Avatar File Input */}
+        <input
+          type="file"
+          ref={avatarInputRef}
+          onChange={handleAvatarFileChange}
+          style={{ display: "none" }}
+          accept="image/*"
+        />
 
         {/* Avatar */}
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
           <Box sx={{ position: "relative" }}>
-            <Avatar sx={{ width: 90, height: 90, bgcolor: "#1B2A4A", fontSize: "2rem", fontFamily: '"Kanit", sans-serif' }}>
-              {user?.name?.[0] ?? "U"}
+            <Avatar 
+              src={avatarUrl ?? undefined}
+              sx={{ width: 90, height: 90, bgcolor: "#1B2A4A", fontSize: "2rem", fontFamily: '"Kanit", sans-serif' }}
+            >
+              {avatarUploading ? (
+                <CircularProgress size={30} color="inherit" />
+              ) : (
+                user?.name?.[0] ?? "U"
+              )}
             </Avatar>
-            <Box sx={{
-              position: "absolute", bottom: 2, right: 2, width: 28, height: 28, borderRadius: "50%",
-              bgcolor: "#C5A55A", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-              border: "2px solid #FAF6F0",
-            }}>
+            <Box 
+              onClick={handleAvatarClick}
+              sx={{
+                position: "absolute", bottom: 2, right: 2, width: 28, height: 28, borderRadius: "50%",
+                bgcolor: "#C5A55A", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                border: "2px solid #FAF6F0",
+              }}
+            >
               <CameraAltRoundedIcon sx={{ fontSize: 15, color: "#FFFFFF" }} />
             </Box>
           </Box>
@@ -87,7 +161,7 @@ export default function ProfileEditPage() {
 
         <Box component="form" onSubmit={handleSave} sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
           <TextField fullWidth label="ชื่อ-นามสกุล" value={form.name} onChange={(e) => set("name", e.target.value)} sx={sx.field} />
-          <TextField fullWidth label="อีเมล" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} sx={sx.field} />
+          <TextField fullWidth label="อีเมล" type="email" value={form.email} disabled sx={sx.field} />
           <TextField fullWidth label="เบอร์โทรศัพท์" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} sx={sx.field} />
 
           <Divider sx={{ borderColor: "#E5DFD6" }} />
@@ -101,7 +175,7 @@ export default function ProfileEditPage() {
           </Box>
           <TextField fullWidth label="รหัสไปรษณีย์" value={form.postalCode} onChange={(e) => set("postalCode", e.target.value)} sx={sx.field} />
 
-          <Button type="submit" fullWidth variant="contained" disabled={saving}
+          <Button type="submit" fullWidth variant="contained" disabled={saving || avatarUploading}
             sx={{ py: 1.5, mt: 1, bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "12px", fontWeight: 700, fontFamily: '"Kanit", sans-serif', textTransform: "none", "&:hover": { bgcolor: "#0F1A30" } }}
           >
             {saving ? <CircularProgress size={22} color="inherit" /> : "บันทึกการเปลี่ยนแปลง"}

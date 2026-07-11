@@ -23,8 +23,8 @@ import {
 } from "lucide-react";
 
 import MobileLayout from "@/components/layout/MobileLayout";
-import { categories, type Product } from "@/lib/mock-data";
-import { fetchLiveProducts } from "@/lib/live-products";
+import { fetchCategories, type Category } from "@/lib/categories";
+import { fetchLiveProducts, type Product } from "@/lib/live-products";
 
 const getCategoryIcon = (id: string, color: string) => {
   const props = { size: 22, color, strokeWidth: 1.4 };
@@ -46,8 +46,13 @@ function CategoryContent() {
   const initialCategory = searchParams.get("c") || "";
 
   const [selected, setSelected] = useState(initialCategory);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

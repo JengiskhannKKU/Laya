@@ -1,0 +1,127 @@
+import sharp from "sharp";
+import { randomUUID } from "crypto";
+import { supabaseAdmin, supabaseAdminConfigured } from "./supabaseAdmin";
+
+/**
+ * Supabase Storage buckets ที่ใช้ในโปรเจค
+ * แต่ละ bucket เป็น public bucket — URL เข้าถึงได้โดยตรงไม่ต้อง signed URL
+ */
+export const BUCKETS = {
+  avatars:       "avatars",          // รูป avatar ผู้ใช้
+  shopImages:    "shop-images",      // รูปร้านค้า (profile + cover)
+  productImages: "product-images",   // รูปสินค้า
+  fabricUploads: "fabric-uploads",   // รูปผ้าที่ลูกค้า/ร้านค้าอัปโหลด
+  postImages:    "post-images",      // รูปโพสต์ชุมชน
+  tryonUploads:  "tryon-uploads",    // รูปสำหรับ Virtual Try-On
+} as const;
+
+export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
+
+/** ขนาด output สูงสุด (px) แต่ละ bucket */
+const BUCKET_MAX_SIZE: Record<BucketName, number> = {
+  "avatars":         800,
+  "shop-images":     1600,
+  "product-images":  2000,
+  "fabric-uploads":  2000,
+  "post-images":     1800,
+  "tryon-uploads":   2000,
+};
+
+/** คุณภาพ WebP แต่ละ bucket (0–100) */
+const BUCKET_QUALITY: Record<BucketName, number> = {
+  "avatars":         82,
+  "shop-images":     85,
+  "product-images":  88,
+  "fabric-uploads":  88,
+  "post-images":     85,
+  "tryon-uploads":   90,
+};
+
+/**
+ * แปลง image buffer (ทุกฟอร์แมต) → WebP แล้ว upload ขึ้น Supabase Storage
+ *
+ * @param inputBuffer - raw image buffer (PNG / JPG / WEBP / GIF / TIFF ฯลฯ)
+ * @param bucket      - ชื่อ bucket ปลายทาง
+ * @param folder      - subfolder ภายใน bucket (ถ้าไม่ระบุ จะใส่ root)
+ * @returns { url, width, height, sizeBytes }
+ */
+export async function uploadImageAsWebP(
+  inputBuffer: Buffer,
+  bucket: BucketName,
+  folder?: string
+): Promise<{ url: string; width: number; height: number; sizeBytes: number }> {
+  if (!supabaseAdminConfigured) {
+    throw new Error("Supabase storage ยังไม่ได้ตั้งค่า (ต้องมี SUPABASE_URL และ SUPABASE_SERVICE_ROLE_KEY ใน .env)");
+  }
+
+  const maxSize = BUCKET_MAX_SIZE[bucket] ?? 2000;
+  const quality = BUCKET_QUALITY[bucket] ?? 85;
+
+  // แปลงเป็น WebP ด้วย sharp (resize ถ้าใหญ่กว่า maxSize, คงอัตราส่วน)
+  const sharpInstance = sharp(inputBuffer)
+    .resize(maxSize, maxSize, { fit: "inside", withoutEnlargement: true })
+    .webp({ quality, effort: 4 });
+
+  const { data: outputBuffer, info } = await sharpInstance.toBuffer({ resolveWithObject: true });
+
+  await ensureBucket(bucket);
+
+  const filename = `${randomUUID()}.webp`;
+  const path = folder ? `${folder.replace(/\/$/, "")}/${filename}` : filename;
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(bucket)
+    .upload(path, outputBuffer, {
+      contentType: "image/webp",
+      upsert: false,
+    });
+
+  if (uploadError) throw uploadError;
+
+  const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
+
+  return {
+    url: pub.publicUrl,
+    width: info.width ?? 0,
+    height: info.height ?? 0,
+    sizeBytes: outputBuffer.length,
+  };
+}
+
+/**
+ * แปลง base64 data URL (หรือ raw base64) → WebP แล้ว upload
+ * Convenience wrapper สำหรับ frontend ที่ส่ง base64 มา
+ */
+export async function uploadBase64AsWebP(
+  imageBase64: string,
+  bucket: BucketName,
+  folder?: string
+): Promise<{ url: string; width: number; height: number; sizeBytes: number }> {
+  // รองรับ "data:image/xxx;base64,..." และ raw base64
+  const match = imageBase64.match(/^data:image\/[a-zA-Z0-9.+-]+;base64,(.+)$/);
+  const base64Data = match ? match[1] : imageBase64;
+  const buffer = Buffer.from(base64Data, "base64");
+  return uploadImageAsWebP(buffer, bucket, folder);
+}
+
+// ── Bucket bootstrap (idempotent) ────────────────────────────────────────────
+
+const _bucketReady = new Map<string, Promise<void>>();
+
+async function ensureBucket(bucket: BucketName): Promise<void> {
+  if (!_bucketReady.has(bucket)) {
+    const p = (async () => {
+      const { data } = await supabaseAdmin.storage.getBucket(bucket);
+      if (!data) {
+        const { error } = await supabaseAdmin.storage.createBucket(bucket, {
+          public: true,
+          fileSizeLimit: "20MB",
+        });
+        // ถ้า race condition สร้างซ้ำพร้อมกัน — ignore "already exists"
+        if (error && !/already exists/i.test(error.message)) throw error;
+      }
+    })();
+    _bucketReady.set(bucket, p);
+  }
+  return _bucketReady.get(bucket)!;
+}

@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import MuiProvider from "@/components/providers/MuiProvider";
 import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
 import { AppModalProvider } from "@/components/providers/AppModalProvider";
+import CookieConsentBanner from "@/components/layout/CookieConsentBanner";
 import {
   absoluteUrl,
   defaultDescription,
@@ -163,6 +164,7 @@ export default function RootLayout({
           </AuthProviderWrapper>
         </MuiProvider>
         <Analytics />
+        <CookieConsentBanner />
       </body>
     </html>
   );

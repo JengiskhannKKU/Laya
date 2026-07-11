@@ -4,24 +4,30 @@ import { useState, useEffect, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { motion, AnimatePresence } from "framer-motion";
-import { banners } from "@/lib/mock-data";
+import { fetchBanners, type Banner } from "@/lib/banners";
 import Image from "next/image";
 
 export default function BannerCarousel() {
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  if (!banners || banners.length === 0) return null;
+  useEffect(() => {
+    fetchBanners().then(setBanners).catch(() => setBanners([]));
+  }, []);
 
   const nextSlide = useCallback(() => {
     setDirection(1);
-    setCurrent((prev) => (prev + 1) % banners.length);
-  }, []);
+    setCurrent((prev) => (banners.length ? (prev + 1) % banners.length : 0));
+  }, [banners.length]);
 
   useEffect(() => {
+    if (!banners.length) return;
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
-  }, [nextSlide]);
+  }, [nextSlide, banners.length]);
+
+  if (!banners.length) return null;
 
   const variants = {
     enter: (dir: number) => ({

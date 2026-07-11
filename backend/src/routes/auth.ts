@@ -218,4 +218,35 @@ router.get("/me", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+// ── PUT /api/auth/profile ──────────────────────────────────────────────────────
+router.put("/profile", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { displayName, avatarUrl, phone } = req.body as {
+      displayName?: string;
+      avatarUrl?: string;
+      phone?: string;
+    };
+    const userId = req.user!.userId;
+
+    await query(
+      `UPDATE users 
+       SET display_name = COALESCE($1, display_name),
+           avatar_url = COALESCE($2, avatar_url),
+           phone = COALESCE($3, phone)
+       WHERE id = $4`,
+      [
+        displayName !== undefined ? displayName : null,
+        avatarUrl !== undefined ? avatarUrl : null,
+        phone !== undefined ? phone : null,
+        userId
+      ]
+    );
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("profile update failed:", err);
+    res.status(500).json({ error: err.message ?? "Failed to update profile" });
+  }
+});
+
 export default router;

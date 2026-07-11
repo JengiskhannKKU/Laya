@@ -54,12 +54,12 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" });
 }
 
-/** สร้างลิงก์ปลายทางจาก data payload ที่ backend แนบมา (orderId/weavingOrderId/productOrderGroupId) */
+/** สร้างลิงก์ปลายทางจาก data payload ที่ backend แนบมา (orderId/weavingOrderId/productOrderId) */
 function buildHref(data: Record<string, unknown> | null): string | undefined {
   if (!data) return undefined;
-  if (data.productOrderGroupId) return `/orders/product/${data.productOrderGroupId}`;
-  if (data.orderId) return `/orders/${data.orderId}`;
-  if (data.weavingOrderId) return `/orders/${data.weavingOrderId}`;
+  if (data.productOrderId) return `/orders/product-order/${data.productOrderId}`;
+  if (data.orderId) return `/orders/tailor/${data.orderId}`;
+  if (data.weavingOrderId) return `/orders/weaving/${data.weavingOrderId}`;
   return "/orders";
 }
 

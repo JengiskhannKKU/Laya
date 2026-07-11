@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import MobileLayout from "@/components/layout/MobileLayout";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -6,6 +7,14 @@ import IconButton from "@mui/material/IconButton";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
 import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "สั่งตัดเสื้อผ้าไทย — มีผ้าเองหรือเลือกจากร้าน",
+  description:
+    "สั่งตัดชุดจากผ้าไทยของคุณเอง หรือเลือกผ้าจากร้านค้าในชุมชนช่างทอ ออกแบบง่ายด้วย AI บน LAYA",
+  path: "/services/tailor",
+});
 
 export default function TailorTypePage() {
   return (

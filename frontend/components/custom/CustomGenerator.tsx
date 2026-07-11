@@ -15,77 +15,104 @@ import WeaverMatchingView from "./WeaverMatchingView";
 
 import OrderConfirmationView from "@/components/custom/OrderConfirmationView";
 import RequestSuccessView from "@/components/custom/RequestSuccessView";
-import { weavers, type Weaver, type CustomPatternData } from "@/lib/mock-data";
+import { WEAVER_COLORS, type CustomPatternData } from "@/lib/custom-order-config";
+import { useAuth } from "@/lib/auth-context";
+import { authFetch, SessionExpiredError } from "@/lib/api-auth";
+import { useAppModal } from "@/components/providers/AppModalProvider";
+import type { ShopMatch, WeavingRequestResult } from "@/components/custom/types";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 export type GeneratorMode = "select" | "guided" | "prompt" | "generating" | "preview" | "matching" | "confirm_request" | "request_success";
 
 export default function CustomGenerator() {
+  const { user, openAuthModal } = useAuth();
+  const { showAlert } = useAppModal();
   const [currentMode, setCurrentMode] = useState<GeneratorMode>("select");
   const [patternData, setPatternData] = useState<CustomPatternData>({});
-  const [selectedWeaver, setSelectedWeaver] = useState<Weaver | null>(null);
+  const [selectedWeaver, setSelectedWeaver] = useState<ShopMatch | null>(null);
   const [requestNote, setRequestNote] = useState("");
+  const [submittedRequest, setSubmittedRequest] = useState<WeavingRequestResult | null>(null);
 
   const handleModeSelect = (mode: "guided" | "prompt") => {
     setCurrentMode(mode);
   };
 
   const handleStartGeneration = async (data: CustomPatternData) => {
+    if (!user) { openAuthModal(); return; }
+
     const merged: CustomPatternData = {
       ...data,
       weaveType: data.weaveType || "ยกดอก",
-      complexity: data.complexity || 50,
-      colors: data.colors || ["#1B2A4A", "#CFA055", "#800000"],
+      complexity: data.complexity ?? 50,
+      colors: data.colors?.length ? data.colors : ["กรมท่า", "เหลืองทอง", "แดงเลือด"],
     };
     setPatternData(merged);
     setCurrentMode("generating");
 
-    // Build a rich prompt from the wizard selections
-    const patternNames = (merged.selectedPatterns ?? []).join(" blended with ");
-    const complexityLabel = (merged.complexity ?? 50) > 70 ? "highly intricate" : (merged.complexity ?? 50) > 40 ? "medium complexity" : "simple";
-    const prompt = [
-      `Seamless Thai silk textile pattern, pixel art style,`,
-      patternNames ? `motifs: ${patternNames},` : "",
-      merged.weaveType ? `weave technique: ${merged.weaveType},` : "",
-      merged.region ? `regional style: ${merged.region},` : "",
-      merged.mood ? `occasion: ${merged.mood},` : "",
-      `${complexityLabel} design,`,
-      `traditional Thai colors, rich gold and deep jewel tones,`,
-      `crisp repeating tile, no text, no watermark`,
-    ].filter(Boolean).join(" ");
+    // ผูกชื่อสีด้ายจริง -> hex (WEAVER_COLORS) ให้ backend ประกอบ prompt ได้แม่นยำ
+    const colorHex = (merged.colors ?? [])
+      .map((name) => WEAVER_COLORS.find((c) => c.name === name)?.hex)
+      .filter((h): h is string => !!h);
+    const complexityBucket = (merged.complexity ?? 50) >= 75 ? "detailed" : (merged.complexity ?? 50) >= 40 ? "medium" : "simple";
 
     try {
-      const res = await fetch("/api/nanobanana/generate", {
+      const res = await authFetch(`${API_BASE}/api/patterns/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          colors: colorHex.length ? colorHex : ["#1B2A4A", "#C5A55A", "#8B0000"],
+          colorNames: merged.colors,
+          references: merged.selectedPatterns ?? [],
+          style: "Traditional Thai silk, pixel art style",
+          weaveType: merged.weaveType,
+          region: merged.region,
+          dyeType: merged.dyeType,
+          moodText: merged.mood,
+          advanced: { complexity: complexityBucket },
+        }),
       });
-      const json = await res.json() as { imageUrl?: string; error?: string; mock?: boolean };
+      const json = await res.json() as { fullImageUrl?: string; id?: string; isMock?: boolean; error?: string };
       if (!res.ok || json.error) throw new Error(json.error ?? "Generation failed");
-      setPatternData((prev: any) => ({ ...prev, generatedImageUrl: json.imageUrl, isMock: json.mock }));
-    } catch (err: any) {
-      // Silence console error and provide mock fallback to avoid dev overlay
-      setPatternData((prev: any) => ({ 
-        ...prev, 
-        generatedImageUrl: "/images/fabric1.webp", 
-        isMock: true 
-      }));
-    } finally {
-      setCurrentMode("preview");
+      setPatternData((prev) => ({ ...prev, generatedImageUrl: json.fullImageUrl, patternId: json.id, isMock: json.isMock }));
+    } catch (err) {
+      if (err instanceof SessionExpiredError) {
+        showAlert({ title: "เซสชันหมดอายุ", message: err.message, tone: "warning" });
+        setCurrentMode("select");
+        return;
+      }
+      showAlert({ title: "สร้างลายผ้าไม่สำเร็จ", message: (err as Error).message || "กรุณาลองใหม่อีกครั้ง", tone: "warning" });
+      setCurrentMode("select");
+      return;
     }
+    setCurrentMode("preview");
   };
 
   const handleStartMatching = () => {
     setCurrentMode("matching");
   };
 
-  const handleSelectWeaver = (weaver: Weaver) => {
+  const handleSelectWeaver = (weaver: ShopMatch) => {
     setSelectedWeaver(weaver);
     setCurrentMode("confirm_request");
   };
 
-  const handleConfirmRequest = (note: string) => {
+  const handleConfirmRequest = async (note: string) => {
+    if (!selectedWeaver) return;
+    if (!user) { openAuthModal(); return; }
     setRequestNote(note);
-    setCurrentMode("request_success");
+    try {
+      const res = await authFetch(`${API_BASE}/api/weaving-requests`, {
+        method: "POST",
+        body: JSON.stringify({ shopId: selectedWeaver.id, patternId: patternData.patternId, note }),
+      });
+      const json = await res.json() as WeavingRequestResult & { error?: string };
+      if (!res.ok || json.error) throw new Error(json.error ?? "ส่งคำขอทอผ้าไม่สำเร็จ");
+      setSubmittedRequest(json);
+      setCurrentMode("request_success");
+    } catch (err) {
+      const message = err instanceof SessionExpiredError ? err.message : (err as Error).message || "ส่งคำขอทอผ้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+      showAlert({ title: "ส่งคำขอทอผ้าไม่สำเร็จ", message, tone: "warning" });
+    }
   };
 
   const handleBack = () => {
@@ -197,12 +224,13 @@ export default function CustomGenerator() {
               onCancel={() => setCurrentMode("matching")}
             />
           )}
-          {currentMode === "request_success" && selectedWeaver && (
-            <RequestSuccessView 
-              key="success" 
-              patternData={patternData} 
+          {currentMode === "request_success" && selectedWeaver && submittedRequest && (
+            <RequestSuccessView
+              key="success"
+              patternData={patternData}
               selectedWeaver={selectedWeaver}
               requestNote={requestNote}
+              submittedRequest={submittedRequest}
             />
           )}
         </AnimatePresence>

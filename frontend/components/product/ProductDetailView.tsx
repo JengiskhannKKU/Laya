@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -9,7 +9,6 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Rating from "@mui/material/Rating";
 import TextField from "@mui/material/TextField";
-import Checkbox from "@mui/material/Checkbox";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
@@ -21,15 +20,10 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUncheckedRounded";
-import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
-import QrCodeScannerRoundedIcon from "@mui/icons-material/QrCodeScannerRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { products, type Product } from "@/lib/mock-data";
-import TraceabilityView from "./TraceabilityView";
-import DigitalCertificateView from "./DigitalCertificateView";
+import { fetchLiveProducts, type Product } from "@/lib/live-products";
 import { useAuth } from "@/lib/auth-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCartStore } from "@/lib/cart-store";
@@ -59,16 +53,23 @@ export default function ProductDetailView({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem);
   const { showConfirm, showToast } = useAppModal();
   const [currentImage, setCurrentImage] = useState(0);
-  const [activeView, setActiveView] = useState<"detail" | "traceability" | "certificate">("detail");
-  const [isPressing, setIsPressing] = useState(false);
-  const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [selectedColor, setSelectedColor] = useState(AVAILABLE_COLORS[0]);
   const [quantity, setQuantity] = useState(5);
   const [format, setFormat] = useState(FORMATS[0]);
   const [edgeFinish, setEdgeFinish] = useState(EDGE_FINISHES[0]);
   const [notes, setNotes] = useState("");
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   const isReadyMade = product.isCustomizable === false;
+
+  useEffect(() => {
+    if (!product.category) return;
+    let cancelled = false;
+    fetchLiveProducts({ category: product.category })
+      .then((list) => { if (!cancelled) setRelatedProducts(list.filter((p) => p.id !== product.id).slice(0, 3)); })
+      .catch(() => { if (!cancelled) setRelatedProducts([]); });
+    return () => { cancelled = true; };
+  }, [product.category, product.id]);
 
   const addSnapshotToCart = () => {
     addItem(
@@ -111,39 +112,6 @@ export default function ProductDetailView({ product }: { product: Product }) {
     router.push("/cart");
   };
 
-  const handlePressStart = () => {
-    setIsPressing(true);
-    const timer = setTimeout(() => {
-      setActiveView("traceability");
-      setIsPressing(false);
-    }, 800); // 800ms long press
-    setPressTimer(timer);
-  };
-
-  const handlePressEnd = () => {
-    if (pressTimer) clearTimeout(pressTimer);
-    setIsPressing(false);
-  };
-
-  if (activeView === "traceability") {
-    return (
-      <TraceabilityView
-        product={product}
-        onBack={() => setActiveView("detail")}
-        onViewCertificate={() => setActiveView("certificate")}
-      />
-    );
-  }
-
-  if (activeView === "certificate") {
-    return (
-      <DigitalCertificateView
-        product={product}
-        onBack={() => setActiveView("traceability")}
-      />
-    );
-  }
-
   const totalPrice = product.price * quantity;
 
   return (
@@ -170,9 +138,6 @@ export default function ProductDetailView({ product }: { product: Product }) {
             borderRadius: { xs: 0, md: "20px" },
             touchAction: "none",
           }}
-          onPointerDown={handlePressStart}
-          onPointerUp={handlePressEnd}
-          onPointerLeave={handlePressEnd}
         >
           {/* Main Image */}
           <AnimatePresence mode="wait">
@@ -310,7 +275,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
                 transition: "all 0.2s"
               }}
             >
-              <Image src={img} alt="" fill style={{ objectFit: "cover" }} />
+              <Image src={img} alt={`${product.name} — รูปที่ ${i + 1}`} fill style={{ objectFit: "cover" }} />
             </Box>
           ))}
         </Box>
@@ -319,29 +284,6 @@ export default function ProductDetailView({ product }: { product: Product }) {
 
       {/* Right col: Details */}
       <Box sx={{ px: { xs: 2.5, md: 0 }, pt: { xs: 1, md: 0 }, pb: { xs: 3, md: 0 } }}>
-        
-        {/* Prominent Story Button at the Top */}
-        <Button
-          onClick={() => setActiveView("traceability")}
-          fullWidth
-          variant="contained"
-          startIcon={<QrCodeScannerRoundedIcon />}
-          sx={{
-            py: 1.5,
-            mb: 3,
-            borderRadius: "16px",
-            bgcolor: "#1B2A4A",
-            color: "#FFFFFF",
-            fontWeight: 700,
-            fontSize: "0.95rem",
-            textTransform: "none",
-            boxShadow: "0 4px 15px rgba(27,42,74,0.15)",
-            border: "1px solid rgba(216, 188, 130, 0.3)",
-            "&:hover": { bgcolor: "#0F1A30" }
-          }}
-        >
-          เรื่องราวของ{product.typeLabel || "ผ้า"}{product.typeLabel === "กระเป๋า" ? "ใบ" : "ผืน"}นี้
-        </Button>
 
         {/* Title Block */}
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -350,7 +292,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
               {product.name}
             </Typography>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#8E601C", mt: 0.5, display: "flex", alignItems: "center" }}>
-              • ชุมชนหริภุญชัย - ลำพูน
+              • {product.community} - {product.province}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
               <Rating value={product.rating} precision={0.1} readOnly size="small" sx={{ "& .MuiRating-iconFilled": { color: "#C5A55A" } }} />
@@ -566,11 +508,11 @@ export default function ProductDetailView({ product }: { product: Product }) {
         {/* Weaver Box */}
         <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 2, bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
           <Box sx={{ width: 44, height: 44, borderRadius: "50%", bgcolor: "#4B7355", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontWeight: 700 }}>
-            ส
+            {product.weaverName?.[0] ?? "?"}
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A" }}>แม่สมจิตร ใจดี</Typography>
-            <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>ช่างทอ GI • ลำพูน • ทอมากว่า 30 ปี</Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A" }}>{product.weaverName}</Typography>
+            <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{product.province}</Typography>
           </Box>
           <ChevronRightRoundedIcon sx={{ color: "#CBA258" }} />
         </Box>
@@ -581,48 +523,39 @@ export default function ProductDetailView({ product }: { product: Product }) {
             เรื่องราวของ{product.typeLabel || "ผ้า"}{product.typeLabel === "กระเป๋า" ? "ใบ" : "ผืน"}นี้
           </Typography>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7 }}>
-            {product.story}
-          </Typography>
-          <Typography sx={{ fontSize: "0.8rem", color: "#CBA258", mt: 1, fontWeight: 600, cursor: "pointer" }}>
-            อ่านเพิ่มเติม ›
+            {product.story || "ยังไม่มีเรื่องราวสำหรับสินค้านี้"}
           </Typography>
         </Box>
 
         {/* Recommended Add-ons */}
-        <Box sx={{ mt: 5, mb: 4 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
-            ตรงกับ:
-          </Typography>
+        {relatedProducts.length > 0 && (
+          <Box sx={{ mt: 5, mb: 4 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
+              สินค้าใกล้เคียง
+            </Typography>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {(product.relatedProductIds && product.relatedProductIds.length > 0 
-              ? product.relatedProductIds.map(id => products.find(p => p.id === id)).filter(Boolean)
-              : [products.find(p => p.id === "bag2")]
-            ).map((item, idx) => (
-              item && (
-                <Box key={idx} sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: "12px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5, opacity: (item as any).soldOut ? 0.6 : 1 }}>
-                  <Checkbox
-                    size="small"
-                    disabled={(item as any).soldOut}
-                    sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#CBA258" } }}
-                  />
-                  <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", border: "1px solid #F0F0F0" }}>
-                    <Image src={item.images[0]} alt={item.name} fill style={{ objectFit: "cover" }} />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {relatedProducts.map((item) => (
+                <Link key={item.id} href={`/product/${item.id}`} style={{ textDecoration: "none" }}>
+                  <Box sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: "12px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", border: "1px solid #F0F0F0" }}>
+                      <Image src={item.images[0]} alt={item.name} fill style={{ objectFit: "cover" }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{item.name}</Typography>
+                      <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{item.fabricType}</Typography>
+                    </Box>
+                    <Box sx={{ textAlign: "right" }}>
+                      <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A" }}>
+                        {item.price.toLocaleString()} ฿ THB
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{item.name}</Typography>
-                    <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{item.fabricType}</Typography>
-                  </Box>
-                  <Box sx={{ textAlign: "right" }}>
-                    <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: (item as any).soldOut ? "#9CA3AF" : "#1B2A4A" }}>
-                      {(item as any).soldOut ? "ขายหมดแล้ว" : `${item.price.toLocaleString()} ฿ THB`}
-                    </Typography>
-                  </Box>
-                </Box>
-              )
-            ))}
+                </Link>
+              ))}
+            </Box>
           </Box>
-        </Box>
+        )}
 
         {/* Reviews Section */}
         {product.reviews && product.reviews.length > 0 && (

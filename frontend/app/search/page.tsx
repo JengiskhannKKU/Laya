@@ -24,7 +24,7 @@ import SortRoundedIcon from "@mui/icons-material/SortRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 import MobileLayout from "@/components/layout/MobileLayout";
-import { categories, Product } from "@/lib/mock-data";
+import type { Product } from "@/lib/live-products";
 import { useLiveProducts } from "@/lib/use-live-products";
 
 const provinces = ["ทั้งหมด", "ลำพูน", "ชัยภูมิ", "สกลนคร", "กาฬสินธุ์", "ราชบุรี", "กรุงเทพมหานคร"];

@@ -25,6 +25,8 @@ export interface GarmentRendererProps {
   /** ปิด interaction (ใช้ทำ thumbnail template) */
   interactive?: boolean;
   renderer?: RendererKind;
+  /** เนื้อหาเสริมวางซ้อนในกรอบ aspect-ratio เดียวกับ layer (เช่น hotspot overlay) — ตำแหน่ง % จะตรงกับ layer.box เป๊ะ */
+  overlay?: React.ReactNode;
 }
 
 const TRANSITION_VARIANTS: Record<Transition, Variants> = {
@@ -56,7 +58,7 @@ export default function GarmentRenderer(props: GarmentRendererProps) {
 
 // ─── SVG/PNG Layer Renderer ──────────────────────────────────────────────────
 function SvgLayerRenderer({
-  layers, canvas, selectedPart, hoveredPart, onSelectPart, onHoverPart, interactive = true,
+  layers, canvas, selectedPart, hoveredPart, onSelectPart, onHoverPart, interactive = true, overlay,
 }: GarmentRendererProps) {
   return (
     <div className="relative w-full h-full" style={{ aspectRatio: `${canvas.width} / ${canvas.height}` }}>
@@ -128,6 +130,7 @@ function SvgLayerRenderer({
           );
         })}
       </AnimatePresence>
+      {overlay}
     </div>
   );
 }

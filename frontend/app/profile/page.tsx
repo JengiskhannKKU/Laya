@@ -11,7 +11,6 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
-import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
@@ -146,8 +145,6 @@ export default function ProfilePage() {
           <MenuItem icon={<StraightenRoundedIcon sx={{ fontSize: 20 }} />} label="ข้อมูลสัดส่วนร่างกาย" subtitle="ใช้สำหรับแนะนำเสื้อผ้า" href="/profile/measurements" />
           <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
           <MenuItem icon={<FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />} label="รายการโปรด" subtitle="3 รายการ" href="/community" />
-          <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-          <MenuItem icon={<DescriptionRoundedIcon sx={{ fontSize: 20 }} />} label="Digital Textile Passport" subtitle="2 ใบรับรอง" href="/passports" />
           <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
           <MenuItem icon={<SettingsRoundedIcon sx={{ fontSize: 20 }} />} label="ตั้งค่า" />
           <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />

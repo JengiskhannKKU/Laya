@@ -1,7 +1,16 @@
-﻿import MobileLayout from "@/components/layout/MobileLayout";
+﻿import type { Metadata } from "next";
+import MobileLayout from "@/components/layout/MobileLayout";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "สั่งตัด / สั่งทอผ้าไทย — บริการ Thai Fashion",
+  description:
+    "เลือกบริการสั่งตัดชุดจากผ้าที่คุณมี หรือสั่งทอผ้าไทยลายใหม่กับชุมชนช่างทอโดยตรง บน LAYA แพลตฟอร์ม Fashion Tech",
+  path: "/services",
+});
 
 export default function ServicesPage() {
   return (
@@ -45,7 +54,7 @@ export default function ServicesPage() {
           </Box>
         </Link>
 
-        <Link href="/gen-silk" style={{ textDecoration: 'none' }}>
+        <Link href="/services/weave" style={{ textDecoration: 'none' }}>
           <Box
             sx={{
               p: 4,

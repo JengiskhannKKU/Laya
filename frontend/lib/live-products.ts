@@ -4,9 +4,72 @@
  * ใช้ได้ทั้ง server component (product/[id]) และ client hook (use-live-products)
  */
 
-import type { Product } from "./mock-data";
-
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+export interface ProductionStep {
+  step: number;
+  title: string;
+  description: string;
+  date: string;
+  icon: "fiber" | "dye" | "weave" | "inspect" | "finish" | "ship";
+  videoUrl?: string;
+  isCompleted?: boolean;
+}
+
+export interface Review {
+  id: string;
+  userName: string;
+  avatar: string;
+  rating: number;
+  date: string;
+  comment: string;
+  images?: string[];
+}
+
+/** ใบรับรองดิจิทัล/ตรวจสอบย้อนกลับ — ยังไม่มีตาราง DB รองรับ (ซ่อน UI ที่พึ่งข้อมูลนี้ไว้ก่อน) */
+export interface PassportData {
+  materials: string[];
+  dyeType: string;
+  dyeDetails: string;
+  weavingTechnique: string;
+  weavingDetails: string;
+  productionSteps: ProductionStep[];
+  carbonFootprint: "low" | "medium" | "high";
+  certifications: string[];
+  blockchainHash: string;
+  verifiedDate: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  community: string;
+  province: string;
+  price: number;
+  priceUnit: string;
+  rating: number;
+  reviewCount: number;
+  images: string[];
+  hasGI: boolean;
+  productionTime: string;
+  availableLength: number;
+  fabricType: string;
+  story: string;
+  weaverName: string;
+  certificateId: string;
+  passport?: PassportData;
+  reviews?: Review[];
+  soldCount?: number;
+  isCustomizable?: boolean;
+  /** true เมื่อโหลดมาจาก backend จริง (สินค้าพร้อมขาย ตะกร้า/checkout ใช้งานได้จริง) */
+  isLive?: boolean;
+  shopId?: string;
+  relatedProductIds?: string[];
+  tags?: string[];
+  typeLabel?: string;
+  /** หมวดหมู่สินค้า (fabric/clothing/scarf/bag/premium/decor/others) — มีเฉพาะสินค้าจริงจาก backend */
+  category?: string;
+}
 
 export interface LiveProduct {
   id: string;

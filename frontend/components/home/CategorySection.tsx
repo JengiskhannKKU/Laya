@@ -1,9 +1,10 @@
 ﻿"use client";
 
+import { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
-import { categories } from "@/lib/mock-data";
+import { fetchCategories, type Category } from "@/lib/categories";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
 import {
@@ -31,6 +32,14 @@ const getCategoryIcon = (id: string, color: string) => {
 };
 
 export default function CategorySection() {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    fetchCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  if (!categories.length) return null;
+
   return (
     <Box
       component={motion.div}

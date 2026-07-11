@@ -147,9 +147,13 @@ router.get("/:id", async (req: Request, res: Response) => {
 router.post("/apply", requireAuth, async (req: Request, res: Response) => {
   try {
     const { userId } = req.user!;
-    const { name, description, province, address, phone, lineId, specialties, services } = req.body as {
+    const {
+      name, description, province, address, phone, lineId, specialties, services,
+      promptpayId, bankName, bankAccountNo, bankAccountName,
+    } = req.body as {
       name: string; description?: string; province: string; address?: string;
       phone?: string; lineId?: string; specialties?: string[]; services?: string[];
+      promptpayId?: string; bankName?: string; bankAccountNo?: string; bankAccountName?: string;
     };
 
     if (!name || !province) {
@@ -164,10 +168,14 @@ router.post("/apply", requireAuth, async (req: Request, res: Response) => {
     }
 
     const rows = await query<{ id: string }>(
-      `INSERT INTO shops (user_id, name, description, province, address, phone, line_id, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
+      `INSERT INTO shops (user_id, name, description, province, address, phone, line_id, status,
+                           promptpay_id, bank_name, bank_account_no, bank_account_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9, $10, $11)
        RETURNING id`,
-      [userId, name, description ?? null, province, address ?? null, phone ?? null, lineId ?? null]
+      [
+        userId, name, description ?? null, province, address ?? null, phone ?? null, lineId ?? null,
+        promptpayId ?? null, bankName ?? null, bankAccountNo ?? null, bankAccountName ?? null,
+      ]
     );
 
     const shopId = rows[0].id;
@@ -194,12 +202,19 @@ router.post("/apply", requireAuth, async (req: Request, res: Response) => {
 router.patch("/mine", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
   try {
     const { userId } = req.user!;
-    const { name, description, province, address, phone, lineId } = req.body as Record<string, string>;
+    const {
+      name, description, province, address, phone, lineId,
+      promptpayId, bankName, bankAccountNo, bankAccountName,
+    } = req.body as Record<string, string>;
 
     await query(
       `UPDATE shops SET name=$1, description=$2, province=$3, address=$4, phone=$5,
-       line_id=$6, updated_at=NOW() WHERE user_id=$7`,
-      [name, description ?? null, province, address ?? null, phone ?? null, lineId ?? null, userId]
+       line_id=$6, promptpay_id=$7, bank_name=$8, bank_account_no=$9, bank_account_name=$10,
+       updated_at=NOW() WHERE user_id=$11`,
+      [
+        name, description ?? null, province, address ?? null, phone ?? null, lineId ?? null,
+        promptpayId ?? null, bankName ?? null, bankAccountNo ?? null, bankAccountName ?? null, userId,
+      ]
     );
     res.json({ success: true });
   } catch (err) {

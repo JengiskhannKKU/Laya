@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import type { Product } from "@/lib/mock-data";
+import type { Product } from "@/lib/live-products";
 import { useAuth } from "@/lib/auth-context";
 import { useWishlist } from "@/lib/wishlist-context";
 

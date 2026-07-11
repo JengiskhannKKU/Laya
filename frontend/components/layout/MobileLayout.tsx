@@ -4,6 +4,7 @@ import { useTheme, useMediaQuery } from "@mui/material";
 import Box from "@mui/material/Box";
 import AppTopNav from "@/components/layout/TopNav";
 import AppBottomNav from "@/components/layout/BottomNav";
+import AppFooter from "@/components/layout/Footer";
 import { useAuth } from "@/lib/auth-context";
 
 export default function MobileLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +31,8 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
       >
         {children}
       </Box>
+      {/* Site Footer */}
+      <AppFooter />
       {/* Mobile bottom nav */}
       {isMobile && <AppBottomNav />}
     </Box>

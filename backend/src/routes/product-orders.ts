@@ -225,6 +225,54 @@ router.get("/group/:groupId", requireAuth, async (req: Request, res: Response) =
 });
 
 /**
+ * GET /api/product-orders/:id
+ * รายละเอียดออเดอร์รายร้านเดียว (ใช้หน้ารายละเอียดออเดอร์ของลูกค้า/ร้าน)
+ */
+router.get("/:id", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { userId, role, shopId } = req.user!;
+
+    const rows = await query<Record<string, unknown>>(
+      `SELECT po.*, s.name AS shop_name, g.recipient_name, g.phone, g.address_line1, g.subdistrict, g.district, g.province, g.postal_code, g.note
+       FROM product_orders po
+       JOIN shops s ON s.id = po.shop_id
+       JOIN product_order_groups g ON g.id = po.order_group_id
+       WHERE po.id = $1`,
+      [req.params.id]
+    );
+    if (!rows.length) { res.status(404).json({ error: "ไม่พบออเดอร์" }); return; }
+    const order = rows[0];
+
+    if (role === "customer" && order.customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
+    if (role === "merchant" && order.shop_id !== shopId) { res.status(403).json({ error: "Forbidden" }); return; }
+
+    const itemRows = await query<Record<string, unknown>>(
+      "SELECT * FROM product_order_items WHERE product_order_id = $1",
+      [req.params.id]
+    );
+    const logs = await query<Record<string, unknown>>(
+      `SELECT old_status, new_status, note, created_at
+       FROM product_order_status_logs WHERE product_order_id = $1 ORDER BY created_at ASC`,
+      [req.params.id]
+    );
+
+    res.json({
+      ...mapOrder(order),
+      shippingAddress: {
+        recipientName: order.recipient_name, phone: order.phone, addressLine1: order.address_line1,
+        subdistrict: order.subdistrict, district: order.district, province: order.province,
+        postalCode: order.postal_code, note: order.note ?? null,
+      },
+      items: itemRows.map(mapItem),
+      statusLogs: logs,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch product order" });
+  }
+});
+
+/**
  * GET /api/product-orders
  * ลูกค้าเห็นออเดอร์ของตัวเอง, ร้านเห็นออเดอร์ของร้าน, admin เห็นทั้งหมด
  */

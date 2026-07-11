@@ -74,20 +74,20 @@ export default function DesktopStudio() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <StudioHeader onSaveDraft={saveDraft} onLoadDraft={loadDraft} hasDraft={hasDraft} savedNote={savedNote} />
+      <StudioHeader category={category} categoryDef={categoryDef} onSaveDraft={saveDraft} onLoadDraft={loadDraft} hasDraft={hasDraft} savedNote={savedNote} />
       <StudioStepBar />
 
       <div className="max-w-screen-2xl w-full mx-auto px-6 py-4 flex-1 space-y-4">
         <div className="grid grid-cols-[300px_1fr_320px] gap-4 items-start">
-          <div className="bg-white rounded-2xl border border-border p-3 max-h-[calc(100vh-160px)] overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-border p-3 max-h-[calc(100vh-220px)] overflow-y-auto">
             <StudioLeftPanel catalog={catalog} categoryDef={categoryDef} design={design} />
           </div>
 
-          <div className="h-[calc(100vh-160px)] min-h-[560px]">
+          <div className="h-[calc(100vh-220px)] min-h-[560px]">
             <StudioCenterPreview catalog={catalog} categoryDef={categoryDef} design={design} layers={layers} price={price} />
           </div>
 
-          <div className="bg-white rounded-2xl border border-border p-3 max-h-[calc(100vh-160px)] overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-border p-3 max-h-[calc(100vh-220px)] overflow-y-auto">
             <StudioRightPanel catalog={catalog} design={design} />
           </div>
         </div>

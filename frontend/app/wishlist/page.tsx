@@ -28,8 +28,7 @@ import { useAuth } from "@/lib/auth-context";
 import { authFetch } from "@/lib/api-auth";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCartStore } from "@/lib/cart-store";
-import { mapLiveProduct, type LiveProduct } from "@/lib/live-products";
-import type { Product } from "@/lib/mock-data";
+import { mapLiveProduct, type LiveProduct, type Product } from "@/lib/live-products";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 

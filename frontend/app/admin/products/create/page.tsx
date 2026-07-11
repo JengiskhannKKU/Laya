@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useImageUpload } from "@/hooks/useImageUpload";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -79,6 +80,7 @@ interface FormData {
   stock: string;
   status: "active" | "draft";
   imagePreview: string | null;
+  imageUrl: string | null; // Supabase public URL หลัง upload
 }
 
 interface FormErrors {
@@ -103,6 +105,7 @@ const initialForm: FormData = {
   stock: "",
   status: "draft",
   imagePreview: null,
+  imageUrl: null,
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -122,7 +125,16 @@ export default function CreateProductPage() {
   const [isDirty, setIsDirty] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imageHover, setImageHover] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { uploadFile: uploadImageFile } = useImageUpload({
+    bucket: "product-images",
+    onSuccess: (result) => {
+      updateField("imageUrl", result.url);
+    },
+    onError: () => {},
+  });
 
   // ── Dirty tracking ──
   useEffect(() => {
@@ -144,13 +156,18 @@ export default function CreateProductPage() {
   };
 
   // ── Image upload ──
-  const handleImageFile = (file: File) => {
+  const handleImageFile = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
+    // แสดง local preview ทันที (optimistic UI)
     const reader = new FileReader();
     reader.onload = (e) => {
       updateField("imagePreview", e.target?.result as string);
     };
     reader.readAsDataURL(file);
+    // Upload จริงไปที่ Supabase (async, แปลงเป็น WebP)
+    setImageUploading(true);
+    await uploadImageFile(file);
+    setImageUploading(false);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -160,7 +177,7 @@ export default function CreateProductPage() {
       handleImageFile(e.dataTransfer.files[0]);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [uploadImageFile]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -196,7 +213,9 @@ export default function CreateProductPage() {
     const newProduct = {
       id: `new-${Date.now()}`,
       name: form.name.trim(),
-      image: form.imagePreview || "/images/fabric1.webp",
+      // ใช้ Supabase URL ถ้า upload สำเร็จ หรือ preview/fallback
+      image: form.imageUrl || form.imagePreview || "/images/fabric1.webp",
+      images: form.imageUrl ? [form.imageUrl] : [],
       community: form.community,
       province: form.province,
       price: parseFloat(form.price),

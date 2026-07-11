@@ -11,13 +11,71 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Undo2, Redo2, RotateCcw, Maximize2, Minimize2 } from 'lucide-react';
 
+interface Hotspot { key: string; label: string; cx: number; cy: number }
+
 import { useGarmentStore } from '@/lib/stores/garment-store';
 import type { Catalog, CategoryDef, GarmentDesign, RenderLayer } from '../builder/types';
 import GarmentRenderer from '../builder/GarmentRenderer';
 import GarmentPhotoStage from '../builder/GarmentPhotoStage';
+import { getThaiDressPhotoUrl, hasThaiDressPhotoShape } from '@/lib/thai-dress-photo';
 import { buildBackLayers, toSketchLayers } from './viewModes';
 
 export type PreviewMode = 'front' | 'back' | 'fabric' | 'sketch';
+
+/**
+ * จุด hotspot + เส้นประ + label เชื่อมไปยังชิ้นส่วนจริง — วางเป็น overlay prop ของ GarmentRenderer
+ * เพื่อให้ % ตำแหน่งอ้างอิงกรอบ aspect-ratio เดียวกับ layer.box เป๊ะๆ (ไม่ใช่กะประมาณจาก sibling box แยก)
+ * ใช้เฉพาะตอนแสดง SVG renderer ตรงๆ เท่านั้น — ถ้าโชว์ภาพถ่ายจริงแทน (GarmentPhotoStage) จะไม่วาง
+ * เพราะตำแหน่งในภาพถ่ายไม่ตรงกับ % ของ layer.box ของ SVG (คนละภาพ ห้ามชี้ผิดจุด)
+ */
+function HotspotOverlay({ hotspots, selectedPart, hoveredPart, onSelect, onHover }: {
+  hotspots: Hotspot[];
+  selectedPart: string | null;
+  hoveredPart: string | null;
+  onSelect: (key: string) => void;
+  onHover: (key: string | null) => void;
+}) {
+  const LINE_LEN = 13;
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {hotspots.map(h => {
+        const active = selectedPart === h.key || hoveredPart === h.key;
+        const side: 'left' | 'right' = h.cx < 50 ? 'left' : 'right';
+        const lineLeft = side === 'right' ? h.cx : Math.max(h.cx - LINE_LEN, 0);
+        const labelLeft = side === 'right' ? Math.min(h.cx + LINE_LEN + 1, 97) : Math.max(h.cx - LINE_LEN - 1, 3);
+
+        return (
+          <div key={h.key}>
+            {/* เส้นประ */}
+            <div
+              className={`absolute h-px border-t border-dashed ${active ? 'border-secondary' : 'border-border'}`}
+              style={{ left: `${lineLeft}%`, top: `${h.cy}%`, width: `${LINE_LEN}%` }}
+            />
+            {/* จุด */}
+            <button
+              onClick={() => onSelect(h.key)}
+              onMouseEnter={() => onHover(h.key)}
+              onMouseLeave={() => onHover(null)}
+              className={`absolute w-3 h-3 rounded-full border-2 border-white shadow-sm -translate-x-1/2 -translate-y-1/2 pointer-events-auto transition-colors
+                ${active ? 'bg-secondary' : 'bg-primary'}`}
+              style={{ left: `${h.cx}%`, top: `${h.cy}%` }}
+              title={h.label}
+            />
+            {/* label */}
+            <span
+              className={`absolute text-[10px] font-semibold px-2 py-1 rounded-full whitespace-nowrap shadow-sm border -translate-y-1/2
+                ${active ? 'bg-secondary text-white border-secondary' : 'bg-white/95 text-primary border-border'}
+                ${side === 'left' ? '-translate-x-full' : ''}`}
+              style={{ left: `${labelLeft}%`, top: `${h.cy}%` }}
+            >
+              {h.label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 const MODES: { key: PreviewMode; label: string }[] = [
   { key: 'front', label: 'ด้านหน้า' },
@@ -50,6 +108,18 @@ export default function StudioCenterPreview({ catalog, categoryDef, design, laye
 
   const activeLabel = categoryDef.parts.find(p => p.key === (selectedPart ?? hoveredPart))?.name;
 
+  // Hotspot ต่อ partKey หนึ่งครั้ง — ตำแหน่งมาจาก box.left/top/width/height จริงของ layer แรกของ part นั้น
+  const hotspots = useMemo<Hotspot[]>(() => {
+    const seen = new Set<string>();
+    const out: Hotspot[] = [];
+    for (const l of layers) {
+      if (seen.has(l.partKey)) continue;
+      seen.add(l.partKey);
+      out.push({ key: l.partKey, label: l.label, cx: l.box.left + l.box.width / 2, cy: l.box.top + l.box.height / 2 });
+    }
+    return out;
+  }, [layers]);
+
   const handleReset = () => {
     const t = catalog.templates.find(tp => tp.id === 'thai-contemporary');
     if (t) applyTemplate(t);
@@ -73,20 +143,48 @@ export default function StudioCenterPreview({ catalog, categoryDef, design, laye
 
     // หน้า: ใช้ภาพถ่ายจริงถ้ามี (ดู lib/thai-dress-photo.ts), fallback SVG อัตโนมัติถ้าไม่มี
     if (m === 'front') {
+      const photoUrl = getThaiDressPhotoUrl(design);
+      // มีภาพถ่ายจริง — โชว์ตรงๆ ไม่วาง hotspot (ตำแหน่ง % ของ layer.box อ้างอิง SVG คนละภาพกับรูปถ่าย ชี้ผิดจุดได้)
+      if (photoUrl) {
+        return (
+          <GarmentPhotoStage
+            design={design}
+            layers={layers}
+            canvas={catalog.canvas}
+            hideCaption={!interactive}
+            rendererProps={{
+              selectedPart: interactive ? selectedPart : null,
+              hoveredPart: interactive ? hoveredPart : null,
+              onSelectPart: interactive ? selectPart : undefined,
+              onHoverPart: interactive ? hoverPart : undefined,
+              interactive,
+            }}
+          />
+        );
+      }
+      // ไม่มีภาพถ่าย — เรนเดอร์ SVG ตรงๆ เอง (แทน GarmentPhotoStage) เพื่อวาง hotspot overlay ในกรอบ aspect-ratio เดียวกับ layer.box เป๊ะ
       return (
-        <GarmentPhotoStage
-          design={design}
-          layers={layers}
-          canvas={catalog.canvas}
-          hideCaption={!interactive}
-          rendererProps={{
-            selectedPart: interactive ? selectedPart : null,
-            hoveredPart: interactive ? hoveredPart : null,
-            onSelectPart: interactive ? selectPart : undefined,
-            onHoverPart: interactive ? hoverPart : undefined,
-            interactive,
-          }}
-        />
+        <div className="w-full h-full flex flex-col">
+          <div className="flex-1 min-h-0">
+            <GarmentRenderer
+              layers={layers}
+              canvas={catalog.canvas}
+              selectedPart={interactive ? selectedPart : null}
+              hoveredPart={interactive ? hoveredPart : null}
+              onSelectPart={interactive ? selectPart : undefined}
+              onHoverPart={interactive ? hoverPart : undefined}
+              interactive={interactive}
+              overlay={interactive ? (
+                <HotspotOverlay hotspots={hotspots} selectedPart={selectedPart} hoveredPart={hoveredPart} onSelect={selectPart} onHover={hoverPart} />
+              ) : undefined}
+            />
+          </div>
+          {interactive && hasThaiDressPhotoShape(design) && (
+            <p className="text-center text-[10px] text-muted-foreground pt-1.5">
+              ยังไม่มีภาพตัวอย่างสำหรับสีนี้ — แสดงพรีวิวภาพร่างแทน
+            </p>
+          )}
+        </div>
       );
     }
 
@@ -133,10 +231,15 @@ export default function StudioCenterPreview({ catalog, categoryDef, design, laye
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
-        <button onClick={() => setFullscreen(f => !f)} title={fullscreen ? 'ออกจากเต็มจอ' : 'ดูเต็มจอ'}
-          className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-primary hover:bg-muted transition-colors">
-          {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <span className="px-3 h-8 rounded-lg bg-primary text-white text-xs font-bold flex items-center justify-center" title="พรีวิวแบบ 2D เท่านั้น">
+            2D
+          </span>
+          <button onClick={() => setFullscreen(f => !f)} title={fullscreen ? 'ออกจากเต็มจอ' : 'ดูเต็มจอ'}
+            className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-primary hover:bg-muted transition-colors">
+            {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       {/* Stage */}

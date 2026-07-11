@@ -3,12 +3,14 @@
 import { Box, Typography, Avatar, Button, Stepper, Step, StepLabel, StepContent, StepConnector, stepConnectorClasses, styled, Chip } from "@mui/material";
 import { motion } from "framer-motion";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import { type Weaver, type CustomPatternData } from "@/lib/mock-data";
+import { type CustomPatternData } from "@/lib/custom-order-config";
+import type { ShopMatch, WeavingRequestResult } from "./types";
 
 interface RequestSuccessViewProps {
   patternData: CustomPatternData;
-  selectedWeaver: Weaver;
+  selectedWeaver: ShopMatch;
   requestNote: string;
+  submittedRequest: WeavingRequestResult;
 }
 
 const SuccessConnector = styled(StepConnector)(({ theme }) => ({
@@ -49,44 +51,41 @@ const SuccessStepIcon = styled("div")<{ active?: boolean; completed?: boolean }>
   }
 }));
 
-export default function RequestSuccessView({ patternData, selectedWeaver, requestNote }: RequestSuccessViewProps) {
+/** สถานะจริงจาก weaving_requests.status (backend/migrations/008_weaving_requests.sql) — ไล่ตามลำดับ workflow จริง */
+const STATUS_ORDER = ["pending_admin_review", "contacting_weaver", "weaver_confirmed", "quoted", "in_progress"] as const;
+
+const STEP_DEFS = [
+  { label: "แอดมินติดต่อช่าง", description: "แอดมินกำลังยืนยันกับช่างว่าสามารถรับงานได้" },
+  { label: "ช่างยืนยันรับงาน", description: "ช่างตอบรับและยืนยันรายละเอียดลาย" },
+  { label: "แจ้งยอดและเงื่อนไข", description: "แอดมินส่งใบเสนอราคาและ Timeline ให้คุณยืนยัน" },
+  { label: "ชำระเงินและเริ่มทอ", description: "หลังชำระเงิน จะเริ่มขึ้นกี่ทอให้" },
+];
+
+export default function RequestSuccessView({ selectedWeaver, submittedRequest }: RequestSuccessViewProps) {
+  const currentIdx = Math.max(0, STATUS_ORDER.indexOf(submittedRequest.status as typeof STATUS_ORDER[number]));
+  const requestDate = new Date(submittedRequest.createdAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+
   const steps = [
     {
       label: "ส่งคำขอแล้ว",
       description: "ระบบได้รับคำขอและรายละเอียดของคุณแล้ว",
-      date: "วันนี้ 14:32 น.",
+      date: requestDate,
       status: "สำเร็จ",
       completed: true,
       active: false,
     },
-    {
-      label: "แอดมินติดต่อช่าง",
-      description: "แอดมินกำลังยืนยันกับแม่สมจิตรว่าสามารถรับงานได้",
-      status: "กำลังดำเนินการ",
-      completed: false,
-      active: true,
-    },
-    {
-      label: "ช่างยืนยันรับงาน",
-      description: "ช่างตอบรับและยืนยันรายละเอียดลาย",
-      status: "รอดำเนินการ",
-      completed: false,
-      active: false,
-    },
-    {
-      label: "แจ้งยอดและเงื่อนไข",
-      description: "แอดมินส่งใบเสนอราคาและ Timeline ให้คุณยืนยัน",
-      status: "รอดำเนินการ",
-      completed: false,
-      active: false,
-    },
-    {
-      label: "ชำระเงินและเริ่มทอ",
-      description: "หลังชำระเงิน จะเริ่มกี่พุ่งสลับลายให้",
-      status: "รอดำเนินการ",
-      completed: false,
-      active: false,
-    },
+    ...STEP_DEFS.map((s, i) => {
+      // STEP_DEFS[0] = "แอดมินติดต่อช่าง" ตรงกับ STATUS_ORDER index 0/1 (pending_admin_review/contacting_weaver)
+      const stepStatusIdx = i + 1;
+      return {
+        ...s,
+        date: undefined as string | undefined,
+        status: currentIdx > stepStatusIdx ? "สำเร็จ" : currentIdx === stepStatusIdx || (i === 0 && currentIdx <= 1) ? "กำลังดำเนินการ" : "รอดำเนินการ",
+        completed: currentIdx > stepStatusIdx,
+        active: currentIdx === stepStatusIdx || (i === 0 && currentIdx <= 1),
+        description: i === 0 ? s.description.replace("ช่าง", `${selectedWeaver.name}`) : s.description,
+      };
+    }),
   ];
 
   return (
@@ -110,7 +109,9 @@ export default function RequestSuccessView({ patternData, selectedWeaver, reques
         <CheckCircleRoundedIcon sx={{ fontSize: "5rem", color: "#C5A55A", mb: 2 }} />
         <Typography sx={{ fontWeight: 700, fontSize: "1.4rem", mb: 0.5 }}>ส่งคำขอสำเร็จแล้ว</Typography>
         <Typography sx={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.7)" }}>แอดมินจะติดต่อช่างและแจ้งผลกลับมาภายใน 1-2 วันทำการ</Typography>
-        <Typography sx={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", mt: 1 }}>Request #LAYA-2024-0841</Typography>
+        <Typography sx={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.4)", mt: 1 }}>
+          Request #{submittedRequest.id.slice(0, 8).toUpperCase()}
+        </Typography>
       </Box>
 
       {/* 2. Timeline Card */}

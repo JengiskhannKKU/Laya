@@ -7,7 +7,7 @@ import LocalFloristRoundedIcon from "@mui/icons-material/LocalFloristRounded";
 import ScienceRoundedIcon from "@mui/icons-material/ScienceRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import { type CustomPatternData } from "@/lib/mock-data";
+import { type CustomPatternData, WEAVER_COLORS } from "@/lib/custom-order-config";
 import PatternGallery from "./PatternGallery";
 
 interface GuidedWizardProps {
@@ -23,27 +23,6 @@ const steps = [
   "Complexity",
   "Mood",
   "Summary",
-];
-
-const WEAVER_COLORS = [
-  { name: "แดงเลือด", hex: "#8B0000" },
-  { name: "แดงสด", hex: "#D32F2F" },
-  { name: "เหลืองทอง", hex: "#D4AF37" },
-  { name: "น้ำตาลเข้ม", hex: "#654321" },
-  { name: "น้ำเงินเข้ม", hex: "#003366" },
-  { name: "เขียวป่า", hex: "#1A5239" },
-  { name: "ม่วงเข้ม", hex: "#4B0082" },
-  { name: "กรมท่า", hex: "#000080" },
-  { name: "ดำ", hex: "#1A1A1A" },
-  { name: "ครีม", hex: "#F5F5DC" },
-  { name: "ส้มอ่อน", hex: "#DDA77B" },
-  { name: "ฟ้า", hex: "#5Cacee" },
-  { name: "เขียวตอง", hex: "#a4c639" },
-  { name: "ชมพู", hex: "#ffb6c1" },
-  { name: "เทา", hex: "#a9a9a9" },
-  { name: "ขาว", hex: "#f0f0f0" },
-  { name: "ม่วงอ่อน", hex: "#dda0dd" },
-  { name: "บานเย็น", hex: "#ff1493" },
 ];
 const WEAVE_TYPES = [
   { name: "มัดหมี่ (Mudmee)", image: "/patterns/weave_mudmee.webp", color: "#e8d5c4" },

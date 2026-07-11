@@ -58,7 +58,7 @@ export default function MerchantRegisterPage() {
   const [form, setForm] = useState({
     shopName: "", province: "", phone: "", lineId: "",
     shopDescription: "", expertise: [] as string[],
-    bankName: "", bankAccount: "", bankAccountName: "",
+    bankName: "", bankAccount: "", bankAccountName: "", promptpayId: "",
   });
 
   const set = (k: string, v: unknown) => setForm((f) => ({ ...f, [k]: v }));
@@ -72,7 +72,9 @@ export default function MerchantRegisterPage() {
   const canNext = () => {
     if (activeStep === 0) return form.shopName && form.province && form.phone;
     if (activeStep === 1) return form.shopDescription && form.expertise.length > 0;
-    return form.bankName && form.bankAccount && form.bankAccountName;
+    const hasBankAccount = form.bankName && form.bankAccount && form.bankAccountName;
+    const hasPromptPay = form.promptpayId.trim().length > 0;
+    return hasBankAccount || hasPromptPay;
   };
 
   const handleNext = () => {
@@ -89,6 +91,7 @@ export default function MerchantRegisterPage() {
         province: form.province, phone: form.phone, lineId: form.lineId,
         expertise: form.expertise,
         bankAccount: form.bankAccount, bankName: form.bankName,
+        bankAccountName: form.bankAccountName, promptpayId: form.promptpayId,
       });
       setDone(true);
     } catch (e: unknown) {
@@ -216,18 +219,27 @@ export default function MerchantRegisterPage() {
               บัญชีสำหรับรับเงิน
             </Typography>
             <Alert severity="info" sx={{ borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem" }}>
-              ข้อมูลนี้ใช้สำหรับโอนเงินรายได้จากการขาย เราจะไม่เผยแพร่ต่อสาธารณะ
+              ลูกค้าจะจ่ายเงินเข้าบัญชีนี้โดยตรงตอนชำระเงิน กรอกอย่างน้อย 1 ช่องทาง (พร้อมเพย์ หรือ บัญชีธนาคาร) เราจะไม่เผยแพร่ต่อสาธารณะ
             </Alert>
+            <TextField
+              fullWidth label="เลขพร้อมเพย์ (เบอร์โทร/เลขบัตร ปชช.)"
+              value={form.promptpayId}
+              onChange={(e) => set("promptpayId", e.target.value.replace(/[^0-9]/g, ""))}
+              sx={textFieldSx}
+            />
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", color: "#9CA3AF", textAlign: "center" }}>
+              — หรือ —
+            </Typography>
             <FormControl fullWidth sx={textFieldSx}>
-              <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>ธนาคาร *</InputLabel>
-              <Select value={form.bankName} onChange={(e) => set("bankName", e.target.value)} label="ธนาคาร *">
+              <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>ธนาคาร</InputLabel>
+              <Select value={form.bankName} onChange={(e) => set("bankName", e.target.value)} label="ธนาคาร">
                 {["กสิกรไทย","กรุงเทพ","กรุงไทย","ไทยพาณิชย์","ทหารไทยธนชาต","ออมสิน","กรุงศรีอยุธยา"].map((b) => (
                   <MenuItem key={b} value={b} sx={{ fontFamily: '"Kanit", sans-serif' }}>{b}</MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <TextField fullWidth label="เลขบัญชี *" value={form.bankAccount} onChange={(e) => set("bankAccount", e.target.value)} sx={textFieldSx} />
-            <TextField fullWidth label="ชื่อบัญชี *" value={form.bankAccountName} onChange={(e) => set("bankAccountName", e.target.value)} sx={textFieldSx} />
+            <TextField fullWidth label="เลขบัญชี" value={form.bankAccount} onChange={(e) => set("bankAccount", e.target.value)} sx={textFieldSx} />
+            <TextField fullWidth label="ชื่อบัญชี" value={form.bankAccountName} onChange={(e) => set("bankAccountName", e.target.value)} sx={textFieldSx} />
           </Box>
         )}
 

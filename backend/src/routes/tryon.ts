@@ -1,35 +1,14 @@
 import { Router, Request, Response } from "express";
-import { randomUUID } from "crypto";
-import { supabaseAdmin, supabaseAdminConfigured } from "../utils/supabaseAdmin";
+import { uploadBase64AsWebP, BUCKETS } from "../utils/imageUtils";
+import { supabaseAdminConfigured } from "../utils/supabaseAdmin";
 import { generateImage } from "../utils/kieImage";
 
 const router = Router();
 
-const BUCKET = "tryon-uploads";
-let bucketReady: Promise<void> | null = null;
-
-/** สร้าง bucket แบบ public ครั้งแรกที่ใช้งาน (idempotent) — kie.ai ต้องการ URL รูปที่เข้าถึงได้จากอินเทอร์เน็ตจริง ไม่รับ base64 */
-function ensureBucket(): Promise<void> {
-  if (!bucketReady) {
-    bucketReady = (async () => {
-      const { data } = await supabaseAdmin.storage.getBucket(BUCKET);
-      if (!data) {
-        const { error } = await supabaseAdmin.storage.createBucket(BUCKET, {
-          public: true,
-          fileSizeLimit: "10MB",
-        });
-        // เผื่อสองรีเควสต์ชนกันสร้างซ้ำพร้อมกัน — ไม่ throw ถ้า error บอกว่ามีอยู่แล้ว
-        if (error && !/already exists/i.test(error.message)) throw error;
-      }
-    })();
-  }
-  return bucketReady;
-}
-
 /**
  * POST /api/tryon/upload — body: { imageBase64 } → { url }
- * เก็บรูปจริงไว้ที่ Supabase Storage (public bucket) เพราะ kie.ai gpt4o-image ต้องการ URL
- * ที่เข้าถึงได้จากอินเทอร์เน็ตจริงเป็น image reference ไม่รับ base64/data URL ตรงๆ
+ * แปลงรูปเป็น WebP แล้วเก็บไว้ที่ Supabase Storage (public bucket "tryon-uploads")
+ * เพราะ kie.ai gpt4o-image ต้องการ URL ที่เข้าถึงได้จากอินเทอร์เน็ต ไม่รับ base64 ตรงๆ
  */
 router.post("/upload", async (req: Request, res: Response) => {
   try {
@@ -43,22 +22,9 @@ router.post("/upload", async (req: Request, res: Response) => {
       return;
     }
 
-    await ensureBucket();
-
-    const match = imageBase64.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-    const contentType = match?.[1] ?? "image/jpeg";
-    const base64Data = match?.[2] ?? imageBase64;
-    const ext = contentType.split("/")[1]?.replace("+xml", "") ?? "jpg";
-    const buffer = Buffer.from(base64Data, "base64");
-    const path = `${randomUUID()}.${ext}`;
-
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .upload(path, buffer, { contentType, upsert: false });
-    if (uploadError) throw uploadError;
-
-    const { data: pub } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path);
-    res.json({ url: pub.publicUrl });
+    // แปลงเป็น WebP ก่อน upload (sharp resize + compress)
+    const result = await uploadBase64AsWebP(imageBase64, BUCKETS.tryonUploads);
+    res.json({ url: result.url });
   } catch (err: any) {
     console.error("[tryon/upload] error:", err.message);
     res.status(500).json({ error: err.message ?? "Upload failed" });

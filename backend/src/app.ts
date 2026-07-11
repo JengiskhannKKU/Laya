@@ -25,6 +25,9 @@ import weavePatternsRouter from "./routes/weave-patterns";
 import aiRouter from "./routes/ai";
 import nanobananaRouter from "./routes/nanobanana";
 import tryonRouter from "./routes/tryon";
+import patternsRouter from "./routes/patterns";
+import weavingRequestsRouter from "./routes/weaving-requests";
+import uploadRouter from "./routes/upload";
 
 const app = express();
 
@@ -84,6 +87,9 @@ app.use("/api/weave-patterns", weavePatternsRouter);
 app.use("/api/ai", aiRouter);
 app.use("/api/nanobanana", nanobananaRouter);
 app.use("/api/tryon", tryonRouter);
+app.use("/api/patterns", patternsRouter);
+app.use("/api/weaving-requests", weavingRequestsRouter);
+app.use("/api/upload", uploadRouter);
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

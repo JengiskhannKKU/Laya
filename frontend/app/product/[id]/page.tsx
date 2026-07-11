@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { products, type Product } from "@/lib/mock-data";
 import ProductDetailView from "@/components/product/ProductDetailView";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { notFound } from "next/navigation";
@@ -10,20 +9,20 @@ import {
   truncateDescription,
 } from "@/lib/seo";
 
-import { fetchLiveProduct } from "@/lib/live-products";
+import { fetchLiveProduct, fetchLiveProducts } from "@/lib/live-products";
+import JsonLd from "@/components/seo/JsonLd";
 
-async function findProduct(id: string): Promise<Product | undefined> {
-  try {
-    const live = await fetchLiveProduct(id, { next: { revalidate: 60 } });
-    if (live) return live;
-  } catch {
-    // backend ไม่พร้อม — fallback เป็น mock ต่อไป
-  }
-  return products.find((p) => p.id === id);
+async function findProduct(id: string) {
+  return fetchLiveProduct(id, { next: { revalidate: 60 } });
 }
 
-export function generateStaticParams() {
-  return products.map((p) => ({ id: p.id }));
+export async function generateStaticParams() {
+  try {
+    const products = await fetchLiveProducts();
+    return products.map((p) => ({ id: p.id }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -102,12 +101,23 @@ export default async function ProductPage({
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "หน้าแรก", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "สินค้าทั้งหมด", item: absoluteUrl("/search") },
+      { "@type": "ListItem", position: 3, name: product.name, item: absoluteUrl(`/product/${product.id}`) },
+    ],
+  };
+
   return (
     <MobileLayout>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
+      <JsonLd data={breadcrumbJsonLd} />
       <ProductDetailView product={product} />
     </MobileLayout>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useImageUpload } from "@/hooks/useImageUpload";
 import MobileLayout from "@/components/layout/MobileLayout";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -29,12 +30,6 @@ interface CustomerPhoto {
   isDefault?: boolean;
 }
 
-// Mock data — replace with real API
-const mockPhotos: CustomerPhoto[] = [
-  { id: "p1", url: "https://placehold.co/300x400/C5A55A/fff?text=รูปหน้า", label: "รูปหน้าตรง", uploadedAt: "2025-06-01", isDefault: true },
-  { id: "p2", url: "https://placehold.co/300x400/1B2A4A/fff?text=รูปข้าง", label: "รูปด้านข้าง", uploadedAt: "2025-06-01" },
-];
-
 const POSE_TIPS = [
   "ยืนตัวตรง แขนห้อยข้างลำตัวเล็กน้อย",
   "ใส่เสื้อผ้าแนบตัวหรือชุดว่ายน้ำ",
@@ -54,12 +49,18 @@ export default function CustomerPhotosPage() {
   const { user } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [photos, setPhotos] = useState<CustomerPhoto[]>(mockPhotos);
+  const [photos, setPhotos] = useState<CustomerPhoto[]>([]);
   const [uploading, setUploading] = useState(false);
   const [selectedPose, setSelectedPose] = useState("front");
   const [previewPhoto, setPreviewPhoto] = useState<CustomerPhoto | null>(null);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
+  const { uploadFile } = useImageUpload({
+    bucket: "avatars",
+    folder: user?.id,
+    onError: (msg) => setError(msg),
+  });
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,13 +79,14 @@ export default function CustomerPhotosPage() {
     setError("");
 
     try {
-      // TODO: upload to /api/profile/photos with FormData
-      await new Promise((r) => setTimeout(r, 1200));
+      // Upload ไปที่ Supabase Storage ผ่าน backend (แปลงเป็น WebP อัตโนมัติ)
+      const result = await uploadFile(file);
+      if (!result) return; // error จัดการใน hook แล้ว
 
       const poseLabel = POSE_TYPES.find((p) => p.key === selectedPose)?.label ?? selectedPose;
       const newPhoto: CustomerPhoto = {
         id: `p${Date.now()}`,
-        url: URL.createObjectURL(file),
+        url: result.url,           // Supabase public URL
         label: poseLabel,
         uploadedAt: new Date().toISOString().split("T")[0],
       };

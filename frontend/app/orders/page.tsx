@@ -1,4 +1,4 @@
-﻿ "use client";
+"use client";
 
 import { useState, useMemo, useEffect, Suspense } from "react";
 import Box from "@mui/material/Box";
@@ -7,7 +7,6 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Divider from "@mui/material/Divider";
 import Skeleton from "@mui/material/Skeleton";
 import Snackbar from "@mui/material/Snackbar";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -17,26 +16,17 @@ import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRound
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useAppModal } from "@/components/providers/AppModalProvider";
-import { mockOrders, Order, OrderStatus } from "@/lib/mock-data";
-import Image from "next/image";
+import { fetchAllOrders, cancelOrder, detailHref, type OrderSummary } from "@/lib/orders";
 import MobileLayout from "@/components/layout/MobileLayout";
 
-const statusMapping: Record<OrderStatus, { label: string; color: string; bgcolor: string }> = {
-  pending: { label: "รอยืนยัน", color: "#8E601C", bgcolor: "#FDF8F0" },
-  confirmed: { label: "ยืนยันแล้ว", color: "#1B2A4A", bgcolor: "#E2E8F0" },
-  producing: { label: "กำลังผลิต", color: "#0066CC", bgcolor: "#E6F0FF" },
-  shipped: { label: "จัดส่งแล้ว", color: "#05A546", bgcolor: "#E8F5E9" },
-  delivered: { label: "ได้รับสินค้าแล้ว", color: "#05A546", bgcolor: "#E8F5E9" },
-  cancelled: { label: "ยกเลิกแล้ว", color: "#D32F2F", bgcolor: "#FFEBEE" }
-};
+const IN_PROGRESS_STATUSES = ["confirmed", "in_progress", "weaving", "ready", "shipped"];
 
 const filterTabs = [
   { value: "all", label: "ทั้งหมด" },
-  { value: "pending", label: "รอยืนยัน" },
-  { value: "producing", label: "กำลังผลิต" },
-  { value: "shipped", label: "จัดส่งแล้ว" },
+  { value: "pending_confirm", label: "รอยืนยัน" },
+  { value: "in_progress", label: "กำลังดำเนินการ" },
   { value: "delivered", label: "สำเร็จ" },
-  { value: "cancelled", label: "ยกเลิก" }
+  { value: "cancelled", label: "ยกเลิก" },
 ];
 
 function OrderListContent() {
@@ -46,7 +36,7 @@ function OrderListContent() {
   const { showConfirm } = useAppModal();
 
   const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderSummary[]>([]);
   const tabParam = searchParams.get("status") || "all";
 
   const [toastMsg, setToastMsg] = useState("");
@@ -56,33 +46,27 @@ function OrderListContent() {
       router.push("/auth/login");
       return;
     }
-    // Simulate DB fetch
-    setTimeout(() => {
-      setOrders([...mockOrders]);
-      setLoading(false);
-    }, 800);
+    fetchAllOrders()
+      .then(setOrders)
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false));
   }, [user, router]);
 
-  // Quick stats
   const total = orders.length;
-  const inProgress = orders.filter(o => o.status === "producing" || o.status === "shipped").length;
-  const completed = orders.filter(o => o.status === "delivered").length;
+  const inProgress = orders.filter((o) => IN_PROGRESS_STATUSES.includes(o.status)).length;
+  const completed = orders.filter((o) => o.status === "delivered").length;
 
   const filteredOrders = useMemo(() => {
     if (tabParam === "all") return orders;
-    return orders.filter(o => o.status === tabParam || (tabParam === 'producing' && o.status === 'confirmed'));
+    if (tabParam === "in_progress") return orders.filter((o) => IN_PROGRESS_STATUSES.includes(o.status));
+    return orders.filter((o) => o.status === tabParam);
   }, [orders, tabParam]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
     router.push(`/orders?status=${newValue}`);
   };
 
-  const handleReorder = (order: Order) => {
-    setToastMsg(`เพิ่ม ${order.items.length} รายการลงในตะกร้าแล้ว`);
-    setTimeout(() => router.push("/cart"), 1500);
-  };
-
-  const handleCancel = async (id: string) => {
+  const handleCancel = async (order: OrderSummary) => {
     const ok = await showConfirm({
       title: "ยกเลิกคำสั่งซื้อ",
       message: "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำสั่งซื้อนี้?",
@@ -91,9 +75,13 @@ function OrderListContent() {
       tone: "warning",
       danger: true,
     });
-    if (ok) {
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: "cancelled" } : o));
+    if (!ok) return;
+    try {
+      await cancelOrder(order.type, order.id);
+      setOrders((prev) => prev.map((o) => (o.id === order.id && o.type === order.type ? { ...o, status: "cancelled" } : o)));
       setToastMsg("ยกเลิกคำสั่งซื้อสำเร็จ");
+    } catch (err) {
+      setToastMsg(err instanceof Error ? err.message : "ยกเลิกคำสั่งซื้อไม่สำเร็จ");
     }
   };
 
@@ -143,13 +131,13 @@ function OrderListContent() {
               textTransform: "none",
               fontWeight: 600,
               fontSize: "0.85rem",
-              color: "#9CA3AF"
+              color: "#9CA3AF",
             },
             "& .Mui-selected": { color: "#1B2A4A" },
-            "& .MuiTabs-indicator": { bgcolor: "#1B2A4A" }
+            "& .MuiTabs-indicator": { bgcolor: "#1B2A4A" },
           }}
         >
-          {filterTabs.map(tab => (
+          {filterTabs.map((tab) => (
             <Tab key={tab.value} label={tab.label} value={tab.value} />
           ))}
         </Tabs>
@@ -159,82 +147,53 @@ function OrderListContent() {
       <Box sx={{ px: 2, pt: 2, pb: 10 }}>
         {loading ? (
           <Box>
-            <Skeleton variant="rounded" height={160} sx={{ mb: 2, borderRadius: "16px" }} />
-            <Skeleton variant="rounded" height={160} sx={{ mb: 2, borderRadius: "16px" }} />
+            <Skeleton variant="rounded" height={120} sx={{ mb: 2, borderRadius: "16px" }} />
+            <Skeleton variant="rounded" height={120} sx={{ mb: 2, borderRadius: "16px" }} />
           </Box>
         ) : filteredOrders.length === 0 ? (
           <Box sx={{ py: 10, textAlign: "center" }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>ยังไม่มีคำสั่งซื้อในสถานะนี้</Typography>
-            <Button variant="outlined" onClick={() => router.push("/community")} sx={{ mt: 2, borderRadius: "20px", fontFamily: '"Kanit", sans-serif' }}>เริ่มช้อปปิ้ง</Button>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
+              ยังไม่มีคำสั่งซื้อในสถานะนี้
+            </Typography>
+            <Button variant="outlined" onClick={() => router.push("/community")} sx={{ mt: 2, borderRadius: "20px", fontFamily: '"Kanit", sans-serif' }}>
+              เริ่มช้อปปิ้ง
+            </Button>
           </Box>
         ) : (
-          filteredOrders.map(order => {
-            const statusMeta = statusMapping[order.status] || statusMapping.pending;
-            const date = new Date(order.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+          filteredOrders.map((order) => {
+            const date = new Date(order.createdAt).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
+            const isCancelled = order.status === "cancelled";
+            const isDelivered = order.status === "delivered";
+            const statusColor = isCancelled ? "#D32F2F" : isDelivered ? "#05A546" : "#8E601C";
+            const statusBg = isCancelled ? "#FFEBEE" : isDelivered ? "#E8F5E9" : "#FDF8F0";
 
             return (
-              <Box key={order.id} sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", mb: 2, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6", overflow: "hidden" }}>
+              <Box key={`${order.type}_${order.id}`} sx={{ bgcolor: "#FFFFFF", borderRadius: "16px", mb: 2, boxShadow: "0 2px 10px rgba(0,0,0,0.03)", border: "1px solid #E5DFD6", overflow: "hidden" }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1.5, borderBottom: "1px solid #F3F4F6", bgcolor: "#FAFAFA" }}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>
-                    สั่งเมื่อ {date}
+                    สั่งเมื่อ {date} · {order.shopName}
                   </Typography>
-                  <Typography sx={{ px: 1.5, py: 0.3, borderRadius: "12px", fontSize: "0.75rem", fontWeight: 700, bgcolor: statusMeta.bgcolor, color: statusMeta.color }}>
-                    {statusMeta.label}
+                  <Typography sx={{ px: 1.5, py: 0.3, borderRadius: "12px", fontSize: "0.75rem", fontWeight: 700, bgcolor: statusBg, color: statusColor }}>
+                    {order.statusLabel}
                   </Typography>
                 </Box>
 
-                {/* Order Items Snapshot */}
-                <Box sx={{ p: 1.5, cursor: "pointer" }} onClick={() => router.push(`/orders/${order.id}`)}>
-                  {order.items.slice(0, 2).map((item, idx) => (
-                    <Box key={item.id} sx={{ display: "flex", gap: 1.5, mb: idx === 1 ? 0 : 1.5 }}>
-                      <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", bgcolor: "#F0F0F0" }}>
-                        <Image src={item.product.images[0]} alt="" fill style={{ objectFit: "cover" }} />
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
-                          {item.product.name}
-                        </Typography>
-                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280", mt: 0.2 }}>
-                          จำนวน: {item.quantity}
-                        </Typography>
-                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A", mt: 0.5 }}>
-                          ฿{item.priceAtPurchase.toLocaleString()}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
-                  {order.items.length > 2 && (
-                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#9CA3AF", mt: 1, textAlign: "center" }}>
-                      ดูอีก {order.items.length - 2} รายการ...
-                    </Typography>
-                  )}
+                <Box sx={{ p: 1.5, cursor: "pointer" }} onClick={() => router.push(detailHref(order))}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>
+                    {order.summary}
+                  </Typography>
                 </Box>
 
-                <Divider sx={{ borderColor: "rgba(0,0,0,0.06)" }} />
-
-                {/* Bottom Actions */}
-                <Box sx={{ p: 1.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Box sx={{ p: 1.5, pt: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
-                    ยอดรวม: <Box component="span" sx={{ fontWeight: 700, color: "#1B2A4A", fontSize: "1rem" }}>฿{order.totalPrice.toLocaleString()}</Box>
+                    ยอดรวม: <Box component="span" sx={{ fontWeight: 700, color: "#1B2A4A", fontSize: "1rem" }}>฿{order.total.toLocaleString()}</Box>
                   </Typography>
 
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    {order.status === "pending" && (
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleCancel(order.id)} sx={{ borderRadius: "8px", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", minWidth: 80 }}>
-                        ยกเลิกคำสั่งซื้อ
-                      </Button>
-                    )}
-                    {order.status === "delivered" && (
-                      <>
-                        <Button size="small" variant="outlined" onClick={() => router.push(`/orders/${order.id}?review=true`)} sx={{ borderRadius: "8px", borderColor: "#C5A55A", color: "#C5A55A", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem" }}>
-                          รีวิว
-                        </Button>
-                        <Button size="small" variant="contained" onClick={() => handleReorder(order)} sx={{ borderRadius: "8px", bgcolor: "#1B2A4A", color: "#FFFFFF", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem" }}>
-                          ซื้อซ้ำ
-                        </Button>
-                      </>
-                    )}
-                  </Box>
+                  {order.cancellable && (
+                    <Button size="small" variant="outlined" color="error" onClick={() => handleCancel(order)} sx={{ borderRadius: "8px", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", minWidth: 80 }}>
+                      ยกเลิกคำสั่งซื้อ
+                    </Button>
+                  )}
                 </Box>
               </Box>
             );

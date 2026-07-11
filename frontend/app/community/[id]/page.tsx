@@ -4,6 +4,7 @@ import CommunityDetailView from "@/components/community/CommunityDetailView";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { notFound } from "next/navigation";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
 
 export async function generateMetadata({
   params,
@@ -55,12 +56,23 @@ export default async function CommunityPage({
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "หน้าแรก", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "ชุมชน", item: absoluteUrl("/community") },
+      { "@type": "ListItem", position: 3, name: community.name, item: absoluteUrl(`/community/${community.id}`) },
+    ],
+  };
+
   return (
     <MobileLayout>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(communityJsonLd) }}
       />
+      <JsonLd data={breadcrumbJsonLd} />
       <CommunityDetailView community={community} />
     </MobileLayout>
   );

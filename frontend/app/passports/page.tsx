@@ -6,17 +6,18 @@ import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
 import { motion } from "framer-motion";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { products } from "@/lib/mock-data";
+import { useLiveProducts } from "@/lib/use-live-products";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import Link from "next/link";
 import Image from "next/image";
 
-// Get products that have passport data
-const passportProducts = products.filter((p) => p.passport);
-
 export default function PassportListPage() {
+  // ยังไม่มีตาราง passport ใน backend จริง — สินค้าจริงจึงไม่มี .passport เลย (แสดง empty state ด้านล่าง)
+  const { products } = useLiveProducts();
+  const passportProducts = products.filter((p) => p.passport);
+
   return (
     <MobileLayout>
       <Box sx={{ pt: 2, pb: 2 }}>

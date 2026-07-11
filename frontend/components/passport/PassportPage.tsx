@@ -23,7 +23,7 @@ import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import type { Product } from "@/lib/mock-data";
+import type { Product } from "@/lib/live-products";
 
 // Icon mapping for production steps
 function StepIcon({ icon, isActive }: { icon: string; isActive: boolean }) {

@@ -116,9 +116,11 @@ const TRUST_BADGES = [
 
 interface PaymentInfo {
   id: string;
+  shopName: string;
   amount: number;
   qrPayload: string;
   promptpayId: string;
+  confirmed: boolean;
 }
 
 interface SavedAddress {
@@ -163,7 +165,7 @@ export default function CheckoutPage() {
   const [saveNewAddress, setSaveNewAddress] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [payment, setPayment] = useState<PaymentInfo | null>(null);
+  const [payments, setPayments] = useState<PaymentInfo[]>([]);
   const [paying, setPaying] = useState(false);
   const [orderGroupId, setOrderGroupId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(900);
@@ -177,14 +179,14 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!hydrated || authLoading) return; // รอ auth โหลดเสร็จก่อน — กัน redirect ทั้งที่ล็อกอินอยู่
     if (!user) { router.push("/auth/login"); return; }
-    if (items.length === 0 && !payment) router.push("/cart");
-  }, [hydrated, authLoading, user, items.length, payment, router]);
+    if (items.length === 0 && payments.length === 0) router.push("/cart");
+  }, [hydrated, authLoading, user, items.length, payments.length, router]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (step === 2 && payment && timeLeft > 0) timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    if (step === 2 && payments.length > 0 && timeLeft > 0) timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
-  }, [step, payment, timeLeft]);
+  }, [step, payments.length, timeLeft]);
 
   /** โหลดสมุดที่อยู่ — เลือก default (หรือใบแรก) ให้อัตโนมัติ, ถ้าไม่มีเลยให้เปิดฟอร์มใหม่ทันที */
   useEffect(() => {
@@ -298,7 +300,7 @@ export default function CheckoutPage() {
     }
   };
 
-  /** สร้างออเดอร์ + payment (QR เดียวทั้งตะกร้า) แล้วเข้าขั้นสแกนจ่าย */
+  /** สร้างออเดอร์ + payment (คนละ QR ต่อร้าน จ่ายตรงเข้าบัญชีร้าน) แล้วเข้าขั้นสแกนจ่าย */
   const handleSubmitOrder = async () => {
     setLoading(true);
     setError("");
@@ -335,7 +337,14 @@ export default function CheckoutPage() {
       const pay = await payRes.json();
       if (!payRes.ok) throw new Error(pay.error ?? "สร้างรายการชำระเงินไม่สำเร็จ");
 
-      setPayment({ id: pay.id, amount: pay.amount, qrPayload: pay.qrPayload, promptpayId: pay.promptpayId });
+      const list: PaymentInfo[] = (pay.payments ?? []).map((p: {
+        id: string; shopName: string; amount: number; qrPayload: string; promptpayId: string;
+      }) => ({
+        id: p.id, shopName: p.shopName, amount: p.amount, qrPayload: p.qrPayload, promptpayId: p.promptpayId,
+        confirmed: false,
+      }));
+      if (!list.length) throw new Error("สร้างรายการชำระเงินไม่สำเร็จ");
+      setPayments(list);
       setTimeLeft(900);
       setStep(2);
     } catch (err) {
@@ -346,14 +355,18 @@ export default function CheckoutPage() {
     }
   };
 
+  /** ยืนยันจ่ายแล้วทุกร้านที่ยังไม่ยืนยัน (ตะกร้าหลายร้าน = หลาย QR แต่กดยืนยันครั้งเดียว) */
   const handleConfirmPaid = async () => {
-    if (!payment) return;
+    const pending = payments.filter((p) => !p.confirmed);
+    if (!pending.length) return;
     setPaying(true);
     setError("");
     try {
-      const res = await authFetch(`${API_BASE}/api/payments/${payment.id}/confirm`, { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "ยืนยันการชำระเงินไม่สำเร็จ");
+      for (const p of pending) {
+        const res = await authFetch(`${API_BASE}/api/payments/${p.id}/confirm`, { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? `ยืนยันการชำระเงินร้าน ${p.shopName} ไม่สำเร็จ`);
+      }
       clearCart();
       router.push(`/orders/product/${orderGroupId}/success`);
     } catch (err) {
@@ -545,7 +558,7 @@ export default function CheckoutPage() {
 
             {/* ── LEFT: เนื้อหาตามขั้น ── */}
             <Box sx={{ flex: { md: "1 1 0" }, minWidth: 0, width: "100%" }}>
-              <AnimatePresence mode="wait">
+              <AnimatePresence initial={false}>
 
                 {/* ── STEP 1: ที่อยู่ ── */}
                 {step === 0 && (
@@ -822,12 +835,12 @@ export default function CheckoutPage() {
                   </motion.div>
                 )}
 
-                {/* ── STEP 3: สแกนจ่าย ── */}
-                {step === 2 && payment && (
+                {/* ── STEP 3: สแกนจ่าย (คนละ QR ต่อร้าน จ่ายตรงเข้าบัญชีร้านนั้นๆ) ── */}
+                {step === 2 && payments.length > 0 && (
                   <motion.div key="pay" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
 
                     <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: { xs: "1rem", md: "1.15rem" }, color: NAVY, mb: 1.8 }}>
-                      เลือกวิธีชำระเงิน
+                      {payments.length > 1 ? `เลือกวิธีชำระเงิน (${payments.length} ร้านค้า)` : "เลือกวิธีชำระเงิน"}
                     </Typography>
 
                     {/* Payment method tabs — ตอนนี้เปิดใช้เฉพาะ PromptPay */}
@@ -855,43 +868,52 @@ export default function CheckoutPage() {
                     </Box>
 
                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                      {/* การ์ด QR */}
-                      <Box sx={{
-                        width: "100%", maxWidth: 380, bgcolor: "#FFFFFF", borderRadius: "20px", overflow: "hidden",
-                        border: `1px solid ${CARD_BORDER}`, boxShadow: "0 10px 34px rgba(27,42,74,0.12)",
-                      }}>
-                        <Box sx={{ bgcolor: NAVY, py: 1.3, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 0.8 }}>
-                          <QrCode2RoundedIcon sx={{ fontSize: 16, color: GOLD }} />
-                          <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", fontWeight: 600, color: "#FFFFFF", letterSpacing: "0.06em" }}>
-                            THAI QR PAYMENT · พร้อมเพย์
-                          </Typography>
-                        </Box>
-                        <Box sx={{ p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                          <Box sx={{ position: "relative", p: 1.8, borderRadius: "16px", border: `1.5px dashed ${GOLD}` }}>
-                            <QRCodeSVG value={payment.qrPayload} size={200} level="M" style={{ opacity: timeLeft <= 0 ? 0.12 : 1, transition: "opacity .3s" }} />
-                            {timeLeft <= 0 && (
-                              <Button onClick={() => setTimeLeft(900)} startIcon={<ReplayRoundedIcon />}
-                                sx={{ position: "absolute", inset: 0, m: "auto", width: "fit-content", height: "fit-content", bgcolor: NAVY, color: "#FFF", borderRadius: "10px", px: 2, fontFamily: FONT, "&:hover": { bgcolor: "#0F1A30" } }}>
-                                แสดง QR อีกครั้ง
-                              </Button>
-                            )}
-                          </Box>
-                          <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: "#6B7280", mt: 1.8 }}>
-                            พร้อมเพย์: {formatPromptPayIdDisplay(payment.promptpayId)} · LAYA Platform
-                          </Typography>
-                          <Typography sx={{ fontFamily: FONT, fontSize: "1.75rem", color: NAVY, fontWeight: 700, mt: 0.4 }}>
-                            ฿{payment.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                          </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, mt: 0.8, bgcolor: timeLeft <= 60 ? "#FDF0F0" : "#FDF8F0", px: 1.6, py: 0.5, borderRadius: "999px" }}>
-                            <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: timeLeft <= 60 ? "#D32F2F" : "#8E601C", fontWeight: 600 }}>
-                              ชำระภายใน {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")} นาที
+                      {/* การ์ด QR — คนละใบต่อร้าน จ่ายตรงเข้าบัญชีร้านนั้นๆ */}
+                      {payments.map((p) => (
+                        <Box key={p.id} sx={{
+                          width: "100%", maxWidth: 380, bgcolor: "#FFFFFF", borderRadius: "20px", overflow: "hidden",
+                          border: `1px solid ${CARD_BORDER}`, boxShadow: "0 10px 34px rgba(27,42,74,0.12)", mb: 2.5,
+                        }}>
+                          <Box sx={{ bgcolor: NAVY, py: 1.3, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 0.8 }}>
+                            <StorefrontOutlinedIcon sx={{ fontSize: 16, color: GOLD }} />
+                            <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", fontWeight: 600, color: "#FFFFFF", letterSpacing: "0.06em" }}>
+                              {p.shopName}
                             </Typography>
                           </Box>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 1.2 }}>
-                            <GppGoodRoundedIcon sx={{ fontSize: 15, color: GOLD }} />
-                            <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF" }}>Secure Payment · เข้ารหัสมาตรฐาน EMVCo</Typography>
+                          <Box sx={{ p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, mb: 1.4 }}>
+                              <QrCode2RoundedIcon sx={{ fontSize: 15, color: GOLD }} />
+                              <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF", letterSpacing: "0.04em" }}>
+                                THAI QR PAYMENT · พร้อมเพย์
+                              </Typography>
+                            </Box>
+                            <Box sx={{ position: "relative", p: 1.8, borderRadius: "16px", border: `1.5px dashed ${GOLD}` }}>
+                              <QRCodeSVG value={p.qrPayload} size={200} level="M" style={{ opacity: timeLeft <= 0 ? 0.12 : 1, transition: "opacity .3s" }} />
+                              {timeLeft <= 0 && (
+                                <Button onClick={() => setTimeLeft(900)} startIcon={<ReplayRoundedIcon />}
+                                  sx={{ position: "absolute", inset: 0, m: "auto", width: "fit-content", height: "fit-content", bgcolor: NAVY, color: "#FFF", borderRadius: "10px", px: 2, fontFamily: FONT, "&:hover": { bgcolor: "#0F1A30" } }}>
+                                  แสดง QR อีกครั้ง
+                                </Button>
+                              )}
+                            </Box>
+                            <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: "#6B7280", mt: 1.8 }}>
+                              พร้อมเพย์: {formatPromptPayIdDisplay(p.promptpayId)} · {p.shopName}
+                            </Typography>
+                            <Typography sx={{ fontFamily: FONT, fontSize: "1.75rem", color: NAVY, fontWeight: 700, mt: 0.4 }}>
+                              ฿{p.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </Typography>
                           </Box>
                         </Box>
+                      ))}
+
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, bgcolor: timeLeft <= 60 ? "#FDF0F0" : "#FDF8F0", px: 1.6, py: 0.5, borderRadius: "999px" }}>
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: timeLeft <= 60 ? "#D32F2F" : "#8E601C", fontWeight: 600 }}>
+                          ชำระภายใน {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")} นาที
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 1.2 }}>
+                        <GppGoodRoundedIcon sx={{ fontSize: 15, color: GOLD }} />
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF" }}>Secure Payment · เข้ารหัสมาตรฐาน EMVCo</Typography>
                       </Box>
 
                       {/* วิธีจ่าย */}

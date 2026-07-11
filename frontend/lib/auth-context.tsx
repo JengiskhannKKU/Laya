@@ -13,6 +13,7 @@ export interface User {
   name: string;
   role: UserRole;
   avatar?: string;
+  phone?: string;
   shopId?: string;
   shopStatus?: string;
 }
@@ -26,6 +27,8 @@ export interface MerchantApplication {
   expertise: string[];
   bankAccount: string;
   bankName: string;
+  bankAccountName?: string;
+  promptpayId?: string;
 }
 
 interface AuthContextType {
@@ -40,6 +43,7 @@ interface AuthContextType {
   openAuthModal: () => void;
   closeAuthModal: () => void;
   registerMerchant: (data: MerchantApplication) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -74,6 +78,7 @@ function buildUser(supabaseUser: { id: string; email?: string }, profile: Record
     name: (profile.name as string) ?? supabaseUser.email?.split("@")[0] ?? "User",
     role,
     avatar: (profile.avatar as string) ?? undefined,
+    phone: (profile.phone as string) ?? undefined,
     shopId: (profile.shopId as string) ?? undefined,
     shopStatus: (profile.shopStatus as string) ?? undefined,
   };
@@ -217,8 +222,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: data.phone,
         lineId: data.lineId,
         specialties: data.expertise,
+        bankName: data.bankName,
+        bankAccountNo: data.bankAccount,
+        bankAccountName: data.bankAccountName,
+        promptpayId: data.promptpayId,
       }),
     });
+  };
+
+  const refreshProfile = async () => {
+    if (session?.access_token && session?.user) {
+      await fetchProfile(session.access_token, session.user);
+    }
   };
 
   return (
@@ -228,6 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout, register,
       openAuthModal, closeAuthModal,
       registerMerchant,
+      refreshProfile,
     }}>
       {children}
     </AuthContext.Provider>

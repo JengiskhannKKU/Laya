@@ -2,13 +2,14 @@
 
 /**
  * StudioRightPanel — "2. เลือกผ้า" + "3. ปรับดีไซน์"
- * ค้นหาผ้าเป็นของจริง (client-side filter ชื่อ/คำโปรย) — แท็บผ้าไหม/ผ้าฝ้าย และ filter ภูมิภาค/เทคนิค
- * เป็น decorative-but-inert เพราะ catalog.json ไม่มี metadata ประเภท/ภูมิภาค/เทคนิครองรับจริง (ไม่ปั้นข้อมูลปลอม)
+ * ค้นหาผ้าเป็นของจริง (client-side filter ชื่อ/คำโปรย) — เหลือ 6 ผืนจริงใน catalog เลยไม่ใส่ pagination ปลอม
+ * แท็บผ้าไหม/ผ้าฝ้าย และ filter ภูมิภาค/เทคนิค เป็น decorative-but-inert เพราะ catalog.json ไม่มี field
+ * ประเภทเส้นใย/ภูมิภาค/เทคนิครองรับจริง (ไม่กล้าเดาประเภทเส้นใยเอง เพราะกระทบการตัดสินใจซื้อของลูกค้า)
  */
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Search } from 'lucide-react';
+import { Check, Search, Palette, Repeat } from 'lucide-react';
 
 import { useGarmentStore } from '@/lib/stores/garment-store';
 import type { Catalog, GarmentDesign } from '../builder/types';
@@ -40,24 +41,27 @@ export default function StudioRightPanel({ catalog, design }: Props) {
     );
   }, [catalog.patterns, search]);
 
+  const scrollToColor = () => document.getElementById('studio-color-palette')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const scrollToFabric = () => document.getElementById('studio-fabric-search')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   return (
     <div className="space-y-4">
       {/* เลือกผ้า */}
-      <div id="studio-fabric" className="scroll-mt-40">
+      <div id="studio-fabric" className="scroll-mt-56">
         <h2 className="text-sm font-bold text-primary mb-2">2. เลือกผ้า</h2>
 
-        {/* แท็บ/filter ตกแต่ง — ยังไม่มีข้อมูลประเภท/ภูมิภาค/เทคนิครองรับจริงใน catalog */}
+        {/* แท็บ/filter ตกแต่ง — ยังไม่มีข้อมูลประเภทเส้นใย/ภูมิภาค/เทคนิครองรับจริงใน catalog */}
         <div className="flex gap-1.5 mb-2 opacity-50 pointer-events-none select-none" title="ยังไม่เปิดใช้งาน">
           <span className="flex-1 text-center text-[11px] font-semibold py-1.5 rounded-lg bg-primary text-white">ผ้าไหม</span>
           <span className="flex-1 text-center text-[11px] font-semibold py-1.5 rounded-lg bg-muted text-muted-foreground">ผ้าฝ้าย</span>
         </div>
         <div className="grid grid-cols-2 gap-1.5 mb-2 opacity-50 pointer-events-none select-none" title="ยังไม่เปิดใช้งาน">
-          <span className="text-[11px] px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground bg-white">ภูมิภาค: ทั้งหมด</span>
-          <span className="text-[11px] px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground bg-white">เทคนิค: ทั้งหมด</span>
+          <span className="text-[11px] px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground bg-white truncate">ภูมิภาค: ทั้งหมด</span>
+          <span className="text-[11px] px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground bg-white truncate">เทคนิคการทอ: ทั้งหมด</span>
         </div>
 
         {/* ค้นหา — ทำงานจริง */}
-        <div className="relative mb-2.5">
+        <div id="studio-fabric-search" className="relative mb-2.5 scroll-mt-56">
           <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="ค้นหาลายผ้า หรือชื่อผ้า"
@@ -68,9 +72,9 @@ export default function StudioRightPanel({ catalog, design }: Props) {
           {patterns.map(pt => {
             const active = design.pattern === pt.id;
             return (
-              <motion.button key={pt.id} whileTap={{ scale: 0.96 }} onClick={() => store.setPattern(pt.id)}
-                className={`relative rounded-xl overflow-hidden border-2 text-left transition-all bg-white
-                  ${active ? 'border-secondary shadow-[0_0_0_2px_rgba(197,165,90,0.3)]' : 'border-border hover:border-secondary/50'}`}>
+              <motion.button key={pt.id} whileTap={{ scale: 0.96 }} whileHover={{ y: -2 }} onClick={() => store.setPattern(pt.id)}
+                className={`relative rounded-xl overflow-hidden border-2 text-left transition-all bg-white shadow-sm
+                  ${active ? 'border-primary shadow-[0_0_0_2px_rgba(27,42,74,0.15)]' : 'border-border hover:border-secondary/50'}`}>
                 <div className="aspect-[4/3] bg-[#EFE9DD]">
                   {pt.image ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
@@ -80,7 +84,7 @@ export default function StudioRightPanel({ catalog, design }: Props) {
                   )}
                 </div>
                 {active && (
-                  <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-secondary flex items-center justify-center shadow">
+                  <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow">
                     <Check className="w-3 h-3 text-white" />
                   </span>
                 )}
@@ -95,12 +99,25 @@ export default function StudioRightPanel({ catalog, design }: Props) {
             <p className="col-span-2 text-center text-xs text-muted-foreground py-6">ไม่พบผ้าที่ค้นหา</p>
           )}
         </div>
+        <p className="text-[10px] text-muted-foreground text-right mt-1.5">ทั้งหมด {patterns.length} ผืน</p>
       </div>
 
-      {/* ปรับดีไซน์ — สี */}
-      <div id="studio-design" className="scroll-mt-40">
+      {/* ปรับดีไซน์ */}
+      <div id="studio-design" className="scroll-mt-56">
         <h2 className="text-sm font-bold text-primary mb-2">3. ปรับดีไซน์</h2>
-        <p className="text-[11px] text-muted-foreground mb-1.5">โทนสีผ้า</p>
+
+        <div className="grid grid-cols-2 gap-1.5 mb-3">
+          <button onClick={scrollToColor}
+            className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-primary bg-white border border-border rounded-xl py-2 hover:bg-muted transition-colors">
+            <Palette className="w-3.5 h-3.5" /> เปลี่ยนสี
+          </button>
+          <button onClick={scrollToFabric}
+            className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-primary bg-white border border-border rounded-xl py-2 hover:bg-muted transition-colors">
+            <Repeat className="w-3.5 h-3.5" /> สลับผ้า
+          </button>
+        </div>
+
+        <p id="studio-color-palette" className="text-[11px] text-muted-foreground mb-1.5 scroll-mt-56">โทนสีผ้า</p>
         <div className="grid grid-cols-6 gap-2">
           {catalog.colors.map(c => {
             const active = design.color === c.hex;

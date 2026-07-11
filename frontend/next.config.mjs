@@ -1,12 +1,39 @@
 /** @type {import('next').NextConfig} */
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+// Supabase project ref — ดึงจาก URL หรือ hardcode
+const SUPABASE_HOSTNAME = "qxxygqugalqdrapgkcbu.supabase.co";
+
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    // เปิด optimization + WebP/AVIF conversion โดย Next.js
+    unoptimized: false,
+    formats: ["image/webp", "image/avif"],
+    minimumCacheTTL: 86400, // cache 1 วัน
+    remotePatterns: [
+      // Supabase Storage — รูปทุกอย่างที่อัปโหลดขึ้น Storage
+      {
+        protocol: "https",
+        hostname: SUPABASE_HOSTNAME,
+        port: "",
+        pathname: "/storage/v1/object/public/**",
+      },
+      // Supabase CDN transform URL
+      {
+        protocol: "https",
+        hostname: SUPABASE_HOSTNAME,
+        port: "",
+        pathname: "/storage/v1/render/image/**",
+      },
+      // placehold.co — ยังมีบางหน้าใช้ placeholder
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
+    ],
   },
   async rewrites() {
     return [

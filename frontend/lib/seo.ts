@@ -54,7 +54,9 @@ export function createPageMetadata({
   const imageUrl = absoluteUrl(image);
 
   return {
-    title: fullTitle,
+    // title.absolute (ไม่ใช่ string เฉยๆ) กัน root layout's title.template ("%s | LAYA")
+    // เอา fullTitle (ที่ต่อ "| LAYA" มาแล้ว) ไปต่ออีกชั้น กลายเป็น "... | LAYA | LAYA"
+    title: { absolute: fullTitle },
     description,
     alternates: {
       canonical,

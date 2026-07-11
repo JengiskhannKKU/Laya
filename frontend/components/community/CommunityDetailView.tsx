@@ -13,8 +13,7 @@ import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import Image from "next/image";
 import Link from "next/link";
 import type { LiveCommunityDetail } from "@/lib/communities";
-import { fetchLiveProducts } from "@/lib/live-products";
-import type { Product } from "@/lib/mock-data";
+import { fetchLiveProducts, type Product } from "@/lib/live-products";
 
 interface CommunityDetailViewProps {
   community: LiveCommunityDetail;

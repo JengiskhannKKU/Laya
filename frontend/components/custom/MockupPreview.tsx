@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
-import { type CustomPatternData } from "@/lib/mock-data";
+import { type CustomPatternData } from "@/lib/custom-order-config";
 
 interface MockupPreviewProps {
   patternData: CustomPatternData;
