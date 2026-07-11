@@ -815,3 +815,21 @@ Stepper 7 ขั้นพร้อม label เต็มยาวเกินค
 
 - แก้ `ChooseShapeStep.tsx`: ตัดขั้นย่อย "เลือกทรงเริ่มต้น" ออกทั้งหมด (`CATEGORY_GROUPS`, `TemplateCard`, `SubStep` type, ปุ่ม "เปลี่ยนทรงเริ่มต้น") — โหลด catalog แล้ว auto-init เป็น `thai-contemporary` ทันที เข้าหน้าปรับแต่งทีละชิ้นส่วนเลย ไม่มีให้เลือกทรงอื่น
 - ทดสอบจริง: เข้าขั้น "เลือกทรง" แล้วเจอหน้าปรับแต่งทันที (ไม่มีการ์ดเทมเพลตให้เลือกเลย), grep ยืนยันไม่มีข้อความ "เชิ้ตออฟฟิศ"/"เดรส"/"กางเกง"/"กระโปรง" เหลือในหน้าเลย, `tsc --noEmit` ผ่าน, ไม่มี console error
+
+---
+
+## 2026-07-11 (รอบแปด) — แก้ vercel.json ที่ทำ build พัง + ลองใส่เสมือนจริงให้กดสร้างทีละมุมเอง
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: รอบก่อนหน้าเปลี่ยน `vercel.json` เป็น redirect-only (ตัด `installCommand`/`buildCommand`/`framework` ออกหมด) เพื่อให้ `laya-olive.vercel.app` เด้งไป `laya-th.com` — แต่ผลคือ Vercel build พังทั้งหมด (`npm install` ไม่รันให้ `frontend/` เลย ทำให้ import ทุกแพ็กเกจ "Module not found") deployment เลย fail ไม่ได้ deploy จริง redirect เลยไม่เคยขึ้นจริง
+
+- แก้ `vercel.json`: ใส่ `installCommand`/`buildCommand`/`outputDirectory`/`framework` กลับเข้าไปเหมือนเดิม พร้อมกับเก็บ `redirects` ไว้ด้วย — build ผ่านแล้ว (ยืนยันจาก GitHub deployment status `success`) แต่ `laya-olive.vercel.app` ยังไม่ redirect เพราะ deployment ล่าสุดไม่ได้ถูก promote เป็น production alias จริง (`production_environment: false` ใน Vercel deployment metadata) — เป็นปัญหาฝั่ง Vercel dashboard ที่ต้องให้ผู้ใช้เช็ค/กด "Promote to Production" เอง ไม่มีสิทธิ์ Vercel API ให้แก้จากในนี้
+
+- ผู้ใช้ขอ: ที่ขั้น "ลองใส่เสมือนจริง" (`VirtualTryOnStep.tsx`) เดิม auto-generate ทั้ง 3 มุม (หน้า/หลัง/ข้าง) พร้อมกันทันทีที่เข้าหน้า (ทีละมุมตามลำดับ ไม่ใช่ขนาน) — ขอให้เปลี่ยนเป็นผู้ใช้กดเลือกสร้างเองทีละมุมแทน เพื่อประหยัด resource การเรียก AI (ไม่ generate มุมที่ผู้ใช้ไม่ได้ดู)
+  - ลบ `useEffect` auto-start ที่ loop generate ทั้ง 3 มุมตอน mount ออกทั้งหมด
+  - สถานะ `idle` ของแต่ละมุมตอนนี้โชว์ปุ่ม "สร้างภาพมุม[X]" ให้กดเอง แทนข้อความ "รอคิว" เดิม
+  - ยังคง block ไม่ให้ยิงพร้อมกันหลายมุม (ปุ่ม generate ถูก disable ระหว่างมุมอื่นกำลังโหลดอยู่) ตามข้อจำกัด concurrency ของ kie.ai เดิม
+  - เพิ่มจุดสีทองเล็กๆ บนแท็บมุมที่ generate เสร็จแล้ว ให้เห็นชัดว่ามุมไหนทำแล้ว/ยังไม่ทำ
+  - ปุ่ม "ถัดไป" เปลี่ยนข้อความเป็น "ข้ามการสร้างภาพ — ถัดไป" ถ้ายังไม่ได้ generate มุมไหนเลย (ไม่บังคับต้อง generate ครบทุกมุมถึงจะไปต่อได้)
+  - ทดสอบ: `tsc --noEmit` ผ่าน, `next dev` compile หน้า `/tailor/with-fabric` สำเร็จ (200, ไม่มี build error)

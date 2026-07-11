@@ -27,9 +27,10 @@ type SlotState = { status: "idle" | "loading" | "done" | "error"; url?: string; 
  * ลองใส่เสมือนจริงของจริง — AI (kie.ai gpt4o-image ผ่าน backend /api/tryon/*) ใส่ชุดจากผ้าที่อัปโหลดไว้
  * ลงบนรูปตัวเองของผู้ใช้ ทีละมุม (หน้า/หลัง/ข้าง) จริง ไม่ใช่ placeholder แบบเดิมอีกต่อไป
  *
- * ขั้นตอน: อัปโหลดรูปตัวเอง 3 มุม + รูปผ้า ขึ้น Supabase Storage ให้ได้ URL public ก่อน (kie.ai ต้องการ
- * URL ที่เข้าถึงได้จริง ไม่รับ base64) แล้วยิง generate ทีละมุมตามลำดับ (ไม่ขนาน — ทดสอบจริงแล้วพบว่า
- * ยิงพร้อมกัน 3 มุมทำให้ kie.ai คืน error เพราะแอคเคาท์นี้จำกัด concurrency)
+ * ผู้ใช้กดเลือกสร้างเองทีละมุม (ไม่ auto-generate ทั้ง 3 มุมพร้อมกันตอนเข้าหน้า) เพื่อประหยัด
+ * resource การเรียก AI — สร้างเฉพาะมุมที่ผู้ใช้อยากดูจริงๆ เท่านั้น
+ * ยังคงห้ามยิงพร้อมกันหลายมุม (ทดสอบจริงแล้วพบว่ายิงพร้อมกันทำให้ kie.ai คืน error เพราะแอคเคาท์นี้
+ * จำกัด concurrency) — ปุ่ม generate จะถูก disable ระหว่างมุมอื่นกำลังสร้างอยู่
  * ถ้า API หมดเครดิต backend จะ fallback เป็นรูปตัวอย่างเองแบบ graceful (mock:true) — โชว์ label บอกตรงๆ
  */
 export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: any) {
@@ -39,7 +40,6 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
     front: { status: "idle" }, back: { status: "idle" }, side: { status: "idle" },
   });
   const uploadedUrls = useRef<{ body: Partial<Record<Perspective, string>>; fabric?: string }>({ body: {} });
-  const started = useRef(false);
   const [elapsedSec, setElapsedSec] = useState(0);
 
   const anyLoading = PERSPECTIVES.some((p) => slots[p.key].status === "loading");
@@ -102,21 +102,9 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
     }
   };
 
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    // ทีละมุม ไม่ยิงพร้อมกัน — ทดสอบจริงแล้วพบว่ายิง 3 มุมพร้อมกันทำให้ kie.ai คืน "Internal Error"
-    // ทั้ง 3 งาน (แอคเคาท์นี้น่าจะจำกัด concurrency) ส่วนทีละงานสำเร็จปกติทุกครั้ง
-    (async () => {
-      for (const p of PERSPECTIVES) {
-        await runPerspective(p.key);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const activeSlot = slots[active];
   const hasAnyMock = PERSPECTIVES.some((p) => slots[p.key].mock);
+  const anyDone = PERSPECTIVES.some((p) => slots[p.key].status === "done");
 
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
@@ -125,7 +113,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
       {anyLoading && (
         <Box sx={{ bgcolor: `${GOLD}14`, border: `1px solid ${GOLD}40`, borderRadius: '14px', px: 2, py: 1.4 }}>
           <Typography sx={{ fontFamily: FONT, color: NAVY, fontSize: '0.8rem', textAlign: 'center', lineHeight: 1.6 }}>
-            AI ใช้เวลาสร้างภาพแต่ละมุมประมาณ 2-5 นาที (บางครั้งนานกว่านั้น) รวมทั้ง 3 มุมประมาณ 5-10 นาที
+            AI ใช้เวลาสร้างภาพแต่ละมุมประมาณ 2-5 นาที (บางครั้งนานกว่านั้น)
             <br />ไม่ต้องปิดหน้านี้ระหว่างรอ
           </Typography>
         </Box>
@@ -147,6 +135,9 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
                 transition: 'all 0.25s',
               }}>
               {s.status === 'loading' && <CircularProgress size={12} sx={{ color: 'inherit' }} />}
+              {s.status === 'done' && (
+                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: GOLD }} />
+              )}
               <Typography sx={{ fontFamily: FONT, fontSize: '0.85rem', fontWeight: 600 }}>
                 {p.label}
               </Typography>
@@ -161,10 +152,26 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
           <motion.div key={active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ width: '100%', height: '100%', position: 'relative' }}>
             {activeSlot.status === 'idle' && (
-              <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 3 }}>
+              <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, px: 3 }}>
                 <Typography sx={{ fontFamily: FONT, color: '#6B7280', textAlign: 'center', fontSize: '0.88rem' }}>
-                  รอคิว — AI กำลังทำมุมอื่นอยู่ก่อน
+                  {anyLoading
+                    ? `กำลังสร้างมุม${PERSPECTIVES.find(p => p.key === loadingPerspective)?.label}อยู่ — รอให้เสร็จก่อนแล้วค่อยสร้างมุมนี้`
+                    : `ยังไม่ได้สร้างภาพมุม${PERSPECTIVES.find(p => p.key === active)?.label} — กดสร้างเมื่อพร้อม`}
                 </Typography>
+                <Button
+                  variant="contained"
+                  disabled={anyLoading}
+                  onClick={() => runPerspective(active)}
+                  sx={{
+                    bgcolor: NAVY, color: 'white', px: 3, py: 1.1, borderRadius: '12px',
+                    fontFamily: FONT, fontWeight: 600, textTransform: 'none',
+                    boxShadow: '0 4px 14px rgba(27,42,74,0.2)',
+                    '&:hover': { bgcolor: '#0F1A30' },
+                    '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
+                  }}
+                >
+                  สร้างภาพมุม{PERSPECTIVES.find(p => p.key === active)?.label}
+                </Button>
               </Box>
             )}
             {activeSlot.status === 'loading' && (
@@ -227,7 +234,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
           '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
         }}
       >
-        {anyLoading ? 'กำลังสร้างภาพ...' : 'ถัดไป — สรุปออเดอร์'}
+        {anyLoading ? 'กำลังสร้างภาพ...' : anyDone ? 'ถัดไป — สรุปออเดอร์' : 'ข้ามการสร้างภาพ — ถัดไป'}
       </Button>
 
     </Box>
