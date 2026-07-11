@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Kanit, Cormorant_Garamond } from "next/font/google";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import MuiProvider from "@/components/providers/MuiProvider";
 import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
@@ -158,6 +159,18 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZCPR1SEDZ4"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-ZCPR1SEDZ4');
+          `}
+        </Script>
         <MuiProvider>
           <AuthProviderWrapper>
             <AppModalProvider>{children}</AppModalProvider>
