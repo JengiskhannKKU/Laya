@@ -120,7 +120,10 @@ router.post("/analyze-fabric", async (req: Request, res: Response) => {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gemini-2.5-flash-lite", // or gemini-2.5-pro
+        // gemini-2.5-flash-lite เดิมใช้ไม่ได้แล้ว — KKU gateway ตอบ 200 แต่ error "No endpoints found for
+        // google/gemini-2.5-flash-lite-preview-09-2025" ข้างใน (route ไปรุ่นที่ปลดระวางแล้ว) ทดสอบตรงแล้วว่า
+        // gemini-2.5-flash ใช้งานได้จริง
+        model: "gemini-2.5-flash",
         messages: [
           {
             role: "system",
@@ -158,7 +161,22 @@ router.post("/analyze-fabric", async (req: Request, res: Response) => {
       return;
     }
 
-    const data = await response.json() as { choices: { message: { content: string } }[] };
+    const data = await response.json() as { choices?: { message: { content: string } }[]; error?: { message?: string } };
+
+    // KKU gateway ตอบ HTTP 200 ได้แม้ตัว body เป็น error จริง (เช่นโมเดลปลดระวาง) — response.ok เช็คไม่เจอ
+    // ต้องเช็ค shape ของ body เองด้วย ไม่งั้น data.choices[0] จะ throw แล้วเสีย mock fallback ที่ตั้งใจไว้
+    if (!data.choices?.[0]) {
+      console.error("LLM API returned unexpected shape:", data.error?.message ?? JSON.stringify(data));
+      res.json({
+        type: "ผ้าไหม (API Error)",
+        technique: "มัดหมี่",
+        pattern: "ลายดอกแก้ว",
+        tone: "ม่วง, ชมพู",
+        thickness: "ปานกลาง"
+      });
+      return;
+    }
+
     let resultText = data.choices[0].message.content;
     
     // Strip markdown formatting if the LLM returns wrapped JSON
