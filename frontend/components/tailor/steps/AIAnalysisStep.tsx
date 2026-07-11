@@ -13,6 +13,18 @@ import LayersRoundedIcon from "@mui/icons-material/LayersRounded";
 // ตัด trailing slash กัน URL เพี้ยนเป็น // เหมือนบั๊กที่เจอใน VirtualTryOnStep.tsx ก่อนหน้านี้
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
 
+const FONT = '"Kanit", sans-serif';
+const NAVY = "#1B2A4A";
+const GOLD = "#C5A55A";
+
+const ATTRIBUTES = [
+  { key: "type", label: "ประเภทผ้า", icon: CheckroomRoundedIcon },
+  { key: "technique", label: "เทคนิคการทอ", icon: GridOnRoundedIcon },
+  { key: "pattern", label: "ลาย", icon: HiveRoundedIcon },
+  { key: "tone", label: "โทนสี", icon: ColorLensRoundedIcon },
+  { key: "thickness", label: "ความหนา", icon: LayersRoundedIcon },
+] as const;
+
 export default function AIAnalysisStep({ orderState, setOrderState, onNext }: any) {
   const [analyzing, setAnalyzing] = useState(true);
 
@@ -51,78 +63,59 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
   }, [orderState.fabricImage, setOrderState]);
 
   return (
-    <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', pt: 2 }}>
-      
-      {/* Fabric Thumbnail - Wide aspect ratio matching mockup */}
-      <Box sx={{ width: '100%', height: 200, borderRadius: '16px', overflow: 'hidden', position: 'relative', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+    <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', pt: 1 }}>
+
+      {/* รูปผ้า */}
+      <Box sx={{ width: '100%', height: 190, borderRadius: '18px', overflow: 'hidden', position: 'relative', boxShadow: '0 4px 16px rgba(27,42,74,0.1)' }}>
         <Image src={orderState.fabricImage || "/images/fabric1.webp"} alt="Fabric" fill style={{ objectFit: 'cover' }} />
       </Box>
 
       {analyzing ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 4, height: 250, justifyContent: 'center' }}>
-          <CircularProgress sx={{ color: '#1B2A4A' }} />
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', textAlign: 'center', mt: 2 }}>
-            AI กำลังวิเคราะห์ประเภทผ้า<br/>ลาย สี ความหนา และ<br/>เทคนิคการทอ
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 3, height: 220, justifyContent: 'center' }}>
+          <CircularProgress sx={{ color: NAVY }} />
+          <Typography sx={{ fontFamily: FONT, color: NAVY, textAlign: 'center', fontSize: '0.9rem' }}>
+            AI กำลังวิเคราะห์ประเภทผ้า ลาย สี<br/>ความหนา และเทคนิคการทอ
           </Typography>
         </Box>
       ) : (
-        <Box sx={{ width: '100%', mt: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: 1 }}>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E5DFD6', pb: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <CheckroomRoundedIcon sx={{ color: '#8B7355', fontSize: 20 }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontWeight: 600 }}>ประเภทผ้า</Typography>
+        <Box sx={{ width: '100%' }}>
+          <Box sx={{
+            bgcolor: '#FFFFFF', border: '1px solid #EFE9DD', borderRadius: '18px',
+            boxShadow: '0 4px 20px rgba(27,42,74,0.06)', p: 1,
+          }}>
+            {ATTRIBUTES.map(({ key, label, icon: Icon }, i) => (
+              <Box key={key} sx={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 1.6,
+                borderBottom: i < ATTRIBUTES.length - 1 ? '1px solid #F3EFE7' : 'none',
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ width: 34, height: 34, borderRadius: '10px', bgcolor: `${NAVY}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon sx={{ color: GOLD, fontSize: 18 }} />
+                  </Box>
+                  <Typography sx={{ fontFamily: FONT, color: NAVY, fontWeight: 600, fontSize: '0.9rem' }}>{label}</Typography>
+                </Box>
+                <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem', textAlign: 'right', maxWidth: '55%' }}>
+                  {orderState.analysisResult?.[key]}
+                </Typography>
               </Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280' }}>{orderState.analysisResult?.type}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E5DFD6', pb: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <GridOnRoundedIcon sx={{ color: '#8B7355', fontSize: 20 }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontWeight: 600 }}>เทคนิคการทอ</Typography>
-              </Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280' }}>{orderState.analysisResult?.technique}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E5DFD6', pb: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <HiveRoundedIcon sx={{ color: '#8B7355', fontSize: 20 }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontWeight: 600 }}>ลาย</Typography>
-              </Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280' }}>{orderState.analysisResult?.pattern}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E5DFD6', pb: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <ColorLensRoundedIcon sx={{ color: '#8B7355', fontSize: 20 }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontWeight: 600 }}>โทนสี</Typography>
-              </Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280' }}>{orderState.analysisResult?.tone}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <LayersRoundedIcon sx={{ color: '#8B7355', fontSize: 20 }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontWeight: 600 }}>ความหนา</Typography>
-              </Box>
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280' }}>{orderState.analysisResult?.thickness}</Typography>
-            </Box>
-
+            ))}
           </Box>
-          <Button 
-            variant="contained" 
-            fullWidth 
+          <Button
+            variant="contained"
+            fullWidth
             onClick={onNext}
-            sx={{ 
-              mt: 5,
-              bgcolor: '#1B2A4A', 
-              color: 'white', 
-              py: 1.5, 
-              borderRadius: '12px',
-              fontFamily: '"Noto Serif Thai", serif',
-              fontWeight: 700,
-              '&:hover': { bgcolor: '#0f182b' }
+            sx={{
+              mt: 3,
+              bgcolor: NAVY,
+              color: 'white',
+              py: 1.7,
+              borderRadius: '14px',
+              fontFamily: FONT,
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              boxShadow: '0 4px 14px rgba(27,42,74,0.25)',
+              '&:hover': { bgcolor: '#0F1A30' },
             }}
           >
             เลือกโอกาสใช้งาน

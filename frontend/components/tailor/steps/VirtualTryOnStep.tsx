@@ -11,6 +11,10 @@ import type { Perspective } from "./MeasurementsStep";
 // ตัด trailing slash กัน URL เพี้ยนเป็น // (NEXT_PUBLIC_API_URL ใน .env.local ลงท้ายด้วย / อยู่)
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
 
+const FONT = '"Kanit", sans-serif';
+const NAVY = "#1B2A4A";
+const GOLD = "#C5A55A";
+
 const PERSPECTIVES: { key: Perspective; label: string }[] = [
   { key: "front", label: "ด้านหน้า" },
   { key: "back", label: "ด้านหลัง" },
@@ -115,11 +119,12 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
   const hasAnyMock = PERSPECTIVES.some((p) => slots[p.key].mock);
 
   return (
-    <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch' }}>
+    <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch', pt: 1 }}>
 
       {anyLoading && (
-        <Box sx={{ bgcolor: '#F0EBE3', borderRadius: '10px', px: 2, py: 1.25 }}>
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', fontSize: '0.8rem', textAlign: 'center' }}>
+        <Box sx={{ bgcolor: `${GOLD}14`, border: `1px solid ${GOLD}40`, borderRadius: '14px', px: 2, py: 1.4 }}>
+          <Typography sx={{ fontFamily: FONT, color: NAVY, fontSize: '0.8rem', textAlign: 'center', lineHeight: 1.6 }}>
             AI ใช้เวลาสร้างภาพแต่ละมุมประมาณ 2-5 นาที (บางครั้งนานกว่านั้น) รวมทั้ง 3 มุมประมาณ 5-10 นาที
             <br />ไม่ต้องปิดหน้านี้ระหว่างรอ
           </Typography>
@@ -133,13 +138,16 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
           return (
             <Box key={p.key} onClick={() => setActive(p.key)}
               sx={{
-                flex: 1, py: 1, textAlign: 'center', borderRadius: '10px', cursor: 'pointer',
-                bgcolor: active === p.key ? '#1B2A4A' : '#F0EBE3',
-                color: active === p.key ? 'white' : '#1B2A4A',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5,
+                flex: 1, py: 1.1, textAlign: 'center', borderRadius: '12px', cursor: 'pointer',
+                bgcolor: active === p.key ? NAVY : '#FFFFFF',
+                color: active === p.key ? 'white' : NAVY,
+                border: active === p.key ? 'none' : '1px solid #EFE9DD',
+                boxShadow: active === p.key ? '0 4px 14px rgba(27,42,74,0.25)' : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.6,
+                transition: 'all 0.25s',
               }}>
               {s.status === 'loading' && <CircularProgress size={12} sx={{ color: 'inherit' }} />}
-              <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: '0.8rem', fontWeight: 600 }}>
+              <Typography sx={{ fontFamily: FONT, fontSize: '0.85rem', fontWeight: 600 }}>
                 {p.label}
               </Typography>
             </Box>
@@ -148,35 +156,35 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
       </Box>
 
       {/* พรีวิวหลัก */}
-      <Box sx={{ width: '100%', height: 450, borderRadius: '16px', overflow: 'hidden', position: 'relative', bgcolor: '#E5DFD6' }}>
+      <Box sx={{ width: '100%', height: 450, borderRadius: '20px', overflow: 'hidden', position: 'relative', bgcolor: '#FFFFFF', border: '1px solid #EFE9DD', boxShadow: '0 4px 20px rgba(27,42,74,0.06)' }}>
         <AnimatePresence mode="wait">
           <motion.div key={active} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ width: '100%', height: '100%', position: 'relative' }}>
             {activeSlot.status === 'idle' && (
               <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', px: 3 }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280', textAlign: 'center' }}>
+                <Typography sx={{ fontFamily: FONT, color: '#6B7280', textAlign: 'center', fontSize: '0.88rem' }}>
                   รอคิว — AI กำลังทำมุมอื่นอยู่ก่อน
                 </Typography>
               </Box>
             )}
             {activeSlot.status === 'loading' && (
               <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                <CircularProgress sx={{ color: '#1B2A4A' }} />
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#1B2A4A', textAlign: 'center', px: 3 }}>
+                <CircularProgress sx={{ color: NAVY }} />
+                <Typography sx={{ fontFamily: FONT, color: NAVY, textAlign: 'center', px: 3, fontSize: '0.9rem' }}>
                   AI กำลังใส่ชุดให้คุณ...
                 </Typography>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#6B7280', fontSize: '0.75rem', textAlign: 'center' }}>
+                <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.75rem', textAlign: 'center' }}>
                   ใช้เวลาไปแล้ว {String(Math.floor(elapsedSec / 60)).padStart(2, '0')}:{String(elapsedSec % 60).padStart(2, '0')} (ปกติ 2-5 นาที)
                 </Typography>
               </Box>
             )}
             {activeSlot.status === 'error' && (
               <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, px: 3 }}>
-                <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: '#8B1A1A', textAlign: 'center' }}>
+                <Typography sx={{ fontFamily: FONT, color: '#B3261E', textAlign: 'center', fontSize: '0.9rem' }}>
                   สร้างภาพมุม{PERSPECTIVES.find(p => p.key === active)?.label}ไม่สำเร็จ: {activeSlot.error}
                 </Typography>
                 <Button startIcon={<RefreshRoundedIcon />} onClick={() => runPerspective(active)}
-                  sx={{ color: '#1B2A4A', fontFamily: '"Noto Serif Thai", serif' }}>
+                  sx={{ color: NAVY, fontFamily: FONT, fontWeight: 600, textTransform: 'none' }}>
                   ลองใหม่
                 </Button>
               </Box>
@@ -185,8 +193,8 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
               <>
                 <Image src={activeSlot.url} alt={`ลองใส่เสมือนจริง - ${active}`} fill style={{ objectFit: 'cover' }} />
                 {activeSlot.mock && (
-                  <Box sx={{ position: 'absolute', top: 10, left: 10, bgcolor: 'rgba(197,165,90,0.95)', color: '#1B2A4A', px: 1.5, py: 0.5, borderRadius: '999px' }}>
-                    <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: '0.7rem', fontWeight: 700 }}>ตัวอย่าง (โควต้า AI หมดชั่วคราว)</Typography>
+                  <Box sx={{ position: 'absolute', top: 10, left: 10, bgcolor: 'rgba(197,165,90,0.95)', color: NAVY, px: 1.5, py: 0.5, borderRadius: '999px' }}>
+                    <Typography sx={{ fontFamily: FONT, fontSize: '0.7rem', fontWeight: 700 }}>ตัวอย่าง (โควต้า AI หมดชั่วคราว)</Typography>
                   </Box>
                 )}
               </>
@@ -196,7 +204,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
       </Box>
 
       {hasAnyMock && (
-        <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', textAlign: 'center', color: '#6B7280', fontSize: '0.75rem' }}>
+        <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#6B7280', fontSize: '0.75rem' }}>
           ระบบ AI ลองใส่เสมือนจริงหมดโควต้าชั่วคราว — บางมุมแสดงภาพตัวอย่างแทนภาพจริง คำสั่งตัดของคุณยังดำเนินการต่อได้ตามปกติ
         </Typography>
       )}
@@ -207,14 +215,16 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
         disabled={anyLoading}
         onClick={onNext}
         sx={{
-          bgcolor: '#1B2A4A',
+          bgcolor: NAVY,
           color: 'white',
-          py: 1.5,
-          borderRadius: '12px',
-          fontFamily: '"Noto Serif Thai", serif',
-          fontWeight: 700,
-          '&:hover': { bgcolor: '#0f182b' },
-          '&:disabled': { bgcolor: '#E5DFD6', color: '#A09C95' },
+          py: 1.7,
+          borderRadius: '14px',
+          fontFamily: FONT,
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          boxShadow: anyLoading ? 'none' : '0 4px 14px rgba(27,42,74,0.25)',
+          '&:hover': { bgcolor: '#0F1A30' },
+          '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
         }}
       >
         {anyLoading ? 'กำลังสร้างภาพ...' : 'ถัดไป — สรุปออเดอร์'}

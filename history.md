@@ -743,3 +743,30 @@
 - แก้เพิ่ม: โค้ดเดิม `data.choices[0].message.content` ไม่เช็ค shape เลย พอ API ตอบ 200-แต่-error แบบนี้จะ throw `TypeError` ที่ไม่มีใครจับตั้งใจ ต้องพึ่ง catch-all เดิมที่ตอบ 500 generic แทนที่จะ fallback เป็น mock เหมือน error path อื่นๆ ในไฟล์เดียวกัน — เพิ่มเช็ค `data.choices?.[0]` แล้ว fallback เหมือน `!response.ok` branch ให้สอดคล้องกัน
 - ทดสอบจริงกับรูปผ้าจริงผ่าน `https://laya-th.com/api/ai/analyze-fabric` หลัง deploy: ได้ผลวิเคราะห์จริงจาก AI (`{"type":"ผ้าไหม","technique":"พิมพ์ลาย","pattern":"ลายประยุกต์พร้อมอักษร","tone":"ทอง-แดงเข้ม","thickness":"ปานกลาง"}`) ไม่ใช่ mock อีกต่อไป
 - `tsc --noEmit` ผ่าน, push 2 ครั้งแยกกัน (frontend fix, backend fix) ทั้งคู่ deploy อัตโนมัติสำเร็จผ่าน CI/CD ที่ตั้งไว้
+
+---
+
+## 2026-07-11 (รอบสี่) — Redesign `/services/tailor` + flow สั่งตัดด้วยผ้าที่มีอยู่แล้วทั้งหมด (11 ไฟล์)
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ขอให้ปรับ `/services/tailor` และ endpoint ลึกๆ ให้ดูทันสมัยขึ้น ดีไซน์เดียวกับที่อื่นในเว็บ (checkout/design-clothes ที่ปรับไปแล้ว) — ก่อนเริ่มพบเรื่องสำคัญที่ต้องถามผู้ใช้ก่อน
+
+### พบก่อนเริ่ม: "มีผ้า" ไม่ได้ชี้ไป flow ที่สร้างไว้ทั้ง session
+`/services/tailor` ปุ่ม "มีผ้า" ชี้ไป `/design-clothes` (ห้องออกแบบชุดจากศูนย์) ไม่ใช่ `/tailor/with-fabric` (flow อัปโหลดผ้า+AI วิเคราะห์+ลองใส่เสมือนจริงที่เพิ่งสร้าง/แก้บั๊กไปทั้ง session ก่อนหน้า) — เท่ากับ flow เด่นของ session นี้เข้าถึงไม่ได้จากเมนูจริงเลย ถามผู้ใช้แล้วยืนยันให้ rewire กลับไปที่ `/tailor/with-fabric` และ redesign ทั้งสองส่วน
+
+### ไฟล์ใหม่/แก้ทั้งหมด (ดีไซน์อ้างอิงจาก checkout ที่ทำไว้ก่อนหน้า: navy/gold, Kanit, การ์ดขาวขอบบาง+เงานุ่ม, stepper วงกลมเลข+เช็คทอง)
+- `components/tailor/TailorStepper.tsx` (ใหม่) — stepper 7 ขั้นแบบ checkout
+- `app/services/page.tsx` — จากกล่อง gradient เป็นการ์ดขาว icon วงกลม
+- `app/services/tailor/page.tsx` — การ์ดสไตล์เดียวกัน + **แก้ href "มีผ้า" → `/tailor/with-fabric`**
+- `components/tailor/TailorWithFabricFlow.tsx` — header sticky แบบ checkout, ใส่ stepper, container กึ่งกลางจอ (แก้ layout conflict กับ MobileLayout เดิมที่ห่อ full-viewport Box ซ้อนกันอยู่)
+- 8 step component ทั้งหมด (`UploadFabricStep`, `AIAnalysisStep`, `SelectOccasionStep`, `MeasurementsStep`, `VirtualTryOnStep`, `OrderSummaryStep`, `SelectTailorShopStep`, `OrderSuccessStep`) — ปรับ visual ล้วน (การ์ด/สี/ฟอนต์/shadow) **ไม่แตะ logic** โดยเฉพาะ `VirtualTryOnStep.tsx` ที่มี AI generation/timer/sequential-loop logic ซับซ้อนจาก session ก่อน — แก้เฉพาะ sx styling ทีละจุดด้วย Edit เจาะจง ไม่ rewrite ทั้งไฟล์ กันเผลอทำ logic พัง
+
+### เจอบั๊กจริงตอนทดสอบ: stepper ล้นจอมือถือ ขั้นแรกๆ เลื่อนหลุดจอ
+Stepper 7 ขั้นพร้อม label เต็มยาวเกินความกว้างจอมือถือ (~430px) — `overflowX:auto` + `justifyContent:center` ทำให้ browser scroll ไปกลางๆ โดยอัตโนมัติ ขั้น 1-2 เลื่อนหลุดจอไปทั้งที่เพิ่งเข้าขั้นแรก (เห็นจาก screenshot จริงตอนทดสอบ) — แก้โดยซ่อน label รายจุดบนมือถือ เหลือแค่วงกลม+เส้น (กว้างพอดีจอเสมอ ไม่ต้อง scroll) แล้วโชว์ "ขั้นตอนที่ X จาก 7 — {label}" เป็นบรรทัดเดียวใต้ stepper แทน — เดสก์ท็อปมีที่พอยังโชว์ label เต็มทุกจุดตามเดิม
+
+### ทดสอบจริงในเบราว์เซอร์ (Playwright, เดินครบ flow ด้วยรูปคนจริงที่ผู้ใช้เคยแนบ)
+- ยืนยัน `href="/tailor/with-fabric"` ของปุ่ม "มีผ้า" ถูกต้อง
+- เดินผ่านทุกขั้น: services → services/tailor → upload(ข้าม) → AI analysis → occasion → 3 มุมถ่ายรูป(ครบ+เช็คทอง) → virtual try-on(loading state+timer) — screenshot ทุกขั้นตรวจด้วยตาจริง ไม่ใช่แค่ tsc ผ่าน
+- ไอคอน MUI ที่ดูเหมือนไม่ขึ้นในสกรีนช็อตแรก ตรวจซ้ำด้วย zoom ที่ deviceScaleFactor สูง → จริงๆ render ถูกต้อง (แค่เล็กในภาพย่อ) ไม่ใช่บั๊ก
+- `tsc --noEmit` ผ่านทั้งโปรเจกต์, ไม่มี console error

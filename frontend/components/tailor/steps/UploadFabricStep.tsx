@@ -1,8 +1,12 @@
 import { useRef } from "react";
-import { Box, Typography, Button, IconButton } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { motion } from "framer-motion";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import Image from "next/image";
+
+const FONT = '"Kanit", sans-serif';
+const NAVY = "#1B2A4A";
+const GOLD = "#C5A55A";
 
 export default function UploadFabricStep({ orderState, setOrderState, onNext }: any) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,7 +33,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.6);
 
         setOrderState({ ...orderState, fabricImage: compressedBase64 });
-        
+
         setTimeout(() => {
           onNext();
         }, 500);
@@ -50,63 +54,78 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
   };
 
   return (
-    <Box component={motion.div} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', pt: 2 }}>
-      
-      <input 
-        type="file" 
-        accept="image/*" 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
-        style={{ display: 'none' }} 
+    <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', pt: 1 }}>
+
+      <Typography sx={{ fontFamily: FONT, fontSize: '0.88rem', color: '#6B7280', textAlign: 'center' }}>
+        ถ่ายภาพผ้าของคุณให้เห็นลายและสีชัดเจน — AI จะวิเคราะห์ประเภท ลาย และเทคนิคการทอให้อัตโนมัติ
+      </Typography>
+
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
       />
 
-      <Box 
+      <Box
         onClick={handleClickUpload}
-        sx={{ 
-          width: '100%', 
-          height: 400, 
-          bgcolor: '#F0EBE3', 
-          borderRadius: '24px', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
+        sx={{
+          width: '100%',
+          height: 380,
+          bgcolor: '#FFFFFF',
+          border: '1px solid #EFE9DD',
+          borderRadius: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.06)'
+          boxShadow: '0 4px 20px rgba(27,42,74,0.06)',
+          transition: 'box-shadow 0.25s, border-color 0.25s',
+          '&:hover': { boxShadow: '0 12px 32px rgba(27,42,74,0.12)', borderColor: GOLD },
         }}
       >
         {orderState.fabricImage ? (
           <>
             <Image src={orderState.fabricImage} alt="Uploaded Fabric" fill style={{ objectFit: 'cover' }} />
-            <Box sx={{ position: 'absolute', bottom: 16, right: 16, bgcolor: 'rgba(255,255,255,0.9)', p: 1, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-              <CameraAltRoundedIcon sx={{ color: '#1B2A4A' }} />
+            <Box sx={{ position: 'absolute', bottom: 16, right: 16, bgcolor: 'rgba(255,255,255,0.92)', p: 1, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}>
+              <CameraAltRoundedIcon sx={{ color: NAVY }} />
             </Box>
           </>
         ) : (
           <>
-            <Image src="/images/fabric1.webp" alt="Fabric placeholder" fill style={{ objectFit: 'cover', opacity: 0.3 }} />
-            <Box sx={{ position: 'absolute', bottom: 16, right: 16, bgcolor: '#FFFFFF', p: 1.5, borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CameraAltRoundedIcon sx={{ color: '#1B2A4A', fontSize: 28 }} />
+            <Image src="/images/fabric1.webp" alt="Fabric placeholder" fill style={{ objectFit: 'cover', opacity: 0.18 }} />
+            <Box sx={{
+              position: 'relative', width: 72, height: 72, borderRadius: '50%', bgcolor: `${NAVY}0D`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1.5,
+            }}>
+              <CameraAltRoundedIcon sx={{ color: GOLD, fontSize: 32 }} />
             </Box>
+            <Typography sx={{ position: 'relative', fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.95rem' }}>
+              แตะเพื่อถ่ายรูปผ้า
+            </Typography>
           </>
         )}
       </Box>
 
-      <Button 
-        variant="outlined" 
-        fullWidth 
+      <Button
+        variant="contained"
+        fullWidth
         onClick={handleClickUpload}
-        sx={{ 
-          bgcolor: '#FFFFFF', 
-          color: '#1B2A4A', 
-          borderColor: '#E5DFD6',
-          py: 2, 
-          borderRadius: '16px',
-          fontFamily: '"Noto Serif Thai", serif',
+        sx={{
+          bgcolor: NAVY,
+          color: '#FFFFFF',
+          py: 1.7,
+          borderRadius: '14px',
+          fontFamily: FONT,
           fontWeight: 600,
-          '&:hover': { bgcolor: '#F0EBE3', borderColor: '#C5A55A' }
+          fontSize: '0.95rem',
+          boxShadow: '0 4px 14px rgba(27,42,74,0.25)',
+          '&:hover': { bgcolor: '#0F1A30' },
         }}
       >
         ถ่ายหรือเลือกจากแกลเลอรี่
@@ -116,10 +135,9 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
         onClick={handleSkip}
         sx={{
           color: '#9B958A',
-          fontFamily: '"Noto Serif Thai", serif',
+          fontFamily: FONT,
           fontSize: '0.75rem',
           textTransform: 'none',
-          textDecoration: 'underline',
         }}
       >
         ข้ามขั้นตอนนี้ (สำหรับทดสอบ)

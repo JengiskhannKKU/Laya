@@ -15,6 +15,11 @@ import VirtualTryOnStep from "./steps/VirtualTryOnStep";
 import OrderSummaryStep from "./steps/OrderSummaryStep";
 import SelectTailorShopStep from "./steps/SelectTailorShopStep";
 import OrderSuccessStep from "./steps/OrderSuccessStep";
+import TailorStepper from "./TailorStepper";
+
+const FONT = '"Kanit", sans-serif';
+const NAVY = "#1B2A4A";
+const IVORY = "#FAF6F0";
 
 // ลำดับตาม flow_1.png (Flow 1 — สั่งตัดด้วยผ้าที่มีอยู่แล้ว) ตัด "เลือกทรงที่ชอบ" ออกแล้ว —
 // ผู้ใช้อัปโหลด+ AI วิเคราะห์ผ้าของตัวเองอยู่แล้วในขั้นก่อนหน้า ไม่ต้องเลือกทรงจากแคตตาล็อกซ้ำอีกชั้น:
@@ -74,31 +79,37 @@ export default function TailorWithFabricFlow() {
   };
 
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#FAF6F0", position: "relative" }}>
-      {/* Header */}
+    <Box sx={{ minHeight: "100vh", bgcolor: IVORY }}>
+      {/* Header — sticky, ดีไซน์เดียวกับ checkout */}
       {currentStep !== "success" && (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 2, pt: 3, pb: 1 }}>
-          {currentStep === "upload" ? (
-            <Link href="/services/tailor">
-              <IconButton size="small">
-                <ArrowBackIosNewRoundedIcon sx={{ fontSize: 16, color: "#1B2A4A" }} />
+        <Box sx={{
+          px: { xs: 1.5, md: 4 }, pt: { xs: 4, md: 3 }, pb: { xs: 1.5, md: 2 }, display: "flex", alignItems: "center",
+          bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #EFE9DD",
+        }}>
+          <Box sx={{ display: "flex", alignItems: "center", maxWidth: 960, width: "100%", mx: "auto" }}>
+            {currentStep === "upload" ? (
+              <Link href="/services/tailor">
+                <IconButton sx={{ color: NAVY }}>
+                  <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Link>
+            ) : (
+              <IconButton onClick={handleBack} sx={{ color: NAVY }}>
+                <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
               </IconButton>
-            </Link>
-          ) : (
-            <IconButton size="small" onClick={handleBack}>
-              <ArrowBackIosNewRoundedIcon sx={{ fontSize: 16, color: "#1B2A4A" }} />
-            </IconButton>
-          )}
-          <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", flex: 1, textAlign: "center" }}>
-            {getHeaderTitle()}
-          </Typography>
-          <Box sx={{ width: 32 }} />
+            )}
+            <Typography sx={{ flex: 1, textAlign: "center", mr: 5, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY }}>
+              {getHeaderTitle()}
+            </Typography>
+          </Box>
         </Box>
       )}
 
-      {/* Main Content Area */}
-      <Box sx={{ px: 2, py: 1, pb: 10 }}>
-        <AnimatePresence>
+      {/* เนื้อหา — จำกัดความกว้างสูงสุด กึ่งกลางจอ พร้อม stepper บอกความคืบหน้า */}
+      <Box sx={{ maxWidth: 640, width: "100%", mx: "auto", px: { xs: 2, md: 3 }, pt: { xs: 1, md: 2 }, pb: { xs: 8, md: 6 } }}>
+        {currentStep !== "success" && <TailorStepper currentStep={currentStep} />}
+
+        <AnimatePresence mode="wait">
           {currentStep === "upload" && (
             <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
           )}
