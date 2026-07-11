@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * Stepper แนวนอนสำหรับ flow สั่งตัดด้วยผ้าที่มีอยู่แล้ว (7 ขั้น) — ดีไซน์เดียวกับ checkout
+ * Stepper แนวนอนสำหรับ flow สั่งตัดด้วยผ้าที่มีอยู่แล้ว (8 ขั้น) — ดีไซน์เดียวกับ checkout
  * (วงกลมเลขลำดับ → เช็คถูกสีทองเมื่อผ่านแล้ว, เส้นเชื่อมระหว่างจุด, active = navy)
  *
- * บนมือถือซ่อน label รายจุด (7 label เต็มยาวเกินความกว้างจอ ทำให้ขั้นแรกๆ เลื่อนหลุดจอไปเอง
- * เจอบั๊กจริงตอนทดสอบ) เหลือแค่วงกลม+เส้น ให้พอดีความกว้างจอเสมอ แล้วโชว์ "ขั้นตอนที่ X จาก 7"
+ * บนมือถือซ่อน label รายจุด (label เต็มยาวเกินความกว้างจอ ทำให้ขั้นแรกๆ เลื่อนหลุดจอไปเอง
+ * เจอบั๊กจริงตอนทดสอบ) เหลือแค่วงกลม+เส้น ให้พอดีความกว้างจอเสมอ แล้วโชว์ "ขั้นตอนที่ X จาก N"
  * เป็นบรรทัดเดียวด้านล่างแทน — เดสก์ท็อปมีที่พอถึงโชว์ label เต็มได้
  */
 
@@ -20,6 +20,7 @@ const GOLD = "#C5A55A";
 export const TAILOR_STEPS = [
   "อัปโหลดผ้า",
   "วิเคราะห์ผ้า",
+  "เลือกทรง",
   "โอกาสใช้งาน",
   "ถ่ายรูปตัวเอง",
   "ลองใส่เสมือนจริง",
@@ -27,15 +28,15 @@ export const TAILOR_STEPS = [
   "เลือกร้าน",
 ] as const;
 
-// map TailorStep key -> index บน stepper (ai_analysis รวมเข้ากับ upload เพราะเป็นขั้นย่อยต่อเนื่องกันจริงๆ ไม่งั้น step จะถี่เกินไปจนดูรก)
 const STEP_INDEX: Record<string, number> = {
   upload: 0,
   ai_analysis: 1,
-  select_occasion: 2,
-  measurements: 3,
-  virtual_try_on: 4,
-  order_summary: 5,
-  select_shop: 6,
+  choose_shape: 2,
+  select_occasion: 3,
+  measurements: 4,
+  virtual_try_on: 5,
+  order_summary: 6,
+  select_shop: 7,
 };
 
 export default function TailorStepper({ currentStep }: { currentStep: string }) {

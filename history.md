@@ -770,3 +770,17 @@ Stepper 7 ขั้นพร้อม label เต็มยาวเกินค
 - เดินผ่านทุกขั้น: services → services/tailor → upload(ข้าม) → AI analysis → occasion → 3 มุมถ่ายรูป(ครบ+เช็คทอง) → virtual try-on(loading state+timer) — screenshot ทุกขั้นตรวจด้วยตาจริง ไม่ใช่แค่ tsc ผ่าน
 - ไอคอน MUI ที่ดูเหมือนไม่ขึ้นในสกรีนช็อตแรก ตรวจซ้ำด้วย zoom ที่ deviceScaleFactor สูง → จริงๆ render ถูกต้อง (แค่เล็กในภาพย่อ) ไม่ใช่บั๊ก
 - `tsc --noEmit` ผ่านทั้งโปรเจกต์, ไม่มี console error
+
+---
+
+## 2026-07-11 (รอบห้า) — เอา "เลือกทรงที่ชอบ" กลับมาอีกครั้ง วางไว้ก่อน "เลือกโอกาสใช้งาน"
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้ถามหา `/design-clothes` ที่ "หายไป" — จริงๆ ไม่ได้ลบ แค่ไม่มีลิงก์เข้าถึงจาก `/services/tailor` แล้วเพราะ "มีผ้า" ถูก rewire ไป `/tailor/with-fabric` ตามที่ผู้ใช้เคยขอเอง (ยืนยันด้วย `grep` ว่า path เดียวที่ยังลิงก์ไป `/design-clothes` คือปุ่ม "สั่งทำเลย" ใน `ProductDetailView.tsx`) — ถามผู้ใช้ว่าจะเพิ่มทางเข้ากลับไหม ผู้ใช้ขอให้เพิ่ม "เลือกทรง" กลับเข้า flow `/tailor/with-fabric` แทน โดยวางไว้ที่ตำแหน่ง 3 ก่อน "เลือกโอกาสใช้งาน" (ต่างจาก `flow_1.png` ที่วางไว้หลัง — ยืนยันแล้วว่าเป็นการตัดสินใจของผู้ใช้เองไม่ใช่ทำตาม mockup)
+
+- คืนไฟล์ `components/tailor/steps/ChooseShapeStep.tsx` (เคยลบไปตามคำขอรอบก่อน) — ตรรกะเดิม: เทมเพลตจริงจาก `catalog.json` + `GarmentRenderer` เดียวกับ `/design-clothes`, พรีวิวด้วยรูปผ้าที่อัปโหลดจริงทับลายผ้าใน catalog — ปรับดีไซน์ให้ตรงกับระบบใหม่ที่เพิ่งทำ (Kanit, การ์ดขาวขอบทอง hover)
+- `TailorWithFabricFlow.tsx`: เพิ่ม `choose_shape` กลับเข้า `TailorStep`/`TailorOrderState.shape`/`handleBack`/`getHeaderTitle`/JSX — ลำดับใหม่: `upload → ai_analysis → choose_shape → select_occasion → measurements → virtual_try_on → order_summary → select_shop → success` (9 ขั้น)
+- `TailorStepper.tsx`: เพิ่ม "เลือกทรง" เป็นขั้นที่ 3 จาก 8 (`TAILOR_STEPS`/`STEP_INDEX` อัปเดตให้ตรง)
+- `OrderSummaryStep.tsx`: กลับไปโชว์ `orderState.shape?.name` จริง (จาก hardcode "ชุดไทยจิตรลดา")
+- ทดสอบจริงในเบราว์เซอร์: เดินผ่าน upload(ข้าม) → AI analysis → **เลือกทรง (เห็นการ์ดจริงจาก catalog ผ้าจริงที่อัปโหลดขึ้นไปฟิตบนทรงจริง คลิก "ไทยร่วมสมัย")** → โอกาสใช้งาน (ยืนยันมาหลังเลือกทรงจริงตามที่ขอ) → ถ่ายรูป 3 มุม — stepper โชว์ถูกต้อง "ขั้นตอนที่ 3 จาก 8" / "4 จาก 8" ตามลำดับ, `tsc --noEmit` ผ่าน, ไม่มี console error

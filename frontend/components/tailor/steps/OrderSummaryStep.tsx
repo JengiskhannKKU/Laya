@@ -23,7 +23,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
           <Box>
             <Typography sx={{ fontFamily: FONT, fontSize: '0.75rem', color: '#9CA3AF' }}>ทรงที่เลือก</Typography>
             <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '1rem' }}>
-              ชุดไทยจิตรลดา
+              {orderState.shape?.name || "ชุดไทยจิตรลดา"}
             </Typography>
           </Box>
         </Box>
