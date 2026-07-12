@@ -151,4 +151,57 @@ router.get("/products", async (req: Request, res: Response) => {
   }
 });
 
+/** GET /api/admin/reviews — รีวิวร้านค้าทั้งหมด (ทุกร้าน รวมที่ซ่อนไว้) สำหรับตรวจสอบ */
+router.get("/reviews", async (req: Request, res: Response) => {
+  try {
+    const limit = Math.min(Number(req.query.limit ?? 300), 1000);
+    const rows = await query<Record<string, unknown>>(
+      `SELECT r.id, r.shop_id, r.rating, r.comment, r.is_hidden, r.created_at,
+              s.name AS shop_name, u.display_name AS reviewer_name
+       FROM shop_reviews r
+       JOIN shops s ON s.id = r.shop_id
+       JOIN users u ON u.id = r.reviewer_id
+       ORDER BY r.created_at DESC LIMIT $1`,
+      [limit]
+    );
+    res.json(rows.map((r) => ({
+      id: r.id,
+      shopId: r.shop_id,
+      shopName: r.shop_name,
+      reviewerName: r.reviewer_name ?? "-",
+      rating: Number(r.rating),
+      comment: r.comment ?? null,
+      isHidden: r.is_hidden,
+      createdAt: r.created_at,
+    })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch reviews" });
+  }
+});
+
+/** PATCH /api/admin/reviews/:id/hide — ซ่อน/แสดงรีวิว */
+router.patch("/reviews/:id/hide", async (req: Request, res: Response) => {
+  try {
+    const { hidden } = req.body as { hidden?: boolean };
+    if (typeof hidden !== "boolean") { res.status(400).json({ error: "hidden ต้องเป็น true/false" }); return; }
+    await query("UPDATE shop_reviews SET is_hidden = $1 WHERE id = $2", [hidden, req.params.id]);
+    res.json({ id: req.params.id, isHidden: hidden });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update review" });
+  }
+});
+
+/** DELETE /api/admin/reviews/:id — ลบรีวิวถาวร */
+router.delete("/reviews/:id", async (req: Request, res: Response) => {
+  try {
+    await query("DELETE FROM shop_reviews WHERE id = $1", [req.params.id]);
+    res.json({ id: req.params.id, deleted: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete review" });
+  }
+});
+
 export default router;

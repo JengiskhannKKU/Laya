@@ -60,8 +60,8 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await login(email, password);
-      router.push("/");
+      const { role } = await login(email, password);
+      router.push(role === "merchant" ? "/merchant" : role === "admin" ? "/admin" : "/");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
       if (msg === "EMAIL_NOT_CONFIRMED") {

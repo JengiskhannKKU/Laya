@@ -33,9 +33,19 @@ export default function NotificationsPage() {
 
   return (
     <MobileLayout>
-      <Box sx={{ pb: 3 }}>
+      <Box sx={{ px: 2, pt: 3, pb: 3 }}>
         {/* Header */}
-        <Box sx={{ px: 2, pt: 3, pb: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          sx={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            bgcolor: "#FFFFFF", borderRadius: 4, border: "1px solid #E5DFD6",
+            px: 2, py: 1.8, mb: 2,
+            background: "linear-gradient(135deg, #FFFFFF 0%, rgba(197,165,90,0.06) 100%)",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
               <ArrowBackRoundedIcon />
@@ -58,7 +68,13 @@ export default function NotificationsPage() {
         </Box>
 
         {/* List */}
-        <Box>
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.06 }}
+          sx={{ bgcolor: "#FFFFFF", borderRadius: 4, border: "1px solid #E5DFD6", overflow: "hidden" }}
+        >
           {loading && (
             <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
               <CircularProgress size={28} sx={{ color: "#C5A55A" }} />
@@ -82,8 +98,9 @@ export default function NotificationsPage() {
                 onClick={() => markRead(n.id)}
                 sx={{
                   display: "flex", gap: 2, px: 2.5, py: 2,
-                  bgcolor: n.read ? "transparent" : "rgba(197,165,90,0.05)",
+                  bgcolor: n.read ? "transparent" : "rgba(197,165,90,0.07)",
                   cursor: n.href ? "pointer" : "default",
+                  "&:hover": { bgcolor: n.read ? "rgba(0,0,0,0.015)" : "rgba(197,165,90,0.1)" },
                   "&:active": { bgcolor: "rgba(0,0,0,0.03)" },
                   transition: "background 0.15s",
                   position: "relative",

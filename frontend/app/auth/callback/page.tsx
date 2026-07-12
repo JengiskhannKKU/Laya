@@ -39,7 +39,17 @@ export default function AuthCallbackPage() {
         // Non-fatal: profile sync can retry later
       }
 
-      router.replace("/");
+      // ดึง role เพื่อ redirect ให้ตรงกลุ่มผู้ใช้ — ถ้าดึงไม่ได้ (network error) fallback ไปหน้าแรกเหมือนเดิม
+      try {
+        const meRes = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const me = await meRes.json();
+        const role = me?.role as string | undefined;
+        router.replace(role === "merchant" ? "/merchant" : role === "admin" ? "/admin" : "/");
+      } catch {
+        router.replace("/");
+      }
     });
   }, [router]);
 

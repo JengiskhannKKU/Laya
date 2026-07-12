@@ -229,10 +229,12 @@ export default function AdminOrdersPage() {
               const sts = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
               return (
                 <Box key={order.id} component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: idx * 0.02 }}
+                  onClick={() => router.push(`/admin/orders/${order.id}`)}
                   sx={{
                     display: { xs: "flex", md: "grid" }, flexDirection: "column",
                     gridTemplateColumns: { md: "1.2fr 1.5fr 1fr 1fr 1fr 1fr" }, alignItems: "center",
                     px: 3, py: 2, borderBottom: `1px solid ${c.borderCard}`, "&:hover": { bgcolor: c.bgCardHover }, gap: { xs: 0.5, md: 0 },
+                    cursor: "pointer",
                   }}
                 >
                   <Typography sx={{ fontSize: "0.85rem", fontWeight: 600, color: c.textPrimary, fontFamily: "monospace", transition: tr }}>{order.displayId}</Typography>

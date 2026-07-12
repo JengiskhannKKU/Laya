@@ -18,7 +18,9 @@ function createPool() {
 async function startServer() {
   const child = spawn("npx", ["tsx", "src/server.ts"], {
     cwd: __dirname + "/..",
-    env: { ...process.env, PORT: String(TEST_PORT), NODE_ENV: "test" },
+    // ปิด EasySlip ในเทสเสมอ (ไม่ผูกกับว่า .env จริงตั้งค่าคีย์ไว้หรือไม่) —
+    // เทสใช้ slip URL ปลอมที่ไม่ใช่รูปจริง ถ้ายิงไป EasySlip จริงจะถูกปฏิเสธเสมอ
+    env: { ...process.env, PORT: String(TEST_PORT), NODE_ENV: "test", EASYSLIP_API_KEY: "" },
     shell: true,
     stdio: "ignore",
     detached: false,

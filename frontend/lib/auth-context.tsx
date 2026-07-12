@@ -37,7 +37,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ role: UserRole }>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<{ needsEmailConfirm: boolean }>;
@@ -95,19 +95,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ถ้าไม่กันไว้ sync/me จะถูกเรียกรัวไม่จบเป็นร้อยครั้งต่อวินาที
   const processedTokenRef = useRef<string | null>(null);
 
-  /** Fetch our custom profile from backend /api/auth/me */
-  const fetchProfile = async (accessToken: string, supabaseUser: { id: string; email?: string }) => {
+  /** Fetch our custom profile from backend /api/auth/me — คืนค่า User ที่ set แล้ว เพื่อให้ caller (เช่น login) รู้ role ทันทีโดยไม่ต้องรอ onAuthStateChange */
+  const fetchProfile = async (accessToken: string, supabaseUser: { id: string; email?: string }): Promise<User> => {
     try {
       const profile = await apiFetch("/api/auth/me", accessToken);
-      setUser(buildUser(supabaseUser, profile));
+      const built = buildUser(supabaseUser, profile);
+      setUser(built);
+      return built;
     } catch {
       // Fallback: build minimal user from Supabase data only
-      setUser({
+      const fallback: User = {
         id: supabaseUser.id,
         email: supabaseUser.email ?? "",
         name: supabaseUser.email?.split("@")[0] ?? "User",
         role: "customer",
-      });
+      };
+      setUser(fallback);
+      return fallback;
     }
   };
 
@@ -158,14 +162,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       // แปลง error หลักๆ ของ Supabase เป็นภาษาไทยให้ผู้ใช้เข้าใจ
       if (error.message.includes("Invalid login credentials")) throw new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       if (error.message.includes("Email not confirmed")) throw new Error("EMAIL_NOT_CONFIRMED");
       throw new Error(error.message);
     }
-    // onAuthStateChange will fire and call fetchProfile
+    if (!data.session || !data.user) throw new Error("เข้าสู่ระบบไม่สำเร็จ");
+
+    // ดึง role ทันทีแทนที่จะรอ onAuthStateChange (async, ช้ากว่าและ race กับการ redirect)
+    // กัน onAuthStateChange ยิง fetchProfile ซ้ำสำหรับ token เดียวกันนี้
+    processedTokenRef.current = data.session.access_token;
+    const builtUser = await fetchProfile(data.session.access_token, data.user);
+    return { role: builtUser.role };
   };
 
   const loginWithGoogle = async () => {

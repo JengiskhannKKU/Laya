@@ -228,7 +228,7 @@ export default function ProductCard({
               sx={{
                 fontFamily: '"Kanit", sans-serif',
                 fontWeight: 700,
-                fontSize: "1.15rem",
+                fontSize: "1.35rem",
                 color: "#1B2A4A",
               }}
             >
@@ -236,8 +236,8 @@ export default function ProductCard({
               <Box
                 component="span"
                 sx={{
-                  fontWeight: 300,
-                  fontSize: "0.78rem",
+                  fontWeight: 400,
+                  fontSize: "0.85rem",
                   color: "#7A7468",
                   ml: 0.5,
                 }}

@@ -14,7 +14,7 @@ router.get("/shop/mine", requireAuth, requireRole("merchant", "admin"), async (r
        FROM shop_reviews r
        JOIN shops s ON s.id = r.shop_id
        JOIN users u ON u.id = r.reviewer_id
-       WHERE s.user_id = $1
+       WHERE s.user_id = $1 AND r.is_hidden = false
        ORDER BY r.created_at DESC`,
       [req.user!.userId]
     );

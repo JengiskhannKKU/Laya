@@ -144,11 +144,11 @@ export default function ProfilePage() {
           <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
           <MenuItem icon={<StraightenRoundedIcon sx={{ fontSize: 20 }} />} label="ข้อมูลสัดส่วนร่างกาย" subtitle="ใช้สำหรับแนะนำเสื้อผ้า" href="/profile/measurements" />
           <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-          <MenuItem icon={<FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />} label="รายการโปรด" subtitle="3 รายการ" href="/community" />
+          <MenuItem icon={<FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />} label="รายการโปรด" href="/wishlist" />
           <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-          <MenuItem icon={<SettingsRoundedIcon sx={{ fontSize: 20 }} />} label="ตั้งค่า" />
+          <MenuItem icon={<SettingsRoundedIcon sx={{ fontSize: 20 }} />} label="ตั้งค่า" href="/settings" />
           <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-          <MenuItem icon={<HelpOutlineRoundedIcon sx={{ fontSize: 20 }} />} label="ช่วยเหลือ" />
+          <MenuItem icon={<HelpOutlineRoundedIcon sx={{ fontSize: 20 }} />} label="ช่วยเหลือ" href="/help" />
         </Box>
 
         {/* Logout */}
