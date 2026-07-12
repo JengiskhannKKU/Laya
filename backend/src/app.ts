@@ -28,6 +28,8 @@ import tryonRouter from "./routes/tryon";
 import patternsRouter from "./routes/patterns";
 import weavingRequestsRouter from "./routes/weaving-requests";
 import uploadRouter from "./routes/upload";
+import reviewsRouter from "./routes/reviews";
+import chatRouter from "./routes/chat";
 
 const app = express();
 
@@ -90,6 +92,8 @@ app.use("/api/tryon", tryonRouter);
 app.use("/api/patterns", patternsRouter);
 app.use("/api/weaving-requests", weavingRequestsRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/reviews", reviewsRouter);
+app.use("/api/chat", chatRouter);
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

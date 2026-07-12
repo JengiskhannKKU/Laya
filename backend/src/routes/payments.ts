@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { generatePromptPayPayload } from "../utils/promptpay";
+import { createThaiDoc, drawDocHeader, drawKeyValueBlock, drawTable, formatDocNumber, streamPdf } from "../utils/pdf";
 
 const router = Router();
 
@@ -445,6 +446,124 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch payment" });
+  }
+});
+
+/** โหลด payment พร้อมข้อมูลร้าน/ผู้จ่าย/shop_id ที่แท้จริง (ผ่านออเดอร์ที่ผูกอยู่) สำหรับสร้างเอกสาร */
+async function loadPaymentForDocument(paymentId: string) {
+  const rows = await query<Record<string, unknown>>(
+    `SELECT p.*,
+            COALESCE(o.shop_id, w.shop_id, po.shop_id) AS resolved_shop_id,
+            s.name AS shop_name, s.address AS shop_address, s.phone AS shop_phone,
+            u.display_name AS payer_name, u.email AS payer_email
+     FROM payments p
+     LEFT JOIN orders o ON o.id = p.order_id
+     LEFT JOIN weaving_orders w ON w.id = p.weaving_order_id
+     LEFT JOIN product_orders po ON po.id = p.product_order_id
+     LEFT JOIN shops s ON s.id = COALESCE(o.shop_id, w.shop_id, po.shop_id)
+     LEFT JOIN users u ON u.id = p.payer_id
+     WHERE p.id = $1`,
+    [paymentId]
+  );
+  return rows[0] ?? null;
+}
+
+function checkPaymentAccess(p: Record<string, unknown>, req: Request, res: Response): boolean {
+  const { userId, role, shopId } = req.user!;
+  const isOwner = p.payer_id === userId;
+  const isShop = role === "merchant" && shopId && p.resolved_shop_id === shopId;
+  if (!isOwner && !isShop && role !== "admin") { res.status(403).json({ error: "Forbidden" }); return false; }
+  return true;
+}
+
+async function renderPaymentDocument(res: Response, p: Record<string, unknown>, docTitle: string, docPrefix: string) {
+  const paidAt = p.paid_at ? new Date(p.paid_at as string) : new Date(p.created_at as string);
+  const doc = createThaiDoc();
+  drawDocHeader(doc, {
+    shopName: (p.shop_name as string) ?? "LAYA",
+    shopAddress: p.shop_address as string | null,
+    shopPhone: p.shop_phone as string | null,
+    docTitle,
+    docNumber: formatDocNumber(docPrefix, p.id as string, paidAt),
+    docDate: paidAt,
+  });
+
+  const y = drawKeyValueBlock(doc, doc.page.margins.left, doc.y, "ผู้ซื้อ", [
+    (p.payer_name as string) ?? "-",
+    (p.payer_email as string) ?? "",
+  ]);
+  doc.y = y + 16;
+
+  let items: Record<string, unknown>[] = [];
+  if (p.product_order_id) {
+    items = await query<Record<string, unknown>>(
+      "SELECT * FROM product_order_items WHERE product_order_id = $1",
+      [p.product_order_id]
+    );
+  }
+
+  if (items.length) {
+    const tableY = drawTable(
+      doc, doc.page.margins.left, doc.y,
+      [
+        { header: "รายการ", width: 240 },
+        { header: "ราคา/หน่วย", width: 80, align: "right" },
+        { header: "จำนวน", width: 60, align: "right" },
+        { header: "รวม", width: 80, align: "right" },
+      ],
+      items.map((it) => [
+        it.variant_label ? `${it.product_name} (${it.variant_label})` : (it.product_name as string),
+        `฿${Number(it.unit_price).toLocaleString()}`,
+        String(it.quantity),
+        `฿${Number(it.subtotal).toLocaleString()}`,
+      ])
+    );
+    doc.y = tableY;
+  } else {
+    doc.font("Sarabun").fontSize(10).fillColor("#374151")
+      .text(`รายการ: ค่าสินค้า/บริการ ออเดอร์ #${(p.order_id ?? p.weaving_order_id ?? p.product_order_id ?? p.id as string).toString().slice(0, 8).toUpperCase()}`);
+    doc.moveDown(1);
+  }
+
+  const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  doc.font("Sarabun-Bold").fontSize(12).fillColor("#1B2A4A")
+    .text(`ยอดชำระ: ฿${Number(p.amount).toLocaleString()}`, doc.page.margins.left, doc.y, { align: "right", width });
+  doc.font("Sarabun").fontSize(9).fillColor("#9CA3AF")
+    .text(`ชำระผ่าน: ${p.method === "promptpay" ? "พร้อมเพย์" : p.method} · อ้างอิง ${(p.transaction_ref as string) ?? "-"}`, doc.page.margins.left, doc.y, { align: "right", width });
+  doc.moveDown(1);
+  doc.fontSize(8).fillColor("#9CA3AF").text(
+    "เอกสารนี้เป็นเอกสารสรุปการชำระเงินสำหรับการซื้อขายทั่วไป ไม่ใช่ใบกำกับภาษี",
+    doc.page.margins.left, doc.y, { width }
+  );
+
+  streamPdf(res, doc, `${docPrefix.toLowerCase()}-${(p.id as string).slice(0, 8)}.pdf`);
+}
+
+/** GET /api/payments/:id/receipt.pdf — ใบเสร็จรับเงิน */
+router.get("/:id/receipt.pdf", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const p = await loadPaymentForDocument(req.params.id);
+    if (!p) { res.status(404).json({ error: "ไม่พบรายการชำระเงิน" }); return; }
+    if (!checkPaymentAccess(p, req, res)) return;
+    if (p.status !== "paid") { res.status(400).json({ error: "ออกใบเสร็จได้เฉพาะรายการที่ชำระเงินแล้ว" }); return; }
+    await renderPaymentDocument(res, p, "ใบเสร็จรับเงิน", "RC");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "สร้างเอกสารไม่สำเร็จ" });
+  }
+});
+
+/** GET /api/payments/:id/invoice.pdf — ใบแจ้งหนี้/สรุปรายการ */
+router.get("/:id/invoice.pdf", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const p = await loadPaymentForDocument(req.params.id);
+    if (!p) { res.status(404).json({ error: "ไม่พบรายการชำระเงิน" }); return; }
+    if (!checkPaymentAccess(p, req, res)) return;
+    if (p.status !== "paid") { res.status(400).json({ error: "ออก Invoice ได้เฉพาะรายการที่ชำระเงินแล้ว" }); return; }
+    await renderPaymentDocument(res, p, "Invoice", "INV");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "สร้างเอกสารไม่สำเร็จ" });
   }
 });
 

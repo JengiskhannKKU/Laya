@@ -53,7 +53,7 @@ import Collapse from "@mui/material/Collapse";
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { useCartStore, cartSubtotal, CartLine } from "@/lib/cart-store";
+import { useCartStore, cartSubtotal, cartLineKey, CartLine } from "@/lib/cart-store";
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { motion, AnimatePresence } from "framer-motion";
@@ -310,7 +310,7 @@ export default function CheckoutPage() {
       const orderRes = await authFetch(`${API_BASE}/api/product-orders`, {
         method: "POST",
         body: JSON.stringify({
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
           shipping: {
             recipientName: shipping.recipientName,
             phone: shipping.phone,
@@ -567,7 +567,7 @@ export default function CheckoutPage() {
                     <Box sx={{ display: { xs: "flex", md: "none" }, ...cardSx, p: 1.5, mb: 2, alignItems: "center", gap: 1.5 }}>
                       <Box sx={{ display: "flex" }}>
                         {items.slice(0, 3).map((line, i) => (
-                          <Box key={line.productId} sx={{
+                          <Box key={cartLineKey(line.productId, line.variantId)} sx={{
                             width: 38, height: 38, borderRadius: "10px", overflow: "hidden", position: "relative",
                             border: "2px solid #FFFFFF", ml: i > 0 ? -1.2 : 0, boxShadow: "0 1px 4px rgba(27,42,74,0.15)",
                             bgcolor: "#F0EBE3",
@@ -759,8 +759,10 @@ export default function CheckoutPage() {
                           <StorefrontOutlinedIcon sx={{ fontSize: 17, color: GOLD }} />
                           <Typography sx={{ fontFamily: FONT, fontWeight: 600, fontSize: "0.9rem", color: NAVY }}>{shopName}</Typography>
                         </Box>
-                        {lines.map((line) => (
-                          <Box key={line.productId} sx={{
+                        {lines.map((line) => {
+                          const lineKey = cartLineKey(line.productId, line.variantId);
+                          return (
+                          <Box key={lineKey} sx={{
                             display: "flex", gap: 1.6, mb: 1.4, pb: 1.4,
                             borderBottom: "1px solid #F5F1E8", "&:last-child": { borderBottom: "none", mb: 0, pb: 0 },
                           }}>
@@ -769,6 +771,11 @@ export default function CheckoutPage() {
                             </Box>
                             <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                               <Typography noWrap sx={{ fontFamily: FONT, fontSize: "0.9rem", fontWeight: 600, color: NAVY }}>{line.product.name}</Typography>
+                              {line.variantLabel && (
+                                <Typography sx={{ fontFamily: FONT, fontSize: "0.74rem", color: "#8E601C", mt: 0.2 }}>
+                                  ตัวเลือก: {line.variantLabel}
+                                </Typography>
+                              )}
                               <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#9CA3AF", mt: 0.2 }}>
                                 ฿{line.product.price.toLocaleString()} / {line.product.priceUnit}
                               </Typography>
@@ -776,7 +783,7 @@ export default function CheckoutPage() {
                                 <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "8px", bgcolor: "#FFFFFF" }}>
                                   <IconButton
                                     size="small" sx={{ p: 0.4 }}
-                                    onClick={() => updateQuantity(line.productId, line.quantity - 1)}
+                                    onClick={() => updateQuantity(lineKey, line.quantity - 1)}
                                   >
                                     <RemoveRoundedIcon sx={{ fontSize: 15 }} />
                                   </IconButton>
@@ -785,12 +792,12 @@ export default function CheckoutPage() {
                                   </Typography>
                                   <IconButton
                                     size="small" sx={{ p: 0.4 }}
-                                    onClick={() => updateQuantity(line.productId, Math.min(line.quantity + 1, line.product.stock || 99))}
+                                    onClick={() => updateQuantity(lineKey, Math.min(line.quantity + 1, line.product.stock || 99))}
                                   >
                                     <AddRoundedIcon sx={{ fontSize: 15 }} />
                                   </IconButton>
                                 </Box>
-                                <IconButton size="small" onClick={() => removeItem(line.productId)} sx={{ color: "#D1D5DB", "&:hover": { color: "#D32F2F" } }}>
+                                <IconButton size="small" onClick={() => removeItem(lineKey)} sx={{ color: "#D1D5DB", "&:hover": { color: "#D32F2F" } }}>
                                   <DeleteOutlineRoundedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </Box>
@@ -799,7 +806,8 @@ export default function CheckoutPage() {
                               ฿{(line.product.price * line.quantity).toLocaleString()}
                             </Typography>
                           </Box>
-                        ))}
+                          );
+                        })}
                       </Box>
                     ))}
 

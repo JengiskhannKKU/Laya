@@ -10,6 +10,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useRouter } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import { supabase } from "@/lib/supabase";
 
 const textFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -37,13 +38,15 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // In a real app, this would check if email exists in DB
+      // ส่งอีเมลรีเซ็ตรหัสผ่านผ่าน Supabase Auth — ลิงก์พากลับมาที่ /auth/reset
+      const { error: sbError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/reset`,
+      });
+      if (sbError) throw new Error(sbError.message);
+      // สำเร็จเสมอถ้าอีเมลถูกรูปแบบ — Supabase ไม่เผยว่าอีเมลนี้มีบัญชีหรือไม่ (กัน email enumeration)
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || "เกิดข้อผิดพลาดในการส่งลิงก์");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการส่งลิงก์");
     } finally {
       setLoading(false);
     }

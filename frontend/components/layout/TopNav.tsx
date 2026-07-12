@@ -13,9 +13,11 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/cart-store";
 import { useNotifications } from "@/lib/notification-context";
+import { useChat } from "@/lib/chat-context";
 
 const navLinks = [
   { label: "หน้าหลัก", path: "/" },
@@ -40,6 +42,7 @@ export default function AppTopNav() {
   const [mounted, setMounted] = useState(false);
   const cartItems = useCartStore((s) => s.items);
   const { unreadCount } = useNotifications();
+  const { unreadCount: unreadChatCount } = useChat();
 
   useEffect(() => { setMounted(true); }, []);
   const isMobile = !mounted || isMobileMQ;
@@ -250,6 +253,37 @@ export default function AppTopNav() {
                 <ShoppingCartRoundedIcon fontSize="small" />
               </Badge>
             </IconButton>
+
+            {/* Messages — desktop only */}
+            {!isMobile && (
+              <IconButton
+                onClick={() => router.push(user ? "/messages" : "/auth/login")}
+                aria-label="ข้อความ"
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "999px",
+                  color: NAV_ICON,
+                  "&:hover": { bgcolor: NAV_ICON_HOVER },
+                }}
+              >
+                <Badge
+                  badgeContent={mounted && user ? unreadChatCount : 0}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      bgcolor: "#C5A55A",
+                      color: "#1B2A4A",
+                      fontSize: "0.6rem",
+                      fontWeight: 700,
+                      minWidth: 16,
+                      height: 16,
+                    },
+                  }}
+                >
+                  <ChatBubbleOutlineRoundedIcon fontSize="small" />
+                </Badge>
+              </IconButton>
+            )}
 
             {/* Notifications — desktop only */}
             {!isMobile && (

@@ -13,6 +13,8 @@ export const BUCKETS = {
   fabricUploads: "fabric-uploads",   // รูปผ้าที่ลูกค้า/ร้านค้าอัปโหลด
   postImages:    "post-images",      // รูปโพสต์ชุมชน
   tryonUploads:  "tryon-uploads",    // รูปสำหรับ Virtual Try-On
+  patternImages: "pattern-images",   // รูปลายผ้า + รูปกระบวนการทอ
+  chatAttachments: "chat-attachments", // ไฟล์/รูปที่แนบในแชท
 } as const;
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
@@ -25,6 +27,8 @@ const BUCKET_MAX_SIZE: Record<BucketName, number> = {
   "fabric-uploads":  2000,
   "post-images":     1800,
   "tryon-uploads":   2000,
+  "pattern-images":  2000,
+  "chat-attachments": 2000,
 };
 
 /** คุณภาพ WebP แต่ละ bucket (0–100) */
@@ -35,6 +39,8 @@ const BUCKET_QUALITY: Record<BucketName, number> = {
   "fabric-uploads":  88,
   "post-images":     85,
   "tryon-uploads":   90,
+  "pattern-images":  88,
+  "chat-attachments": 88,
 };
 
 /**
@@ -102,6 +108,41 @@ export async function uploadBase64AsWebP(
   const base64Data = match ? match[1] : imageBase64;
   const buffer = Buffer.from(base64Data, "base64");
   return uploadImageAsWebP(buffer, bucket, folder);
+}
+
+/**
+ * อัปโหลดไฟล์ดิบ (ไม่ผ่าน sharp/WebP) — ใช้กับไฟล์ที่ไม่ใช่รูป เช่น ไฟล์แนบในแชท (PDF ฯลฯ)
+ * @param inputBuffer - raw file buffer
+ * @param bucket      - ชื่อ bucket ปลายทาง
+ * @param folder      - subfolder ภายใน bucket
+ * @param contentType - MIME type ของไฟล์ต้นฉบับ
+ * @param filename    - ชื่อไฟล์ต้นฉบับ (ใช้ต่อท้าย path เพื่อคงนามสกุลไว้)
+ */
+export async function uploadRawFile(
+  inputBuffer: Buffer,
+  bucket: BucketName,
+  folder: string | undefined,
+  contentType: string,
+  filename: string
+): Promise<{ url: string; sizeBytes: number; filename: string }> {
+  if (!supabaseAdminConfigured) {
+    throw new Error("Supabase storage ยังไม่ได้ตั้งค่า (ต้องมี SUPABASE_URL และ SUPABASE_SERVICE_ROLE_KEY ใน .env)");
+  }
+
+  await ensureBucket(bucket);
+
+  const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const path = folder ? `${folder.replace(/\/$/, "")}/${randomUUID()}-${safeName}` : `${randomUUID()}-${safeName}`;
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(bucket)
+    .upload(path, inputBuffer, { contentType, upsert: false });
+
+  if (uploadError) throw uploadError;
+
+  const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
+
+  return { url: pub.publicUrl, sizeBytes: inputBuffer.length, filename };
 }
 
 // ── Bucket bootstrap (idempotent) ────────────────────────────────────────────

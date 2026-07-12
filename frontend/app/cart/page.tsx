@@ -23,7 +23,7 @@ import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { useCartStore, cartSubtotal } from "@/lib/cart-store";
+import { useCartStore, cartSubtotal, cartLineKey } from "@/lib/cart-store";
 import Image from "next/image";
 import Link from "next/link";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -66,14 +66,14 @@ export default function CartPage() {
   const subtotal = useMemo(() => cartSubtotal(items), [items]);
   const total = Math.max(0, subtotal + (items.length > 0 ? SHIPPING_ESTIMATE : 0));
 
-  const handleUpdateQty = (productId: string, delta: number, current: number, stock: number) => {
+  const handleUpdateQty = (lineKey: string, delta: number, current: number, stock: number) => {
     const next = current + delta;
     if (next > stock) {
       setToastMessage(`สินค้าเหลือ ${stock} ชิ้น`);
-      updateQuantity(productId, stock);
+      updateQuantity(lineKey, stock);
       return;
     }
-    updateQuantity(productId, next);
+    updateQuantity(lineKey, next);
   };
 
   const confirmRemove = () => {
@@ -196,8 +196,10 @@ export default function CartPage() {
 
               {/* LEFT: รายการสินค้า */}
               <Box sx={{ flex: { md: "1 1 0" }, minWidth: 0, width: "100%" }}>
-                {items.map((line) => (
-                  <Box key={line.productId} sx={{ ...cardSx, p: { xs: 1.5, md: 2 }, mb: 1.5 }}>
+                {items.map((line) => {
+                  const lineKey = cartLineKey(line.productId, line.variantId);
+                  return (
+                  <Box key={lineKey} sx={{ ...cardSx, p: { xs: 1.5, md: 2 }, mb: 1.5 }}>
                     <Box sx={{ display: "flex", gap: 1.8 }}>
                       <Box sx={{ width: { xs: 80, md: 96 }, height: { xs: 80, md: 96 }, borderRadius: "14px", overflow: "hidden", position: "relative", bgcolor: "#F0F0F0", flexShrink: 0 }}>
                         {line.product.image && (
@@ -211,6 +213,11 @@ export default function CartPage() {
                         <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#9CA3AF", mt: 0.3 }}>
                           ร้าน: {line.product.shopName}
                         </Typography>
+                        {line.variantLabel && (
+                          <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#8E601C", mt: 0.3 }}>
+                            ตัวเลือก: {line.variantLabel}
+                          </Typography>
+                        )}
                         <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1rem", color: GOLD, mt: "auto" }}>
                           ฿{line.product.price.toLocaleString()} / {line.product.priceUnit}
                         </Typography>
@@ -220,24 +227,25 @@ export default function CartPage() {
                     <Divider sx={{ my: 1.5, borderColor: "#F3EDE2" }} />
 
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <IconButton onClick={() => setItemToDelete(line.productId)} size="small" sx={{ color: "#D1D5DB", "&:hover": { color: "#D32F2F" } }}>
+                      <IconButton onClick={() => setItemToDelete(lineKey)} size="small" sx={{ color: "#D1D5DB", "&:hover": { color: "#D32F2F" } }}>
                         <DeleteOutlineRoundedIcon fontSize="small" />
                       </IconButton>
 
                       <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "10px", bgcolor: "#FFFFFF" }}>
-                        <IconButton onClick={() => handleUpdateQty(line.productId, -1, line.quantity, line.product.stock)} size="small" sx={{ p: 0.6 }}>
+                        <IconButton onClick={() => handleUpdateQty(lineKey, -1, line.quantity, line.product.stock)} size="small" sx={{ p: 0.6 }}>
                           <RemoveRoundedIcon sx={{ fontSize: 18 }} />
                         </IconButton>
                         <Typography sx={{ px: 1.6, fontWeight: 600, fontSize: "0.9rem", color: NAVY, minWidth: 30, textAlign: "center" }}>
                           {line.quantity}
                         </Typography>
-                        <IconButton onClick={() => handleUpdateQty(line.productId, 1, line.quantity, line.product.stock)} size="small" sx={{ p: 0.6 }}>
+                        <IconButton onClick={() => handleUpdateQty(lineKey, 1, line.quantity, line.product.stock)} size="small" sx={{ p: 0.6 }}>
                           <AddRoundedIcon sx={{ fontSize: 18 }} />
                         </IconButton>
                       </Box>
                     </Box>
                   </Box>
-                ))}
+                  );
+                })}
               </Box>
 
               {/* RIGHT: สรุปคำสั่งซื้อ sticky (เดสก์ท็อป) */}

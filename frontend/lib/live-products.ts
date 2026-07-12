@@ -69,6 +69,30 @@ export interface Product {
   typeLabel?: string;
   /** หมวดหมู่สินค้า (fabric/clothing/scarf/bag/premium/decor/others) — มีเฉพาะสินค้าจริงจาก backend */
   category?: string;
+  /** true เมื่อสินค้ามีหลายตัวเลือก (SKU) — ต้องเลือกก่อนซื้อ */
+  hasVariants?: boolean;
+  /** รายการ SKU (มีเฉพาะหน้า detail ของสินค้าที่ hasVariants) */
+  variants?: ProductVariant[];
+  priceMin?: number;
+  priceMax?: number;
+}
+
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  sku: string | null;
+  color: string | null;
+  size: string | null;
+  pattern: string | null;
+  length: string | null;
+  material: string | null;
+  price: number;
+  stock: number;
+}
+
+/** ป้ายกำกับ SKU สำหรับแสดงผล เช่น "สีแดง · M" */
+export function variantLabel(v: ProductVariant): string {
+  return [v.color, v.size, v.pattern, v.length, v.material].filter(Boolean).join(" · ") || v.sku || "ตัวเลือก";
 }
 
 export interface LiveProduct {
@@ -87,23 +111,32 @@ export interface LiveProduct {
   province: string;
   rating: number;
   reviewCount: number;
+  hasVariants?: boolean;
+  variants?: ProductVariant[];
+  priceMin?: number;
+  priceMax?: number;
+  stockTotal?: number;
 }
 
 /** แปลงสินค้าจริงจาก backend ให้เข้ากับ Product shape เดิม (ready-made เท่านั้น — isCustomizable: false) */
 export function mapLiveProduct(p: LiveProduct): Product {
+  const hasVariants = Boolean(p.hasVariants && (p.variants?.length || p.stockTotal != null || p.priceMin != null));
   return {
     id: p.id,
     name: p.name,
     community: p.shopName,
     province: p.province,
-    price: p.price,
+    // สินค้า multi-SKU: ราคาเริ่มต้น = ราคาต่ำสุดของ SKU, สต็อก = ผลรวมทุก SKU
+    price: hasVariants ? (p.priceMin ?? p.price) : p.price,
     priceUnit: p.priceUnit,
     rating: p.rating,
     reviewCount: p.reviewCount,
     images: p.images.length ? p.images : ["/placeholder.webp"],
     hasGI: p.hasGI,
     productionTime: "พร้อมส่ง",
-    availableLength: p.stock,
+    availableLength: hasVariants
+      ? (p.stockTotal ?? p.variants?.reduce((s, v) => s + v.stock, 0) ?? p.stock)
+      : p.stock,
     fabricType: p.fabricType ?? p.category,
     story: p.description ?? "",
     weaverName: p.shopName,
@@ -112,6 +145,10 @@ export function mapLiveProduct(p: LiveProduct): Product {
     isLive: true,
     shopId: p.shopId,
     category: p.category,
+    hasVariants: Boolean(p.hasVariants),
+    variants: p.variants,
+    priceMin: p.priceMin,
+    priceMax: p.priceMax,
   };
 }
 

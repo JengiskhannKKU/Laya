@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { uploadBase64AsWebP, BUCKETS, BucketName } from "../utils/imageUtils";
+import { uploadBase64AsWebP, uploadRawFile, BUCKETS, BucketName } from "../utils/imageUtils";
 import { requireAuth } from "../middleware/auth";
 
 const router = Router();
@@ -46,7 +46,35 @@ router.post("/image", requireAuth, async (req: Request, res: Response) => {
     res.json({ success: true, ...result });
   } catch (err: any) {
     console.error("[upload/image] error:", err.message);
-    res.status(500).json({ error: err.message ?? "Upload failed" });
+    res.status(500).json({ error: "อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หากยังไม่สำเร็จ กรุณาติดต่อฝ่ายบริการลูกค้า" });
+  }
+});
+
+/**
+ * POST /api/upload/file — อัปโหลดไฟล์แนบ (ไม่ใช่รูป เช่น PDF) สำหรับแชท — ไม่ผ่าน sharp/WebP
+ * body: { fileBase64: string, filename: string, contentType: string, folder?: string }
+ * returns: { url, sizeBytes, filename }
+ * bucket ตายตัวเป็น chat-attachments เท่านั้น (ไม่ให้ client เลือก bucket เอง)
+ */
+router.post("/file", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { fileBase64, filename, contentType, folder } = req.body as {
+      fileBase64?: string; filename?: string; contentType?: string; folder?: string;
+    };
+
+    if (!fileBase64) { res.status(400).json({ error: "fileBase64 is required" }); return; }
+    if (!filename) { res.status(400).json({ error: "filename is required" }); return; }
+    if (!contentType) { res.status(400).json({ error: "contentType is required" }); return; }
+
+    const match = fileBase64.match(/^data:[^;]+;base64,(.+)$/);
+    const buffer = Buffer.from(match ? match[1] : fileBase64, "base64");
+    if (buffer.length > 20 * 1024 * 1024) { res.status(400).json({ error: "ไฟล์ขนาดใหญ่เกินไป (สูงสุด 20MB)" }); return; }
+
+    const result = await uploadRawFile(buffer, BUCKETS.chatAttachments, folder, contentType, filename);
+    res.json({ success: true, ...result });
+  } catch (err: any) {
+    console.error("[upload/file] error:", err.message);
+    res.status(500).json({ error: "อัปโหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หากยังไม่สำเร็จ กรุณาติดต่อฝ่ายบริการลูกค้า" });
   }
 });
 

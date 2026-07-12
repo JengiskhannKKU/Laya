@@ -1,13 +1,20 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect, Suspense } from "react";
+/**
+ * ตั้งรหัสผ่านใหม่ — ปลายทางของลิงก์รีเซ็ตจากอีเมล (Supabase Auth)
+ * ลิงก์ recovery จะพา session กลับมาใน URL — supabase-js (detectSessionInUrl) จัดการให้
+ * แล้วเราค่อยเรียก updateUser({ password }) เพื่อตั้งรหัสใหม่
+ */
+
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import { supabase } from "@/lib/supabase";
 
 const textFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -21,28 +28,49 @@ const textFieldStyles = {
 
 function ResetPasswordForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // ready: มี session จากลิงก์ recovery แล้ว | invalid: เปิดหน้าตรงๆ/ลิงก์หมดอายุ
+  const [linkState, setLinkState] = useState<"checking" | "ready" | "invalid">("checking");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!token) {
-      setError("ลิงก์ไม่ถูกต้อง หรืออาจหมดอายุแล้ว (ไม่มีข้อมูล Token)");
-    }
-  }, [token]);
+    let cancelled = false;
+
+    // ลิงก์ recovery อาจใช้เวลาแลก session ครู่หนึ่ง — ฟัง event และเช็คซ้ำก่อนตัดสินว่าลิงก์เสีย
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if (session) setLinkState("ready");
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled) return;
+      if (session) { setLinkState("ready"); return; }
+      // รออีกนิดเผื่อ detectSessionInUrl กำลังประมวลผล hash อยู่
+      setTimeout(async () => {
+        if (cancelled) return;
+        const { data: { session: s2 } } = await supabase.auth.getSession();
+        setLinkState(s2 ? "ready" : "invalid");
+      }, 1500);
+    });
+
+    return () => { cancelled = true; subscription.unsubscribe(); };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password || !confirmPassword || !token) return;
+    if (!password || !confirmPassword) return;
 
     if (password !== confirmPassword) {
       setError("รหัสผ่านไม่ตรงกัน");
+      return;
+    }
+    if (password.length < 8) {
+      setError("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
       return;
     }
 
@@ -50,17 +78,26 @@ function ResetPasswordForm() {
     setError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { error: sbError } = await supabase.auth.updateUser({ password });
+      if (sbError) throw new Error(sbError.message);
       setSuccess(true);
-      setTimeout(() => {
-        router.push("/auth/login");
-      }, 3000);
-    } catch (err: any) {
-      setError(err.message || "ลิงก์หมดอายุ หรือเกิดข้อผิดพลาด");
+      // ตั้งรหัสใหม่แล้ว — ออกจาก session recovery แล้วให้ล็อกอินใหม่ด้วยรหัสใหม่
+      await supabase.auth.signOut();
+      setTimeout(() => router.push("/auth/login"), 2500);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "ลิงก์หมดอายุ หรือเกิดข้อผิดพลาด");
     } finally {
       setLoading(false);
     }
   };
+
+  if (linkState === "checking") {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", pt: 8 }}>
+        <CircularProgress sx={{ color: "#C5A55A" }} />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ px: 3, pt: 2, pb: 4, flex: 1 }}>
@@ -78,6 +115,15 @@ function ResetPasswordForm() {
       </Typography>
 
       <Box sx={{ mt: 4 }}>
+        {linkState === "invalid" && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>
+            ลิงก์ไม่ถูกต้อง หรือหมดอายุแล้ว — กรุณาขอลิงก์รีเซ็ตรหัสผ่านใหม่อีกครั้ง
+            <Button onClick={() => router.push("/auth/forgot")} sx={{ display: "block", mt: 1, p: 0, color: "#C5A55A", fontFamily: '"Kanit", sans-serif', fontWeight: 600, textTransform: "none" }}>
+              ขอลิงก์ใหม่
+            </Button>
+          </Alert>
+        )}
+
         {error && (
           <Alert
             severity="error"
@@ -100,13 +146,13 @@ function ResetPasswordForm() {
               <TextField
                 fullWidth
                 variant="outlined"
-                placeholder="รหัสผ่านใหม่"
+                placeholder="รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 sx={textFieldStyles}
-                disabled={loading || !token}
+                disabled={loading || linkState !== "ready"}
               />
 
               <TextField
@@ -118,14 +164,14 @@ function ResetPasswordForm() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 sx={textFieldStyles}
-                disabled={loading || !token}
+                disabled={loading || linkState !== "ready"}
               />
 
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
-                disabled={loading || !password || !confirmPassword || !token}
+                disabled={loading || !password || !confirmPassword || linkState !== "ready"}
                 sx={{
                   py: 1.5,
                   mt: 1,
@@ -151,7 +197,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#FAF6F0" }}>
+    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
       {/* Header */}
       <Box sx={{ px: 3, pt: 5, pb: 2 }}>
         <Typography
@@ -168,10 +214,7 @@ export default function ResetPasswordPage() {
         </Typography>
       </Box>
 
-      {/* Form Area – wrapped in Suspense because ResetPasswordForm uses useSearchParams */}
-      <Suspense fallback={<CircularProgress sx={{ m: "auto" }} />}>
-        <ResetPasswordForm />
-      </Suspense>
+      <ResetPasswordForm />
     </Box>
   );
 }

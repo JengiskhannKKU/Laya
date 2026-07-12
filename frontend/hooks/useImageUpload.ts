@@ -9,7 +9,9 @@ export type UploadBucket =
   | "product-images"
   | "fabric-uploads"
   | "post-images"
-  | "tryon-uploads";
+  | "tryon-uploads"
+  | "pattern-images"
+  | "chat-attachments";
 
 export interface UploadResult {
   url: string;

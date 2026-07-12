@@ -63,7 +63,13 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
+      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
+      if (msg === "EMAIL_NOT_CONFIRMED") {
+        // ยังไม่ได้กดยืนยันอีเมล — พาไปหน้ายืนยัน (ส่งซ้ำได้จากที่นั่น)
+        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

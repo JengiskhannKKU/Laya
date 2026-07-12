@@ -12,6 +12,7 @@ import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import PaymentRoundedIcon from "@mui/icons-material/PaymentRounded";
 import CampaignRoundedIcon from "@mui/icons-material/CampaignRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -23,6 +24,7 @@ const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: stri
   payment: { icon: <PaymentRoundedIcon sx={{ fontSize: 20 }} />, color: "#10B981", bg: "rgba(16,185,129,0.1)" },
   promo: { icon: <CampaignRoundedIcon sx={{ fontSize: 20 }} />, color: "#C5A55A", bg: "rgba(197,165,90,0.1)" },
   system: { icon: <InfoRoundedIcon sx={{ fontSize: 20 }} />, color: "#6B7280", bg: "rgba(107,114,128,0.1)" },
+  message: { icon: <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 20 }} />, color: "#8B5CF6", bg: "rgba(139,92,246,0.1)" },
 };
 
 export default function NotificationsPage() {

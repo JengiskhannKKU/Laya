@@ -17,6 +17,9 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
+import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
+import RemoveCircleOutlineRoundedIcon from "@mui/icons-material/RemoveCircleOutlineRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
@@ -33,8 +36,14 @@ interface MerchantProduct {
   price: number;
   priceUnit: string;
   stock: number;
+  lowStockThreshold: number;
   images: string[];
   isActive: boolean;
+  hasVariants: boolean;
+  variantCount?: number;
+  priceMin?: number;
+  priceMax?: number;
+  stockTotal?: number;
 }
 
 const categoryLabel = (v: string) => PRODUCT_CATEGORIES.find((c) => c.value === v)?.label ?? v;
@@ -79,6 +88,23 @@ export default function MerchantProductsPage() {
     }
   };
 
+  const adjustStock = async (product: MerchantProduct, delta: number) => {
+    if (product.stock + delta < 0) return;
+    setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, stock: p.stock + delta } : p)));
+    try {
+      const res = await authFetch(`${API_BASE}/api/products/${product.id}/stock`, {
+        method: "POST",
+        body: JSON.stringify({ delta }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "ปรับสต็อกไม่สำเร็จ");
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, stock: data.stock } : p)));
+    } catch (err) {
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, stock: product.stock } : p))); // rollback
+      setError(err instanceof Error ? err.message : "ปรับสต็อกไม่สำเร็จ");
+    }
+  };
+
   const handleDelete = async (product: MerchantProduct) => {
     if (!window.confirm(`ลบ "${product.name}" ออกจากร้านใช่ไหม?`)) return;
     try {
@@ -102,13 +128,22 @@ export default function MerchantProductsPage() {
         <Typography sx={{ fontFamily: FONT, fontSize: "1.3rem", fontWeight: 700, color: "#1B2A4A" }}>
           สินค้า / ผ้า
         </Typography>
-        <Button
-          component={Link} href="/merchant/products/create"
-          variant="contained" startIcon={<AddRoundedIcon />}
-          sx={{ bgcolor: "#1B2A4A", borderRadius: "10px", fontFamily: FONT, textTransform: "none", fontWeight: 600 }}
-        >
-          เพิ่มสินค้า
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            component={Link} href="/merchant/products/bulk-create"
+            variant="outlined"
+            sx={{ borderColor: "#C5A55A", color: "#1B2A4A", borderRadius: "10px", fontFamily: FONT, textTransform: "none", fontWeight: 600 }}
+          >
+            เพิ่มหลายรายการ
+          </Button>
+          <Button
+            component={Link} href="/merchant/products/create"
+            variant="contained" startIcon={<AddRoundedIcon />}
+            sx={{ bgcolor: "#1B2A4A", borderRadius: "10px", fontFamily: FONT, textTransform: "none", fontWeight: 600 }}
+          >
+            เพิ่มสินค้า
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -146,13 +181,48 @@ export default function MerchantProductsPage() {
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1, alignItems: "center", mt: 0.5, flexWrap: "wrap" }}>
                     <Chip label={categoryLabel(product.category)} size="small" sx={{ fontFamily: FONT, fontSize: "0.68rem", bgcolor: "#F0EBE3", color: "#1B2A4A", height: 20 }} />
-                    <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: "#C5A55A", fontSize: "0.85rem" }}>
-                      ฿{product.price.toLocaleString()}/{product.priceUnit}
-                    </Typography>
-                    <Typography sx={{ fontFamily: FONT, fontSize: "0.75rem", color: product.stock === 0 ? "#EF4444" : "#6B7280" }}>
-                      {product.stock === 0 ? "หมดสต็อก" : `สต็อก ${product.stock} ${product.priceUnit}`}
-                    </Typography>
+                    {product.hasVariants ? (
+                      <>
+                        <Chip label={`Multi-SKU · ${product.variantCount ?? 0} ตัวเลือก`} size="small" sx={{ fontFamily: FONT, fontSize: "0.68rem", bgcolor: "rgba(197,165,90,0.15)", color: "#8A6D2F", height: 20 }} />
+                        <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: "#C5A55A", fontSize: "0.85rem" }}>
+                          {product.priceMin != null
+                            ? (product.priceMin === product.priceMax ? `฿${product.priceMin.toLocaleString()}` : `฿${product.priceMin.toLocaleString()}–${(product.priceMax ?? product.priceMin).toLocaleString()}`)
+                            : "ยังไม่มี SKU"}
+                        </Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.75rem", color: "#6B7280" }}>
+                          สต็อกรวม {product.stockTotal ?? 0} รายการ
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: "#C5A55A", fontSize: "0.85rem" }}>
+                          ฿{product.price.toLocaleString()}/{product.priceUnit}
+                        </Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.75rem", color: product.stock === 0 ? "#EF4444" : (product.stock <= product.lowStockThreshold ? "#D97706" : "#6B7280") }}>
+                          {product.stock === 0 ? "หมดสต็อก" : `สต็อก ${product.stock} ${product.priceUnit}`}
+                          {product.stock > 0 && product.stock <= product.lowStockThreshold ? " · ใกล้หมด" : ""}
+                        </Typography>
+                      </>
+                    )}
                   </Box>
+                  {product.hasVariants ? (
+                    <Button
+                      size="small" component={Link} href={`/merchant/products/${product.id}/variants`}
+                      startIcon={<TuneRoundedIcon sx={{ fontSize: 16 }} />}
+                      sx={{ mt: 0.5, fontFamily: FONT, fontSize: "0.75rem", color: "#1B2A4A", textTransform: "none", p: 0 }}
+                    >
+                      จัดการ SKU
+                    </Button>
+                  ) : (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, flexShrink: 0 }}>
+                      <IconButton size="small" onClick={() => adjustStock(product, -1)} disabled={product.stock <= 0} sx={{ color: "#6B7280" }}>
+                        <RemoveCircleOutlineRoundedIcon sx={{ fontSize: 20 }} />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => adjustStock(product, 1)} sx={{ color: "#6B7280" }}>
+                        <AddCircleOutlineRoundedIcon sx={{ fontSize: 20 }} />
+                      </IconButton>
+                    </Box>
+                  )}
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
                   <Switch

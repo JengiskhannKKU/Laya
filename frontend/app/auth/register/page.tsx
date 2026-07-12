@@ -53,7 +53,11 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      await registerUser(name, email, password, phone || undefined);
+      const { needsEmailConfirm } = await registerUser(name, email, password, phone || undefined);
+      if (needsEmailConfirm) {
+        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       router.push("/");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการสมัครสมาชิก");

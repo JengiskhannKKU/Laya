@@ -57,6 +57,7 @@ export default function MerchantRegisterPage() {
 
   const [form, setForm] = useState({
     shopName: "", province: "", phone: "", lineId: "",
+    merchantType: "weaving_community" as "weaving_community" | "designer",
     shopDescription: "", expertise: [] as string[],
     bankName: "", bankAccount: "", bankAccountName: "", promptpayId: "",
   });
@@ -92,6 +93,7 @@ export default function MerchantRegisterPage() {
         expertise: form.expertise,
         bankAccount: form.bankAccount, bankName: form.bankName,
         bankAccountName: form.bankAccountName, promptpayId: form.promptpayId,
+        merchantType: form.merchantType,
       });
       setDone(true);
     } catch (e: unknown) {
@@ -164,6 +166,41 @@ export default function MerchantRegisterPage() {
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 1 }}>
               ข้อมูลร้านค้าของคุณ
             </Typography>
+
+            {/* ประเภทร้านค้า: ชุมชนทอผ้า / ดีไซเนอร์ */}
+            <Box>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 1.2 }}>
+                คุณเป็นร้านค้าประเภทไหน? *
+              </Typography>
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
+                {([
+                  { value: "weaving_community", title: "ชุมชนทอผ้า", desc: "กลุ่มทอผ้า/ช่างทอ ขายผ้าและงานทอมือ" },
+                  { value: "designer", title: "ดีไซเนอร์", desc: "นักออกแบบ ตัดเย็บ/แปรรูปผ้าไทยเป็นสินค้า" },
+                ] as const).map((opt) => {
+                  const active = form.merchantType === opt.value;
+                  return (
+                    <Box
+                      key={opt.value}
+                      onClick={() => set("merchantType", opt.value)}
+                      sx={{
+                        cursor: "pointer", borderRadius: "14px", p: 1.8,
+                        border: active ? "1.5px solid #C5A55A" : "1px solid #E5DFD6",
+                        bgcolor: active ? "#FDF8F0" : "#FFFFFF",
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.9rem", color: active ? "#8E601C" : "#1B2A4A" }}>
+                        {opt.title}
+                      </Typography>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#6B7280", mt: 0.4, lineHeight: 1.5 }}>
+                        {opt.desc}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+
             <TextField fullWidth label="ชื่อร้านค้า *" value={form.shopName} onChange={(e) => set("shopName", e.target.value)} sx={textFieldSx} />
             <FormControl fullWidth sx={textFieldSx}>
               <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>จังหวัด *</InputLabel>

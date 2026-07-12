@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
+import { createThaiDoc, drawDocHeader, drawKeyValueBlock, formatDocNumber, streamPdf } from "../utils/pdf";
 
 const router = Router();
 
@@ -74,10 +75,12 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
          o.fabric_source, o.fabric_meters_used,
          o.estimated_price, o.final_price,
          o.special_instructions,
+         o.tracking_no, o.courier,
          o.confirmed_at, o.completed_at,
          o.created_at, o.updated_at,
          u.display_name  AS customer_name,
          u.email         AS customer_email,
+         u.phone         AS customer_phone,
          s.name          AS shop_name,
          sf.name         AS fabric_name,
          sf.color_name   AS fabric_color
@@ -108,10 +111,12 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
          o.fabric_source, o.fabric_meters_used,
          o.estimated_price, o.final_price,
          o.special_instructions,
+         o.tracking_no, o.courier,
          o.confirmed_at, o.completed_at,
          o.created_at, o.updated_at,
          u.display_name  AS customer_name,
          u.email         AS customer_email,
+         u.phone         AS customer_phone,
          s.name          AS shop_name,
          sf.name         AS fabric_name,
          sf.color_name   AS fabric_color,
@@ -154,6 +159,67 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch order" });
+  }
+});
+
+/** GET /api/orders/:id/slip.pdf — ใบสั่งซื้อ (ออเดอร์ตัดเย็บ) */
+router.get("/:id/slip.pdf", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { userId, role, shopId } = req.user!;
+
+    const rows = await query<Record<string, unknown>>(
+      `SELECT o.id, o.customer_id, o.shop_id, o.status, o.fabric_source, o.fabric_meters_used,
+              o.estimated_price, o.final_price, o.special_instructions, o.created_at,
+              u.display_name AS customer_name, u.email AS customer_email, u.phone AS customer_phone,
+              s.name AS shop_name, s.address AS shop_address, s.phone AS shop_phone,
+              sf.name AS fabric_name, sf.color_name AS fabric_color
+       FROM orders o
+       JOIN users u ON u.id = o.customer_id
+       JOIN shops s ON s.id = o.shop_id
+       LEFT JOIN shop_fabrics sf ON sf.id = o.shop_fabric_id
+       WHERE o.id = $1`,
+      [req.params.id]
+    );
+    if (!rows.length) { res.status(404).json({ error: "Order not found" }); return; }
+    const o = rows[0];
+
+    if (role === "customer" && o.customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
+    if (role === "merchant" && o.shop_id !== shopId) { res.status(403).json({ error: "Forbidden" }); return; }
+
+    const createdAt = new Date(o.created_at as string);
+    const doc = createThaiDoc();
+    drawDocHeader(doc, {
+      shopName: o.shop_name as string,
+      shopAddress: o.shop_address as string | null,
+      shopPhone: o.shop_phone as string | null,
+      docTitle: "ใบสั่งซื้อ",
+      docNumber: formatDocNumber("ORD", o.id as string, createdAt),
+      docDate: createdAt,
+    });
+
+    const y = drawKeyValueBlock(doc, doc.page.margins.left, doc.y, "ลูกค้า", [
+      (o.customer_name as string) ?? "-",
+      (o.customer_email as string) ?? "",
+      (o.customer_phone as string) ?? "",
+    ]);
+    doc.y = y + 16;
+
+    doc.font("Sarabun-Bold").fontSize(11).fillColor("#1B2A4A").text("รายละเอียดงานตัดเย็บ", doc.page.margins.left, doc.y);
+    doc.moveDown(0.5);
+    doc.font("Sarabun").fontSize(10).fillColor("#374151");
+    doc.text(`ผ้า: ${(o.fabric_name as string) ?? (o.fabric_source === "own" ? "ลูกค้านำผ้ามาเอง" : "-")}${o.fabric_color ? ` (สี${o.fabric_color})` : ""}`);
+    if (o.fabric_meters_used) doc.text(`จำนวนผ้าที่ใช้: ${Number(o.fabric_meters_used)} เมตร`);
+    if (o.special_instructions) doc.text(`หมายเหตุ: ${o.special_instructions}`);
+    doc.moveDown(1);
+
+    const price = Number(o.final_price ?? o.estimated_price ?? 0);
+    doc.font("Sarabun-Bold").fontSize(12).fillColor("#1B2A4A")
+      .text(`ยอดรวม: ฿${price.toLocaleString()}`, doc.page.margins.left, doc.y, { align: "right", width: doc.page.width - doc.page.margins.left - doc.page.margins.right });
+
+    streamPdf(res, doc, `order-slip-${(o.id as string).slice(0, 8)}.pdf`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "สร้างเอกสารไม่สำเร็จ" });
   }
 });
 
@@ -230,7 +296,9 @@ router.patch("/:id/status", requireAuth, changeStatus);
 async function changeStatus(req: Request, res: Response) {
   try {
     const { role, userId, shopId } = req.user!;
-    const { status, note, finalPrice } = req.body as { status: string; note?: string; finalPrice?: number };
+    const { status, note, finalPrice, trackingNo, courier } = req.body as {
+      status: string; note?: string; finalPrice?: number; trackingNo?: string; courier?: string;
+    };
 
     if (!status) {
       res.status(400).json({ error: "status is required" });
@@ -278,9 +346,11 @@ async function changeStatus(req: Request, res: Response) {
          confirmed_at = CASE WHEN $1::text = 'confirmed' THEN NOW() ELSE confirmed_at END,
          completed_at = CASE WHEN $1::text = 'delivered' THEN NOW() ELSE completed_at END,
          final_price = COALESCE($2, final_price),
+         tracking_no = COALESCE($4, tracking_no),
+         courier = COALESCE($5, courier),
          updated_at = NOW()
        WHERE id = $3`,
-      [status, finalPrice ?? null, req.params.id]
+      [status, finalPrice ?? null, req.params.id, trackingNo ?? null, courier ?? null]
     );
 
     await query(
@@ -327,6 +397,8 @@ function mapOrder(row: Record<string, unknown>) {
     estimatedPrice: row.estimated_price ? Number(row.estimated_price) : null,
     finalPrice: row.final_price ? Number(row.final_price) : null,
     specialInstructions: row.special_instructions ?? null,
+    trackingNo: row.tracking_no ?? null,
+    courier: row.courier ?? null,
     confirmedAt: row.confirmed_at ?? null,
     completedAt: row.completed_at ?? null,
     createdAt: row.created_at,
@@ -334,6 +406,7 @@ function mapOrder(row: Record<string, unknown>) {
     // Joined fields
     customerName: row.customer_name ?? null,
     customerEmail: row.customer_email ?? null,
+    customerPhone: row.customer_phone ?? null,
     shopName: row.shop_name ?? null,
     fabricName: row.fabric_name ?? null,
     fabricColor: row.fabric_color ?? null,

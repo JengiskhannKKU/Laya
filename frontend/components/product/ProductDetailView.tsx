@@ -23,7 +23,7 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchLiveProducts, type Product } from "@/lib/live-products";
+import { fetchLiveProducts, variantLabel, type Product, type ProductVariant } from "@/lib/live-products";
 import { useAuth } from "@/lib/auth-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCartStore } from "@/lib/cart-store";
@@ -54,13 +54,26 @@ export default function ProductDetailView({ product }: { product: Product }) {
   const { showConfirm, showToast } = useAppModal();
   const [currentImage, setCurrentImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(AVAILABLE_COLORS[0]);
-  const [quantity, setQuantity] = useState(5);
+  // สินค้าพร้อมขายเริ่มที่ 1 ชิ้น — งานสั่งทอ/ตัดเริ่มที่ 5 เมตรตามเดิม
+  const [quantity, setQuantity] = useState(product.isCustomizable === false ? 1 : 5);
   const [format, setFormat] = useState(FORMATS[0]);
   const [edgeFinish, setEdgeFinish] = useState(EDGE_FINISHES[0]);
   const [notes, setNotes] = useState("");
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   const isReadyMade = product.isCustomizable === false;
+
+  // ── Multi-SKU: สินค้าที่มีหลายตัวเลือกต้องเลือก SKU ก่อนซื้อ ──
+  const variants = product.variants ?? [];
+  const requiresVariant = Boolean(product.hasVariants && variants.length > 0);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    requiresVariant ? (variants.find((v) => v.stock > 0) ?? null) : null
+  );
+  const [variantError, setVariantError] = useState(false);
+
+  /** ราคา/สต็อกที่ใช้จริง — จาก SKU ที่เลือก (ถ้ามี) ไม่งั้นจากสินค้าหลัก */
+  const effectivePrice = requiresVariant ? (selectedVariant?.price ?? product.price) : product.price;
+  const effectiveStock = requiresVariant ? (selectedVariant?.stock ?? 0) : product.availableLength;
 
   useEffect(() => {
     if (!product.category) return;
@@ -71,19 +84,26 @@ export default function ProductDetailView({ product }: { product: Product }) {
     return () => { cancelled = true; };
   }, [product.category, product.id]);
 
-  const addSnapshotToCart = () => {
+  /** เพิ่มลงตะกร้า — คืน false ถ้ายังไม่ได้เลือกตัวเลือกสินค้า (multi-SKU) */
+  const addSnapshotToCart = (): boolean => {
+    if (requiresVariant && !selectedVariant) {
+      setVariantError(true);
+      return false;
+    }
     addItem(
       {
         id: product.id,
         name: product.name,
         image: product.images[0] ?? null,
-        price: product.price,
+        price: effectivePrice,
         priceUnit: product.priceUnit,
         shopName: product.community,
-        stock: product.availableLength,
+        stock: effectiveStock,
       },
-      quantity
+      quantity,
+      selectedVariant ? { id: selectedVariant.id, label: variantLabel(selectedVariant) } : undefined
     );
+    return true;
   };
 
   /** งานสั่งทำ → ชวนไปห้องออกแบบแทน (ไม่มี add to cart) */
@@ -100,7 +120,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
   /** เพิ่มลงตะกร้า (ไม่ต้องล็อกอิน — ตะกร้าเก็บในเครื่อง) */
   const handleAddToCart = () => {
     if (!isReadyMade) { goToCustomFlow(); return; }
-    addSnapshotToCart();
+    if (!addSnapshotToCart()) return;
     showToast("เพิ่มลงตะกร้าแล้ว", "cart");
   };
 
@@ -108,11 +128,11 @@ export default function ProductDetailView({ product }: { product: Product }) {
   const handleBuyNow = () => {
     if (!isReadyMade) { goToCustomFlow(); return; }
     if (!user) { openAuthModal(); return; }
-    addSnapshotToCart();
+    if (!addSnapshotToCart()) return;
     router.push("/cart");
   };
 
-  const totalPrice = product.price * quantity;
+  const totalPrice = effectivePrice * quantity;
 
   return (
     <Box
@@ -321,7 +341,9 @@ export default function ProductDetailView({ product }: { product: Product }) {
         {/* Price & Tags */}
         <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1, mb: 2 }}>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.6rem", color: "#1B2A4A", lineHeight: 1 }}>
-            {product.price.toLocaleString()}
+            {requiresVariant && !selectedVariant && product.priceMin != null && product.priceMax != null && product.priceMin !== product.priceMax
+              ? `${product.priceMin.toLocaleString()} - ${product.priceMax.toLocaleString()}`
+              : effectivePrice.toLocaleString()}
           </Typography>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 0.3 }}>
             {product.priceUnit}
@@ -345,6 +367,77 @@ export default function ProductDetailView({ product }: { product: Product }) {
         </Box>
 
         <Divider sx={{ my: 3, borderColor: "rgba(0,0,0,0.06)" }} />
+
+        {/* ── ตัวเลือกสินค้า (Multi-SKU): เลือกสี/ไซซ์ก่อนซื้อ ── */}
+        {isReadyMade && requiresVariant && (
+          <Box sx={{ mb: 3 }}>
+            <Typography sx={{ fontSize: "0.85rem", color: variantError ? "#D32F2F" : "#6B7280", mb: 1.5, fontWeight: variantError ? 600 : 400 }}>
+              เลือกตัวเลือกสินค้า {variantError ? "— กรุณาเลือกก่อนสั่งซื้อ" : ""}
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {variants.map((v) => {
+                const active = selectedVariant?.id === v.id;
+                const out = v.stock <= 0;
+                return (
+                  <Button
+                    key={v.id}
+                    variant="outlined"
+                    disabled={out}
+                    onClick={() => {
+                      setSelectedVariant(v);
+                      setVariantError(false);
+                      setQuantity((q) => Math.max(1, Math.min(q, v.stock)));
+                    }}
+                    sx={{
+                      borderRadius: "20px",
+                      textTransform: "none",
+                      fontFamily: '"Kanit", sans-serif',
+                      borderColor: active ? "#1B2A4A" : "#E5DFD6",
+                      color: out ? "#C4BFB4" : active ? "#FFFFFF" : "#1B2A4A",
+                      bgcolor: active ? "#1B2A4A" : "transparent",
+                      textDecoration: out ? "line-through" : "none",
+                      "&:hover": { bgcolor: active ? "#1B2A4A" : "rgba(0,0,0,0.04)" },
+                    }}
+                  >
+                    {variantLabel(v)}
+                  </Button>
+                );
+              })}
+            </Box>
+            {selectedVariant && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 1.5 }}>
+                <Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}>
+                  {variantLabel(selectedVariant)} · ฿{selectedVariant.price.toLocaleString()}
+                </Typography>
+                <Typography sx={{ fontSize: "0.78rem", color: selectedVariant.stock <= 5 ? "#B4552D" : "#6B7280" }}>
+                  เหลือ {selectedVariant.stock} ชิ้น
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {/* ── จำนวน (สินค้าพร้อมขาย) ── */}
+        {isReadyMade && (
+          <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography sx={{ fontSize: "0.85rem", color: "#6B7280" }}>จำนวน</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "30px", bgcolor: "#FFFFFF" }}>
+              <IconButton onClick={() => setQuantity(Math.max(1, quantity - 1))} size="small" sx={{ p: 1 }}>
+                <RemoveRoundedIcon fontSize="small" />
+              </IconButton>
+              <Typography sx={{ px: 2, fontWeight: 600, color: "#1B2A4A" }}>{quantity}</Typography>
+              <IconButton
+                onClick={() => setQuantity(Math.min(Math.max(1, effectiveStock || 99), quantity + 1))}
+                size="small" sx={{ p: 1 }}
+              >
+                <AddRoundedIcon fontSize="small" />
+              </IconButton>
+            </Box>
+            <Typography sx={{ fontSize: "0.75rem", color: "#9CA3AF" }}>
+              {effectiveStock > 0 ? `มีสินค้า ${effectiveStock} ชิ้น` : "สินค้าหมด"}
+            </Typography>
+          </Box>
+        )}
 
         {product.isCustomizable !== false && (
           <>

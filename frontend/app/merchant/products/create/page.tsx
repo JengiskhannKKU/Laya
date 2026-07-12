@@ -19,9 +19,11 @@ export default function CreateProductPage() {
         price: Number(values.price),
         priceUnit: values.priceUnit,
         stock: Number(values.stock),
+        lowStockThreshold: values.lowStockThreshold ? Number(values.lowStockThreshold) : undefined,
         description: values.description || undefined,
         images: values.images,
         hasGI: values.hasGI,
+        hasVariants: values.hasVariants,
       }),
     }).catch((err) => {
       if (err instanceof SessionExpiredError) { router.push("/auth/login"); }
@@ -29,7 +31,7 @@ export default function CreateProductPage() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error ?? "เพิ่มสินค้าไม่สำเร็จ");
-    router.push("/merchant/products");
+    router.push(values.hasVariants ? `/merchant/products/${data.id}/variants` : "/merchant/products");
   };
 
   return (

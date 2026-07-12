@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
+import { createThaiDoc, drawDocHeader, drawKeyValueBlock, formatDocNumber, streamPdf } from "../utils/pdf";
 
 const router = Router();
 
@@ -50,8 +51,8 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const rows = await query<Record<string, unknown>>(
-      `SELECT w.*, u.display_name AS customer_name, s.name AS shop_name,
-              p.name AS pattern_name, cv.color_name
+      `SELECT w.*, u.display_name AS customer_name, u.email AS customer_email, u.phone AS customer_phone,
+              s.name AS shop_name, p.name AS pattern_name, cv.color_name
        FROM weaving_orders w
        JOIN users u ON u.id = w.customer_id
        JOIN shops s ON s.id = w.shop_id
@@ -74,8 +75,8 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
   try {
     const { userId, role, shopId } = req.user!;
     const rows = await query<Record<string, unknown>>(
-      `SELECT w.*, u.display_name AS customer_name, s.name AS shop_name,
-              p.name AS pattern_name, cv.color_name
+      `SELECT w.*, u.display_name AS customer_name, u.email AS customer_email, u.phone AS customer_phone,
+              s.name AS shop_name, p.name AS pattern_name, cv.color_name
        FROM weaving_orders w
        JOIN users u ON u.id = w.customer_id
        JOIN shops s ON s.id = w.shop_id
@@ -100,6 +101,67 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch weaving order" });
+  }
+});
+
+/** GET /api/weaving-orders/:id/slip.pdf — ใบสั่งซื้อ (ออเดอร์สั่งทอ) */
+router.get("/:id/slip.pdf", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { userId, role, shopId } = req.user!;
+    const rows = await query<Record<string, unknown>>(
+      `SELECT w.id, w.customer_id, w.shop_id, w.status, w.meters_requested, w.width_cm,
+              w.estimated_price, w.final_price, w.special_instructions, w.custom_color_note, w.created_at,
+              u.display_name AS customer_name, u.email AS customer_email, u.phone AS customer_phone,
+              s.name AS shop_name, s.address AS shop_address, s.phone AS shop_phone,
+              p.name AS pattern_name, cv.color_name
+       FROM weaving_orders w
+       JOIN users u ON u.id = w.customer_id
+       JOIN shops s ON s.id = w.shop_id
+       JOIN weave_patterns p ON p.id = w.pattern_id
+       LEFT JOIN weave_color_variants cv ON cv.id = w.color_variant_id
+       WHERE w.id = $1`,
+      [req.params.id]
+    );
+    if (!rows.length) { res.status(404).json({ error: "ไม่พบออเดอร์ทอผ้า" }); return; }
+    const w = rows[0];
+
+    if (role === "customer" && w.customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
+    if (role === "merchant" && w.shop_id !== shopId) { res.status(403).json({ error: "Forbidden" }); return; }
+
+    const createdAt = new Date(w.created_at as string);
+    const doc = createThaiDoc();
+    drawDocHeader(doc, {
+      shopName: w.shop_name as string,
+      shopAddress: w.shop_address as string | null,
+      shopPhone: w.shop_phone as string | null,
+      docTitle: "ใบสั่งซื้อ",
+      docNumber: formatDocNumber("WEV", w.id as string, createdAt),
+      docDate: createdAt,
+    });
+
+    const y = drawKeyValueBlock(doc, doc.page.margins.left, doc.y, "ลูกค้า", [
+      (w.customer_name as string) ?? "-",
+      (w.customer_email as string) ?? "",
+      (w.customer_phone as string) ?? "",
+    ]);
+    doc.y = y + 16;
+
+    doc.font("Sarabun-Bold").fontSize(11).fillColor("#1B2A4A").text("รายละเอียดงานสั่งทอ", doc.page.margins.left, doc.y);
+    doc.moveDown(0.5);
+    doc.font("Sarabun").fontSize(10).fillColor("#374151");
+    doc.text(`ลาย: ${(w.pattern_name as string) ?? "-"}${w.color_name ? ` โทน${w.color_name}` : (w.custom_color_note ? ` (${w.custom_color_note})` : "")}`);
+    doc.text(`จำนวนที่สั่ง: ${Number(w.meters_requested)} เมตร${w.width_cm ? ` × หน้ากว้าง ${w.width_cm} ซม.` : ""}`);
+    if (w.special_instructions) doc.text(`หมายเหตุ: ${w.special_instructions}`);
+    doc.moveDown(1);
+
+    const price = Number(w.final_price ?? w.estimated_price ?? 0);
+    doc.font("Sarabun-Bold").fontSize(12).fillColor("#1B2A4A")
+      .text(`ยอดรวม: ฿${price.toLocaleString()}`, doc.page.margins.left, doc.y, { align: "right", width: doc.page.width - doc.page.margins.left - doc.page.margins.right });
+
+    streamPdf(res, doc, `order-slip-${(w.id as string).slice(0, 8)}.pdf`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "สร้างเอกสารไม่สำเร็จ" });
   }
 });
 
@@ -178,8 +240,8 @@ router.patch("/:id/status", requireAuth, changeStatus);
 async function changeStatus(req: Request, res: Response) {
   try {
     const { userId, role, shopId } = req.user!;
-    const { status, note, finalPrice, estimatedWeeks } = req.body as {
-      status: string; note?: string; finalPrice?: number; estimatedWeeks?: number;
+    const { status, note, finalPrice, estimatedWeeks, trackingNo, courier } = req.body as {
+      status: string; note?: string; finalPrice?: number; estimatedWeeks?: number; trackingNo?: string; courier?: string;
     };
 
     if (!status) { res.status(400).json({ error: "status is required" }); return; }
@@ -215,9 +277,11 @@ async function changeStatus(req: Request, res: Response) {
          completed_at = CASE WHEN $1::text = 'delivered' THEN NOW() ELSE completed_at END,
          final_price = COALESCE($2, final_price),
          estimated_weeks = COALESCE($3, estimated_weeks),
+         tracking_no = COALESCE($5, tracking_no),
+         courier = COALESCE($6, courier),
          updated_at = NOW()
        WHERE id = $4`,
-      [status, finalPrice ?? null, estimatedWeeks ?? null, req.params.id]
+      [status, finalPrice ?? null, estimatedWeeks ?? null, req.params.id, trackingNo ?? null, courier ?? null]
     );
 
     await query(
@@ -279,11 +343,15 @@ function mapWeavingOrder(row: Record<string, unknown>) {
     finalPrice: row.final_price ? Number(row.final_price) : null,
     specialInstructions: row.special_instructions ?? null,
     estimatedWeeks: row.estimated_weeks ?? null,
+    trackingNo: row.tracking_no ?? null,
+    courier: row.courier ?? null,
     confirmedAt: row.confirmed_at ?? null,
     completedAt: row.completed_at ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     customerName: row.customer_name ?? null,
+    customerEmail: row.customer_email ?? null,
+    customerPhone: row.customer_phone ?? null,
     shopName: row.shop_name ?? null,
     patternName: row.pattern_name ?? null,
     colorName: row.color_name ?? null,

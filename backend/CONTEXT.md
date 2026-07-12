@@ -154,3 +154,27 @@ NODE_ENV=development|production
 
 ---
 <!-- เพิ่ม changelog entry ใหม่ต่อท้ายนี้ -->
+
+### 2026-07-12 — Multi-SKU Checkout + Merchant Type + Email/Password flows + Merchant Bell + สถานะขนส่งละเอียด
+
+**Migration `015_sku_checkout_merchant_type_shipping.sql` (apply แล้วบน DB จริงด้วย `_apply_migration_015.js`):**
+- `product_order_items` + `variant_id`, `variant_label` — บันทึก SKU ที่ลูกค้าเลือกตอนซื้อ
+- `shops` + `merchant_type` (`weaving_community` default | `designer`)
+- enum `shipment_status` เพิ่ม `picked_up`, `returned`; `product_orders` + `shipping_status`; ตารางใหม่ `product_order_shipping_logs`
+
+**Backend:**
+- `products.ts` — GET / (list) แนบ `has_variants`, `priceMin/priceMax/stockTotal` (LATERAL); GET /:id แนบ `variants[]` public
+- `product-orders.ts` — POST รองรับ `items[].variantId`: validate ราคา/สต็อกจาก `product_variants` (FOR UPDATE), บังคับเลือก SKU เมื่อ `has_variants`, ตัดสต็อกราย SKU, low-stock alert ราย SKU; PATCH /:id/status → shipped ตั้ง `shipping_status='pending'` อัตโนมัติ; endpoint ใหม่ `PATCH /:id/shipping-status` (pending→picked_up→in_transit→delivered / failed / returned พร้อม transition guard + log + notify ลูกค้า; delivered เลื่อน order เป็น delivered); PDF slip/packing/receipt ต่อท้าย variant label
+- `shops.ts` — POST /apply รับ `merchantType`
+
+**Frontend:**
+- `ProductDetailView` — ตัวเลือก SKU (ชิปสี/ไซซ์), ราคา/สต็อกตาม SKU, ปุ่มจำนวนสำหรับสินค้าพร้อมขาย (เริ่ม 1 ชิ้น)
+- `cart-store` — CartLine มี `variantId/variantLabel`, key ต่อบรรทัด = productId::variantId; cart/checkout ส่ง `variantId` และแสดง label
+- สมัครร้านค้า — เลือกประเภท ชุมชนทอผ้า/ดีไซเนอร์
+- `auth/forgot` + `auth/reset` — ต่อ Supabase จริง (`resetPasswordForEmail` / `updateUser`); `auth/verify-email` ใหม่ + `register()` คืน `needsEmailConfirm` + login จับ `Email not confirmed`
+- Merchant layout — กระดิ่งแจ้งเตือน + nav "การแจ้งเตือน" + หน้า `/merchant/notifications` (inbox)
+- `merchant/orders` — ปุ่ม/ไดอะล็อกอัปเดตสถานะขนส่งละเอียด; หน้าออเดอร์ลูกค้าแสดง timeline ขนส่ง
+
+**ทดสอบ:** `npm test` ใน backend (node:test — `tests/api.test.js` สตาร์ทเซิร์ฟเวอร์เองบนพอร์ต 4995, 14 เทส) และ `npm test` ใน frontend (vitest — `tests/*.test.ts`, 13 เทส) — ผ่านหมด รวม regression สินค้าไม่มี SKU; frontend `next build` ผ่าน; ตรวจ UI selector จริงผ่าน browser แล้ว
+
+**หมายเหตุ production:** ต้อง deploy backend ใหม่ (Render) ก่อน frontend ฟีเจอร์ variants จึงจะทำงานบนเว็บจริง; Email Verification ต้องเปิด "Confirm email" ใน Supabase Dashboard → Authentication → Sign In/Up

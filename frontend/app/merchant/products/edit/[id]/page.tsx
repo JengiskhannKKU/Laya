@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import ProductForm, { ProductFormValues } from "@/components/merchant/ProductForm";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 
@@ -29,9 +32,11 @@ export default function EditProductPage() {
           price: String(data.price),
           priceUnit: data.priceUnit ?? "ชิ้น",
           stock: String(data.stock),
+          lowStockThreshold: data.lowStockThreshold != null ? String(data.lowStockThreshold) : "5",
           description: data.description ?? "",
           images: data.images ?? [],
           hasGI: !!data.hasGI,
+          hasVariants: !!data.hasVariants,
         });
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : "โหลดข้อมูลสินค้าไม่สำเร็จ");
@@ -49,9 +54,11 @@ export default function EditProductPage() {
         price: Number(values.price),
         priceUnit: values.priceUnit,
         stock: Number(values.stock),
+        lowStockThreshold: values.lowStockThreshold ? Number(values.lowStockThreshold) : undefined,
         description: values.description || undefined,
         images: values.images,
         hasGI: values.hasGI,
+        hasVariants: values.hasVariants,
       }),
     }).catch((err) => {
       if (err instanceof SessionExpiredError) { router.push("/auth/login"); }
@@ -74,11 +81,22 @@ export default function EditProductPage() {
   }
 
   return (
-    <ProductForm
-      title="แก้ไขสินค้า"
-      initial={initial}
-      submitLabel="บันทึกการแก้ไข"
-      onSubmit={handleSubmit}
-    />
+    <Box>
+      {initial.hasVariants && (
+        <Button
+          component={Link} href={`/merchant/products/${params.id}/variants`}
+          variant="outlined" startIcon={<TuneRoundedIcon />}
+          sx={{ mb: 2, borderColor: "#C5A55A", color: "#1B2A4A", borderRadius: "10px", fontFamily: '"Kanit", sans-serif', fontWeight: 600, textTransform: "none" }}
+        >
+          จัดการ SKU สินค้า
+        </Button>
+      )}
+      <ProductForm
+        title="แก้ไขสินค้า"
+        initial={initial}
+        submitLabel="บันทึกการแก้ไข"
+        onSubmit={handleSubmit}
+      />
+    </Box>
   );
 }

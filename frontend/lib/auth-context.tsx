@@ -29,6 +29,8 @@ export interface MerchantApplication {
   bankName: string;
   bankAccountName?: string;
   promptpayId?: string;
+  /** ประเภทร้านค้า: ชุมชนทอผ้า | ดีไซเนอร์ */
+  merchantType: "weaving_community" | "designer";
 }
 
 interface AuthContextType {
@@ -39,7 +41,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   loginAsRole: (role: UserRole) => void;
   logout: () => Promise<void>;
-  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<{ needsEmailConfirm: boolean }>;
   openAuthModal: () => void;
   closeAuthModal: () => void;
   registerMerchant: (data: MerchantApplication) => Promise<void>;
@@ -158,7 +160,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
+    if (error) {
+      // แปลง error หลักๆ ของ Supabase เป็นภาษาไทยให้ผู้ใช้เข้าใจ
+      if (error.message.includes("Invalid login credentials")) throw new Error("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      if (error.message.includes("Email not confirmed")) throw new Error("EMAIL_NOT_CONFIRMED");
+      throw new Error(error.message);
+    }
     // onAuthStateChange will fire and call fetchProfile
   };
 
@@ -179,17 +186,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: {
         data: { display_name: name, phone: phone ?? "" },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-    if (error) throw new Error(error.message);
-    if (!data.user) throw new Error("สมัครสมาชิกไม่สำเร็จ");
-    // Sync profile to public.users via backend
-    if (data.session) {
-      await apiFetch("/api/auth/sync", data.session.access_token, {
-        method: "POST",
-        body: JSON.stringify({ display_name: name, phone }),
-      });
+    if (error) {
+      if (error.message.includes("already registered")) throw new Error("อีเมลนี้มีบัญชีอยู่แล้ว");
+      throw new Error(error.message);
     }
+    if (!data.user) throw new Error("สมัครสมาชิกไม่สำเร็จ");
+
+    // เปิด "Confirm email" ใน Supabase ไว้ → signUp จะยังไม่ได้ session
+    // ผู้ใช้ต้องกดลิงก์ยืนยันในอีเมลก่อน (ลิงก์พามาที่ /auth/callback แล้ว sync โปรไฟล์ที่นั่น)
+    if (!data.session) return { needsEmailConfirm: true };
+
+    // โหมดไม่บังคับยืนยันอีเมล — ได้ session ทันที sync โปรไฟล์เลย
+    await apiFetch("/api/auth/sync", data.session.access_token, {
+      method: "POST",
+      body: JSON.stringify({ display_name: name, phone }),
+    });
+    return { needsEmailConfirm: false };
   };
 
   const loginAsRole = (role: UserRole) => {
@@ -226,6 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         bankAccountNo: data.bankAccount,
         bankAccountName: data.bankAccountName,
         promptpayId: data.promptpayId,
+        merchantType: data.merchantType,
       }),
     });
   };

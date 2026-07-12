@@ -9,7 +9,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { useAuth } from "./auth-context";
 import { authFetch } from "./api-auth";
 
-export type NotificationType = "order" | "payment" | "system" | "promo";
+export type NotificationType = "order" | "payment" | "system" | "promo" | "message";
 
 export interface Notification {
   id: string;
@@ -37,6 +37,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 /** ประเภทแจ้งเตือนจาก DB (notification_type enum) → หมวดที่ใช้เลือกไอคอนฝั่ง UI */
 function mapType(dbType: string): NotificationType {
   if (dbType === "system") return "system";
+  if (dbType === "message") return "message";
   return "order"; // order_update, shop_confirm, shipment_update — ทั้งหมดเกี่ยวกับออเดอร์
 }
 
@@ -57,6 +58,7 @@ function relativeTime(iso: string): string {
 /** สร้างลิงก์ปลายทางจาก data payload ที่ backend แนบมา (orderId/weavingOrderId/productOrderId) */
 function buildHref(data: Record<string, unknown> | null): string | undefined {
   if (!data) return undefined;
+  if (data.conversationId) return `/messages/${data.conversationId}`;
   if (data.productOrderId) return `/orders/product-order/${data.productOrderId}`;
   if (data.orderId) return `/orders/tailor/${data.orderId}`;
   if (data.weavingOrderId) return `/orders/weaving/${data.weavingOrderId}`;

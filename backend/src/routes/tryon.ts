@@ -13,7 +13,8 @@ const router = Router();
 router.post("/upload", async (req: Request, res: Response) => {
   try {
     if (!supabaseAdminConfigured) {
-      res.status(500).json({ error: "Supabase storage ยังไม่ได้ตั้งค่า (ต้องมี SUPABASE_URL และ SUPABASE_SERVICE_ROLE_KEY ใน .env)" });
+      console.error("[tryon/upload] Supabase storage not configured (missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY)");
+      res.status(500).json({ error: "อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หากยังไม่สำเร็จ กรุณาติดต่อฝ่ายบริการลูกค้า" });
       return;
     }
     const { imageBase64 } = req.body as { imageBase64?: string };
@@ -27,7 +28,7 @@ router.post("/upload", async (req: Request, res: Response) => {
     res.json({ url: result.url });
   } catch (err: any) {
     console.error("[tryon/upload] error:", err.message);
-    res.status(500).json({ error: err.message ?? "Upload failed" });
+    res.status(500).json({ error: "อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หากยังไม่สำเร็จ กรุณาติดต่อฝ่ายบริการลูกค้า" });
   }
 });
 

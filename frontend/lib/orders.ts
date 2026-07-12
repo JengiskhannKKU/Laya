@@ -181,8 +181,13 @@ interface ProductOrderDetail extends ProductOrderRow {
   };
   subtotal: number;
   shippingFee: number;
-  items: { productName: string; productImage: string | null; quantity: number; unitPrice: number; subtotal: number }[];
+  items: { productName: string; productImage: string | null; variantLabel: string | null; quantity: number; unitPrice: number; subtotal: number }[];
   statusLogs: { old_status: string | null; new_status: string; note: string | null; created_at: string }[];
+  /** สถานะขนส่งละเอียด (pending/picked_up/in_transit/delivered/failed/returned) — null ถ้ายังไม่เข้าขั้นจัดส่ง */
+  shippingStatus: string | null;
+  shippingLogs: { old_status: string | null; new_status: string; note: string | null; created_at: string }[];
+  trackingNo: string | null;
+  courier: string | null;
 }
 
 interface WeavingOrderDetail extends WeavingOrderRow {
@@ -216,6 +221,7 @@ export async function fetchProductOrderDetail(id: string) {
     ...o,
     statusLabel: PRODUCT_STATUS_LABELS[o.status] ?? o.status,
     statusLogs: mapLogs(o.statusLogs ?? []),
+    shippingLogs: mapLogs(o.shippingLogs ?? []),
     cancellable: ["draft", "pending_confirm"].includes(o.status),
   };
 }

@@ -10,10 +10,16 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { LiveCommunityDetail } from "@/lib/communities";
 import { fetchLiveProducts, type Product } from "@/lib/live-products";
+import { useAuth } from "@/lib/auth-context";
+import { authFetch, SessionExpiredError } from "@/lib/api-auth";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 interface CommunityDetailViewProps {
   community: LiveCommunityDetail;
@@ -32,9 +38,30 @@ const TABS = [
 ];
 
 export default function CommunityDetailView({ community }: CommunityDetailViewProps) {
+  const router = useRouter();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("story");
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [startingChat, setStartingChat] = useState(false);
+
+  const startChat = async () => {
+    if (!user) { router.push("/auth/login"); return; }
+    setStartingChat(true);
+    try {
+      const res = await authFetch(`${API_BASE}/api/chat/conversations`, {
+        method: "POST",
+        body: JSON.stringify({ shopId: community.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "เริ่มแชทไม่สำเร็จ");
+      router.push(`/messages/${data.id}`);
+    } catch (err) {
+      if (err instanceof SessionExpiredError) { router.push("/auth/login"); return; }
+    } finally {
+      setStartingChat(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -268,14 +295,23 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
           bgcolor: "#FAF6F0", pb: 3, pt: 1.5, px: 2.5, borderTop: "1px solid rgba(0,0,0,0.05)",
         }}
       >
-        <Link href={`/search?q=${encodeURIComponent(community.name)}`} style={{ textDecoration: "none" }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
-            fullWidth
-            sx={{ bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "24px", py: 1.5, fontWeight: 600, fontSize: "0.95rem", "&:hover": { bgcolor: "#0F1A30" } }}
+            onClick={startChat} disabled={startingChat}
+            startIcon={<ChatBubbleOutlineRoundedIcon />}
+            sx={{ flexShrink: 0, bgcolor: "#FFFFFF", color: "#1B2A4A", border: "1px solid #C5A55A", borderRadius: "24px", py: 1.5, px: 2, fontWeight: 600, fontSize: "0.9rem", "&:hover": { bgcolor: "rgba(197,165,90,0.08)" } }}
           >
-            ดูสินค้าทั้งหมดจากชุมชนนี้ ›
+            แชท
           </Button>
-        </Link>
+          <Link href={`/search?q=${encodeURIComponent(community.name)}`} style={{ textDecoration: "none", flex: 1 }}>
+            <Button
+              fullWidth
+              sx={{ bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "24px", py: 1.5, fontWeight: 600, fontSize: "0.95rem", "&:hover": { bgcolor: "#0F1A30" } }}
+            >
+              ดูสินค้าทั้งหมดจากชุมชนนี้ ›
+            </Button>
+          </Link>
+        </Box>
       </Box>
     </Box>
   );

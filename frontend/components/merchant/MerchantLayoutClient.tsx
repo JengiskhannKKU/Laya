@@ -16,13 +16,20 @@ import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import StoreRoundedIcon from "@mui/icons-material/StoreRounded";
+import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
+import Badge from "@mui/material/Badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useChat } from "@/lib/chat-context";
+import { useNotifications } from "@/lib/notification-context";
 import RoleGuard from "@/components/auth/RoleGuard";
 
 const SIDEBAR_W = 240;
@@ -30,14 +37,22 @@ const SIDEBAR_W = 240;
 const NAV_ITEMS = [
   { label: "ภาพรวม", icon: <DashboardRoundedIcon />, href: "/merchant" },
   { label: "ออเดอร์", icon: <ShoppingBagRoundedIcon />, href: "/merchant/orders" },
+  { label: "การแจ้งเตือน", icon: <NotificationsRoundedIcon />, href: "/merchant/notifications" },
+  { label: "ข้อความ", icon: <ChatBubbleOutlineRoundedIcon />, href: "/merchant/messages" },
   { label: "สินค้า / ผ้า", icon: <InventoryRoundedIcon />, href: "/merchant/products" },
+  { label: "ลายผ้า", icon: <AutoStoriesRoundedIcon />, href: "/merchant/patterns" },
   { label: "รายได้", icon: <AccountBalanceWalletRoundedIcon />, href: "/merchant/payouts" },
+  { label: "รีวิว", icon: <StarRoundedIcon />, href: "/merchant/reviews" },
   { label: "ตั้งค่าร้าน", icon: <SettingsRoundedIcon />, href: "/merchant/settings" },
 ];
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { unreadCount } = useChat();
+  const { unreadCount: notifUnread } = useNotifications();
+
+  const badgeSx = { "& .MuiBadge-badge": { bgcolor: "#C5A55A", color: "#1B2A4A", fontSize: "0.6rem", fontWeight: 700, minWidth: 15, height: 15 } };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "#1B2A4A" }}>
@@ -74,7 +89,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             >
               <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1.4, gap: 1.5 }}>
                 <Box sx={{ color: isActive ? "#C5A55A" : "rgba(255,255,255,0.55)", "& svg": { fontSize: 20 } }}>
-                  {item.icon}
+                  {item.href === "/merchant/messages" && unreadCount > 0 ? (
+                    <Badge badgeContent={unreadCount} sx={badgeSx}>{item.icon}</Badge>
+                  ) : item.href === "/merchant/notifications" && notifUnread > 0 ? (
+                    <Badge badgeContent={notifUnread} sx={badgeSx}>{item.icon}</Badge>
+                  ) : item.icon}
                 </Box>
                 <Typography sx={{
                   fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem",
@@ -112,6 +131,7 @@ export default function MerchantLayoutClient({ children }: { children: React.Rea
   const isDesktopMQ = useMediaQuery(theme.breakpoints.up("md"));
   const [mounted, setMounted] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { unreadCount: notifUnread } = useNotifications();
   useEffect(() => { setMounted(true); }, []);
   const isDesktop = mounted && isDesktopMQ;
 
@@ -147,9 +167,15 @@ export default function MerchantLayoutClient({ children }: { children: React.Rea
                 <MenuRoundedIcon />
               </IconButton>
               <StoreRoundedIcon sx={{ color: "#C5A55A" }} />
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#FFFFFF" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#FFFFFF", flex: 1 }}>
                 แดชบอร์ด
               </Typography>
+              {/* กระดิ่งแจ้งเตือนออเดอร์/การชำระเงิน */}
+              <IconButton component={Link} href="/merchant/notifications" sx={{ color: "#FFFFFF" }}>
+                <Badge badgeContent={notifUnread} sx={{ "& .MuiBadge-badge": { bgcolor: "#C5A55A", color: "#1B2A4A", fontSize: "0.62rem", fontWeight: 700, minWidth: 16, height: 16 } }}>
+                  <NotificationsRoundedIcon />
+                </Badge>
+              </IconButton>
             </Box>
           )}
           <Box sx={{ p: { xs: 2, md: 3 } }}>{children}</Box>

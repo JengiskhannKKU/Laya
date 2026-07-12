@@ -5,7 +5,7 @@
  * เขียนตรงกับ schema ตาราง products จริง (ไม่มีฟิลด์ที่ไม่ถูกบันทึกจริง เช่น weaveTechnique/tags/province เดิม)
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -23,6 +23,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useRouter } from "next/navigation";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 export const PRODUCT_CATEGORIES: { value: string; label: string }[] = [
   { value: "fabric", label: "ผ้าผืน" },
@@ -43,14 +44,16 @@ export interface ProductFormValues {
   price: string;
   priceUnit: string;
   stock: string;
+  lowStockThreshold: string;
   description: string;
   images: string[];
   hasGI: boolean;
+  hasVariants: boolean;
 }
 
 export const emptyProductForm: ProductFormValues = {
   name: "", category: "fabric", fabricType: "", price: "", priceUnit: "เมตร",
-  stock: "", description: "", images: [], hasGI: false,
+  stock: "", lowStockThreshold: "5", description: "", images: [], hasGI: false, hasVariants: false,
 };
 
 const sx = {
@@ -75,17 +78,25 @@ interface ProductFormProps {
 export default function ProductForm({ title, initial, submitLabel, onSubmit }: ProductFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<ProductFormValues>(initial);
-  const [imageUrlInput, setImageUrlInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => setForm((f) => ({ ...f, [k]: v }));
 
-  const addImageUrl = () => {
-    const url = imageUrlInput.trim();
-    if (!url || form.images.includes(url) || form.images.length >= 6) return;
-    set("images", [...form.images, url]);
-    setImageUrlInput("");
+  const { uploadFile, uploading } = useImageUpload({
+    bucket: "product-images",
+    onSuccess: (result) => setForm((f) => (f.images.includes(result.url) || f.images.length >= 6 ? f : { ...f, images: [...f.images, result.url] })),
+    onError: (msg) => setError(msg),
+  });
+
+  const uploadFiles = async (files: FileList | File[]) => {
+    const remaining = 6 - form.images.length;
+    const list = Array.from(files).slice(0, Math.max(remaining, 0));
+    for (const file of list) {
+      await uploadFile(file);
+    }
   };
 
   const canSubmit = form.name.trim() && form.price && Number(form.price) > 0 && form.stock !== "" && Number(form.stock) >= 0;
@@ -117,10 +128,10 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
 
       {error && <Alert severity="error" sx={{ mb: 2, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>{error}</Alert>}
 
-      {/* รูปสินค้า — ใส่ URL รูป (ยังไม่รองรับอัปโหลดไฟล์โดยตรง) */}
+      {/* รูปสินค้า — อัปโหลดไฟล์จริงขึ้น Supabase Storage (bucket: product-images) */}
       <Box sx={{ mb: 3 }}>
         <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 1 }}>
-          รูปภาพสินค้า (ใส่ลิงก์รูป — สูงสุด 6 รูป)
+          รูปภาพสินค้า (สูงสุด 6 รูป)
         </Typography>
         {form.images.length > 0 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1.5 }}>
@@ -137,16 +148,38 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
             ))}
           </Box>
         )}
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <TextField size="small" fullWidth placeholder="วางลิงก์รูปภาพ เช่น https://..." value={imageUrlInput}
-            onChange={(e) => setImageUrlInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addImageUrl(); } }}
-            sx={sx.field} disabled={form.images.length >= 6} />
-          <Button onClick={addImageUrl} disabled={!imageUrlInput.trim() || form.images.length >= 6}
-            startIcon={<AddPhotoAlternateRoundedIcon />}
-            sx={{ fontFamily: '"Kanit", sans-serif', color: "#1B2A4A", textTransform: "none", flexShrink: 0 }}>
-            เพิ่ม
-          </Button>
+        <input
+          ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: "none" }}
+          onChange={(e) => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ""; }}
+        />
+        <Box
+          onClick={() => form.images.length < 6 && fileInputRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            if (e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files);
+          }}
+          sx={{
+            border: "1.5px dashed", borderColor: dragOver ? "#C5A55A" : "#E5DFD6",
+            borderRadius: "12px", py: 2.5, textAlign: "center",
+            bgcolor: dragOver ? "rgba(197,165,90,0.06)" : "#FFFFFF",
+            cursor: form.images.length >= 6 ? "not-allowed" : "pointer",
+            opacity: form.images.length >= 6 ? 0.5 : 1,
+            transition: "all 0.15s",
+          }}
+        >
+          {uploading ? (
+            <CircularProgress size={22} sx={{ color: "#C5A55A" }} />
+          ) : (
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+              <AddPhotoAlternateRoundedIcon sx={{ color: "#9CA3AF", fontSize: 26 }} />
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#6B7280" }}>
+                {form.images.length >= 6 ? "ครบ 6 รูปแล้ว" : "ลากรูปมาวาง หรือคลิกเพื่อเลือกไฟล์"}
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -182,6 +215,11 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
             value={form.stock} onChange={(e) => set("stock", e.target.value)} sx={sx.field} />
         </Box>
 
+        <TextField label="แจ้งเตือนเมื่อสต็อกเหลือ (ชิ้น)" type="number" inputProps={{ min: 0 }}
+          value={form.lowStockThreshold} onChange={(e) => set("lowStockThreshold", e.target.value)}
+          sx={{ ...sx.field, maxWidth: { sm: "50%" } }}
+        />
+
         <TextField fullWidth multiline rows={4} label="รายละเอียดสินค้า" value={form.description} onChange={(e) => set("description", e.target.value)} sx={sx.field} />
 
         <FormControlLabel
@@ -189,6 +227,17 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
             sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "#C5A55A" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#C5A55A" } }} />}
           label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.88rem", color: "#1B2A4A" }}>สินค้าได้รับรอง GI (สิ่งบ่งชี้ทางภูมิศาสตร์)</Typography>}
         />
+
+        <FormControlLabel
+          control={<Switch checked={form.hasVariants} onChange={(e) => set("hasVariants", e.target.checked)}
+            sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "#C5A55A" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#C5A55A" } }} />}
+          label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.88rem", color: "#1B2A4A" }}>สินค้านี้มีหลายตัวเลือก (สี/ไซส์/ลาย) — Multi-SKU</Typography>}
+        />
+        {form.hasVariants && (
+          <Alert severity="info" sx={{ borderRadius: "10px", fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem" }}>
+            ราคา/สต็อกด้านบนจะใช้เป็นค่าเริ่มต้น — ไปที่หน้า “จัดการ SKU” หลังบันทึกเพื่อกำหนดราคาและสต็อกแต่ละตัวเลือก
+          </Alert>
+        )}
 
         <Button type="submit" fullWidth variant="contained" disabled={loading || !canSubmit}
           sx={{ py: 1.5, mt: 1, bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "12px", fontWeight: 700, fontFamily: '"Kanit", sans-serif', textTransform: "none", "&:hover": { bgcolor: "#0F1A30" }, "&.Mui-disabled": { bgcolor: "rgba(27,42,74,0.4)", color: "#FFFFFF" } }}
