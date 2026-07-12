@@ -27,6 +27,8 @@ interface Payment {
   status: "pending" | "paid" | "refunded" | "failed";
   paidAt: string | null;
   createdAt: string;
+  slipUrl?: string | null;
+  slipVerified?: boolean;
 }
 
 const STATUS_CHIP: Record<Payment["status"], { label: string; color: "success" | "warning" | "default" | "error" }> = {
@@ -161,7 +163,7 @@ export default function MerchantPayoutsPage() {
                         {formatThaiDate(p.paidAt ?? p.createdAt)}
                       </Typography>
                       {p.status === "paid" && (
-                        <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                        <Box sx={{ display: "flex", gap: 1, mt: 0.5, alignItems: "center", flexWrap: "wrap" }}>
                           <Button size="small" onClick={() => downloadDoc(p.id, "receipt")}
                             sx={{ p: 0, minWidth: 0, fontFamily: FONT, fontSize: "0.7rem", color: "#C5A55A", textTransform: "none" }}>
                             ใบเสร็จ
@@ -170,6 +172,15 @@ export default function MerchantPayoutsPage() {
                             sx={{ p: 0, minWidth: 0, fontFamily: FONT, fontSize: "0.7rem", color: "#C5A55A", textTransform: "none" }}>
                             Invoice
                           </Button>
+                          {p.slipUrl && (
+                            <Button size="small" component="a" href={p.slipUrl} target="_blank" rel="noopener noreferrer"
+                              sx={{ p: 0, minWidth: 0, fontFamily: FONT, fontSize: "0.7rem", color: "#3B82F6", textTransform: "none" }}>
+                              ดูสลิป
+                            </Button>
+                          )}
+                          {p.slipUrl && !p.slipVerified && (
+                            <Chip label="รอตรวจสอบ" size="small" sx={{ fontFamily: FONT, fontSize: "0.6rem", height: 16, bgcolor: "#FEF3C7", color: "#92700A" }} />
+                          )}
                         </Box>
                       )}
                     </Box>

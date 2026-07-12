@@ -22,6 +22,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { formatPromptPayIdDisplay } from "@/lib/promptpay";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 import AddressGeoFields from "@/components/checkout/AddressGeoFields";
+import SlipUploadBox from "@/components/checkout/SlipUploadBox";
 import type { LatLng } from "@/components/checkout/LocationPickerMap";
 
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
@@ -121,6 +122,7 @@ interface PaymentInfo {
   qrPayload: string;
   promptpayId: string;
   confirmed: boolean;
+  slipUrl?: string;
 }
 
 interface SavedAddress {
@@ -355,15 +357,19 @@ export default function CheckoutPage() {
     }
   };
 
-  /** ยืนยันจ่ายแล้วทุกร้านที่ยังไม่ยืนยัน (ตะกร้าหลายร้าน = หลาย QR แต่กดยืนยันครั้งเดียว) */
+  /** ยืนยันจ่ายแล้วทุกร้านที่ยังไม่ยืนยัน — ต้องแนบสลิปทุกร้านก่อน (ตรวจผ่าน SlipOk ฝั่ง backend) */
   const handleConfirmPaid = async () => {
     const pending = payments.filter((p) => !p.confirmed);
     if (!pending.length) return;
+    if (pending.some((p) => !p.slipUrl)) { setError("กรุณาแนบสลิปการโอนเงินให้ครบทุกร้านก่อนยืนยัน"); return; }
     setPaying(true);
     setError("");
     try {
       for (const p of pending) {
-        const res = await authFetch(`${API_BASE}/api/payments/${p.id}/confirm`, { method: "POST" });
+        const res = await authFetch(`${API_BASE}/api/payments/${p.id}/confirm`, {
+          method: "POST",
+          body: JSON.stringify({ slipUrl: p.slipUrl }),
+        });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? `ยืนยันการชำระเงินร้าน ${p.shopName} ไม่สำเร็จ`);
       }
@@ -375,6 +381,10 @@ export default function CheckoutPage() {
     } finally {
       setPaying(false);
     }
+  };
+
+  const setPaymentSlip = (paymentId: string, slipUrl: string) => {
+    setPayments((prev) => prev.map((p) => (p.id === paymentId ? { ...p, slipUrl } : p)));
   };
 
   const handleBack = () => {
@@ -398,6 +408,9 @@ export default function CheckoutPage() {
     : step === 0 ? "ดำเนินการต่อ"
     : step === 1 ? `ยืนยันและชำระ ฿${total.toLocaleString()}`
     : "ฉันโอนเงินแล้ว";
+
+  // ต้องแนบสลิปครบทุกร้านที่ยังไม่ยืนยันก่อนกดยืนยันได้
+  const allSlipsAttached = payments.filter((p) => !p.confirmed).every((p) => !!p.slipUrl);
 
   if (!hydrated || authLoading) {
     return (
@@ -463,7 +476,7 @@ export default function CheckoutPage() {
 
       <Button
         variant="contained" fullWidth
-        disabled={loading || paying || (step === 2 && timeLeft <= 0)}
+        disabled={loading || paying || (step === 2 && (timeLeft <= 0 || !allSlipsAttached))}
         onClick={handlePrimary}
         startIcon={loading || paying ? <CircularProgress size={18} color="inherit" /> : step === 2 ? <CheckCircleRoundedIcon /> : null}
         sx={{
@@ -679,6 +692,13 @@ export default function CheckoutPage() {
                             value={pin}
                             onChange={setPin}
                             onAddressGuess={setAddressGuess}
+                            onGeoResolved={(addr) => setShipping((prev) => ({
+                              ...prev,
+                              ...(addr.province ? { province: addr.province } : {}),
+                              ...(addr.district ? { district: addr.district } : {}),
+                              ...(addr.subdistrict ? { subdistrict: addr.subdistrict } : {}),
+                              ...(addr.postalCode ? { postalCode: addr.postalCode } : {}),
+                            }))}
                           />
                           {addressGuess && (
                             <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.6, mt: 1, px: 0.5 }}>
@@ -910,6 +930,12 @@ export default function CheckoutPage() {
                             <Typography sx={{ fontFamily: FONT, fontSize: "1.75rem", color: NAVY, fontWeight: 700, mt: 0.4 }}>
                               ฿{p.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </Typography>
+                            <SlipUploadBox
+                              paymentId={p.id}
+                              slipUrl={p.slipUrl}
+                              onUploaded={(url) => setPaymentSlip(p.id, url)}
+                              onError={(msg) => setError(msg)}
+                            />
                           </Box>
                         </Box>
                       ))}
@@ -927,7 +953,7 @@ export default function CheckoutPage() {
                       {/* วิธีจ่าย */}
                       <Box sx={{ width: "100%", maxWidth: 380, mt: 2, ...cardSx, p: 2.2 }}>
                         <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "0.85rem", color: NAVY, mb: 1.4 }}>วิธีการชำระเงิน</Typography>
-                        {["เปิดแอปธนาคารของคุณ", "สแกน QR ด้านบน แล้วตรวจชื่อผู้รับ LAYA", "โอนเงินให้ครบตามยอด", "กดปุ่ม “ฉันโอนเงินแล้ว” ด้านล่าง"].map((t, i, arr) => (
+                        {["เปิดแอปธนาคารของคุณ", "สแกน QR ด้านบน แล้วตรวจชื่อผู้รับ LAYA", "โอนเงินให้ครบตามยอด", "แนบสลิปการโอนในกล่องใต้ QR ของแต่ละร้าน", "กดปุ่ม “ฉันโอนเงินแล้ว” ด้านล่าง"].map((t, i, arr) => (
                           <Box key={t} sx={{ display: "flex", gap: 1.2, mb: i < arr.length - 1 ? 1.1 : 0 }}>
                             <Box sx={{ width: 20, height: 20, borderRadius: "50%", bgcolor: "#FDF8F0", color: "#8E601C", fontSize: "0.68rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT, flexShrink: 0, mt: 0.1 }}>
                               {i + 1}
@@ -968,7 +994,7 @@ export default function CheckoutPage() {
           )}
           <Button
             variant="contained" fullWidth
-            disabled={loading || paying || (step === 2 && timeLeft <= 0)}
+            disabled={loading || paying || (step === 2 && (timeLeft <= 0 || !allSlipsAttached))}
             onClick={handlePrimary}
             startIcon={loading || paying ? <CircularProgress size={18} color="inherit" /> : step === 2 ? <CheckCircleRoundedIcon /> : null}
             sx={{

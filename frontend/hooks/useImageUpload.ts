@@ -11,7 +11,8 @@ export type UploadBucket =
   | "post-images"
   | "tryon-uploads"
   | "pattern-images"
-  | "chat-attachments";
+  | "chat-attachments"
+  | "payment-slips";
 
 export interface UploadResult {
   url: string;

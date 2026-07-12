@@ -28,6 +28,7 @@ import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
+import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 import { downloadBlob } from "@/lib/download-file";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -42,7 +43,7 @@ interface UIOrder {
   amount: number;
   status: string; // pending | confirmed | in_progress | ready | shipped | delivered | cancelled
   date: string;
-  kind: "cutting" | "weaving" | "product" | "mock";
+  kind: "cutting" | "weaving" | "product";
   trackingNo?: string;
   courier?: string;
   /** สถานะขนส่งละเอียด (เฉพาะ product order ที่ shipped แล้ว) */
@@ -68,14 +69,6 @@ const SHIPPING_NEXT: Record<string, string[]> = {
 };
 
 const COURIERS = ["Kerry", "Flash", "ไปรษณีย์ไทย", "J&T", "อื่นๆ"];
-
-// ── Mock fallback (แสดงเมื่อยังไม่ได้ล็อกอินด้วยบัญชีจริง) ─────────────────────
-const MOCK_ORDERS: UIOrder[] = [
-  { id: "ORD-1042", displayId: "ORD-1042", customer: "สมชาย ใจดี", product: "ผ้าไหมมัดหมี่ ลายขอ", meters: 3, amount: 3200, status: "pending", date: "26 มิ.ย. 67", kind: "mock" },
-  { id: "ORD-1041", displayId: "ORD-1041", customer: "มาลี สวย", product: "ผ้าขิดลายดอก", meters: 2, amount: 1800, status: "confirmed", date: "25 มิ.ย. 67", kind: "mock" },
-  { id: "ORD-1040", displayId: "ORD-1040", customer: "อนันต์ รัก", product: "ผ้าทอมือลายน้ำ", meters: 5, amount: 4500, status: "shipped", date: "24 มิ.ย. 67", kind: "mock", trackingNo: "TH123456789" },
-  { id: "ORD-1039", displayId: "ORD-1039", customer: "ประภา แก้ว", product: "ผ้าซิ่นลายขอ", meters: 4, amount: 2800, status: "delivered", date: "20 มิ.ย. 67", kind: "mock" },
-];
 
 const STATUS_CONFIG: Record<string, { label: string; color: "warning" | "info" | "success" | "default" | "error" | "secondary" }> = {
   pending: { label: "รอยืนยัน", color: "warning" },
@@ -116,8 +109,7 @@ export default function MerchantOrdersPage() {
   const { session } = useAuth();
   const [tab, setTab] = useState(0);
   const [search, setSearch] = useState("");
-  const [orders, setOrders] = useState<UIOrder[]>(MOCK_ORDERS);
-  const [isLive, setIsLive] = useState(false);
+  const [orders, setOrders] = useState<UIOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionError, setActionError] = useState("");
   const [selected, setSelected] = useState<UIOrder | null>(null);
@@ -135,21 +127,14 @@ export default function MerchantOrdersPage() {
   const [shippingSubmitting, setShippingSubmitting] = useState(false);
 
   const fetchOrders = useCallback(async () => {
-    const token = session?.access_token;
-    if (!token) {
-      setOrders(MOCK_ORDERS);
-      setIsLive(false);
-      setLoading(false);
-      return;
-    }
+    if (!session?.access_token) { setLoading(false); return; }
     try {
-      const headers = { Authorization: `Bearer ${token}` };
       const [cutRes, weaveRes, productRes] = await Promise.all([
-        fetch(`${API_BASE}/api/orders`, { headers }),
-        fetch(`${API_BASE}/api/weaving-orders`, { headers }),
-        fetch(`${API_BASE}/api/product-orders`, { headers }),
+        authFetch(`${API_BASE}/api/orders`),
+        authFetch(`${API_BASE}/api/weaving-orders`),
+        authFetch(`${API_BASE}/api/product-orders`),
       ]);
-      if (!cutRes.ok || !weaveRes.ok || !productRes.ok) throw new Error("fetch failed");
+      if (!cutRes.ok || !weaveRes.ok || !productRes.ok) throw new Error("โหลดรายการออเดอร์ไม่สำเร็จ");
 
       const cutting = (await cutRes.json()) as Record<string, unknown>[];
       const weaving = (await weaveRes.json()) as Record<string, unknown>[];
@@ -203,11 +188,8 @@ export default function MerchantOrdersPage() {
       ].sort((a, b) => (a.date < b.date ? 1 : -1));
 
       setOrders(mapped);
-      setIsLive(true);
-    } catch {
-      // Backend ยังไม่รัน หรือบัญชีนี้ไม่ใช่ merchant — ใช้ข้อมูลตัวอย่าง
-      setOrders(MOCK_ORDERS);
-      setIsLive(false);
+    } catch (err) {
+      setActionError(err instanceof SessionExpiredError ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่" : (err instanceof Error ? err.message : "โหลดรายการออเดอร์ไม่สำเร็จ"));
     } finally {
       setLoading(false);
     }
@@ -220,15 +202,7 @@ export default function MerchantOrdersPage() {
     const action = NEXT_ACTION[selected.status];
     if (!action) return;
 
-    // Demo mode: อัปเดตเฉพาะใน state
-    if (selected.kind === "mock" || !session?.access_token) {
-      const next = action.cutting === "in_progress" ? "in_progress" : action.cutting;
-      setOrders((prev) => prev.map((o) => (o.id === selected.id ? { ...o, status: next, trackingNo: trackingNo || o.trackingNo, courier: courier || o.courier } : o)));
-      setSelected(null);
-      setTrackingNo("");
-      setCourier("");
-      return;
-    }
+    if (!session?.access_token) return;
 
     setSubmitting(true);
     setActionError("");
@@ -346,11 +320,6 @@ export default function MerchantOrdersPage() {
         จัดการออเดอร์
       </Typography>
 
-      {!isLive && !loading && (
-        <Alert severity="info" sx={{ mb: 2, borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem" }}>
-          กำลังแสดงข้อมูลตัวอย่าง — ล็อกอินด้วยบัญชีร้านค้า (และรัน backend) เพื่อจัดการออเดอร์จริง
-        </Alert>
-      )}
       {actionError && (
         <Alert severity="error" onClose={() => setActionError("")} sx={{ mb: 2, borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem" }}>
           {actionError}
@@ -397,11 +366,9 @@ export default function MerchantOrdersPage() {
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5 }}>
                       <Chip label={cfg.label} color={cfg.color} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem" }} />
-                      {order.kind !== "mock" && (
-                        <IconButton size="small" onClick={(e) => { setMenuOrder(order); setMenuAnchor(e.currentTarget); }} sx={{ color: "#6B7280" }}>
-                          <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      )}
+                      <IconButton size="small" onClick={(e) => { setMenuOrder(order); setMenuAnchor(e.currentTarget); }} sx={{ color: "#6B7280" }}>
+                        <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
                     </Box>
                   </Box>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -409,7 +376,7 @@ export default function MerchantOrdersPage() {
                       ฿{order.amount.toLocaleString()}
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      {order.status === "pending" && order.kind !== "mock" && (
+                      {order.status === "pending" && (
                         <Button size="small" onClick={() => setRejectTarget(order)}
                           sx={{ color: "#EF4444", fontFamily: '"Kanit", sans-serif', fontWeight: 600, textTransform: "none", fontSize: "0.78rem" }}
                         >

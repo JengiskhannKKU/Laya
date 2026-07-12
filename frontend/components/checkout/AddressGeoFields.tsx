@@ -61,6 +61,20 @@ export default function AddressGeoFields({ value, onChange, fieldSx }: AddressGe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // เมื่อ value.province/district ถูกเปลี่ยนจากภายนอก (เช่น prefill จากแผนที่) หลัง mount แล้ว
+  // ให้ re-derive id ของจังหวัด/อำเภอ เพื่อให้ dropdown อำเภอ/ตำบล populate ตามค่าที่เติมมา
+  useEffect(() => {
+    if (loading) return;
+    const p = provinces.find((x) => x.th === value.province);
+    const nextProvinceId = p?.id ?? null;
+    if (nextProvinceId !== provinceId) setProvinceId(nextProvinceId);
+
+    const d = p ? districtsOf({ provinces, districts, subdistricts }, p.id).find((x) => x.th === value.district) : undefined;
+    const nextDistrictId = d?.id ?? null;
+    if (nextDistrictId !== districtId) setDistrictId(nextDistrictId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value.province, value.district, loading]);
+
   const districtOptions = useMemo(
     () => (provinceId ? districtsOf({ provinces, districts, subdistricts }, provinceId) : []),
     [provinceId, provinces, districts, subdistricts]

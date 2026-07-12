@@ -238,7 +238,7 @@ export default function AppTopNav() {
               }}
             >
               <Badge
-                badgeContent={cartCount}
+                badgeContent={mounted && user ? cartCount : 0}
                 sx={{
                   "& .MuiBadge-badge": {
                     bgcolor: "#C5A55A",

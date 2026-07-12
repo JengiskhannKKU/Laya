@@ -6,6 +6,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/lib/auth-context";
 import { formatPromptPayIdDisplay } from "@/lib/promptpay";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
+import SlipUploadBox from "@/components/checkout/SlipUploadBox";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -90,13 +91,13 @@ export default function WeavingOrderPage() {
   const [community, setCommunity] = useState("");
   const [notes, setNotes]       = useState("");
 
-  // ข้อมูลจริงจาก API (fallback เป็น mock ถ้า backend ไม่พร้อม)
+  // ข้อมูลจริงจาก API (fallback เป็นแคตตาล็อกพื้นฐานถ้า backend ยังไม่พร้อม)
   const [patterns, setPatterns] = useState(WEAVE_PATTERNS);
   const [communities, setCommunities] = useState(COMMUNITIES);
-  const [isLive, setIsLive] = useState(false);
 
   // ขั้นตอนชำระเงิน PromptPay (US-604)
   const [payment, setPayment] = useState<PaymentInfo | null>(null);
+  const [slipUrl, setSlipUrl] = useState("");
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
@@ -125,9 +126,8 @@ export default function WeavingOrderPage() {
           specialty: s.specialties?.[0] ?? "ทอผ้า",
           leadTime: "3-5 สัปดาห์",
         })));
-        setIsLive(true);
       } catch {
-        // backend ไม่พร้อม — ใช้ mock ต่อไป
+        // backend ไม่พร้อม — ใช้แคตตาล็อกพื้นฐานต่อไป
       }
     })();
   }, []);
@@ -144,10 +144,11 @@ export default function WeavingOrderPage() {
   ][step] ?? true;
 
   const handleSubmit = async () => {
+    if (!session) { router.push("/auth/login"); return; }
     setLoading(true);
     setError("");
     try {
-      if (session && isLive) {
+      {
         // สร้างออเดอร์ทอจริง (US-404, US-406) — authFetch จัดการ token สด + auto-refresh
         const orderRes = await authFetch(`${API_BASE}/api/weaving-orders`, {
           method: "POST",
@@ -173,10 +174,6 @@ export default function WeavingOrderPage() {
         if (!payRes.ok) throw new Error(pay.error ?? "สร้างรายการชำระเงินไม่สำเร็จ");
 
         setPayment({ id: pay.id, amount: pay.amount, qrPayload: pay.qrPayload, promptpayId: pay.promptpayId });
-      } else {
-        // Demo mode — ยังไม่ได้ล็อกอิน/backend ไม่พร้อม
-        await new Promise((r) => setTimeout(r, 1500));
-        setSuccess(true);
       }
     } catch (err) {
       if (err instanceof SessionExpiredError) {
@@ -190,16 +187,21 @@ export default function WeavingOrderPage() {
     }
   };
 
-  /** ลูกค้ากด "โอนเงินแล้ว" → ยืนยันการชำระ (mock gateway) แล้วเข้าสถานะรอร้านคอนเฟิร์ม */
+  /** ลูกค้าแนบสลิป → ยืนยันการชำระ (ตรวจผ่าน SlipOk) แล้วเข้าสถานะรอร้านคอนเฟิร์ม */
   const handleConfirmPaid = async () => {
     if (!payment) return;
+    if (!slipUrl) { setError("กรุณาแนบสลิปการโอนเงินก่อนยืนยัน"); return; }
     setPaying(true);
     setError("");
     try {
-      const res = await authFetch(`${API_BASE}/api/payments/${payment.id}/confirm`, { method: "POST" });
+      const res = await authFetch(`${API_BASE}/api/payments/${payment.id}/confirm`, {
+        method: "POST",
+        body: JSON.stringify({ slipUrl }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "ยืนยันการชำระเงินไม่สำเร็จ");
       setPayment(null);
+      setSlipUrl("");
       setSuccess(true);
     } catch (err) {
       if (err instanceof SessionExpiredError) {
@@ -237,12 +239,16 @@ export default function WeavingOrderPage() {
           </Typography>
         </Box>
 
+        <Box sx={{ width: "100%", maxWidth: 360 }}>
+          <SlipUploadBox paymentId={payment.id} slipUrl={slipUrl || undefined} onUploaded={setSlipUrl} onError={setError} />
+        </Box>
+
         {error && (
           <Alert severity="error" sx={{ borderRadius: "10px", fontFamily: '"Kanit", sans-serif', width: "100%" }} onClose={() => setError("")}>{error}</Alert>
         )}
 
         <Button
-          variant="contained" fullWidth disabled={paying} onClick={handleConfirmPaid}
+          variant="contained" fullWidth disabled={paying || !slipUrl} onClick={handleConfirmPaid}
           startIcon={paying ? <CircularProgress size={18} color="inherit" /> : <CheckCircleRoundedIcon />}
           sx={{ mt: 1, py: 1.4, bgcolor: "#1B2A4A", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none", maxWidth: 360 }}
         >

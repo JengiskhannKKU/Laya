@@ -3,6 +3,7 @@ import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { generatePromptPayPayload } from "../utils/promptpay";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, drawTable, formatDocNumber, streamPdf } from "../utils/pdf";
+import { verifySlip, easySlipConfigured } from "../utils/easyslip";
 
 const router = Router();
 
@@ -206,12 +207,16 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
 
 /**
  * POST /api/payments/:id/confirm
- * ลูกค้ายืนยันว่าโอนแล้ว (mock gateway — ยังไม่มี webhook ธนาคารจริง)
+ * ลูกค้าแนบสลิปเพื่อยืนยันการโอน — ระบบตรวจสลิปผ่าน EasySlip (ถ้าตั้งค่าไว้)
+ * body: { slipUrl }
  * → mark paid, อัปเดตออเดอร์เป็น pending_confirm, แจ้งเตือนร้านค้า
  */
 router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => {
   try {
     const { userId, role } = req.user!;
+    const { slipUrl } = req.body as { slipUrl?: string };
+
+    if (!slipUrl) { res.status(400).json({ error: "กรุณาแนบสลิปการโอนเงิน" }); return; }
 
     const rows = await query<Record<string, unknown>>(
       "SELECT * FROM payments WHERE id = $1",
@@ -229,10 +234,26 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
       return;
     }
 
-    const txRef = `MOCK-${Date.now()}`;
+    // ตรวจสลิปผ่าน EasySlip ถ้าตั้งค่าไว้ — ถ้ายังไม่ตั้งค่า เก็บสลิปไว้ให้ร้าน/แอดมินตรวจเอง
+    let txRef: string;
+    let slipVerified = false;
+    if (easySlipConfigured) {
+      const result = await verifySlip(slipUrl, Number(payment.amount));
+      if (!result.ok) {
+        res.status(400).json({ error: "ตรวจสอบสลิปไม่สำเร็จ กรุณาตรวจสอบสลิปแล้วลองใหม่ หากยังไม่สำเร็จ กรุณาติดต่อฝ่ายบริการลูกค้า" });
+        return;
+      }
+      txRef = result.transRef ?? `EASYSLIP-${Date.now()}`;
+      slipVerified = true;
+    } else {
+      txRef = `SLIP-${Date.now()}`;
+    }
+
     await query(
-      "UPDATE payments SET status = 'paid', paid_at = NOW(), transaction_ref = $1, updated_at = NOW() WHERE id = $2",
-      [txRef, req.params.id]
+      `UPDATE payments SET status = 'paid', paid_at = NOW(), transaction_ref = $1,
+       slip_url = $2, slip_verified = $3, slip_verified_at = CASE WHEN $3 THEN NOW() ELSE NULL END,
+       updated_at = NOW() WHERE id = $4`,
+      [txRef, slipUrl, slipVerified, req.params.id]
     );
 
     // อัปเดตออเดอร์ตัด: draft → pending_confirm (รอร้านคอนเฟิร์ม, US-212)
@@ -581,6 +602,8 @@ function mapPayment(row: Record<string, unknown>) {
     method: row.method,
     status: row.status,
     transactionRef: row.transaction_ref ?? null,
+    slipUrl: row.slip_url ?? null,
+    slipVerified: row.slip_verified ?? false,
     paidAt: row.paid_at ?? null,
     createdAt: row.created_at,
   };

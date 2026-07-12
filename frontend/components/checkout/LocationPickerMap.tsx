@@ -12,6 +12,7 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import MyLocationRoundedIcon from "@mui/icons-material/MyLocationRounded";
 import IconButton from "@mui/material/IconButton";
+import { resolveThaiAddress, type ResolvedThaiAddress } from "@/lib/thai-geo";
 
 const DEFAULT_CENTER: [number, number] = [13.7563, 100.5018]; // กรุงเทพฯ
 const FONT = '"Kanit", sans-serif';
@@ -26,20 +27,24 @@ interface LocationPickerMapProps {
   onChange: (pos: LatLng) => void;
   /** เรียกเมื่อ reverse-geocode ได้ผลลัพธ์ที่อยู่แบบข้อความ (best-effort, ไม่ block) */
   onAddressGuess?: (label: string) => void;
+  /** เรียกเมื่อจับคู่จังหวัด/อำเภอ/ตำบลจากตำแหน่งได้ (เพื่อ prefill ฟอร์มที่อยู่) */
+  onGeoResolved?: (addr: ResolvedThaiAddress) => void;
   height?: number;
 }
 
-export default function LocationPickerMap({ value, onChange, onAddressGuess, height = 220 }: LocationPickerMapProps) {
+export default function LocationPickerMap({ value, onChange, onAddressGuess, onGeoResolved, height = 220 }: LocationPickerMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<LeafletMarker | null>(null);
   const onChangeRef = useRef(onChange);
   const onAddressGuessRef = useRef(onAddressGuess);
+  const onGeoResolvedRef = useRef(onGeoResolved);
   const [locating, setLocating] = useState(false);
   const [ready, setReady] = useState(false);
 
   onChangeRef.current = onChange;
   onAddressGuessRef.current = onAddressGuess;
+  onGeoResolvedRef.current = onGeoResolved;
 
   const reverseGeocode = async (lat: number, lng: number) => {
     try {
@@ -50,6 +55,18 @@ export default function LocationPickerMap({ value, onChange, onAddressGuess, hei
       if (!res.ok) return;
       const data = await res.json();
       if (data?.display_name) onAddressGuessRef.current?.(data.display_name as string);
+
+      // แยกฟิลด์จังหวัด/อำเภอ/ตำบล จาก address object ของ Nominatim แล้วจับคู่กับข้อมูลราชการ
+      const a = data?.address;
+      if (a && onGeoResolvedRef.current) {
+        const resolved = await resolveThaiAddress({
+          province: a.province ?? a.state,
+          district: a.county ?? a.city ?? a.district ?? a.town,
+          subdistrict: a.suburb ?? a.subdistrict ?? a.village ?? a.quarter ?? a.neighbourhood,
+          postalCode: a.postcode,
+        });
+        if (resolved.province) onGeoResolvedRef.current(resolved);
+      }
     } catch {
       // reverse geocode ล้มเหลวไม่เป็นไร — ผู้ใช้กรอกที่อยู่เองได้อยู่แล้ว
     }

@@ -343,7 +343,7 @@ router.patch("/:id/status", requireAuth, requireRole("admin"), async (req: Reque
     if (!status) { res.status(400).json({ error: "status required" }); return; }
 
     await query(
-      `UPDATE shops SET status=$1, approved_at = CASE WHEN $1='approved' THEN NOW() ELSE approved_at END,
+      `UPDATE shops SET status=$1::shop_status, approved_at = CASE WHEN $1::text='approved' THEN NOW() ELSE approved_at END,
        updated_at=NOW() WHERE id=$2`,
       [status, req.params.id]
     );

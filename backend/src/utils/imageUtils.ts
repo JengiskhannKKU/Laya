@@ -15,6 +15,7 @@ export const BUCKETS = {
   tryonUploads:  "tryon-uploads",    // รูปสำหรับ Virtual Try-On
   patternImages: "pattern-images",   // รูปลายผ้า + รูปกระบวนการทอ
   chatAttachments: "chat-attachments", // ไฟล์/รูปที่แนบในแชท
+  paymentSlips:  "payment-slips",     // สลิปการโอนเงิน (สำหรับตรวจสอบผ่าน EasySlip)
 } as const;
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
@@ -29,6 +30,7 @@ const BUCKET_MAX_SIZE: Record<BucketName, number> = {
   "tryon-uploads":   2000,
   "pattern-images":  2000,
   "chat-attachments": 2000,
+  "payment-slips":   2000,
 };
 
 /** คุณภาพ WebP แต่ละ bucket (0–100) */
@@ -41,6 +43,7 @@ const BUCKET_QUALITY: Record<BucketName, number> = {
   "tryon-uploads":   90,
   "pattern-images":  88,
   "chat-attachments": 88,
+  "payment-slips":   90,
 };
 
 /**

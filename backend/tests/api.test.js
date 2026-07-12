@@ -191,10 +191,13 @@ test("checkout multi-SKU คิดเงินจากราคา SKU แล�
 });
 
 // ── 6) การชำระเงิน ─────────────────────────────────────────────────────────────
-test("สร้าง payment + confirm → ออเดอร์เป็น pending_confirm", async () => {
+test("สร้าง payment + confirm (แนบสลิป) → ออเดอร์เป็น pending_confirm", async () => {
   const pay = await api("/api/payments", { method: "POST", body: JSON.stringify({ productOrderGroupId: S.groupId }) }, S.custToken);
   assert.equal(pay.data.payments.length, 1);
-  const confirm = await api(`/api/payments/${pay.data.payments[0].id}/confirm`, { method: "POST" }, S.custToken);
+  // ต้องแนบสลิป (slipUrl) เสมอ — EasySlip ปิดอยู่ในเทส จึงเก็บสลิปไว้ให้ตรวจเอง (slip_verified=false)
+  const noSlip = await api(`/api/payments/${pay.data.payments[0].id}/confirm`, { method: "POST" }, S.custToken);
+  assert.equal(noSlip.status, 400);
+  const confirm = await api(`/api/payments/${pay.data.payments[0].id}/confirm`, { method: "POST", body: JSON.stringify({ slipUrl: "https://example.com/slip.jpg" }) }, S.custToken);
   assert.equal(confirm.status, 200);
   const po = await pool.query("SELECT status FROM product_orders WHERE id = $1", [S.poId]);
   assert.equal(po.rows[0].status, "pending_confirm");

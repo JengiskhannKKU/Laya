@@ -30,7 +30,11 @@ import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 
-import { mockAdminWeavers, AdminWeaver } from "@/lib/mock-admin-data";
+import { AdminWeaver } from "@/lib/mock-admin-data";
+import { useEffect } from "react";
+import { authFetch } from "@/lib/api-auth";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 const statusStyles: Record<string, { label: string; color: string; bgcolor: string }> = {
   active: { label: "Active", color: "#22C55E", bgcolor: "rgba(34,197,94,0.15)" },
@@ -38,15 +42,52 @@ const statusStyles: Record<string, { label: string; color: string; bgcolor: stri
   suspended: { label: "ระงับ", color: "#EF4444", bgcolor: "rgba(239,68,68,0.15)" },
 };
 
+/** map สถานะร้านจาก backend (pending/approved/suspended) → สถานะที่ UI ใช้ */
+function mapShopStatus(status: string): AdminWeaver["status"] {
+  if (status === "approved") return "active";
+  if (status === "suspended") return "suspended";
+  return "pending";
+}
+
 export default function AdminWeaversPage() {
   const router = useRouter();
   const { mode, toggleMode, c } = useAdminTheme();
   const tr = "all 0.3s ease";
 
-  const [weavers, setWeavers] = useState<AdminWeaver[]>([...mockAdminWeavers]);
+  const [weavers, setWeavers] = useState<AdminWeaver[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [toastMsg, setToastMsg] = useState("");
   const [viewWeaver, setViewWeaver] = useState<AdminWeaver | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authFetch(`${API_BASE}/api/admin/shops`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        if (cancelled) return;
+        setWeavers(data.map((s: Record<string, unknown>): AdminWeaver => ({
+          id: s.id as string,
+          name: (s.ownerName as string) ?? (s.name as string),
+          avatar: "",
+          community: s.name as string,
+          province: (s.province as string) ?? "-",
+          status: mapShopStatus(s.status as string),
+          kycVerified: (s.status as string) === "approved",
+          joinDate: s.createdAt ? new Date(s.createdAt as string).toLocaleDateString("th-TH") : "-",
+          totalRevenue: 0,
+          totalOrders: 0,
+          rating: Number(s.rating ?? 0),
+          techniques: [],
+          phone: "",
+        })));
+      } catch {
+        if (!cancelled) setToastMsg("โหลดข้อมูลร้านค้าไม่สำเร็จ");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const filtered = weavers.filter((w) =>
     w.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,12 +95,28 @@ export default function AdminWeaversPage() {
     w.province.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const approveWeaver = (id: string) => {
+  const updateShopStatus = async (id: string, status: "approved" | "suspended") => {
+    try {
+      const res = await authFetch(`${API_BASE}/api/shops/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error();
+      return true;
+    } catch {
+      setToastMsg("อัปเดตสถานะไม่สำเร็จ");
+      return false;
+    }
+  };
+
+  const approveWeaver = async (id: string) => {
+    if (!(await updateShopStatus(id, "approved"))) return;
     setWeavers((prev) => prev.map((w) => w.id === id ? { ...w, status: "active" as const, kycVerified: true } : w));
     setToastMsg("อนุมัติช่างทอสำเร็จ");
   };
 
-  const suspendWeaver = (id: string) => {
+  const suspendWeaver = async (id: string) => {
+    if (!(await updateShopStatus(id, "suspended"))) return;
     setWeavers((prev) => prev.map((w) => w.id === id ? { ...w, status: "suspended" as const } : w));
     setToastMsg("ระงับช่างทอแล้ว");
   };

@@ -39,7 +39,6 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  loginAsRole: (role: UserRole) => void;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<{ needsEmailConfirm: boolean }>;
   openAuthModal: () => void;
@@ -207,15 +206,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needsEmailConfirm: false };
   };
 
-  const loginAsRole = (role: UserRole) => {
-    const mocks: Record<UserRole, User> = {
-      customer: { id: "c1", email: "user@example.com",   name: "สมชาย มั่นคง",         role: "customer" },
-      merchant: { id: "m1", email: "merchant@laya.com",  name: "ร้านทอผ้าเชียงใหม่",   role: "merchant", shopId: "shop_001" },
-      admin:    { id: "a1", email: "admin@laya.com",      name: "Admin LAYA",             role: "admin" },
-    };
-    setUser(mocks[role]);
-  };
-
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -255,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, loading,
-      login, loginWithGoogle, loginAsRole,
+      login, loginWithGoogle,
       logout, register,
       openAuthModal, closeAuthModal,
       registerMerchant,

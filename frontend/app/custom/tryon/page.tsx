@@ -50,23 +50,12 @@ function TryOnContent() {
 
   const handleGenerate = async () => {
     if (!customerPhoto) return;
-    setLoading(true);
-    setError("");
-    try {
-      // TODO: POST /api/ai/tryon with designImage + customerPhoto
-      await new Promise((r) => setTimeout(r, 2800));
-      setResultImage("https://placehold.co/360x540/FAF6F0/1B2A4A?text=Virtual+Try-On+Result");
-    } catch {
-      setError("จำลองชุดไม่สำเร็จ กรุณาลองใหม่");
-    } finally {
-      setLoading(false);
-    }
+    // ฟีเจอร์จำลองชุดบนภาพลูกค้า (image-to-image) ยังไม่เปิดให้บริการ — แสดงข้อความตามจริง ไม่โชว์ผลลัพธ์ปลอม
+    setError("ฟีเจอร์จำลองการสวมใส่จากภาพของคุณกำลังพัฒนา เปิดให้บริการเร็วๆ นี้");
   };
 
   const handleSave = async () => {
     if (!resultImage) return;
-    // TODO: POST /api/profile/tryon-results
-    await new Promise((r) => setTimeout(r, 400));
     setSaved(true);
   };
 

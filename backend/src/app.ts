@@ -30,6 +30,7 @@ import weavingRequestsRouter from "./routes/weaving-requests";
 import uploadRouter from "./routes/upload";
 import reviewsRouter from "./routes/reviews";
 import chatRouter from "./routes/chat";
+import adminRouter from "./routes/admin";
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.use("/api/weaving-requests", weavingRequestsRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/admin", adminRouter);
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

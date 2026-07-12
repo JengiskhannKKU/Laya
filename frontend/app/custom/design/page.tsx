@@ -40,6 +40,7 @@ const SLEEVE_TYPES  = ["แขนยาว", "แขนสามส่วน", "
 const FIT_LABELS    = ["หลวมมาก", "หลวม", "พอดี", "เข้ารูป", "เข้ารูปมาก"];
 
 const STEPS = ["เลือกรูปทรง", "รายละเอียด", "AI สร้าง"];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface DesignSpec {
@@ -78,14 +79,28 @@ function DesignContent() {
   const handleGenerate = async () => {
     setLoading(true);
     setError("");
+    setStep(2);
     try {
-      // TODO: POST /api/ai/design with spec + fabricImage
-      await new Promise((r) => setTimeout(r, 2500));
-      // Mock result
-      setGeneratedImage("https://placehold.co/360x480/1B2A4A/C5A55A?text=AI+Design+Result");
-      setStep(2);
+      const prompt = [
+        "Thai traditional fashion garment design, studio product photo on plain background,",
+        `garment type: ${spec.shape},`,
+        `collar: ${spec.collar}, sleeve: ${spec.sleeve},`,
+        `fit: ${FIT_LABELS[spec.fit]}, length ${spec.length} cm,`,
+        spec.notes ? `notes: ${spec.notes},` : "",
+        "made from authentic Thai handwoven fabric, elegant, high detail",
+      ].filter(Boolean).join(" ");
+
+      const res = await fetch(`${API_BASE}/api/nanobanana/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error ?? "สร้างแบบไม่สำเร็จ");
+      setGeneratedImage(data.url as string);
     } catch {
-      setError("ไม่สามารถสร้างแบบได้ในขณะนี้ กรุณาลองใหม่");
+      setError("ไม่สามารถสร้างแบบได้ในขณะนี้ กรุณาลองใหม่ภายหลัง");
+      setStep(1);
     } finally {
       setLoading(false);
     }
