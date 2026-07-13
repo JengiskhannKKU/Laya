@@ -754,7 +754,8 @@ export default function ProductDetailView({ product }: { product: Product }) {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 100,
+          // ต้องสูงกว่า AppBottomNav (zIndex 1200) ไม่งั้นแถบปุ่มนี้จะถูกบังจนมองไม่เห็น
+          zIndex: 1300,
           bgcolor: "#FAF6F0",
           pb: "env(safe-area-inset-bottom, 16px)",
           pt: 1.5,

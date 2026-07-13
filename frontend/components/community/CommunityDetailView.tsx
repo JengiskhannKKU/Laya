@@ -291,7 +291,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
       {/* Sticky Bottom Action Bar */}
       <Box
         sx={{
-          display: { md: "none" }, position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
+          display: { md: "none" }, position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1300,
           bgcolor: "#FAF6F0", pb: 3, pt: 1.5, px: 2.5, borderTop: "1px solid rgba(0,0,0,0.05)",
         }}
       >
