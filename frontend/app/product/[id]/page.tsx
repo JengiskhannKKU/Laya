@@ -112,7 +112,7 @@ export default async function ProductPage({
   };
 
   return (
-    <MobileLayout hideBottomNav>
+    <MobileLayout>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}

@@ -12,6 +12,10 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
@@ -74,6 +78,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
     requiresVariant ? (variants.find((v) => v.stock > 0) ?? null) : null
   );
   const [variantError, setVariantError] = useState(false);
+  const [qtyDialogOpen, setQtyDialogOpen] = useState(false);
 
   /** ราคา/สต็อกที่ใช้จริง — จาก SKU ที่เลือก (ถ้ามี) ไม่งั้นจากสินค้าหลัก */
   const effectivePrice = requiresVariant ? (selectedVariant?.price ?? product.price) : product.price;
@@ -121,11 +126,26 @@ export default function ProductDetailView({ product }: { product: Product }) {
     if (ok) router.push("/design-clothes");
   };
 
-  /** เพิ่มลงตะกร้า (ไม่ต้องล็อกอิน — ตะกร้าเก็บในเครื่อง) */
+  /** กดเพิ่มลงตะกร้า → เปิด dialog ให้ระบุจำนวนตอนนั้น (ไม่โชว์ตัวเลือกจำนวน/สต็อกค้างไว้บนหน้า) */
   const handleAddToCart = () => {
     if (!isReadyMade) { goToCustomFlow(); return; }
+    if (requiresVariant && !selectedVariant) { setVariantError(true); return; }
+    setQuantity(1);
+    setQtyDialogOpen(true);
+  };
+
+  /** ยืนยันจำนวนใน dialog แล้วเพิ่มลงตะกร้าจริง (ไม่ต้องล็อกอิน — ตะกร้าเก็บในเครื่อง) */
+  const confirmAddToCart = () => {
     if (!addSnapshotToCart()) return;
+    setQtyDialogOpen(false);
+    setQuantity(1);
     showToast("เพิ่มลงตะกร้าแล้ว", "cart");
+  };
+
+  /** ปิด dialog โดยไม่ยืนยัน — คืนจำนวนกลับเป็น 1 กันปุ่ม "สั่งซื้อเลย" ไปหยิบค่าที่แก้ค้างไว้ */
+  const closeQtyDialog = () => {
+    setQtyDialogOpen(false);
+    setQuantity(1);
   };
 
   /** สั่งซื้อเลย → เพิ่มลงตะกร้าแล้วไปหน้าตะกร้า (ต้องล็อกอิน) */
@@ -435,33 +455,11 @@ export default function ProductDetailView({ product }: { product: Product }) {
                 <Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}>
                   {variantLabel(selectedVariant)} · ฿{selectedVariant.price.toLocaleString()}
                 </Typography>
-                <Typography sx={{ fontSize: "0.78rem", color: selectedVariant.stock <= 5 ? "#B4552D" : "#6B7280" }}>
-                  เหลือ {selectedVariant.stock} ชิ้น
-                </Typography>
+                {selectedVariant.stock <= 0 && (
+                  <Typography sx={{ fontSize: "0.78rem", color: "#B4552D" }}>สินค้าหมด</Typography>
+                )}
               </Box>
             )}
-          </Box>
-        )}
-
-        {/* ── จำนวน (สินค้าพร้อมขาย) ── */}
-        {isReadyMade && (
-          <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography sx={{ fontSize: "0.85rem", color: "#6B7280" }}>จำนวน</Typography>
-            <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "30px", bgcolor: "#FFFFFF" }}>
-              <IconButton onClick={() => setQuantity(Math.max(1, quantity - 1))} size="small" sx={{ p: 1 }}>
-                <RemoveRoundedIcon fontSize="small" />
-              </IconButton>
-              <Typography sx={{ px: 2, fontWeight: 600, color: "#1B2A4A" }}>{quantity}</Typography>
-              <IconButton
-                onClick={() => setQuantity(Math.min(Math.max(1, effectiveStock || 99), quantity + 1))}
-                size="small" sx={{ p: 1 }}
-              >
-                <AddRoundedIcon fontSize="small" />
-              </IconButton>
-            </Box>
-            <Typography sx={{ fontSize: "0.75rem", color: "#9CA3AF" }}>
-              {effectiveStock > 0 ? `มีสินค้า ${effectiveStock} ชิ้น` : "สินค้าหมด"}
-            </Typography>
           </Box>
         )}
 
@@ -783,7 +781,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
           // ต้องสูงกว่า AppBottomNav (zIndex 1200) ไม่งั้นแถบปุ่มนี้จะถูกบังจนมองไม่เห็น
           zIndex: 1300,
           bgcolor: "#FAF6F0",
-          pb: "env(safe-area-inset-bottom, 16px)",
+          pb: "calc(env(safe-area-inset-bottom, 0px) + 20px)",
           pt: 1.5,
           px: 2.5,
           borderTop: "1px solid rgba(0,0,0,0.05)",
@@ -840,6 +838,54 @@ export default function ProductDetailView({ product }: { product: Product }) {
           </Button>
         </Box>
       </Box>
+
+      {/* ระบุจำนวนตอนกดเพิ่มลงตะกร้า — ไม่โชว์ตัวเลขสต็อกจริงให้ลูกค้าเห็น */}
+      <Dialog open={qtyDialogOpen} onClose={closeQtyDialog} maxWidth="xs" fullWidth
+        PaperProps={{ sx: { borderRadius: "20px" } }}>
+        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A" }}>
+          ระบุจำนวน
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, py: 2 }}>
+            <IconButton onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              sx={{ border: "1px solid #E5DFD6", borderRadius: "50%" }}>
+              <RemoveRoundedIcon />
+            </IconButton>
+            <Typography sx={{ fontSize: "1.5rem", fontWeight: 700, color: "#1B2A4A", minWidth: 40, textAlign: "center" }}>
+              {quantity}
+            </Typography>
+            <IconButton
+              onClick={() => setQuantity((q) => Math.min(Math.max(1, effectiveStock || 99), q + 1))}
+              disabled={effectiveStock > 0 && quantity >= effectiveStock}
+              sx={{ border: "1px solid #E5DFD6", borderRadius: "50%" }}
+            >
+              <AddRoundedIcon />
+            </IconButton>
+          </Box>
+          {effectiveStock <= 0 && (
+            <Typography sx={{ textAlign: "center", fontSize: "0.8rem", color: "#B4552D" }}>
+              สินค้าหมดชั่วคราว
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={closeQtyDialog} sx={{ color: "#6B7280", textTransform: "none", fontFamily: '"Kanit", sans-serif' }}>
+            ยกเลิก
+          </Button>
+          <Button
+            onClick={confirmAddToCart}
+            disabled={effectiveStock <= 0}
+            variant="contained"
+            sx={{
+              bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "12px", px: 3, textTransform: "none",
+              fontFamily: '"Kanit", sans-serif', fontWeight: 600,
+              "&:hover": { bgcolor: "#0F1A30" },
+            }}
+          >
+            เพิ่มลงตะกร้า
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
