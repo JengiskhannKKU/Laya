@@ -34,7 +34,7 @@ type ProductDetail = NonNullable<Awaited<ReturnType<typeof fetchProductOrderDeta
 export default function ProductOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { showConfirm } = useAppModal();
 
   const [loading, setLoading] = useState(true);
@@ -42,9 +42,10 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
   const [startingChat, setStartingChat] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return; // รอ auth โหลดเสร็จก่อน — กัน redirect ทั้งที่ล็อกอินอยู่
     if (!user) { router.push("/auth/login"); return; }
     fetchProductOrderDetail(id).then(setOrder).catch(() => setOrder(null)).finally(() => setLoading(false));
-  }, [user, router, id]);
+  }, [authLoading, user, router, id]);
 
   const startChat = async () => {
     if (!order) return;
@@ -78,7 +79,7 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
     fetchProductOrderDetail(id).then(setOrder);
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   if (loading) {
     return (

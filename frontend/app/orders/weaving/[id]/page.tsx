@@ -19,16 +19,17 @@ type WeavingDetail = NonNullable<Awaited<ReturnType<typeof fetchWeavingOrderDeta
 export default function WeavingOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { showConfirm } = useAppModal();
 
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<WeavingDetail | null>(null);
 
   useEffect(() => {
+    if (authLoading) return; // รอ auth โหลดเสร็จก่อน — กัน redirect ทั้งที่ล็อกอินอยู่
     if (!user) { router.push("/auth/login"); return; }
     fetchWeavingOrderDetail(id).then(setOrder).catch(() => setOrder(null)).finally(() => setLoading(false));
-  }, [user, router, id]);
+  }, [authLoading, user, router, id]);
 
   const handleCancel = async () => {
     const ok = await showConfirm({
@@ -44,7 +45,7 @@ export default function WeavingOrderDetailPage({ params }: { params: Promise<{ i
     fetchWeavingOrderDetail(id).then(setOrder);
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   if (loading) {
     return (

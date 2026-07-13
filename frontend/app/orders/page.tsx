@@ -32,7 +32,7 @@ const filterTabs = [
 function OrderListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { showConfirm } = useAppModal();
 
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,7 @@ function OrderListContent() {
   const [toastMsg, setToastMsg] = useState("");
 
   useEffect(() => {
+    if (authLoading) return; // รอ auth โหลดเสร็จก่อน — กัน redirect ทั้งที่ล็อกอินอยู่
     if (!user) {
       router.push("/auth/login");
       return;
@@ -50,7 +51,7 @@ function OrderListContent() {
       .then(setOrders)
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
-  }, [user, router]);
+  }, [authLoading, user, router]);
 
   const total = orders.length;
   const inProgress = orders.filter((o) => IN_PROGRESS_STATUSES.includes(o.status)).length;
@@ -85,7 +86,7 @@ function OrderListContent() {
     }
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   return (
     <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
