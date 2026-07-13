@@ -155,7 +155,6 @@ export default function CommunitiesSection() {
           gridTemplateColumns: { md: "repeat(3, 1fr)" },
           gap: { xs: 2, md: 3 },
           overflowX: { xs: "auto", md: "visible" },
-          px: { xs: 2.5, md: 0 },
           pb: 1,
           "&::-webkit-scrollbar": { display: "none" },
         }}

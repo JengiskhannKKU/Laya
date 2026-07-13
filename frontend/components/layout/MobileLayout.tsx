@@ -20,7 +20,8 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
   const isMobile = !mounted || isMobileMQ;
   const showBottomNav = BOTTOM_NAV_ROUTES.includes(pathname);
   // มือถือ: ไม่มี padding ซ้าย-ขวาจาก layout กลาง — เต็มจอพอดีเหมือนแอป แต่ละหน้าจัดการ padding เนื้อหาของตัวเอง
-  const fullBleed = isMobile;
+  // ยกเว้นหน้า Home — เนื้อหาหลายส่วน (search bar, การ์ด, หัวข้อ) ชิดขอบเกินไปแบบ full-bleed จึงให้กลับไปมี padding ปกติ
+  const fullBleed = isMobile && pathname !== "/";
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#FAF6F0", overflowX: "hidden" }}>
