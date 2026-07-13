@@ -26,6 +26,7 @@ export default function SectionHeader({
         alignItems: "flex-end",
         justifyContent: "space-between",
         gap: 2,
+        px: { xs: 2.5, md: 0 },
         mb: { xs: 2, md: 2.5 },
       }}
     >

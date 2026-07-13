@@ -35,6 +35,7 @@ export default function HeroSearch() {
       sx={{
         pt: { xs: 5, md: 9 },
         pb: { xs: 4, md: 7 },
+        px: { xs: 2.5, md: 0 },
         textAlign: "center",
       }}
     >

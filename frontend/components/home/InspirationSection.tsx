@@ -15,7 +15,7 @@ export default function InspirationSection() {
         pb: { xs: 8, md: 10 },
       }}
     >
-      <Box sx={{ mb: { xs: 2, md: 2.5 } }}>
+      <Box sx={{ px: { xs: 2.5, md: 0 }, mb: { xs: 2, md: 2.5 } }}>
         <Typography
           sx={{
             fontFamily: '"Kanit", sans-serif',

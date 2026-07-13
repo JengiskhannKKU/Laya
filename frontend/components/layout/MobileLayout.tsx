@@ -11,10 +11,6 @@ import AppFooter from "@/components/layout/Footer";
  * (เช่น product detail, cart, checkout) การมีสองแถบซ้อนกันที่ขอบล่างทำให้ดูรก/บังกัน */
 const BOTTOM_NAV_ROUTES = ["/", "/community", "/category", "/profile"];
 
-/** หน้าที่อยากให้รูป/เนื้อหาเต็มขอบจอพอดีบนมือถือ (ไม่มี padding ซ้าย-ขวาจาก layout กลาง) —
- * ตัวหน้าเองมี padding ของตัวเองสำหรับข้อความอยู่แล้ว */
-const FULL_BLEED_PREFIXES = ["/product/"];
-
 export default function MobileLayout({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   const pathname = usePathname();
@@ -23,7 +19,8 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
   useEffect(() => { setMounted(true); }, []);
   const isMobile = !mounted || isMobileMQ;
   const showBottomNav = BOTTOM_NAV_ROUTES.includes(pathname);
-  const fullBleed = isMobile && FULL_BLEED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  // มือถือ: ไม่มี padding ซ้าย-ขวาจาก layout กลาง — เต็มจอพอดีเหมือนแอป แต่ละหน้าจัดการ padding เนื้อหาของตัวเอง
+  const fullBleed = isMobile;
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#FAF6F0", overflowX: "hidden" }}>

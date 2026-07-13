@@ -315,7 +315,7 @@ function PeacockCard({ p, index }: { p: (typeof peacocks)[number]; index: number
 
 export default function HeritageStory() {
   return (
-    <Box sx={{ pt: { xs: 2, md: 3 }, pb: { xs: 6, md: 10 } }}>
+    <Box sx={{ pt: { xs: 2, md: 3 }, pb: { xs: 6, md: 10 }, px: { xs: 2.5, md: 0 } }}>
       {/* Back */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
         <Link href="/community">
