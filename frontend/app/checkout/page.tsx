@@ -982,8 +982,9 @@ export default function CheckoutPage() {
         {/* ── Sticky CTA (มือถือเท่านั้น — เดสก์ท็อปมีปุ่มอยู่ใน order summary column ขวาแล้ว) ── */}
         <Box sx={{
           display: { xs: "block", md: "none" },
-          position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)",
-          width: "100%", maxWidth: 430, zIndex: 1300, bgcolor: "#FFFFFF", px: 2, pt: 1.5, pb: 2,
+          position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: "100%", maxWidth: 430, zIndex: 1300, bgcolor: "#FFFFFF",
+          px: 2, pt: 1.5, pb: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
           borderTop: "1px solid #EFE9DD", boxShadow: "0 -4px 16px rgba(27,42,74,0.06)",
         }}>
           {step < 2 && (

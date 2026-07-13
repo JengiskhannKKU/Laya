@@ -266,8 +266,9 @@ export default function CartPage() {
           <Box
             sx={{
               display: { xs: "block", md: "none" },
-              position: "fixed", bottom: 56, left: "50%", transform: "translateX(-50%)",
-              width: "100%", maxWidth: 430, zIndex: 1300, bgcolor: "#FFFFFF", p: 2,
+              position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+              width: "100%", maxWidth: 430, zIndex: 1300, bgcolor: "#FFFFFF",
+              px: 2, pt: 2, pb: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
               borderTop: "1px solid #E5DFD6", boxShadow: "0 -4px 12px rgba(27,42,74,0.05)",
             }}
           >

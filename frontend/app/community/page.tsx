@@ -45,7 +45,7 @@ export default function CommunityDirectoryPage() {
             </Typography>
           </Box>
         ) : (
-          <Box sx={{ px: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
+          <Box sx={{ px: 2, display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 1.5 }}>
             {communities.map((c, idx) => (
               <Link key={c.id} href={`/community/${c.id}`} style={{ textDecoration: "none" }}>
                 <Box
