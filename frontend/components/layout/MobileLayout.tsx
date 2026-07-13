@@ -7,7 +7,13 @@ import AppBottomNav from "@/components/layout/BottomNav";
 import AppFooter from "@/components/layout/Footer";
 import { useAuth } from "@/lib/auth-context";
 
-export default function MobileLayout({ children }: { children: React.ReactNode }) {
+interface MobileLayoutProps {
+  children: React.ReactNode;
+  /** ซ่อน BottomNav บนมือถือ — ใช้เมื่อหน้านั้นมี action bar เฉพาะของตัวเองอยู่แล้ว (เช่น product detail) */
+  hideBottomNav?: boolean;
+}
+
+export default function MobileLayout({ children, hideBottomNav = false }: MobileLayoutProps) {
   const theme = useTheme();
   const isMobileMQ = useMediaQuery(theme.breakpoints.down("md"));
   const [mounted, setMounted] = useState(false);
@@ -31,10 +37,10 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
       >
         {children}
       </Box>
-      {/* Site Footer */}
-      <AppFooter />
+      {/* Site Footer — ซ่อนบนมือถือให้รู้สึกเหมือนแอป ไม่ใช่เว็บ */}
+      {!isMobile && <AppFooter />}
       {/* Mobile bottom nav */}
-      {isMobile && <AppBottomNav />}
+      {isMobile && !hideBottomNav && <AppBottomNav />}
     </Box>
   );
 }

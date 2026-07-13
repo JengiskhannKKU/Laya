@@ -20,6 +20,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,6 +31,9 @@ import { useCartStore } from "@/lib/cart-store";
 import { useAppModal } from "@/components/providers/AppModalProvider";
 import { useRouter } from "next/navigation";
 import AddShoppingCartRoundedIcon from "@mui/icons-material/AddShoppingCartRounded";
+import { authFetch, SessionExpiredError } from "@/lib/api-auth";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 const AVAILABLE_COLORS = [
   { id: "navy", name: "กรมท่า", hex: "#1C243B" },
@@ -130,6 +134,28 @@ export default function ProductDetailView({ product }: { product: Product }) {
     if (!user) { openAuthModal(); return; }
     if (!addSnapshotToCart()) return;
     router.push("/cart");
+  };
+
+  const [startingChat, setStartingChat] = useState(false);
+
+  /** แชทกับร้านค้าเจ้าของสินค้านี้โดยตรง */
+  const startChat = async () => {
+    if (!user) { openAuthModal(); return; }
+    if (!product.shopId) return;
+    setStartingChat(true);
+    try {
+      const res = await authFetch(`${API_BASE}/api/chat/conversations`, {
+        method: "POST",
+        body: JSON.stringify({ shopId: product.shopId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "เริ่มแชทไม่สำเร็จ");
+      router.push(`/messages/${data.id}`);
+    } catch (err) {
+      if (err instanceof SessionExpiredError) { openAuthModal(); return; }
+    } finally {
+      setStartingChat(false);
+    }
   };
 
   const totalPrice = effectivePrice * quantity;
@@ -764,6 +790,21 @@ export default function ProductDetailView({ product }: { product: Product }) {
         }}
       >
         <Box sx={{ display: "flex", gap: 1.5 }}>
+          <Button
+            onClick={startChat}
+            disabled={startingChat}
+            aria-label="แชทกับร้าน"
+            sx={{
+              minWidth: 54,
+              border: "1.5px solid #1B2A4A",
+              color: "#1B2A4A",
+              borderRadius: "24px",
+              py: 1.5,
+              "&:hover": { bgcolor: "rgba(27,42,74,0.05)" },
+            }}
+          >
+            <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 22 }} />
+          </Button>
           {isReadyMade && (
             <Button
               onClick={handleAddToCart}
