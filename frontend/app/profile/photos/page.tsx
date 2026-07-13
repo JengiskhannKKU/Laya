@@ -21,6 +21,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion";
+import RoleGuard from "@/components/auth/RoleGuard";
+
 
 interface CustomerPhoto {
   id: string;
@@ -109,18 +111,9 @@ export default function CustomerPhotosPage() {
     setSuccess("ตั้งเป็นรูปหลักแล้ว");
   };
 
-  if (!user) {
-    return (
-      <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280" }}>
-          กรุณาเข้าสู่ระบบก่อน
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
-    <MobileLayout><Box sx={{ pb: 6 }}>
+    <RoleGuard allowedRoles={["customer", "merchant", "admin"]}>
+      <MobileLayout><Box sx={{ pb: 6 }}>
       {/* Header */}
       <Box sx={{ px: 2, pt: 4, pb: 2, display: "flex", alignItems: "center", gap: 1 }}>
         <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
@@ -297,5 +290,6 @@ export default function CustomerPhotosPage() {
         </DialogContent>
       </Dialog>
     </Box></MobileLayout>
+    </RoleGuard>
   );
 }
