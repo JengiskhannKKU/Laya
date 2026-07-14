@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import LayaLogo from "@/components/common/LayaLogo";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -77,18 +78,7 @@ export default function RegisterForm() {
         <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
           <ArrowBackRoundedIcon />
         </IconButton>
-        <Typography
-          sx={{
-            fontFamily: '"Kanit", sans-serif',
-            fontSize: "1.5rem",
-            fontWeight: 700,
-            color: "#1B2A4A",
-            letterSpacing: 2,
-            ml: 2,
-          }}
-        >
-          LAYA
-        </Typography>
+        <LayaLogo variant="navy" height={24} style={{ marginLeft: 16 }} priority />
       </Box>
 
       {/* Form Area */}

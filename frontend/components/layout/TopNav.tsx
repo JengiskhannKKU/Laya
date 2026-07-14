@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import LayaLogo from "@/components/common/LayaLogo";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -99,18 +100,7 @@ export default function AppTopNav() {
               justifyContent: "center",
             }}
           >
-            <Typography
-              sx={{
-                fontFamily: '"Kanit", sans-serif',
-                fontSize: "1.55rem",
-                fontWeight: 700,
-                color: "#FFFFFF",
-                letterSpacing: "0.14em",
-                lineHeight: 1.1,
-              }}
-            >
-              LAYA
-            </Typography>
+            <LayaLogo variant="white" height={28} priority />
             <Typography
               sx={{
                 fontFamily: '"Cormorant Garamond", "Georgia", serif',

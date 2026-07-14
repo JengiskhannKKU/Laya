@@ -23,6 +23,7 @@ import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import LayaLogo from "@/components/common/LayaLogo";
 import type { Product } from "@/lib/live-products";
 
 // Icon mapping for production steps
@@ -230,18 +231,11 @@ export default function PassportPage({ product }: PassportPageProps) {
                 zIndex: 2,
               }}
             >
-              <Typography
-                sx={{
-                  fontFamily: '"Kanit", sans-serif',
-                  fontSize: "1.3rem",
-                  fontWeight: 700,
-                  color: "#C5A55A",
-                  letterSpacing: 3,
-                  textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                }}
-              >
-                LAYA
-              </Typography>
+              <LayaLogo
+                variant="white"
+                height={22}
+                style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" }}
+              />
               <Box
                 component={motion.div}
                 animate={{

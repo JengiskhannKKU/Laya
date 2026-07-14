@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import LayaLogo from "@/components/common/LayaLogo";
 import { useState } from "react";
 
 const footerLinks = {
@@ -153,19 +154,7 @@ export default function AppFooter() {
           <div style={{ gridColumn: "span 1", minWidth: "200px" }}>
             {/* Logo */}
             <div style={{ marginBottom: "16px" }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontSize: "28px",
-                  fontWeight: 600,
-                  letterSpacing: "0.12em",
-                  background: "linear-gradient(135deg, #C5A55A, #D4BA7A, #C5A55A)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                LAYA
-              </span>
+              <LayaLogo variant="white" height={32} />
             </div>
 
             <p

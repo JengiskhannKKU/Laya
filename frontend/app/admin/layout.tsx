@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import LayaLogo from "@/components/common/LayaLogo";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
@@ -95,10 +96,8 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                       <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1rem", color: "#FFFFFF" }}>L</Typography>
                     </Box>
                     <Box>
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: c.textPrimary, letterSpacing: 2, transition: t }}>
-                        LAYA
-                      </Typography>
-                      <Typography sx={{ fontSize: "0.6rem", color: c.textMuted, letterSpacing: 1, transition: t }}>
+                      <LayaLogo variant={mode === "dark" ? "white" : "navy"} height={20} />
+                      <Typography sx={{ fontSize: "0.6rem", color: c.textMuted, letterSpacing: 1, transition: t, mt: 0.3 }}>
                         ADMIN PANEL
                       </Typography>
                     </Box>

@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from "react";
+import LayaLogo from "@/components/common/LayaLogo";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -199,19 +200,8 @@ export default function ResetPasswordPage() {
   return (
     <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
       {/* Header */}
-      <Box sx={{ px: 3, pt: 5, pb: 2 }}>
-        <Typography
-          sx={{
-            fontFamily: '"Kanit", sans-serif',
-            fontSize: "1.8rem",
-            fontWeight: 700,
-            color: "#1B2A4A",
-            letterSpacing: 2,
-            textAlign: "center",
-          }}
-        >
-          LAYA
-        </Typography>
+      <Box sx={{ px: 3, pt: 5, pb: 2, display: "flex", justifyContent: "center" }}>
+        <LayaLogo variant="navy" height={30} priority />
       </Box>
 
       <ResetPasswordForm />

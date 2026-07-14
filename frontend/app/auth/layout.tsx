@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { createPageMetadata } from "@/lib/seo";
+import LayaLogo from "@/components/common/LayaLogo";
 
 export const metadata: Metadata = createPageMetadata({
   title: "เข้าสู่ระบบ",
@@ -47,19 +48,9 @@ function BrandPanel() {
       <Box sx={{ position: "absolute", bottom: 32, right: 32, width: 32, height: 32, borderBottom: "2px solid #C5A55A", borderRight: "2px solid #C5A55A", opacity: 0.5 }} />
 
       {/* Logo */}
-      <Typography
-        sx={{
-          fontFamily: '"Kanit", sans-serif',
-          fontWeight: 800,
-          fontSize: { md: "3rem", lg: "3.5rem" },
-          color: "#FFFFFF",
-          letterSpacing: "0.18em",
-          mb: 0.5,
-          position: "relative",
-        }}
-      >
-        LAYA
-      </Typography>
+      <Box sx={{ mb: 0.5, position: "relative" }}>
+        <LayaLogo variant="white" height={52} priority />
+      </Box>
 
       {/* Gold underline */}
       <Box sx={{ width: 52, height: 2, bgcolor: "#C5A55A", mb: 2.5, position: "relative" }} />

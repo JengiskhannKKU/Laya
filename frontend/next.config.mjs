@@ -13,6 +13,10 @@ const nextConfig = {
     unoptimized: false,
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 86400, // cache 1 วัน
+    // อนุญาต SVG ผ่าน next/image optimizer — ใช้เฉพาะไฟล์โลโก้ที่เชื่อถือได้ใน /public เท่านั้น (ไม่ใช่จากผู้ใช้อัปโหลด)
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       // Supabase Storage — รูปทุกอย่างที่อัปโหลดขึ้น Storage
       {

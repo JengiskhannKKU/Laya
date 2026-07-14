@@ -12,6 +12,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import LayaLogo from '@/components/common/LayaLogo';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, Check, X, Bookmark, ArrowRight, Sparkles, Wand2, Ban, Heart, Pencil,
@@ -177,7 +178,9 @@ export default function ClothingDesigner() {
       {/* ── Top bar: เบาที่สุด ── */}
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-screen-xl mx-auto px-4 py-2.5 flex items-center gap-3">
-          <Link href="/" className="text-sm font-bold text-primary shrink-0 tracking-wide">LAYA</Link>
+          <Link href="/" className="shrink-0 flex items-center">
+            <LayaLogo variant="navy" height={18} />
+          </Link>
 
           {/* Stepper — จุดเดินทาง 5 ขั้น */}
           <div className="flex-1 flex items-center justify-center gap-1 sm:gap-2 min-w-0">

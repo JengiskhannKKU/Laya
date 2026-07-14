@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import LayaLogo from '@/components/common/LayaLogo';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Undo2, Redo2, Heart, ArrowRight, Layers, Sparkles, Send, X,
@@ -42,7 +43,9 @@ export function TopBar() {
   return (
     <div className="shrink-0 bg-white/95 backdrop-blur border-b border-[#E5DFD6] px-3 py-2 flex items-center gap-2 flex-wrap z-20">
       <nav className="flex items-center gap-1 text-[11px] text-[#9CA3AF] mr-1">
-        <Link href="/" className="hover:text-[#1B2A4A] font-bold text-[#1B2A4A] tracking-widest">LAYA</Link>
+        <Link href="/" className="flex items-center">
+          <LayaLogo variant="navy" height={15} />
+        </Link>
         <ChevronRight className="w-3 h-3" />
         <span className="text-[#1B2A4A] font-medium">ห้องออกแบบ</span>
       </nav>
