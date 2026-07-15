@@ -12,21 +12,11 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
-
-export const TAILOR_STEPS = [
-  "อัปโหลดผ้า",
-  "วิเคราะห์ผ้า",
-  "เลือกทรง",
-  "โอกาสใช้งาน",
-  "ถ่ายรูปตัวเอง",
-  "ลองใส่เสมือนจริง",
-  "สรุปออเดอร์",
-  "เลือกร้าน",
-] as const;
 
 const STEP_INDEX: Record<string, number> = {
   upload: 0,
@@ -40,6 +30,8 @@ const STEP_INDEX: Record<string, number> = {
 };
 
 export default function TailorStepper({ currentStep }: { currentStep: string }) {
+  const { t } = useLanguage();
+  const TAILOR_STEPS = t<string[]>("tailorFlow.stepLabels");
   const activeIdx = STEP_INDEX[currentStep] ?? 0;
 
   return (
@@ -82,7 +74,10 @@ export default function TailorStepper({ currentStep }: { currentStep: string }) 
         display: { xs: "block", md: "none" },
         fontFamily: FONT, fontSize: "0.78rem", fontWeight: 600, color: NAVY, textAlign: "center", mt: 1.25,
       }}>
-        ขั้นตอนที่ {activeIdx + 1} จาก {TAILOR_STEPS.length} — {TAILOR_STEPS[activeIdx]}
+        {t("tailorFlow.stepOfN")
+          .replace("{n}", String(activeIdx + 1))
+          .replace("{total}", String(TAILOR_STEPS.length))
+          .replace("{label}", TAILOR_STEPS[activeIdx])}
       </Typography>
     </Box>
   );

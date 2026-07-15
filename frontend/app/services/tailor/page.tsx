@@ -12,33 +12,35 @@ import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
 import MobileLayout from "@/components/layout/MobileLayout";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 const IVORY = "#FAF6F0";
 
-// "มีผ้า" ชี้ไป /tailor/with-fabric จริง (เดิมชี้ /design-clothes ผิด — /design-clothes คือห้องออกแบบชุดจากศูนย์
-// ไม่ใช่ flow "มีผ้าอยู่แล้ว อัปโหลดรูป+AI วิเคราะห์+ลองใส่เสมือนจริง" ที่ตรงกับความหมายของตัวเลือกนี้)
-const OPTIONS = [
-  {
-    href: "/tailor/with-fabric",
-    icon: CheckroomRoundedIcon,
-    iconBg: NAVY,
-    title: "มีผ้า",
-    desc: "ถ่ายภาพผ้าของคุณ ให้ AI วิเคราะห์ แนะนำทรง แล้วลองใส่เสมือนจริงก่อนตัด",
-  },
-  {
-    href: "/community",
-    icon: StorefrontRoundedIcon,
-    iconBg: GOLD,
-    title: "เลือกผ้าของร้าน",
-    desc: "ยังไม่มีผ้า? เลือกดูผ้าจากร้านค้าและชุมชนทอผ้าทั่วไทย",
-  },
-];
-
 export default function TailorTypePage() {
   const router = useRouter();
+  const { t } = useLanguage();
+
+  // "มีผ้า" ชี้ไป /tailor/with-fabric จริง (เดิมชี้ /design-clothes ผิด — /design-clothes คือห้องออกแบบชุดจากศูนย์
+  // ไม่ใช่ flow "มีผ้าอยู่แล้ว อัปโหลดรูป+AI วิเคราะห์+ลองใส่เสมือนจริง" ที่ตรงกับความหมายของตัวเลือกนี้)
+  const OPTIONS = [
+    {
+      href: "/tailor/with-fabric",
+      icon: CheckroomRoundedIcon,
+      iconBg: NAVY,
+      title: t("services.tailor.haveFabric"),
+      desc: t("services.tailor.haveFabricDesc"),
+    },
+    {
+      href: "/community",
+      icon: StorefrontRoundedIcon,
+      iconBg: GOLD,
+      title: t("services.tailor.chooseShopFabric"),
+      desc: t("services.tailor.chooseShopFabricDesc"),
+    },
+  ];
 
   return (
     <MobileLayout>
@@ -53,14 +55,14 @@ export default function TailorTypePage() {
               <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
             </IconButton>
             <Typography sx={{ flex: 1, textAlign: "center", mr: 5, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY }}>
-              สั่งตัด
+              {t("services.tailor.title")}
             </Typography>
           </Box>
         </Box>
 
         <Box sx={{ maxWidth: 720, width: "100%", mx: "auto", px: { xs: 2, md: 4 }, pt: { xs: 3, md: 5 }, pb: 6 }}>
           <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
-            คุณมีผ้าสำหรับสั่งตัดแล้วหรือไม่?
+            {t("services.tailor.subtitle")}
           </Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>

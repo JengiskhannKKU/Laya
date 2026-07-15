@@ -17,6 +17,7 @@ import OrderSummaryStep from "./steps/OrderSummaryStep";
 import SelectTailorShopStep from "./steps/SelectTailorShopStep";
 import OrderSuccessStep from "./steps/OrderSuccessStep";
 import TailorStepper from "./TailorStepper";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
@@ -52,6 +53,7 @@ export interface TailorOrderState {
 }
 
 export default function TailorWithFabricFlow() {
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState<TailorStep>("upload");
   const [orderState, setOrderState] = useState<TailorOrderState>({});
 
@@ -72,15 +74,15 @@ export default function TailorWithFabricFlow() {
 
   const getHeaderTitle = () => {
     switch (currentStep) {
-      case "upload": return "อัปโหลดรูปผ้า";
-      case "ai_analysis": return "ผลการวิเคราะห์ผ้า";
-      case "choose_shape": return "เลือกทรงที่ชอบ";
-      case "select_occasion": return "เลือกโอกาสใช้งาน";
-      case "measurements": return "ถ่ายรูปเพื่อวัดสัดส่วน";
-      case "virtual_try_on": return "ลองใส่เสมือนจริง";
-      case "order_summary": return "สรุปออเดอร์";
-      case "select_shop": return "เลือกร้านตัดเย็บ";
-      case "success": return "ร้านคอนเฟิร์มออเดอร์แล้ว!";
+      case "upload": return t("tailorFlow.headerTitles.upload");
+      case "ai_analysis": return t("tailorFlow.headerTitles.aiAnalysis");
+      case "choose_shape": return t("tailorFlow.headerTitles.chooseShape");
+      case "select_occasion": return t("tailorFlow.headerTitles.selectOccasion");
+      case "measurements": return t("tailorFlow.headerTitles.measurements");
+      case "virtual_try_on": return t("tailorFlow.headerTitles.virtualTryOn");
+      case "order_summary": return t("tailorFlow.headerTitles.orderSummary");
+      case "select_shop": return t("tailorFlow.headerTitles.selectShop");
+      case "success": return t("tailorFlow.headerTitles.success");
       default: return "";
     }
   };

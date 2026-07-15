@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useAuth, UserRole } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/notification-context";
 import RoleGuard from "@/components/auth/RoleGuard";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 
 function MenuItem({ icon, label, subtitle, href, badge }: {
@@ -58,6 +59,7 @@ function MenuItem({ icon, label, subtitle, href, badge }: {
 export default function ProfilePage() {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { t } = useLanguage();
 
   return (
     <RoleGuard allowedRoles={["customer", "merchant", "admin"]}>
@@ -76,7 +78,7 @@ export default function ProfilePage() {
             <Box sx={{ flex: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
-                  {user?.name ?? "ผู้ใช้ LAYA"}
+                  {user?.name ?? t("profile.defaultUserName")}
                 </Typography>
                 <VerifiedRoundedIcon sx={{ fontSize: 16, color: "#C5A55A" }} />
               </Box>
@@ -100,9 +102,9 @@ export default function ProfilePage() {
             sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1.5, mb: 2 }}
           >
             {[
-              { value: "5", label: "คำสั่งซื้อ" },
-              { value: "2", label: "ใบรับรอง" },
-              { value: "3", label: "รายการโปรด" },
+              { value: "5", label: t("profile.stats.orders") },
+              { value: "2", label: t("profile.stats.certificates") },
+              { value: "3", label: t("profile.stats.wishlist") },
             ].map((stat, i) => (
               <Box key={stat.label} component={motion.div} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 + i * 0.05 }}
                 sx={{ bgcolor: "#FFFFFF", borderRadius: 3, p: 2, textAlign: "center", border: "1px solid #E5DFD6" }}
@@ -125,8 +127,8 @@ export default function ProfilePage() {
               >
                 <StoreRoundedIcon sx={{ color: "#C5A55A" }} />
                 <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#FFFFFF", fontSize: "0.9rem" }}>แดชบอร์ดร้านค้า</Typography>
-                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "rgba(255,255,255,0.55)" }}>จัดการออเดอร์ สินค้า รายได้</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#FFFFFF", fontSize: "0.9rem" }}>{t("profile.merchantDashboard")}</Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "rgba(255,255,255,0.55)" }}>{t("profile.merchantDashboardDesc")}</Typography>
                 </Box>
                 <ChevronRightRoundedIcon sx={{ color: "rgba(255,255,255,0.4)" }} />
               </Box>
@@ -141,24 +143,24 @@ export default function ProfilePage() {
             transition={{ delay: 0.22 }}
             sx={{ bgcolor: "#FFFFFF", borderRadius: 3, border: "1px solid #E5DFD6", overflow: "hidden", mb: 2 }}
           >
-            <MenuItem icon={<ShoppingBagRoundedIcon sx={{ fontSize: 20 }} />} label="ประวัติการสั่งซื้อ" href="/orders" />
+            <MenuItem icon={<ShoppingBagRoundedIcon sx={{ fontSize: 20 }} />} label={t("profile.menu.orderHistory")} href="/orders" />
             <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-            <MenuItem icon={<NotificationsRoundedIcon sx={{ fontSize: 20 }} />} label="การแจ้งเตือน" href="/notifications" badge={unreadCount} />
+            <MenuItem icon={<NotificationsRoundedIcon sx={{ fontSize: 20 }} />} label={t("profile.menu.notifications")} href="/notifications" badge={unreadCount} />
             <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-            <MenuItem icon={<StraightenRoundedIcon sx={{ fontSize: 20 }} />} label="ข้อมูลสัดส่วนร่างกาย" subtitle="ใช้สำหรับแนะนำเสื้อผ้า" href="/profile/measurements" />
+            <MenuItem icon={<StraightenRoundedIcon sx={{ fontSize: 20 }} />} label={t("profile.menu.measurements")} subtitle={t("profile.menu.measurementsSubtitle")} href="/profile/measurements" />
             <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-            <MenuItem icon={<FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />} label="รายการโปรด" href="/wishlist" />
+            <MenuItem icon={<FavoriteBorderRoundedIcon sx={{ fontSize: 20 }} />} label={t("profile.menu.wishlist")} href="/wishlist" />
             <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-            <MenuItem icon={<SettingsRoundedIcon sx={{ fontSize: 20 }} />} label="ตั้งค่า" href="/settings" />
+            <MenuItem icon={<SettingsRoundedIcon sx={{ fontSize: 20 }} />} label={t("profile.menu.settings")} href="/settings" />
             <Divider sx={{ borderColor: "#F0EBE3", mx: 2 }} />
-            <MenuItem icon={<HelpOutlineRoundedIcon sx={{ fontSize: 20 }} />} label="ช่วยเหลือ" href="/help" />
+            <MenuItem icon={<HelpOutlineRoundedIcon sx={{ fontSize: 20 }} />} label={t("profile.menu.help")} href="/help" />
           </Box>
 
           {/* Logout */}
           <Box onClick={logout} sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, py: 1.5, cursor: "pointer" }}>
             <LogoutRoundedIcon sx={{ fontSize: 18, color: "#EF4444" }} />
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#EF4444", fontWeight: 500 }}>
-              ออกจากระบบ
+              {t("profile.logout")}
             </Typography>
           </Box>
 

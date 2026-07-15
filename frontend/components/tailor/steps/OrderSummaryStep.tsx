@@ -2,6 +2,7 @@ import { Box, Typography, Button } from "@mui/material";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
@@ -28,42 +29,44 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function OrderSummaryStep({ orderState, onNext }: any) {
+  const { t } = useLanguage();
   const shape = orderState.shape;
   const total = shape?.price ?? 990;
+  const unspecified = t("tailorFlow.orderSummary.unspecified");
 
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
 
       {/* ข้อมูลผ้า */}
-      <SectionCard title="ข้อมูลผ้า">
+      <SectionCard title={t("tailorFlow.orderSummary.fabricInfoTitle")}>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Box sx={{ width: 64, height: 84, position: 'relative', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, border: '1px solid #EFE9DD' }}>
-            <Image src={orderState.fabricImage || "/images/fabric1.webp"} alt="ผ้าของคุณ" fill style={{ objectFit: 'cover' }} />
+            <Image src={orderState.fabricImage || "/images/fabric1.webp"} alt="Your fabric" fill style={{ objectFit: 'cover' }} />
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.6, flex: 1 }}>
-            <Row label="ประเภทผ้า" value={orderState.analysisResult?.type || "ไม่ระบุ"} />
-            <Row label="เทคนิค" value={orderState.analysisResult?.technique || "ไม่ระบุ"} />
+            <Row label={t("tailorFlow.orderSummary.fabricType")} value={orderState.analysisResult?.type || unspecified} />
+            <Row label={t("tailorFlow.orderSummary.technique")} value={orderState.analysisResult?.technique || unspecified} />
           </Box>
         </Box>
       </SectionCard>
 
       {/* ข้อมูลแบบ (Template) */}
-      <SectionCard title="ข้อมูลแบบ (Template)">
+      <SectionCard title={t("tailorFlow.orderSummary.templateInfoTitle")}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
-          <Row label="เทมเพลต" value={shape?.name || "ไม่ระบุ"} />
-          <Row label="โอกาสใช้งาน" value={orderState.occasion || "ไม่ระบุ"} />
+          <Row label={t("tailorFlow.orderSummary.template")} value={shape?.name || unspecified} />
+          <Row label={t("tailorFlow.orderSummary.occasion")} value={orderState.occasion || unspecified} />
         </Box>
       </SectionCard>
 
       {/* ราคา */}
-      <SectionCard title="ราคาโดยประมาณ">
+      <SectionCard title={t("tailorFlow.orderSummary.priceTitle")}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
-          <Row label="ค่าตัดเย็บ (เทมเพลตนี้)" value={`${total.toLocaleString()} บาท`} />
+          <Row label={t("tailorFlow.orderSummary.tailoringFee")} value={`${total.toLocaleString()} ${t("tailorFlow.orderSummary.baht")}`} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5, pt: 1.75, borderTop: '1px solid #F3EFE7' }}>
-            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontWeight: 600, fontSize: '0.88rem' }}>ราคาโดยประมาณ</Typography>
+            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontWeight: 600, fontSize: '0.88rem' }}>{t("tailorFlow.orderSummary.estimatedPrice")}</Typography>
             <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: GOLD, fontSize: '1.3rem' }}>
-              {total.toLocaleString()} <Typography component="span" sx={{ fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600 }}>บาท</Typography>
+              {total.toLocaleString()} <Typography component="span" sx={{ fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600 }}>{t("tailorFlow.orderSummary.baht")}</Typography>
             </Typography>
           </Box>
         </Box>
@@ -73,7 +76,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
       <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start", bgcolor: `${GOLD}0F`, border: `1px solid ${GOLD}40`, borderRadius: "12px", px: 1.5, py: 1.1 }}>
         <InfoOutlinedIcon sx={{ fontSize: 16, color: GOLD, mt: 0.15, flexShrink: 0 }} />
         <Typography sx={{ fontFamily: FONT, color: "#8A6D3B", fontSize: "0.7rem", lineHeight: 1.6 }}>
-          ราคาและภาพเป็นเพียงการประมาณการและการจำลองการออกแบบเท่านั้น ร้านที่รับออเดอร์จะยืนยันราคาและรายละเอียดจริงอีกครั้งก่อนเริ่มผลิต
+          {t("tailorFlow.orderSummary.disclaimer")}
         </Typography>
       </Box>
 
@@ -93,7 +96,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
           '&:hover': { bgcolor: '#0F1A30' },
         }}
       >
-        เลือกร้านค้าที่จะตัด
+        {t("tailorFlow.orderSummary.chooseShopButton")}
       </Button>
 
     </Box>

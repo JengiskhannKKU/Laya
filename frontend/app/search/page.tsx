@@ -26,28 +26,52 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import MobileLayout from "@/components/layout/MobileLayout";
 import type { Product } from "@/lib/live-products";
 import { useLiveProducts } from "@/lib/use-live-products";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-const provinces = ["ทั้งหมด", "ลำพูน", "ชัยภูมิ", "สกลนคร", "กาฬสินธุ์", "ราชบุรี", "กรุงเทพมหานคร"];
-const fabricTypes = ["ทั้งหมด", "ผ้าไหม", "ผ้าฝ้าย", "ผ้าไหมผสมฝ้าย", "ผ้าทอมือ"];
-const sortOptions = [
-  { value: "popular", label: "ยอดนิยม" },
-  { value: "price_low", label: "ราคาต่ำ → สูง" },
-  { value: "price_high", label: "ราคาสูง → ต่ำ" },
-  { value: "rating", label: "Rating สูงสุด" },
-  { value: "newest", label: "ใหม่ล่าสุด" },
-];
+// ค่าฟิลเตอร์คงเป็นภาษาไทยเสมอ (ต้อง match กับข้อมูลสินค้าจริงจาก backend ที่ยังไม่แปล)
+// ส่วนที่แปลคือ label ที่แสดงผลเท่านั้น ผ่าน provinceLabel()/fabricLabel() ด้านล่าง
+const ALL_VALUE = "ทั้งหมด";
+const PROVINCE_VALUES = ["ทั้งหมด", "ลำพูน", "ชัยภูมิ", "สกลนคร", "กาฬสินธุ์", "ราชบุรี", "กรุงเทพมหานคร"];
+const FABRIC_VALUES = ["ทั้งหมด", "ผ้าไหม", "ผ้าฝ้าย", "ผ้าไหมผสมฝ้าย", "ผ้าทอมือ"];
 
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { products } = useLiveProducts();
+  const { t } = useLanguage();
   const initialQuery = searchParams.get("q") || "";
+
+  const provinceLabels: Record<string, string> = {
+    "ทั้งหมด": t("common.all"),
+    "ลำพูน": t("search.provinces.lamphun"),
+    "ชัยภูมิ": t("search.provinces.chaiyaphum"),
+    "สกลนคร": t("search.provinces.sakonNakhon"),
+    "กาฬสินธุ์": t("search.provinces.kalasin"),
+    "ราชบุรี": t("search.provinces.ratchaburi"),
+    "กรุงเทพมหานคร": t("search.provinces.bangkok"),
+  };
+  const fabricLabels: Record<string, string> = {
+    "ทั้งหมด": t("common.all"),
+    "ผ้าไหม": t("search.fabricTypes.silk"),
+    "ผ้าฝ้าย": t("search.fabricTypes.cotton"),
+    "ผ้าไหมผสมฝ้าย": t("search.fabricTypes.silkCottonBlend"),
+    "ผ้าทอมือ": t("search.fabricTypes.handwoven"),
+  };
+  const provinces = PROVINCE_VALUES;
+  const fabricTypes = FABRIC_VALUES;
+  const sortOptions = [
+    { value: "popular", label: t("search.sort.popular") },
+    { value: "price_low", label: t("search.sort.priceLow") },
+    { value: "price_high", label: t("search.sort.priceHigh") },
+    { value: "rating", label: t("search.sort.rating") },
+    { value: "newest", label: t("search.sort.newest") },
+  ];
 
   const [query, setQuery] = useState(initialQuery);
   const [filterOpen, setFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<number[]>([0, 10000]);
-  const [selectedProvince, setSelectedProvince] = useState("ทั้งหมด");
-  const [selectedFabric, setSelectedFabric] = useState("ทั้งหมด");
+  const [selectedProvince, setSelectedProvince] = useState(ALL_VALUE);
+  const [selectedFabric, setSelectedFabric] = useState(ALL_VALUE);
   const [giOnly, setGiOnly] = useState(false);
   const [sortBy, setSortBy] = useState("popular");
 
@@ -138,7 +162,7 @@ function SearchContent() {
               <TextField
                 fullWidth
                 variant="standard"
-                placeholder="ค้นหาสินค้า, ชุมชน, จังหวัด..."
+                placeholder={t("search.placeholder")}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 InputProps={{ disableUnderline: true }}
@@ -162,7 +186,7 @@ function SearchContent() {
           {/* Sort Bar */}
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1.5 }}>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>
-              พบ {filteredProducts.length} ผลลัพธ์
+              {t("search.resultsCount").replace("{n}", String(filteredProducts.length))}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <SortRoundedIcon sx={{ fontSize: 16, color: "#6B7280" }} />
@@ -188,13 +212,13 @@ function SearchContent() {
           {filteredProducts.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 10 }}>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-                ไม่พบผลลัพธ์
+                {t("search.noResultsTitle")}
               </Typography>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 3 }}>
-                ลองค้นหาด้วยคำอื่น หรือปรับตัวกรอง
+                {t("search.noResultsSubtitle")}
               </Typography>
               <Button onClick={clearFilters} variant="outlined" sx={{ borderRadius: "20px", fontFamily: '"Kanit", sans-serif' }}>
-                ล้างตัวกรอง
+                {t("search.clearFilters")}
               </Button>
             </Box>
           ) : (
@@ -255,7 +279,7 @@ function SearchContent() {
           <Box sx={{ p: 3 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
-                ตัวกรอง
+                {t("search.filters")}
               </Typography>
               <IconButton onClick={() => setFilterOpen(false)}>
                 <CloseRoundedIcon />
@@ -264,7 +288,7 @@ function SearchContent() {
 
             {/* Price Range */}
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
-              ช่วงราคา
+              {t("search.priceRange")}
             </Typography>
             <Box sx={{ px: 1, mb: 3 }}>
               <Slider
@@ -285,13 +309,13 @@ function SearchContent() {
 
             {/* Province */}
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
-              จังหวัด
+              {t("search.province")}
             </Typography>
             <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 3 }}>
               {provinces.map((p) => (
                 <Chip
                   key={p}
-                  label={p}
+                  label={provinceLabels[p] ?? p}
                   onClick={() => setSelectedProvince(p)}
                   sx={{
                     fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem",
@@ -305,19 +329,19 @@ function SearchContent() {
 
             {/* Fabric Type */}
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
-              ประเภทผ้า
+              {t("search.fabricType")}
             </Typography>
             <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 3 }}>
-              {fabricTypes.map((t) => (
+              {fabricTypes.map((f) => (
                 <Chip
-                  key={t}
-                  label={t}
-                  onClick={() => setSelectedFabric(t)}
+                  key={f}
+                  label={fabricLabels[f] ?? f}
+                  onClick={() => setSelectedFabric(f)}
                   sx={{
                     fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem",
-                    bgcolor: selectedFabric === t ? "#1B2A4A" : "#F0EBE3",
-                    color: selectedFabric === t ? "#FFFFFF" : "#6B7280",
-                    fontWeight: selectedFabric === t ? 700 : 400,
+                    bgcolor: selectedFabric === f ? "#1B2A4A" : "#F0EBE3",
+                    color: selectedFabric === f ? "#FFFFFF" : "#6B7280",
+                    fontWeight: selectedFabric === f ? 700 : 400,
                   }}
                 />
               ))}
@@ -325,7 +349,7 @@ function SearchContent() {
 
             {/* GI Toggle */}
             <Chip
-              label="เฉพาะสินค้า GI"
+              label={t("search.giOnly")}
               icon={<VerifiedRoundedIcon sx={{ fontSize: 14, color: giOnly ? "#FFFFFF" : "#C5A55A" }} />}
               onClick={() => setGiOnly(!giOnly)}
               sx={{
@@ -344,7 +368,7 @@ function SearchContent() {
                 onClick={clearFilters}
                 sx={{ borderRadius: "12px", borderColor: "#E5DFD6", color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}
               >
-                ล้างทั้งหมด
+                {t("search.clearAll")}
               </Button>
               <Button
                 fullWidth
@@ -355,7 +379,7 @@ function SearchContent() {
                   "&:hover": { bgcolor: "#0F1A30" },
                 }}
               >
-                แสดงผลลัพธ์ ({filteredProducts.length})
+                {t("search.showResults").replace("{n}", String(filteredProducts.length))}
               </Button>
             </Box>
           </Box>
@@ -365,15 +389,20 @@ function SearchContent() {
   );
 }
 
+function SearchFallback() {
+  const { t } = useLanguage();
+  return (
+    <MobileLayout>
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography sx={{ color: "#6B7280" }}>{t("common.loading")}</Typography>
+      </Box>
+    </MobileLayout>
+  );
+}
+
 export default function SearchPage() {
   return (
-    <Suspense fallback={
-      <MobileLayout>
-        <Box sx={{ p: 4, textAlign: "center" }}>
-          <Typography sx={{ color: "#6B7280" }}>กำลังโหลด...</Typography>
-        </Box>
-      </MobileLayout>
-    }>
+    <Suspense fallback={<SearchFallback />}>
       <SearchContent />
     </Suspense>
   );

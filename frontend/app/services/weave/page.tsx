@@ -23,13 +23,14 @@ import MapRoundedIcon from "@mui/icons-material/MapRounded";
 
 import MobileLayout from "@/components/layout/MobileLayout";
 import { PROVINCES, REGIONS, type Province } from "@/lib/fabric-origins";
-
-const REGION_FILTERS: { key: string; label: string }[] = [
-  { key: "all", label: "ทั้งหมด" },
-  ...Object.entries(REGIONS).map(([key, r]) => ({ key, label: r.label })),
-];
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function WeaveSelectPage() {
+  const { t } = useLanguage();
+  const REGION_FILTERS: { key: string; label: string }[] = [
+    { key: "all", label: t("common.all") },
+    ...Object.entries(REGIONS).map(([key, r]) => ({ key, label: r.label })),
+  ];
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState("all");
   const [selected, setSelected] = useState<Province | null>(null);
@@ -64,7 +65,7 @@ export default function WeaveSelectPage() {
               mr: 5,
             }}
           >
-            เลือกทอผ้า
+            {t("services.weave.pageTitle")}
           </Typography>
         </Box>
         <Typography
@@ -77,7 +78,7 @@ export default function WeaveSelectPage() {
             mb: 3,
           }}
         >
-          เลือกลายผ้าแรงบันดาลใจจากทั่วประเทศ หรือให้ AI ช่วยออกแบบลายใหม่ในแบบของคุณ
+          {t("services.weave.subtitle")}
         </Typography>
 
         {/* CTA: generate new pattern with AI */}
@@ -113,10 +114,10 @@ export default function WeaveSelectPage() {
               </Box>
               <Box>
                 <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontWeight: 700, fontSize: "1rem" }}>
-                  เจนลายผ้าใหม่ด้วย AI
+                  {t("services.weave.generateTitle")}
                 </Typography>
                 <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', fontSize: "0.78rem", mt: 0.3, opacity: 0.85 }}>
-                  ไม่เจอลายที่ถูกใจ? ให้ AI ออกแบบลายเฉพาะของคุณใน 1 นาที
+                  {t("services.weave.generateDesc")}
                 </Typography>
               </Box>
             </Box>
@@ -139,7 +140,7 @@ export default function WeaveSelectPage() {
           >
             <SearchRoundedIcon sx={{ color: "#9CA3AF", fontSize: 20 }} />
             <InputBase
-              placeholder="ค้นหาลายผ้า หรือจังหวัด"
+              placeholder={t("services.weave.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               sx={{ flex: 1, fontFamily: '"Noto Serif Thai", serif', fontSize: "0.9rem", py: 1 }}
@@ -171,7 +172,7 @@ export default function WeaveSelectPage() {
         <Box sx={{ px: 2 }}>
           {fabrics.length === 0 ? (
             <Typography sx={{ fontFamily: '"Noto Serif Thai", serif', color: "#9CA3AF", textAlign: "center", py: 6, fontSize: "0.85rem" }}>
-              ไม่พบลายผ้าที่ค้นหา
+              {t("services.weave.noResults")}
             </Typography>
           ) : (
             <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
@@ -266,7 +267,7 @@ export default function WeaveSelectPage() {
                   }}
                 >
                   <MapRoundedIcon fontSize="small" />
-                  ดูเรื่องราวเต็มในแผนที่ผ้าไทย
+                  {t("services.weave.fullStoryLink")}
                 </Box>
               </Link>
             </Box>

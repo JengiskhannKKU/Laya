@@ -58,6 +58,7 @@ import { useCartStore, cartSubtotal, cartLineKey, CartLine } from "@/lib/cart-st
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // Leaflet ต้องรันฝั่ง client เท่านั้น (ใช้ window) — โหลดแบบ dynamic ปิด SSR
 const LocationPickerMap = dynamic(() => import("@/components/checkout/LocationPickerMap"), {
@@ -99,22 +100,6 @@ const cardSx = {
   boxShadow: "0 2px 14px rgba(27,42,74,0.05)",
 };
 
-const STEPS = ["ที่อยู่จัดส่ง", "ตรวจสอบคำสั่งซื้อ", "ชำระเงิน"];
-
-const PAYMENT_METHODS = [
-  { id: "promptpay", label: "PromptPay QR", icon: QrCode2RoundedIcon, active: true },
-  { id: "card", label: "บัตรเครดิต", icon: CreditCardRoundedIcon, active: false },
-  { id: "transfer", label: "โอนผ่านธนาคาร", icon: AccountBalanceRoundedIcon, active: false },
-  { id: "wallet", label: "e-Wallet", icon: AccountBalanceWalletRoundedIcon, active: false },
-];
-
-const TRUST_BADGES = [
-  { icon: LockOutlinedIcon, label: "เข้ารหัส SSL" },
-  { icon: GppGoodRoundedIcon, label: "ชำระเงินปลอดภัย" },
-  { icon: VerifiedUserRoundedIcon, label: "รับประกันความพึงพอใจ" },
-  { icon: LocalShippingRoundedIcon, label: "จัดส่งติดตามได้" },
-];
-
 interface PaymentInfo {
   id: string;
   shopName: string;
@@ -142,7 +127,22 @@ interface SavedAddress {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { user, session, loading: authLoading } = useAuth();
+
+  const STEPS = [t("checkout.steps.address"), t("checkout.steps.review"), t("checkout.steps.payment")];
+  const PAYMENT_METHODS = [
+    { id: "promptpay", label: t("checkout.paymentMethods.promptpay"), icon: QrCode2RoundedIcon, active: true },
+    { id: "card", label: t("checkout.paymentMethods.card"), icon: CreditCardRoundedIcon, active: false },
+    { id: "transfer", label: t("checkout.paymentMethods.transfer"), icon: AccountBalanceRoundedIcon, active: false },
+    { id: "wallet", label: t("checkout.paymentMethods.wallet"), icon: AccountBalanceWalletRoundedIcon, active: false },
+  ];
+  const TRUST_BADGES = [
+    { icon: LockOutlinedIcon, label: t("checkout.trustBadges.ssl") },
+    { icon: GppGoodRoundedIcon, label: t("checkout.trustBadges.securePayment") },
+    { icon: VerifiedUserRoundedIcon, label: t("checkout.trustBadges.satisfaction") },
+    { icon: LocalShippingRoundedIcon, label: t("checkout.trustBadges.trackableShipping") },
+  ];
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clear);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
@@ -256,22 +256,22 @@ export default function CheckoutPage() {
   }, [items]);
 
   const handleSessionExpired = () => {
-    setError("เซสชันหมดอายุ กำลังพาไปเข้าสู่ระบบใหม่...");
+    setError(t("checkout.errors.sessionExpired"));
     setTimeout(() => router.push("/auth/login"), 1500);
   };
 
   const validateAddress = () => {
     const { recipientName, phone, addressLine1, subdistrict, district, province, postalCode } = shipping;
     if (!recipientName || !phone || !addressLine1 || !province || !district || !subdistrict || !postalCode) {
-      setFieldError("กรุณากรอกข้อมูลให้ครบถ้วน");
+      setFieldError(t("checkout.errors.fillAllFields"));
       return false;
     }
     if (!/^0\d{9}$/.test(phone)) {
-      setFieldError("เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก ขึ้นต้นด้วย 0");
+      setFieldError(t("checkout.errors.invalidPhone"));
       return false;
     }
     if (postalCode.length !== 5) {
-      setFieldError("รหัสไปรษณีย์ต้องมี 5 หลัก");
+      setFieldError(t("checkout.errors.invalidPostalCode"));
       return false;
     }
     setFieldError("");
@@ -329,7 +329,7 @@ export default function CheckoutPage() {
         }),
       });
       const order = await orderRes.json();
-      if (!orderRes.ok) throw new Error(order.error ?? "สร้างออเดอร์ไม่สำเร็จ");
+      if (!orderRes.ok) throw new Error(order.error ?? t("checkout.errors.orderFailed"));
       setOrderGroupId(order.id);
 
       const payRes = await authFetch(`${API_BASE}/api/payments`, {
@@ -337,7 +337,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({ productOrderGroupId: order.id }),
       });
       const pay = await payRes.json();
-      if (!payRes.ok) throw new Error(pay.error ?? "สร้างรายการชำระเงินไม่สำเร็จ");
+      if (!payRes.ok) throw new Error(pay.error ?? t("checkout.errors.paymentCreateFailed"));
 
       const list: PaymentInfo[] = (pay.payments ?? []).map((p: {
         id: string; shopName: string; amount: number; qrPayload: string; promptpayId: string;
@@ -345,13 +345,13 @@ export default function CheckoutPage() {
         id: p.id, shopName: p.shopName, amount: p.amount, qrPayload: p.qrPayload, promptpayId: p.promptpayId,
         confirmed: false,
       }));
-      if (!list.length) throw new Error("สร้างรายการชำระเงินไม่สำเร็จ");
+      if (!list.length) throw new Error(t("checkout.errors.paymentCreateFailed"));
       setPayments(list);
       setTimeLeft(900);
       setStep(2);
     } catch (err) {
       if (err instanceof SessionExpiredError) { handleSessionExpired(); return; }
-      setError(err instanceof Error ? err.message : "ดำเนินการไม่สำเร็จ กรุณาลองใหม่");
+      setError(err instanceof Error ? err.message : t("checkout.errors.genericFailed"));
     } finally {
       setLoading(false);
     }
@@ -361,7 +361,7 @@ export default function CheckoutPage() {
   const handleConfirmPaid = async () => {
     const pending = payments.filter((p) => !p.confirmed);
     if (!pending.length) return;
-    if (pending.some((p) => !p.slipUrl)) { setError("กรุณาแนบสลิปการโอนเงินให้ครบทุกร้านก่อนยืนยัน"); return; }
+    if (pending.some((p) => !p.slipUrl)) { setError(t("checkout.errors.attachAllSlips")); return; }
     setPaying(true);
     setError("");
     try {
@@ -371,13 +371,13 @@ export default function CheckoutPage() {
           body: JSON.stringify({ slipUrl: p.slipUrl }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? `ยืนยันการชำระเงินร้าน ${p.shopName} ไม่สำเร็จ`);
+        if (!res.ok) throw new Error(data.error ?? t("checkout.errors.confirmShopFailed").replace("{shop}", p.shopName));
       }
       clearCart();
       router.push(`/orders/product/${orderGroupId}/success`);
     } catch (err) {
       if (err instanceof SessionExpiredError) { handleSessionExpired(); return; }
-      setError(err instanceof Error ? err.message : "ยืนยันการชำระเงินไม่สำเร็จ");
+      setError(err instanceof Error ? err.message : t("checkout.errors.confirmFailed"));
     } finally {
       setPaying(false);
     }
@@ -401,13 +401,13 @@ export default function CheckoutPage() {
 
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) return;
-    setCouponMsg("ระบบคูปองส่วนลดยังไม่เปิดให้ใช้งานในขณะนี้");
+    setCouponMsg(t("checkout.couponDisabledMsg"));
   };
 
-  const primaryLabel = loading ? "กำลังสร้างออเดอร์..." : paying ? "กำลังตรวจสอบ..."
-    : step === 0 ? "ดำเนินการต่อ"
-    : step === 1 ? `ยืนยันและชำระ ฿${total.toLocaleString()}`
-    : "ฉันโอนเงินแล้ว";
+  const primaryLabel = loading ? t("checkout.creatingOrder") : paying ? t("checkout.verifying")
+    : step === 0 ? t("checkout.continueAction")
+    : step === 1 ? t("checkout.confirmAndPay").replace("{n}", total.toLocaleString())
+    : t("checkout.paidConfirm");
 
   // ต้องแนบสลิปครบทุกร้านที่ยังไม่ยืนยันก่อนกดยืนยันได้
   const allSlipsAttached = payments.filter((p) => !p.confirmed).every((p) => !!p.slipUrl);
@@ -425,17 +425,17 @@ export default function CheckoutPage() {
   const orderSummaryCard = (
     <Box sx={{ ...cardSx, p: { xs: 2, md: 2.5 } }}>
       <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1.05rem", color: NAVY, mb: 2 }}>
-        สรุปคำสั่งซื้อ
+        {t("cart.orderSummary")}
       </Typography>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.2 }}>
         <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>
-          ยอดรวมสินค้า ({items.reduce((n, i) => n + i.quantity, 0)} ชิ้น)
+          {t("cart.itemsSubtotal").replace("{n}", String(items.reduce((n, i) => n + i.quantity, 0)))}
         </Typography>
         <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: NAVY, fontWeight: 600 }}>฿{subtotal.toLocaleString()}</Typography>
       </Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.2 }}>
-        <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>ค่าจัดส่ง</Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>{t("checkout.shippingFee")}</Typography>
         <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: NAVY, fontWeight: 600 }}>฿{SHIPPING_FEE.toLocaleString()}</Typography>
       </Box>
 
@@ -446,14 +446,14 @@ export default function CheckoutPage() {
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
           <LocalOfferOutlinedIcon sx={{ fontSize: 15, color: GOLD }} />
-          <Typography sx={{ fontFamily: FONT, fontSize: "0.82rem", color: NAVY, fontWeight: 600 }}>มีโค้ดส่วนลด?</Typography>
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.82rem", color: NAVY, fontWeight: 600 }}>{t("checkout.couponPrompt")}</Typography>
         </Box>
         <ExpandMoreRoundedIcon sx={{ fontSize: 18, color: "#9CA3AF", transform: showCoupon ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
       </Box>
       <Collapse in={showCoupon}>
         <Box sx={{ display: "flex", gap: 1, mt: 1, mb: 0.5 }}>
           <TextField
-            size="small" placeholder="กรอกโค้ดส่วนลด" value={couponCode}
+            size="small" placeholder={t("checkout.couponPlaceholder")} value={couponCode}
             onChange={(e) => { setCouponCode(e.target.value); setCouponMsg(""); }}
             sx={{ ...fieldSx, flex: 1 }}
           />
@@ -461,7 +461,7 @@ export default function CheckoutPage() {
             onClick={handleApplyCoupon}
             sx={{ px: 2, borderRadius: "10px", bgcolor: "#F0EBE3", color: NAVY, fontFamily: FONT, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#E5DFD1" } }}
           >
-            ใช้
+            {t("common.apply")}
           </Button>
         </Box>
         {couponMsg && <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF", mb: 0.5 }}>{couponMsg}</Typography>}
@@ -470,7 +470,7 @@ export default function CheckoutPage() {
       <Divider sx={{ my: 1.5, borderColor: "#F3EDE2" }} />
 
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", mb: 2 }}>
-        <Typography sx={{ fontFamily: FONT, fontSize: "0.95rem", color: NAVY, fontWeight: 700 }}>ยอดรวมทั้งสิ้น</Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.95rem", color: NAVY, fontWeight: 700 }}>{t("checkout.grandTotal")}</Typography>
         <Typography sx={{ fontFamily: FONT, fontSize: "1.6rem", color: GOLD, fontWeight: 700, lineHeight: 1 }}>฿{total.toLocaleString()}</Typography>
       </Box>
 
@@ -517,11 +517,11 @@ export default function CheckoutPage() {
               <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
             </IconButton>
             <Typography sx={{ flex: 1, textAlign: { xs: "center", md: "left" }, ml: { md: 1 }, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY }}>
-              ชำระเงิน
+              {t("checkout.title")}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, pr: 1 }}>
               <LockOutlinedIcon sx={{ fontSize: 14, color: "#9CA3AF" }} />
-              <Typography sx={{ fontFamily: FONT, fontSize: "0.7rem", color: "#9CA3AF" }}>การชำระเงินที่ปลอดภัย</Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: "0.7rem", color: "#9CA3AF" }}>{t("checkout.securePaymentNote")}</Typography>
             </Box>
           </Box>
         </Box>
@@ -591,9 +591,9 @@ export default function CheckoutPage() {
                       </Box>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", fontWeight: 600, color: NAVY }}>
-                          {items.reduce((n, i) => n + i.quantity, 0)} ชิ้น · {byShop.length} ร้านค้า
+                          {t("checkout.mobileSummary").replace("{n}", String(items.reduce((n, i) => n + i.quantity, 0))).replace("{m}", String(byShop.length))}
                         </Typography>
-                        <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF" }}>จ่ายครั้งเดียวด้วย QR พร้อมเพย์</Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF" }}>{t("checkout.payOnceHint")}</Typography>
                       </Box>
                       <Typography sx={{ fontFamily: FONT, fontSize: "1rem", fontWeight: 700, color: GOLD }}>
                         ฿{total.toLocaleString()}
@@ -601,7 +601,7 @@ export default function CheckoutPage() {
                     </Box>
 
                     <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: { xs: "1rem", md: "1.15rem" }, color: NAVY, mb: 1.8, display: "flex", alignItems: "center" }}>
-                      <LocationOnOutlinedIcon sx={{ mr: 0.8, fontSize: 22, color: GOLD }} /> จัดส่งไปที่ไหน?
+                      <LocationOnOutlinedIcon sx={{ mr: 0.8, fontSize: 22, color: GOLD }} /> {t("checkout.shipToWhere")}
                     </Typography>
 
                     {/* ── สมุดที่อยู่ที่บันทึกไว้ ── */}
@@ -636,7 +636,7 @@ export default function CheckoutPage() {
                                   <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", fontWeight: 700, color: NAVY }}>{a.label}</Typography>
                                   {a.isDefault && (
                                     <Box sx={{ bgcolor: "#FDF8F0", color: "#8E601C", fontSize: "0.65rem", fontFamily: FONT, fontWeight: 600, px: 0.8, py: 0.15, borderRadius: "6px" }}>
-                                      ค่าเริ่มต้น
+                                      {t("checkout.defaultBadge")}
                                     </Box>
                                   )}
                                 </Box>
@@ -669,7 +669,7 @@ export default function CheckoutPage() {
                           }}
                         >
                           <AddRoundedIcon sx={{ fontSize: 18, verticalAlign: "middle", mr: 0.5, color: GOLD }} />
-                          <Typography component="span" sx={{ fontFamily: FONT, fontSize: "0.85rem", fontWeight: 600 }}>เพิ่มที่อยู่ใหม่</Typography>
+                          <Typography component="span" sx={{ fontFamily: FONT, fontSize: "0.85rem", fontWeight: 600 }}>{t("checkout.addNewAddress")}</Typography>
                         </Box>
                       </Box>
                     ) : null}
@@ -682,7 +682,7 @@ export default function CheckoutPage() {
                             onClick={() => { setShowNewForm(false); const def = savedAddresses.find(a => a.isDefault) ?? savedAddresses[0]; applyAddress(def); }}
                             sx={{ mb: 1.5, color: "#8E9199", fontFamily: FONT, fontSize: "0.78rem", textTransform: "none", p: 0.5 }}
                           >
-                            ← ใช้ที่อยู่ที่บันทึกไว้
+                            {t("checkout.useSavedAddress")}
                           </Button>
                         )}
 
@@ -704,7 +704,7 @@ export default function CheckoutPage() {
                             <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.6, mt: 1, px: 0.5 }}>
                               <PlaceRoundedIcon sx={{ fontSize: 14, color: GOLD, mt: 0.2, flexShrink: 0 }} />
                               <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#6B7280", lineHeight: 1.5 }}>
-                                ตำแหน่งที่ปักหมุด: {addressGuess}
+                                {t("checkout.pinnedLocation").replace("{n}", addressGuess)}
                               </Typography>
                             </Box>
                           )}
@@ -712,12 +712,12 @@ export default function CheckoutPage() {
 
                         <Box sx={{ ...cardSx, p: { xs: 2, md: 2.8 }, display: "flex", flexDirection: "column", gap: 1.8 }}>
                           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.8 }}>
-                            <TextField size="small" label="ชื่อ-นามสกุลผู้รับ" sx={fieldSx} required
+                            <TextField size="small" label={t("checkout.recipientName")} sx={fieldSx} required
                               value={shipping.recipientName} onChange={(e) => setShipping({ ...shipping, recipientName: e.target.value })} />
-                            <TextField size="small" label="เบอร์โทรศัพท์" inputProps={{ maxLength: 10, inputMode: "numeric" }} sx={fieldSx} required
+                            <TextField size="small" label={t("checkout.phone")} inputProps={{ maxLength: 10, inputMode: "numeric" }} sx={fieldSx} required
                               value={shipping.phone} onChange={(e) => setShipping({ ...shipping, phone: e.target.value.replace(/\D/g, "") })} />
                           </Box>
-                          <TextField size="small" label="บ้านเลขที่ ซอย ถนน" sx={fieldSx} required
+                          <TextField size="small" label={t("checkout.addressLine1")} sx={fieldSx} required
                             value={shipping.addressLine1} onChange={(e) => setShipping({ ...shipping, addressLine1: e.target.value })} />
 
                           <Divider sx={{ borderColor: "#F3EDE2" }} />
@@ -738,10 +738,10 @@ export default function CheckoutPage() {
                               onClick={() => setShowNote(true)} startIcon={<AddCommentOutlinedIcon sx={{ fontSize: 16 }} />}
                               sx={{ alignSelf: "flex-start", color: "#8E9199", fontFamily: FONT, fontSize: "0.78rem", textTransform: "none", p: 0.5 }}
                             >
-                              เพิ่มหมายเหตุถึงร้านค้า
+                              {t("checkout.addNote")}
                             </Button>
                           ) : (
-                            <TextField fullWidth multiline rows={2} label="หมายเหตุถึงร้านค้า (ถ้ามี)" autoFocus
+                            <TextField fullWidth multiline rows={2} label={t("checkout.noteLabel")} autoFocus
                               value={shipping.note} onChange={(e) => setShipping({ ...shipping, note: e.target.value })} sx={fieldSx} />
                           )}
 
@@ -755,7 +755,7 @@ export default function CheckoutPage() {
                                 sx={{ color: "#D1D5DB", "&.Mui-checked": { color: GOLD }, p: 0.6 }}
                               />
                             }
-                            label={<Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: "#4A5468" }}>บันทึกที่อยู่นี้ไว้ใช้ครั้งหน้า</Typography>}
+                            label={<Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: "#4A5468" }}>{t("checkout.saveAddressCheckbox")}</Typography>}
                             sx={{ m: 0 }}
                           />
                         </Box>
@@ -769,7 +769,7 @@ export default function CheckoutPage() {
                   <motion.div key="review" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}>
 
                     <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: { xs: "1rem", md: "1.15rem" }, color: NAVY, mb: 1.8 }}>
-                      รายการสินค้า
+                      {t("checkout.orderItems")}
                     </Typography>
 
                     {/* สินค้าจัดกลุ่มตามร้าน */}
@@ -793,7 +793,7 @@ export default function CheckoutPage() {
                               <Typography noWrap sx={{ fontFamily: FONT, fontSize: "0.9rem", fontWeight: 600, color: NAVY }}>{line.product.name}</Typography>
                               {line.variantLabel && (
                                 <Typography sx={{ fontFamily: FONT, fontSize: "0.74rem", color: "#8E601C", mt: 0.2 }}>
-                                  ตัวเลือก: {line.variantLabel}
+                                  {t("cart.optionLabel")}: {line.variantLabel}
                                 </Typography>
                               )}
                               <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#9CA3AF", mt: 0.2 }}>
@@ -842,14 +842,14 @@ export default function CheckoutPage() {
                           {shipping.addressLine1} {shipping.subdistrict} {shipping.district} {shipping.province} {shipping.postalCode}
                         </Typography>
                         {shipping.note && (
-                          <Typography sx={{ fontFamily: FONT, fontSize: "0.74rem", color: "#9CA3AF", mt: 0.3 }}>หมายเหตุ: {shipping.note}</Typography>
+                          <Typography sx={{ fontFamily: FONT, fontSize: "0.74rem", color: "#9CA3AF", mt: 0.3 }}>{t("checkout.noteInline").replace("{n}", shipping.note)}</Typography>
                         )}
                       </Box>
                       <Button
                         size="small" onClick={() => setStep(0)} startIcon={<EditOutlinedIcon sx={{ fontSize: 15 }} />}
                         sx={{ color: NAVY, border: `1px solid ${CARD_BORDER}`, borderRadius: "10px", fontFamily: FONT, fontSize: "0.75rem", textTransform: "none", flexShrink: 0, alignSelf: "flex-start", "&:hover": { bgcolor: "#FDF8F0", borderColor: GOLD } }}
                       >
-                        แก้ไข
+                        {t("checkout.edit")}
                       </Button>
                     </Box>
 
@@ -857,7 +857,7 @@ export default function CheckoutPage() {
                     <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 0.6, bgcolor: "#FDF8F0", borderRadius: "10px", px: 1.2, py: 0.8 }}>
                       <QrCode2RoundedIcon sx={{ fontSize: 15, color: "#8E601C" }} />
                       <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#8E601C" }}>
-                        กดยืนยันแล้วสแกน QR พร้อมเพย์ได้เลย — จ่ายครั้งเดียวครบทุกร้าน
+                        {t("checkout.mobileHint")}
                       </Typography>
                     </Box>
                   </motion.div>
@@ -868,7 +868,7 @@ export default function CheckoutPage() {
                   <motion.div key="pay" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
 
                     <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: { xs: "1rem", md: "1.15rem" }, color: NAVY, mb: 1.8 }}>
-                      {payments.length > 1 ? `เลือกวิธีชำระเงิน (${payments.length} ร้านค้า)` : "เลือกวิธีชำระเงิน"}
+                      {payments.length > 1 ? t("checkout.selectPaymentMethodMulti").replace("{n}", String(payments.length)) : t("checkout.selectPaymentMethod")}
                     </Typography>
 
                     {/* Payment method tabs — ตอนนี้เปิดใช้เฉพาะ PromptPay */}
@@ -889,7 +889,7 @@ export default function CheckoutPage() {
                           <m.icon sx={{ fontSize: 17 }} />
                           <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", fontWeight: 600, whiteSpace: "nowrap" }}>{m.label}</Typography>
                           {!m.active && (
-                            <Typography sx={{ fontFamily: FONT, fontSize: "0.62rem", color: "#B0AA9C", ml: 0.3 }}>เร็วๆ นี้</Typography>
+                            <Typography sx={{ fontFamily: FONT, fontSize: "0.62rem", color: "#B0AA9C", ml: 0.3 }}>{t("checkout.comingSoon")}</Typography>
                           )}
                         </Box>
                       ))}
@@ -912,7 +912,7 @@ export default function CheckoutPage() {
                             <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, mb: 1.4 }}>
                               <QrCode2RoundedIcon sx={{ fontSize: 15, color: GOLD }} />
                               <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF", letterSpacing: "0.04em" }}>
-                                THAI QR PAYMENT · พร้อมเพย์
+                                {t("checkout.thaiQrLabel")}
                               </Typography>
                             </Box>
                             <Box sx={{ position: "relative", p: 1.8, borderRadius: "16px", border: `1.5px dashed ${GOLD}` }}>
@@ -920,12 +920,12 @@ export default function CheckoutPage() {
                               {timeLeft <= 0 && (
                                 <Button onClick={() => setTimeLeft(900)} startIcon={<ReplayRoundedIcon />}
                                   sx={{ position: "absolute", inset: 0, m: "auto", width: "fit-content", height: "fit-content", bgcolor: NAVY, color: "#FFF", borderRadius: "10px", px: 2, fontFamily: FONT, "&:hover": { bgcolor: "#0F1A30" } }}>
-                                  แสดง QR อีกครั้ง
+                                  {t("checkout.showQrAgain")}
                                 </Button>
                               )}
                             </Box>
                             <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: "#6B7280", mt: 1.8 }}>
-                              พร้อมเพย์: {formatPromptPayIdDisplay(p.promptpayId)} · {p.shopName}
+                              {t("checkout.promptpayLine").replace("{id}", formatPromptPayIdDisplay(p.promptpayId)).replace("{shop}", p.shopName)}
                             </Typography>
                             <Typography sx={{ fontFamily: FONT, fontSize: "1.75rem", color: NAVY, fontWeight: 700, mt: 0.4 }}>
                               ฿{p.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -942,29 +942,29 @@ export default function CheckoutPage() {
 
                       <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, bgcolor: timeLeft <= 60 ? "#FDF0F0" : "#FDF8F0", px: 1.6, py: 0.5, borderRadius: "999px" }}>
                         <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: timeLeft <= 60 ? "#D32F2F" : "#8E601C", fontWeight: 600 }}>
-                          ชำระภายใน {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")} นาที
+                          {t("checkout.payWithin").replace("{mm}", String(Math.floor(timeLeft / 60))).replace("{ss}", String(timeLeft % 60).padStart(2, "0"))}
                         </Typography>
                       </Box>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 1.2 }}>
                         <GppGoodRoundedIcon sx={{ fontSize: 15, color: GOLD }} />
-                        <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF" }}>Secure Payment · เข้ารหัสมาตรฐาน EMVCo</Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF" }}>{t("checkout.secureEmvco")}</Typography>
                       </Box>
 
                       {/* วิธีจ่าย */}
                       <Box sx={{ width: "100%", maxWidth: 380, mt: 2, ...cardSx, p: 2.2 }}>
-                        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "0.85rem", color: NAVY, mb: 1.4 }}>วิธีการชำระเงิน</Typography>
-                        {["เปิดแอปธนาคารของคุณ", "สแกน QR ด้านบน แล้วตรวจชื่อผู้รับ LAYA", "โอนเงินให้ครบตามยอด", "แนบสลิปการโอนในกล่องใต้ QR ของแต่ละร้าน", "กดปุ่ม “ฉันโอนเงินแล้ว” ด้านล่าง"].map((t, i, arr) => (
-                          <Box key={t} sx={{ display: "flex", gap: 1.2, mb: i < arr.length - 1 ? 1.1 : 0 }}>
+                        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "0.85rem", color: NAVY, mb: 1.4 }}>{t("checkout.howToPayTitle")}</Typography>
+                        {t<string[]>("checkout.howToPaySteps").map((step, i, arr) => (
+                          <Box key={step} sx={{ display: "flex", gap: 1.2, mb: i < arr.length - 1 ? 1.1 : 0 }}>
                             <Box sx={{ width: 20, height: 20, borderRadius: "50%", bgcolor: "#FDF8F0", color: "#8E601C", fontSize: "0.68rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT, flexShrink: 0, mt: 0.1 }}>
                               {i + 1}
                             </Box>
-                            <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: "#4A5468" }}>{t}</Typography>
+                            <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: "#4A5468" }}>{step}</Typography>
                           </Box>
                         ))}
                       </Box>
 
                       <Typography sx={{ fontFamily: FONT, fontSize: "0.72rem", color: "#9CA3AF", textAlign: "center", mt: 1.5, maxWidth: 340 }}>
-                        หลังยืนยัน ร้านค้าจะได้รับแจ้งเตือนและเริ่มเตรียมสินค้าของคุณ
+                        {t("checkout.afterConfirmNote")}
                       </Typography>
                     </Box>
                   </motion.div>
@@ -989,7 +989,7 @@ export default function CheckoutPage() {
         }}>
           {step < 2 && (
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-              <Typography sx={{ fontFamily: FONT, fontSize: "0.75rem", color: "#9CA3AF" }}>ยอดรวมทั้งสิ้น</Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: "0.75rem", color: "#9CA3AF" }}>{t("checkout.grandTotal")}</Typography>
               <Typography sx={{ fontFamily: FONT, fontSize: "1.1rem", fontWeight: 700, color: NAVY }}>฿{total.toLocaleString()}</Typography>
             </Box>
           )}

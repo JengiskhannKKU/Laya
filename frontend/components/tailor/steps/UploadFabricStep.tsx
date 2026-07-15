@@ -3,12 +3,14 @@ import { Box, Typography, Button } from "@mui/material";
 import { motion } from "framer-motion";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
 export default function UploadFabricStep({ orderState, setOrderState, onNext }: any) {
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +60,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
       sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', pt: 1 }}>
 
       <Typography sx={{ fontFamily: FONT, fontSize: '0.88rem', color: '#6B7280', textAlign: 'center' }}>
-        ถ่ายภาพผ้าของคุณให้เห็นลายและสีชัดเจน — AI จะวิเคราะห์ประเภท ลาย และเทคนิคการทอให้อัตโนมัติ
+        {t("tailorFlow.upload.instruction")}
       </Typography>
 
       <input
@@ -106,7 +108,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
               <CameraAltRoundedIcon sx={{ color: GOLD, fontSize: 32 }} />
             </Box>
             <Typography sx={{ position: 'relative', fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.95rem' }}>
-              แตะเพื่อถ่ายรูปผ้า
+              {t("tailorFlow.upload.tapToPhoto")}
             </Typography>
           </>
         )}
@@ -128,7 +130,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
           '&:hover': { bgcolor: '#0F1A30' },
         }}
       >
-        ถ่ายหรือเลือกจากแกลเลอรี่
+        {t("tailorFlow.upload.uploadCta")}
       </Button>
 
       <Button
@@ -140,7 +142,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
           textTransform: 'none',
         }}
       >
-        ข้ามขั้นตอนนี้ (สำหรับทดสอบ)
+        {t("tailorFlow.upload.skip")}
       </Button>
 
     </Box>

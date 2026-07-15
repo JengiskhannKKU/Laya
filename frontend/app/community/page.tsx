@@ -10,8 +10,10 @@ import Link from "next/link";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { fetchCommunities, type LiveCommunity } from "@/lib/communities";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function CommunityDirectoryPage() {
+  const { t } = useLanguage();
   const [communities, setCommunities] = useState<LiveCommunity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,10 +29,10 @@ export default function CommunityDirectoryPage() {
       <Box sx={{ pt: 3, pb: 4, bgcolor: "#FAF6F0", minHeight: "100vh" }}>
         <Box sx={{ px: 2.5, mb: 2.5 }}>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.4rem", color: "#1B2A4A" }}>
-            ชุมชนช่างทอ
+            {t("community.title")}
           </Typography>
           <Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>
-            ร้านค้า/วิสาหกิจชุมชนที่ผ่านการรับรองจาก LAYA
+            {t("community.subtitle")}
           </Typography>
         </Box>
 
@@ -41,7 +43,7 @@ export default function CommunityDirectoryPage() {
         ) : communities.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 10, px: 3 }}>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#9CA3AF" }}>
-              ยังไม่มีชุมชนในระบบ
+              {t("community.emptyText")}
             </Typography>
           </Box>
         ) : (
@@ -66,7 +68,7 @@ export default function CommunityDirectoryPage() {
                       {c.name}
                     </Typography>
                     <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#6B7280", mt: 0.3 }}>
-                      {c.province} · {c.productCount} สินค้า
+                      {c.province} · {c.productCount} {t("community.productsUnit")}
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.3, mt: 0.5 }}>
                       <StarRoundedIcon sx={{ fontSize: 13, color: "#C5A55A" }} />

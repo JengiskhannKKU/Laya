@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 import type { Perspective } from "./MeasurementsStep";
 
@@ -14,12 +15,6 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").re
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
-
-const PERSPECTIVES: { key: Perspective; label: string }[] = [
-  { key: "front", label: "ด้านหน้า" },
-  { key: "back", label: "ด้านหลัง" },
-  { key: "side", label: "ด้านข้าง" },
-];
 
 type SlotState = { status: "idle" | "loading" | "done" | "error"; url?: string; mock?: boolean; error?: string };
 
@@ -34,6 +29,12 @@ type SlotState = { status: "idle" | "loading" | "done" | "error"; url?: string; 
  * ถ้า API หมดเครดิต backend จะ fallback เป็นรูปตัวอย่างเองแบบ graceful (mock:true) — โชว์ label บอกตรงๆ
  */
 export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: any) {
+  const { t } = useLanguage();
+  const PERSPECTIVES: { key: Perspective; label: string }[] = [
+    { key: "front", label: t("tailorFlow.virtualTryOn.front") },
+    { key: "back", label: t("tailorFlow.virtualTryOn.back") },
+    { key: "side", label: t("tailorFlow.virtualTryOn.side") },
+  ];
   const bodyPhotos = orderState.bodyPhotos as Record<Perspective, string> | undefined;
   const [active, setActive] = useState<Perspective>("front");
   const [slots, setSlots] = useState<Record<Perspective, SlotState>>({
@@ -60,7 +61,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
       body: JSON.stringify({ imageBase64: dataUrl }),
     });
     const json = await res.json();
-    if (!res.ok || json.error) throw new Error(json.error ?? "อัปโหลดรูปไม่สำเร็จ");
+    if (!res.ok || json.error) throw new Error(json.error ?? t("tailorFlow.virtualTryOn.uploadFailed"));
     return json.url as string;
   };
 
@@ -72,7 +73,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
         bodyUrl = await uploadOnce(bodyPhotos[p]);
         uploadedUrls.current.body[p] = bodyUrl;
       }
-      if (!bodyUrl) throw new Error("ไม่พบรูปตัวเองมุมนี้");
+      if (!bodyUrl) throw new Error(t("tailorFlow.virtualTryOn.bodyPhotoMissing"));
 
       if (!uploadedUrls.current.fabric && orderState.fabricImage) {
         uploadedUrls.current.fabric = await uploadOnce(orderState.fabricImage);
@@ -90,7 +91,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
         }),
       });
       const json = await res.json();
-      if (!res.ok || json.error) throw new Error(json.error ?? "สร้างภาพไม่สำเร็จ");
+      if (!res.ok || json.error) throw new Error(json.error ?? t("tailorFlow.virtualTryOn.generateFailed"));
 
       setSlots((s) => ({ ...s, [p]: { status: "done", url: json.imageUrl, mock: json.mock } }));
       setOrderState((prev: any) => ({
@@ -98,7 +99,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
         tryOnResults: { ...prev.tryOnResults, [p]: json.imageUrl },
       }));
     } catch (err: any) {
-      setSlots((s) => ({ ...s, [p]: { status: "error", error: err.message ?? "เกิดข้อผิดพลาด" } }));
+      setSlots((s) => ({ ...s, [p]: { status: "error", error: err.message ?? t("tailorFlow.virtualTryOn.genericError") } }));
     }
   };
 
@@ -113,8 +114,9 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
       {anyLoading && (
         <Box sx={{ bgcolor: `${GOLD}14`, border: `1px solid ${GOLD}40`, borderRadius: '14px', px: 2, py: 1.4 }}>
           <Typography sx={{ fontFamily: FONT, color: NAVY, fontSize: '0.8rem', textAlign: 'center', lineHeight: 1.6 }}>
-            AI ใช้เวลาสร้างภาพแต่ละมุมประมาณ 2-5 นาที (บางครั้งนานกว่านั้น)
-            <br />ไม่ต้องปิดหน้านี้ระหว่างรอ
+            {t("tailorFlow.virtualTryOn.estimateNote").split("\n").map((line, i, arr) => (
+              <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+            ))}
           </Typography>
         </Box>
       )}
@@ -155,8 +157,8 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
               <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, px: 3 }}>
                 <Typography sx={{ fontFamily: FONT, color: '#6B7280', textAlign: 'center', fontSize: '0.88rem' }}>
                   {anyLoading
-                    ? `กำลังสร้างมุม${PERSPECTIVES.find(p => p.key === loadingPerspective)?.label}อยู่ — รอให้เสร็จก่อนแล้วค่อยสร้างมุมนี้`
-                    : `ยังไม่ได้สร้างภาพมุม${PERSPECTIVES.find(p => p.key === active)?.label} — กดสร้างเมื่อพร้อม`}
+                    ? t("tailorFlow.virtualTryOn.waitingForOther").replace("{label}", PERSPECTIVES.find(p => p.key === loadingPerspective)?.label ?? "")
+                    : t("tailorFlow.virtualTryOn.notGeneratedYet").replace("{label}", PERSPECTIVES.find(p => p.key === active)?.label ?? "")}
                 </Typography>
                 <Button
                   variant="contained"
@@ -170,7 +172,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
                     '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
                   }}
                 >
-                  สร้างภาพมุม{PERSPECTIVES.find(p => p.key === active)?.label}
+                  {t("tailorFlow.virtualTryOn.generateButton").replace("{label}", PERSPECTIVES.find(p => p.key === active)?.label ?? "")}
                 </Button>
               </Box>
             )}
@@ -178,30 +180,34 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
               <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                 <CircularProgress sx={{ color: NAVY }} />
                 <Typography sx={{ fontFamily: FONT, color: NAVY, textAlign: 'center', px: 3, fontSize: '0.9rem' }}>
-                  AI กำลังใส่ชุดให้คุณ...
+                  {t("tailorFlow.virtualTryOn.generating")}
                 </Typography>
                 <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.75rem', textAlign: 'center' }}>
-                  ใช้เวลาไปแล้ว {String(Math.floor(elapsedSec / 60)).padStart(2, '0')}:{String(elapsedSec % 60).padStart(2, '0')} (ปกติ 2-5 นาที)
+                  {t("tailorFlow.virtualTryOn.elapsed")
+                    .replace("{mm}", String(Math.floor(elapsedSec / 60)).padStart(2, '0'))
+                    .replace("{ss}", String(elapsedSec % 60).padStart(2, '0'))}
                 </Typography>
               </Box>
             )}
             {activeSlot.status === 'error' && (
               <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, px: 3 }}>
                 <Typography sx={{ fontFamily: FONT, color: '#B3261E', textAlign: 'center', fontSize: '0.9rem' }}>
-                  สร้างภาพมุม{PERSPECTIVES.find(p => p.key === active)?.label}ไม่สำเร็จ: {activeSlot.error}
+                  {t("tailorFlow.virtualTryOn.failedLabel")
+                    .replace("{label}", PERSPECTIVES.find(p => p.key === active)?.label ?? "")
+                    .replace("{error}", activeSlot.error ?? "")}
                 </Typography>
                 <Button startIcon={<RefreshRoundedIcon />} onClick={() => runPerspective(active)}
                   sx={{ color: NAVY, fontFamily: FONT, fontWeight: 600, textTransform: 'none' }}>
-                  ลองใหม่
+                  {t("tailorFlow.virtualTryOn.retry")}
                 </Button>
               </Box>
             )}
             {activeSlot.status === 'done' && activeSlot.url && (
               <>
-                <Image src={activeSlot.url} alt={`ลองใส่เสมือนจริง - ${active}`} fill style={{ objectFit: 'cover' }} />
+                <Image src={activeSlot.url} alt={`Virtual try-on - ${active}`} fill style={{ objectFit: 'cover' }} />
                 {activeSlot.mock && (
                   <Box sx={{ position: 'absolute', top: 10, left: 10, bgcolor: 'rgba(197,165,90,0.95)', color: NAVY, px: 1.5, py: 0.5, borderRadius: '999px' }}>
-                    <Typography sx={{ fontFamily: FONT, fontSize: '0.7rem', fontWeight: 700 }}>ตัวอย่าง (โควต้า AI หมดชั่วคราว)</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontSize: '0.7rem', fontWeight: 700 }}>{t("tailorFlow.virtualTryOn.mockBadge")}</Typography>
                   </Box>
                 )}
               </>
@@ -212,7 +218,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
 
       {hasAnyMock && (
         <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#6B7280', fontSize: '0.75rem' }}>
-          ระบบ AI ลองใส่เสมือนจริงหมดโควต้าชั่วคราว — บางมุมแสดงภาพตัวอย่างแทนภาพจริง คำสั่งตัดของคุณยังดำเนินการต่อได้ตามปกติ
+          {t("tailorFlow.virtualTryOn.mockNote")}
         </Typography>
       )}
 
@@ -234,7 +240,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
           '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
         }}
       >
-        {anyLoading ? 'กำลังสร้างภาพ...' : anyDone ? 'ถัดไป — สรุปออเดอร์' : 'ข้ามการสร้างภาพ — ถัดไป'}
+        {anyLoading ? t("tailorFlow.virtualTryOn.generatingButton") : anyDone ? t("tailorFlow.virtualTryOn.nextDone") : t("tailorFlow.virtualTryOn.nextSkip")}
       </Button>
 
     </Box>

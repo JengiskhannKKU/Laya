@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // ── SVG Brand Icons (inline, no emoji) ────────────────────────────────────────
 function GoogleIcon() {
@@ -45,6 +46,7 @@ const fieldSx = {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { login, loginWithGoogle } = useAuth();
 
   const [email, setEmail]       = useState("");
@@ -64,7 +66,7 @@ export default function LoginPage() {
       const { role } = await login(email, password);
       router.push(role === "merchant" ? "/merchant" : role === "admin" ? "/admin" : "/");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
+      const msg = err instanceof Error ? err.message : t("auth.login.genericError");
       if (msg === "EMAIL_NOT_CONFIRMED") {
         // ยังไม่ได้กดยืนยันอีเมล — พาไปหน้ายืนยัน (ส่งซ้ำได้จากที่นั่น)
         router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
@@ -83,7 +85,7 @@ export default function LoginPage() {
       await loginWithGoogle();
       // Redirect handled by Supabase → /auth/callback
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "เข้าสู่ระบบด้วย Google ไม่สำเร็จ");
+      setError(err instanceof Error ? err.message : t("auth.login.googleError"));
       setGoogleLoading(false);
     }
   };
@@ -106,10 +108,10 @@ export default function LoginPage() {
         sx={{ px: 3, pt: 2, pb: 5, flex: 1 }}
       >
         <Typography variant="h5" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 0.5 }}>
-          ยินดีต้อนรับกลับมา
+          {t("auth.login.welcomeBack")}
         </Typography>
         <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.9rem", mb: 3 }}>
-          เข้าสู่ระบบเพื่อดำเนินการต่อ
+          {t("auth.login.subtitle")}
         </Typography>
 
         {error && (
@@ -136,14 +138,14 @@ export default function LoginPage() {
           {googleLoading
             ? <CircularProgress size={20} sx={{ color: "#6B7280" }} />
             : <GoogleIcon />}
-          เข้าสู่ระบบด้วย Google
+          {t("auth.login.continueWithGoogle")}
         </Button>
 
         {/* ── Divider ── */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Divider sx={{ flex: 1, borderColor: "#E5DFD6" }} />
           <Typography sx={{ mx: 2, color: "#9CA3AF", fontSize: "0.78rem", fontFamily: '"Kanit", sans-serif', whiteSpace: "nowrap" }}>
-            หรือใช้อีเมลและรหัสผ่าน
+            {t("auth.login.orUseEmail")}
           </Typography>
           <Divider sx={{ flex: 1, borderColor: "#E5DFD6" }} />
         </Box>
@@ -151,7 +153,7 @@ export default function LoginPage() {
         {/* ── Email / Password Form ── */}
         <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
           <TextField
-            fullWidth label="อีเมล" type="email" autoComplete="email"
+            fullWidth label={t("auth.login.email")} type="email" autoComplete="email"
             value={email} onChange={(e) => setEmail(e.target.value)}
             required disabled={loading} sx={fieldSx}
           />
@@ -159,7 +161,7 @@ export default function LoginPage() {
           {/* Password with show/hide using end button inside sx */}
           <Box sx={{ position: "relative" }}>
             <TextField
-              fullWidth label="รหัสผ่าน" autoComplete="current-password"
+              fullWidth label={t("auth.login.password")} autoComplete="current-password"
               type={showPass ? "text" : "password"}
               value={password} onChange={(e) => setPassword(e.target.value)}
               required disabled={loading}
@@ -182,11 +184,11 @@ export default function LoginPage() {
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: -1 }}>
             <FormControlLabel
               control={<Checkbox checked={remember} onChange={(e) => setRemember(e.target.checked)} size="small" sx={{ color: "#E5DFD6", "&.Mui-checked": { color: "#C5A55A" } }} disabled={loading} />}
-              label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#6B7280" }}>จดจำฉันไว้</Typography>}
+              label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#6B7280" }}>{t("auth.login.rememberMe")}</Typography>}
             />
             <Link href="/auth/forgot" style={{ textDecoration: "none" }}>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#C5A55A", fontWeight: 600 }}>
-                ลืมรหัสผ่าน?
+                {t("auth.login.forgotPassword")}
               </Typography>
             </Link>
           </Box>
@@ -202,25 +204,25 @@ export default function LoginPage() {
               "&.Mui-disabled": { bgcolor: "rgba(27,42,74,0.45)", color: "#FFFFFF" },
             }}
           >
-            {loading ? <CircularProgress size={22} color="inherit" /> : "เข้าสู่ระบบ"}
+            {loading ? <CircularProgress size={22} color="inherit" /> : t("nav.login")}
           </Button>
         </Box>
 
         {/* ── Register links ── */}
         <Box sx={{ textAlign: "center", mt: 4 }}>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280" }}>
-            ยังไม่มีบัญชี?{" "}
+            {t("auth.login.noAccount")}{" "}
             <Link href="/auth/register" style={{ textDecoration: "none" }}>
               <Box component="span" sx={{ color: "#C5A55A", fontWeight: 600, "&:hover": { textDecoration: "underline" } }}>
-                สมัครสมาชิก
+                {t("auth.login.signUp")}
               </Box>
             </Link>
           </Typography>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#9CA3AF", mt: 1 }}>
-            หรือ{" "}
+            {t("auth.login.or")}{" "}
             <Link href="/auth/register/merchant" style={{ textDecoration: "none" }}>
               <Box component="span" sx={{ color: "#1B2A4A", fontWeight: 600, "&:hover": { textDecoration: "underline" } }}>
-                สมัครเป็นร้านค้า LAYA
+                {t("auth.login.signUpAsMerchant")}
               </Box>
             </Link>
           </Typography>

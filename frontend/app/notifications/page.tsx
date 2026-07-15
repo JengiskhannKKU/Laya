@@ -18,6 +18,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { useNotifications, NotificationType } from "@/lib/notification-context";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: string; bg: string }> = {
   order: { icon: <ShoppingBagRoundedIcon sx={{ fontSize: 20 }} />, color: "#3B82F6", bg: "rgba(59,130,246,0.1)" },
@@ -29,6 +30,7 @@ const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: stri
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications();
 
   return (
@@ -52,7 +54,7 @@ export default function NotificationsPage() {
             </IconButton>
             <NotificationsRoundedIcon sx={{ color: "#C5A55A" }} />
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.15rem", color: "#1B2A4A" }}>
-              การแจ้งเตือน
+              {t("notifications.title")}
               {unreadCount > 0 && (
                 <Box component="span" sx={{ ml: 1, bgcolor: "#EF4444", color: "#FFFFFF", borderRadius: "10px", px: 0.8, py: 0.1, fontSize: "0.72rem", fontWeight: 700 }}>
                   {unreadCount}
@@ -62,7 +64,7 @@ export default function NotificationsPage() {
           </Box>
           {unreadCount > 0 && (
             <Button onClick={markAllRead} size="small" sx={{ fontFamily: '"Kanit", sans-serif', color: "#C5A55A", textTransform: "none", fontSize: "0.8rem", fontWeight: 600 }}>
-              อ่านทั้งหมด
+              {t("notifications.markAllRead")}
             </Button>
           )}
         </Box>
@@ -83,7 +85,7 @@ export default function NotificationsPage() {
           {!loading && notifications.length === 0 && (
             <Box sx={{ textAlign: "center", py: 10 }}>
               <NotificationsRoundedIcon sx={{ fontSize: 56, color: "#E5DFD6", mb: 2 }} />
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#9CA3AF" }}>ยังไม่มีการแจ้งเตือน</Typography>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#9CA3AF" }}>{t("notifications.emptyText")}</Typography>
             </Box>
           )}
           {notifications.map((n, i) => {

@@ -5,6 +5,7 @@ import { Box, Typography, Button, Avatar, CircularProgress } from "@mui/material
 import { motion } from "framer-motion";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
@@ -21,6 +22,7 @@ interface TailorShop {
 }
 
 export default function SelectTailorShopStep({ orderState, setOrderState, onNext }: any) {
+  const { t } = useLanguage();
   const [shops, setShops] = useState<TailorShop[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +45,7 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
       sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
 
       <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#6B7280', fontSize: '0.88rem' }}>
-        เลือกร้านที่คุณไว้ใจให้ตัดเย็บชุดของคุณ
+        {t("tailorFlow.selectShop.subtitle")}
       </Typography>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
@@ -76,7 +78,7 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
                   <StarRoundedIcon sx={{ fontSize: 16, color: GOLD }} />
                   <Typography sx={{ fontFamily: FONT, fontSize: '0.78rem', color: '#6B7280' }}>
-                    {shop.rating.toFixed(1)} ({shop.reviewCount} รีวิว) · {shop.province}
+                    {shop.rating.toFixed(1)} ({shop.reviewCount} {t("tailorFlow.selectShop.reviews")}) · {shop.province}
                   </Typography>
                 </Box>
               </Box>
@@ -106,7 +108,7 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
           '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
         }}
       >
-        ยืนยันการเลือกร้าน
+        {t("tailorFlow.selectShop.confirmButton")}
       </Button>
 
     </Box>

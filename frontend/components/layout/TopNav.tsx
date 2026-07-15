@@ -83,18 +83,18 @@ export default function AppTopNav() {
             maxWidth: 1440,
             width: "100%",
             mx: "auto",
-            px: { xs: 2.5, sm: 3, md: 5 },
+            px: { xs: 2.5, sm: 3, md: 3, lg: 5 },
             display: "flex",
             alignItems: "center",
             height: "100%",
-            gap: 2,
+            gap: { md: 1, lg: 2 },
           }}
         >
           {/* Left: Wordmark */}
           <Box
             onClick={() => router.push("/")}
             sx={{
-              width: { xs: "auto", md: 160 },
+              width: { xs: "auto", md: 120, lg: 160 },
               cursor: "pointer",
               flexShrink: 0,
               display: "flex",
@@ -122,10 +122,11 @@ export default function AppTopNav() {
             <Box
               sx={{
                 flex: 1,
+                minWidth: 0,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "40px",
+                gap: { md: "18px", lg: "40px" },
               }}
             >
               {navLinks.map((link) => {
@@ -147,7 +148,8 @@ export default function AppTopNav() {
                       sx={{
                         fontFamily: '"Kanit", sans-serif',
                         fontWeight: active ? 500 : 400,
-                        fontSize: "0.83rem",
+                        fontSize: { md: "0.76rem", lg: "0.83rem" },
+                        whiteSpace: "nowrap",
                         letterSpacing: "0.03em",
                         color: active ? NAV_LINK_ACTIVE : NAV_LINK,
                         transition: "color 0.25s ease",
@@ -176,11 +178,12 @@ export default function AppTopNav() {
           {/* Right: Actions */}
           <Box
             sx={{
-              width: { xs: "auto", md: 160 },
+              width: "auto",
+              flexShrink: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "flex-end",
-              gap: "6px",
+              gap: { xs: "2px", md: "4px" },
               ml: "auto",
             }}
           >
@@ -316,6 +319,8 @@ export default function AppTopNav() {
                 minWidth: 0,
                 width: 40,
                 height: 30,
+                flexShrink: 0,
+                ml: { xs: 0.25, md: 0.75 },
                 borderRadius: "999px",
                 color: NAV_ICON,
                 border: "1px solid rgba(255,255,255,0.2)",

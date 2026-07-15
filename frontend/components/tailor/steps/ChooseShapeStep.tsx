@@ -22,12 +22,14 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import type { Catalog, TemplateLibraryItem } from "@/components/design-clothes/builder/types";
 import { PartPreview } from "@/components/design-clothes/builder/GarmentRenderer";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
 export default function ChooseShapeStep({ orderState, setOrderState, onNext }: any) {
+  const { t } = useLanguage();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(orderState.shape?.id ?? null);
   const [view, setView] = useState<"front" | "back">("front");
@@ -45,7 +47,7 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
     return (
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 8 }}>
         <CircularProgress sx={{ color: NAVY }} />
-        <Typography sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.88rem" }}>กำลังโหลดเทมเพลต...</Typography>
+        <Typography sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.88rem" }}>{t("tailorFlow.chooseShape.loading")}</Typography>
       </Box>
     );
   }
@@ -73,10 +75,10 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
         <>
           <Box sx={{ textAlign: "center" }}>
             <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, fontSize: "0.95rem" }}>
-              เลือกเทมเพลตมาตรฐานของ LAYA
+              {t("tailorFlow.chooseShape.title")}
             </Typography>
             <Typography sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.8rem", mt: 0.3 }}>
-              ทุกร้านตัดของ LAYA ใช้เทมเพลตชุดเดียวกัน — เลือกทรงที่ชอบแล้วดูตัวอย่างผ้าของคุณบนทรงนั้น
+              {t("tailorFlow.chooseShape.subtitle")}
             </Typography>
           </Box>
 
@@ -122,7 +124,7 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
                   fontFamily: FONT, fontSize: "0.82rem", fontWeight: 600, transition: "all 0.2s",
                 }}
               >
-                {v === "front" ? "ด้านหน้า" : "ด้านหลัง"}
+                {v === "front" ? t("tailorFlow.chooseShape.front") : t("tailorFlow.chooseShape.back")}
               </Box>
             ))}
           </Box>
@@ -143,8 +145,7 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
           <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start", bgcolor: `${GOLD}0F`, border: `1px solid ${GOLD}40`, borderRadius: "12px", px: 1.5, py: 1.1 }}>
             <InfoOutlinedIcon sx={{ fontSize: 16, color: GOLD, mt: 0.15, flexShrink: 0 }} />
             <Typography sx={{ fontFamily: FONT, color: "#8A6D3B", fontSize: "0.7rem", lineHeight: 1.6 }}>
-              ภาพนี้เป็นเพียงการจำลองการออกแบบ (Design Visualization) เพื่อช่วยให้เห็นภาพรวมของลวดลายและรูปทรงเท่านั้น
-              ผลงานจริงอาจแตกต่างตามการจัดวางลายผ้า ขนาดผืนผ้า ไซซ์ผู้สวมใส่ และกระบวนการตัดเย็บของแต่ละร้าน
+              {t("tailorFlow.chooseShape.disclaimer")}
             </Typography>
           </Box>
 
@@ -158,7 +159,7 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
               display: "flex", alignItems: "center", justifyContent: "center", gap: 0.75,
             }}
           >
-            <CheckRoundedIcon sx={{ fontSize: 18 }} /> ยืนยันเทมเพลตนี้
+            <CheckRoundedIcon sx={{ fontSize: 18 }} /> {t("tailorFlow.chooseShape.confirm")}
           </Box>
         </>
       )}

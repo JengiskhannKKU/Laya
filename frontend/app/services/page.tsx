@@ -12,29 +12,31 @@ import AutoAwesomeMosaicRoundedIcon from "@mui/icons-material/AutoAwesomeMosaicR
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
 import MobileLayout from "@/components/layout/MobileLayout";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 const IVORY = "#FAF6F0";
 
-const SERVICES = [
-  {
-    href: "/services/tailor",
-    icon: CheckroomRoundedIcon,
-    title: "สั่งตัด",
-    desc: "ออกแบบและสั่งตัดชุดจากผ้าที่คุณเลือก ไม่ว่าจะมีผ้าอยู่แล้วหรือยังไม่มี",
-  },
-  {
-    href: "/gen-silk",
-    icon: AutoAwesomeMosaicRoundedIcon,
-    title: "สั่งทอผ้า",
-    desc: "ออกแบบลายผ้าด้วย AI แล้วสั่งทอกับช่างทอในชุมชนโดยตรง",
-  },
-];
-
 export default function ServicesPage() {
   const router = useRouter();
+  const { t } = useLanguage();
+
+  const SERVICES = [
+    {
+      href: "/services/tailor",
+      icon: CheckroomRoundedIcon,
+      title: t("services.tailor.title"),
+      desc: t("services.tailor.desc"),
+    },
+    {
+      href: "/gen-silk",
+      icon: AutoAwesomeMosaicRoundedIcon,
+      title: t("services.weave.title"),
+      desc: t("services.weave.desc"),
+    },
+  ];
 
   return (
     <MobileLayout>
@@ -49,14 +51,14 @@ export default function ServicesPage() {
               <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
             </IconButton>
             <Typography sx={{ flex: 1, textAlign: "center", mr: 5, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY }}>
-              เลือกบริการ
+              {t("services.chooseTitle")}
             </Typography>
           </Box>
         </Box>
 
         <Box sx={{ maxWidth: 720, width: "100%", mx: "auto", px: { xs: 2, md: 4 }, pt: { xs: 3, md: 5 }, pb: 6 }}>
           <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
-            เลือกบริการที่ต้องการ — ทีมช่างและชุมชนทอผ้าทั่วไทยพร้อมดูแลคุณ
+            {t("services.chooseSubtitle")}
           </Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>

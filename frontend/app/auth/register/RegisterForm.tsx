@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const textFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -28,6 +29,7 @@ const textFieldStyles = {
 
 export default function RegisterForm() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { register: registerUser } = useAuth();
   
   const [name, setName] = useState("");
@@ -46,7 +48,7 @@ export default function RegisterForm() {
     if (!name || !email || !password || !confirmPassword || !acceptTerms) return;
 
     if (password !== confirmPassword) {
-      setError("รหัสผ่านไม่ตรงกัน");
+      setError(t("auth.register.passwordMismatch"));
       return;
     }
 
@@ -61,7 +63,7 @@ export default function RegisterForm() {
       }
       router.push("/");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการสมัครสมาชิก");
+      setError(err instanceof Error ? err.message : t("auth.register.genericError"));
     } finally {
       setLoading(false);
     }
@@ -84,10 +86,10 @@ export default function RegisterForm() {
       {/* Form Area */}
       <Box sx={{ px: 3, pt: 2, pb: 4, flex: 1 }}>
         <Typography variant="h5" sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-          สร้างบัญชีใหม่
+          {t("auth.register.createAccount")}
         </Typography>
         <Typography sx={{ fontFamily: '"Kanit", sans-serif', color: "#6B7280", fontSize: "0.9rem", mb: 4 }}>
-          เข้าร่วมเป็นส่วนหนึ่งของ LAYA
+          {t("auth.register.joinLaya")}
         </Typography>
 
         {error && (
@@ -101,7 +103,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="ชื่อ-นามสกุล"
+              placeholder={t("auth.register.fullName")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -112,7 +114,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="อีเมลของคุณ"
+              placeholder={t("auth.register.email")}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -124,7 +126,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="สร้างรหัสผ่าน"
+              placeholder={t("auth.register.createPassword")}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -136,7 +138,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="ยืนยันรหัสผ่าน"
+              placeholder={t("auth.register.confirmPassword")}
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -148,7 +150,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="เบอร์โทรศัพท์ (ไม่บังคับ)"
+              placeholder={t("auth.register.phone")}
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -168,7 +170,7 @@ export default function RegisterForm() {
                 }
                 label={
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>
-                    ฉันยอมรับข้อตกลงในการใช้งาน และนโยบายความเป็นส่วนตัว
+                    {t("auth.register.acceptTerms")}
                   </Typography>
                 }
               />
@@ -183,7 +185,7 @@ export default function RegisterForm() {
                 }
                 label={
                   <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: -1 }}>
-                    ฉันต้องการรับข่าวสารและโปรโมชั่นจาก LAYA
+                    {t("auth.register.acceptMarketing")}
                   </Typography>
                 }
               />
@@ -207,7 +209,7 @@ export default function RegisterForm() {
                 "&.Mui-disabled": { bgcolor: "rgba(27,42,74,0.5)", color: "#FFFFFF" }
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "สมัครสมาชิก"}
+              {loading ? <CircularProgress size={24} color="inherit" /> : t("auth.register.signUpButton")}
             </Button>
           </Box>
         </form>
@@ -215,7 +217,7 @@ export default function RegisterForm() {
         <Box sx={{ display: "flex", alignItems: "center", my: 4 }}>
           <Box sx={{ flex: 1, height: "1px", bgcolor: "#E5DFD6" }} />
           <Typography sx={{ mx: 2, color: "#9CA3AF", fontSize: "0.8rem", fontFamily: '"Kanit", sans-serif' }}>
-            หรือสมัครสมาชิกด้วย
+            {t("auth.register.orSignUpWith")}
           </Typography>
           <Box sx={{ flex: 1, height: "1px", bgcolor: "#E5DFD6" }} />
         </Box>
@@ -236,16 +238,16 @@ export default function RegisterForm() {
               "&:hover": { bgcolor: "#05A546" },
             }}
           >
-            สมัครสมาชิกด้วย LINE
+            {t("auth.register.signUpWithLine")}
           </Button>
         </Box>
 
         <Box sx={{ textAlign: "center", mt: 4 }}>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280" }}>
-            มีบัญชีอยู่แล้ว?{" "}
+            {t("auth.register.alreadyHaveAccount")}{" "}
             <Link href="/auth/login" style={{ textDecoration: "none" }}>
               <Box component="span" sx={{ color: "#C5A55A", fontWeight: 600, "&:hover": { textDecoration: "underline" }}}>
-                เข้าสู่ระบบ
+                {t("auth.register.login")}
               </Box>
             </Link>
           </Typography>

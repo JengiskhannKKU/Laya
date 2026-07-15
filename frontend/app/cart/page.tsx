@@ -27,6 +27,7 @@ import { useCartStore, cartSubtotal, cartLineKey } from "@/lib/cart-store";
 import Image from "next/image";
 import Link from "next/link";
 import MobileLayout from "@/components/layout/MobileLayout";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const SHIPPING_ESTIMATE = 50;
 const FONT = '"Kanit", sans-serif';
@@ -44,6 +45,7 @@ const cardSx = {
 
 export default function CartPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
 
   const items = useCartStore((s) => s.items);
@@ -69,7 +71,7 @@ export default function CartPage() {
   const handleUpdateQty = (lineKey: string, delta: number, current: number, stock: number) => {
     const next = current + delta;
     if (next > stock) {
-      setToastMessage(`สินค้าเหลือ ${stock} ชิ้น`);
+      setToastMessage(t("cart.stockToast").replace("{n}", String(stock)));
       updateQuantity(lineKey, stock);
       return;
     }
@@ -88,12 +90,12 @@ export default function CartPage() {
   const orderSummaryCard = (
     <Box sx={{ ...cardSx, p: { xs: 2, md: 2.5 } }}>
       <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1.05rem", color: NAVY, mb: 2 }}>
-        สรุปคำสั่งซื้อ
+        {t("cart.orderSummary")}
       </Typography>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.2 }}>
         <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>
-          ยอดรวมสินค้า ({items.reduce((n, i) => n + i.quantity, 0)} ชิ้น)
+          {t("cart.itemsSubtotal").replace("{n}", String(items.reduce((n, i) => n + i.quantity, 0)))}
         </Typography>
         <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: NAVY, fontWeight: 600 }}>
           ฿{subtotal.toLocaleString()}
@@ -101,7 +103,7 @@ export default function CartPage() {
       </Box>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.2 }}>
-        <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>ค่าจัดส่งโดยประมาณ</Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280" }}>{t("cart.shippingEstimate")}</Typography>
         <Typography sx={{ fontFamily: FONT, fontSize: "0.9rem", color: NAVY, fontWeight: 600 }}>
           ฿{SHIPPING_ESTIMATE}
         </Typography>
@@ -110,7 +112,7 @@ export default function CartPage() {
       <Divider sx={{ my: 1.5, borderColor: "#F3EDE2" }} />
 
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", mb: 2 }}>
-        <Typography sx={{ fontFamily: FONT, fontSize: "0.95rem", color: NAVY, fontWeight: 700 }}>ยอดชำระสุทธิ</Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: "0.95rem", color: NAVY, fontWeight: 700 }}>{t("cart.netTotal")}</Typography>
         <Typography sx={{ fontFamily: FONT, fontSize: "1.6rem", color: GOLD, fontWeight: 700, lineHeight: 1 }}>
           ฿{total.toLocaleString()}
         </Typography>
@@ -126,24 +128,24 @@ export default function CartPage() {
           "&:hover": { bgcolor: "#0F1A30", transform: "translateY(-1px)" },
         }}
       >
-        ดำเนินการสั่งซื้อ
+        {t("cart.checkoutButton")}
       </Button>
 
       <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <LockOutlinedIcon sx={{ fontSize: 14, color: GOLD }} />
-          <Typography sx={{ fontFamily: FONT, fontSize: "0.68rem", color: "#9CA3AF" }}>ชำระเงินปลอดภัย</Typography>
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.68rem", color: "#9CA3AF" }}>{t("cart.securePayment")}</Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <LocalShippingRoundedIcon sx={{ fontSize: 14, color: GOLD }} />
-          <Typography sx={{ fontFamily: FONT, fontSize: "0.68rem", color: "#9CA3AF" }}>จัดส่งติดตามได้</Typography>
+          <Typography sx={{ fontFamily: FONT, fontSize: "0.68rem", color: "#9CA3AF" }}>{t("cart.trackableShipping")}</Typography>
         </Box>
       </Box>
 
       <Box sx={{ textAlign: "center", mt: 2 }}>
         <Link href="/community" style={{ textDecoration: "none" }}>
           <Typography sx={{ fontFamily: FONT, fontSize: "0.82rem", color: GOLD, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}>
-            ช้อปปิ้งต่อ
+            {t("cart.continueShopping")}
           </Typography>
         </Link>
       </Box>
@@ -163,7 +165,7 @@ export default function CartPage() {
               <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
             </IconButton>
             <Typography sx={{ flex: 1, textAlign: { xs: "center", md: "left" }, ml: { md: 1 }, fontFamily: FONT, fontSize: { xs: "1.05rem", md: "1.25rem" }, fontWeight: 700, color: NAVY, mr: { xs: 4, md: 0 } }}>
-              ตะกร้าสินค้า {items.length > 0 ? `(${items.length})` : ""}
+              {t("cart.title")} {items.length > 0 ? `(${items.length})` : ""}
             </Typography>
           </Box>
         </Box>
@@ -174,10 +176,10 @@ export default function CartPage() {
               <Inventory2OutlinedIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
             </Box>
             <Typography sx={{ fontFamily: FONT, fontSize: "1.1rem", fontWeight: 700, color: NAVY, mb: 1 }}>
-              ตะกร้าว่างเปล่า
+              {t("cart.emptyTitle")}
             </Typography>
             <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", color: "#6B7280", textAlign: "center", mb: 4 }}>
-              ไปเลือกชมสินค้าและลายผ้าสวยๆ จากชุมชนกันเลย
+              {t("cart.emptySubtitle")}
             </Typography>
             <Button
               variant="contained"
@@ -187,7 +189,7 @@ export default function CartPage() {
                 fontFamily: FONT, textTransform: "none", "&:hover": { bgcolor: "#0F1A30" },
               }}
             >
-              เริ่มช้อปปิ้ง
+              {t("cart.startShopping")}
             </Button>
           </Box>
         ) : (
@@ -211,11 +213,11 @@ export default function CartPage() {
                           {line.product.name}
                         </Typography>
                         <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#9CA3AF", mt: 0.3 }}>
-                          ร้าน: {line.product.shopName}
+                          {t("cart.shopLabel")}: {line.product.shopName}
                         </Typography>
                         {line.variantLabel && (
                           <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#8E601C", mt: 0.3 }}>
-                            ตัวเลือก: {line.variantLabel}
+                            {t("cart.optionLabel")}: {line.variantLabel}
                           </Typography>
                         )}
                         <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1rem", color: GOLD, mt: "auto" }}>
@@ -280,7 +282,7 @@ export default function CartPage() {
                 fontSize: "1rem", fontFamily: FONT, textTransform: "none", "&:hover": { bgcolor: "#0F1A30" },
               }}
             >
-              ดำเนินการสั่งซื้อ (฿{total.toLocaleString()})
+              {t("cart.checkoutButton")} (฿{total.toLocaleString()})
             </Button>
           </Box>
         )}
@@ -288,19 +290,19 @@ export default function CartPage() {
         {/* Delete Confirmation Dialog */}
         <Dialog open={!!itemToDelete} onClose={() => setItemToDelete(null)} PaperProps={{ sx: { borderRadius: "16px", p: 1 } }}>
           <DialogTitle sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, pb: 1 }}>
-            ยืนยันการลบ
+            {t("cart.deleteConfirmTitle")}
           </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.9rem" }}>
-              คุณต้องการนำสินค้านี้ออกจากตะกร้าใช่หรือไม่?
+              {t("cart.deleteConfirmBody")}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setItemToDelete(null)} sx={{ color: "#6B7280", fontFamily: FONT, fontWeight: 600 }}>
-              ยกเลิก
+              {t("common.cancel")}
             </Button>
             <Button onClick={confirmRemove} sx={{ color: "#D32F2F", fontFamily: FONT, fontWeight: 700 }} autoFocus>
-              ลบสินค้า
+              {t("cart.removeItem")}
             </Button>
           </DialogActions>
         </Dialog>

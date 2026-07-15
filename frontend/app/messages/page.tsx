@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const FONT = '"Kanit", sans-serif';
@@ -35,9 +36,11 @@ function formatThaiDate(iso: string) {
 
 export default function MessagesPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // เก็บเป็น error code แทนข้อความแปลแล้ว — กันปัญหา t() ค้างค่าภาษาตอน mount (ก่อน locale โหลดจาก localStorage)
+  const [errorCode, setErrorCode] = useState<"session_expired" | "load_failed" | string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -45,11 +48,11 @@ export default function MessagesPage() {
       try {
         const res = await authFetch(`${API_BASE}/api/chat/conversations`);
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "โหลดข้อความไม่สำเร็จ");
+        if (!res.ok) throw new Error(data.error ?? "load_failed");
         if (!cancelled) setConversations(data);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof SessionExpiredError ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่" : (err instanceof Error ? err.message : "โหลดข้อความไม่สำเร็จ"));
+          setErrorCode(err instanceof SessionExpiredError ? "session_expired" : (err instanceof Error ? err.message : "load_failed"));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -57,6 +60,10 @@ export default function MessagesPage() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  const error = errorCode === "session_expired" ? t("messages.sessionExpired")
+    : errorCode === "load_failed" ? t("messages.loadError")
+    : errorCode;
 
   return (
     <MobileLayout>
@@ -77,11 +84,11 @@ export default function MessagesPage() {
           </IconButton>
           <ChatBubbleOutlineRoundedIcon sx={{ color: "#C5A55A" }} />
           <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1.15rem", color: "#1B2A4A" }}>
-            ข้อความ
+            {t("messages.title")}
           </Typography>
         </Box>
 
-        {error && <Alert severity="warning" sx={{ mb: 2, borderRadius: "12px", fontFamily: FONT }} onClose={() => setError("")}>{error}</Alert>}
+        {error && <Alert severity="warning" sx={{ mb: 2, borderRadius: "12px", fontFamily: FONT }} onClose={() => setErrorCode("")}>{error}</Alert>}
 
         {loading ? (
           <Box sx={{ bgcolor: "#FFFFFF", borderRadius: 4, border: "1px solid #E5DFD6", display: "flex", justifyContent: "center", py: 6 }}>
@@ -90,7 +97,7 @@ export default function MessagesPage() {
         ) : conversations.length === 0 ? (
           <Box sx={{ bgcolor: "#FFFFFF", borderRadius: 4, border: "1px solid #E5DFD6", textAlign: "center", py: 10 }}>
             <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 56, color: "#E5DFD6", mb: 2 }} />
-            <Typography sx={{ fontFamily: FONT, color: "#9CA3AF" }}>ยังไม่มีบทสนทนา</Typography>
+            <Typography sx={{ fontFamily: FONT, color: "#9CA3AF" }}>{t("messages.emptyText")}</Typography>
           </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -110,10 +117,10 @@ export default function MessagesPage() {
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography noWrap sx={{ fontFamily: FONT, fontWeight: 600, color: "#1B2A4A", fontSize: "0.9rem" }}>
-                      {c.otherName ?? "ร้านค้า"}
+                      {c.otherName ?? t("messages.defaultShopName")}
                     </Typography>
                     <Typography noWrap sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#6B7280" }}>
-                      {c.lastMessageBody ?? "ยังไม่มีข้อความ"}
+                      {c.lastMessageBody ?? t("messages.noMessageYet")}
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: "right", flexShrink: 0 }}>

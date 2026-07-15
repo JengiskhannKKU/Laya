@@ -25,6 +25,7 @@ import {
 import MobileLayout from "@/components/layout/MobileLayout";
 import { fetchCategories, type Category } from "@/lib/categories";
 import { fetchLiveProducts, type Product } from "@/lib/live-products";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const getCategoryIcon = (id: string, color: string) => {
   const props = { size: 22, color, strokeWidth: 1.4 };
@@ -43,6 +44,7 @@ const getCategoryIcon = (id: string, color: string) => {
 function CategoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const initialCategory = searchParams.get("c") || "";
 
   const [selected, setSelected] = useState(initialCategory);
@@ -65,8 +67,8 @@ function CategoryContent() {
   }, [selected]);
 
   const activeLabel = useMemo(
-    () => categories.find((c) => c.id === selected)?.name ?? "ทั้งหมด",
-    [selected]
+    () => categories.find((c) => c.id === selected)?.name ?? t("common.all"),
+    [selected, categories, t]
   );
 
   return (
@@ -79,7 +81,7 @@ function CategoryContent() {
               <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
             </IconButton>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
-              หมวดหมู่สินค้า
+              {t("category.title")}
             </Typography>
           </Box>
 
@@ -106,7 +108,7 @@ function CategoryContent() {
             >
               <LayoutGrid size={18} color={selected === "" ? "#FFFFFF" : "#1B2A4A"} strokeWidth={1.4} />
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", fontWeight: 600, color: selected === "" ? "#FFFFFF" : "#1B2A4A" }}>
-                ทั้งหมด
+                {t("common.all")}
               </Typography>
             </Box>
             {categories.map((cat) => {
@@ -135,7 +137,7 @@ function CategoryContent() {
         {/* Results */}
         <Box sx={{ px: 2, pt: 2, pb: 10 }}>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mb: 1.5 }}>
-            {activeLabel} · {loading ? "กำลังโหลด..." : `${products.length} รายการ`}
+            {activeLabel} · {loading ? t("common.loading") : t("category.resultsCount").replace("{n}", String(products.length))}
           </Typography>
 
           {loading ? (
@@ -145,10 +147,10 @@ function CategoryContent() {
           ) : products.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 10 }}>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-                ยังไม่มีสินค้าในหมวดนี้
+                {t("category.emptyTitle")}
               </Typography>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280" }}>
-                ลองเลือกหมวดหมู่อื่น
+                {t("category.emptySubtitle")}
               </Typography>
             </Box>
           ) : (
@@ -208,15 +210,20 @@ function CategoryContent() {
   );
 }
 
+function CategoryFallback() {
+  const { t } = useLanguage();
+  return (
+    <MobileLayout>
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography sx={{ color: "#6B7280" }}>{t("common.loading")}</Typography>
+      </Box>
+    </MobileLayout>
+  );
+}
+
 export default function CategoryPage() {
   return (
-    <Suspense fallback={
-      <MobileLayout>
-        <Box sx={{ p: 4, textAlign: "center" }}>
-          <Typography sx={{ color: "#6B7280" }}>กำลังโหลด...</Typography>
-        </Box>
-      </MobileLayout>
-    }>
+    <Suspense fallback={<CategoryFallback />}>
       <CategoryContent />
     </Suspense>
   );

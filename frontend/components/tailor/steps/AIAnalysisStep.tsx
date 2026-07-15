@@ -8,6 +8,7 @@ import GridOnRoundedIcon from "@mui/icons-material/GridOnRounded";
 import HiveRoundedIcon from "@mui/icons-material/HiveRounded";
 import ColorLensRoundedIcon from "@mui/icons-material/ColorLensRounded";
 import LayersRoundedIcon from "@mui/icons-material/LayersRounded";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // เดิม hardcode ผิดเป็น localhost:5000 (backend จริงรันที่ 4000 ทั้ง local dev และ production ผ่าน nginx /api/)
 // ตัด trailing slash กัน URL เพี้ยนเป็น // เหมือนบั๊กที่เจอใน VirtualTryOnStep.tsx ก่อนหน้านี้
@@ -17,15 +18,15 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
-const ATTRIBUTES = [
-  { key: "type", label: "ประเภทผ้า", icon: CheckroomRoundedIcon },
-  { key: "technique", label: "เทคนิคการทอ", icon: GridOnRoundedIcon },
-  { key: "pattern", label: "ลาย", icon: HiveRoundedIcon },
-  { key: "tone", label: "โทนสี", icon: ColorLensRoundedIcon },
-  { key: "thickness", label: "ความหนา", icon: LayersRoundedIcon },
-] as const;
-
 export default function AIAnalysisStep({ orderState, setOrderState, onNext }: any) {
+  const { t } = useLanguage();
+  const ATTRIBUTES = [
+    { key: "type", label: t("tailorFlow.aiAnalysis.attrType"), icon: CheckroomRoundedIcon },
+    { key: "technique", label: t("tailorFlow.aiAnalysis.attrTechnique"), icon: GridOnRoundedIcon },
+    { key: "pattern", label: t("tailorFlow.aiAnalysis.attrPattern"), icon: HiveRoundedIcon },
+    { key: "tone", label: t("tailorFlow.aiAnalysis.attrTone"), icon: ColorLensRoundedIcon },
+    { key: "thickness", label: t("tailorFlow.aiAnalysis.attrThickness"), icon: LayersRoundedIcon },
+  ] as const;
   const [analyzing, setAnalyzing] = useState(true);
 
   useEffect(() => {
@@ -75,7 +76,9 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 3, height: 220, justifyContent: 'center' }}>
           <CircularProgress sx={{ color: NAVY }} />
           <Typography sx={{ fontFamily: FONT, color: NAVY, textAlign: 'center', fontSize: '0.9rem' }}>
-            AI กำลังวิเคราะห์ประเภทผ้า ลาย สี<br/>ความหนา และเทคนิคการทอ
+            {t("tailorFlow.aiAnalysis.analyzing").split("\n").map((line, i, arr) => (
+              <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+            ))}
           </Typography>
         </Box>
       ) : (
@@ -118,7 +121,7 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
               '&:hover': { bgcolor: '#0F1A30' },
             }}
           >
-            เลือกโอกาสใช้งาน
+            {t("tailorFlow.aiAnalysis.nextButton")}
           </Button>
         </Box>
       )}

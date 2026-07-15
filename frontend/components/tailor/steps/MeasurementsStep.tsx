@@ -4,18 +4,13 @@ import { motion } from "framer-motion";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
 export type Perspective = "front" | "back" | "side";
-
-const PERSPECTIVES: { key: Perspective; label: string; hint: string }[] = [
-  { key: "front", label: "ด้านหน้า", hint: "ยืนหันหน้าเข้ากล้องตรงๆ" },
-  { key: "back", label: "ด้านหลัง", hint: "หันหลังให้กล้อง" },
-  { key: "side", label: "ด้านข้าง", hint: "หันข้างลำตัว 90 องศา" },
-];
 
 /**
  * ถ่ายรูปตัวเอง 3 มุม (หน้า/หลัง/ข้าง) — เดิมมีแค่มุมเดียวและเป็นกล่องตกแต่งเฉยๆ ไม่มี input จริง
@@ -24,6 +19,12 @@ const PERSPECTIVES: { key: Perspective; label: string; hint: string }[] = [
  * ขึ้น Supabase Storage เพื่อได้ URL public ส่งให้ AI ต่อเอง)
  */
 export default function MeasurementsStep({ orderState, setOrderState, onNext }: any) {
+  const { t } = useLanguage();
+  const PERSPECTIVES: { key: Perspective; label: string; hint: string }[] = [
+    { key: "front", label: t("tailorFlow.measurements.front"), hint: t("tailorFlow.measurements.hintFront") },
+    { key: "back", label: t("tailorFlow.measurements.back"), hint: t("tailorFlow.measurements.hintBack") },
+    { key: "side", label: t("tailorFlow.measurements.side"), hint: t("tailorFlow.measurements.hintSide") },
+  ];
   const photos: Partial<Record<Perspective, string>> = orderState.bodyPhotos ?? {};
   const allDone = PERSPECTIVES.every((p) => !!photos[p.key]);
   const doneCount = Object.values(photos).filter(Boolean).length;
@@ -37,7 +38,7 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
       sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch', pt: 1 }}>
 
       <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#6B7280', fontSize: '0.88rem' }}>
-        ถ่ายรูปตัวเองให้ครบ 3 มุม เพื่อให้ AI ลองใส่ชุดให้เห็นทุกด้านก่อนตัดจริง
+        {t("tailorFlow.measurements.subtitle")}
       </Typography>
 
       {PERSPECTIVES.map((p) => (
@@ -63,7 +64,7 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
           '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
         }}
       >
-        {allDone ? 'ถัดไป — ลองใส่เสมือนจริง' : `ถ่ายให้ครบ 3 มุม (${doneCount}/3)`}
+        {allDone ? t("tailorFlow.measurements.nextReady") : t("tailorFlow.measurements.nextProgress").replace("{n}", String(doneCount))}
       </Button>
 
     </Box>

@@ -3,12 +3,14 @@ import { motion } from "framer-motion";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
 export default function OrderSuccessStep({ orderState }: any) {
+  const { t } = useLanguage();
   return (
     <Box component={motion.div} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', pt: 8, pb: 4 }}>
@@ -27,33 +29,33 @@ export default function OrderSuccessStep({ orderState }: any) {
       </Box>
 
       <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '1.4rem', color: NAVY, textAlign: 'center' }}>
-        ร้านคอนเฟิร์มออเดอร์แล้ว!
+        {t("tailorFlow.headerTitles.success")}
       </Typography>
       <Typography sx={{ fontFamily: FONT, fontSize: '0.85rem', color: '#6B7280', textAlign: 'center', mt: -1.5 }}>
-        ขั้นตอนถัดไปคือส่งผ้าให้ร้านทางไปรษณีย์
+        {t("tailorFlow.success.subtitle")}
       </Typography>
 
       <Box sx={{ width: '100%', bgcolor: '#FFFFFF', p: 3, borderRadius: '18px', border: '1px solid #EFE9DD', boxShadow: '0 4px 20px rgba(27,42,74,0.06)', mt: 1.5 }}>
         <Typography sx={{ fontFamily: FONT, fontWeight: 700, mb: 2, color: NAVY, fontSize: '0.95rem' }}>
-          รายละเอียดออเดอร์
+          {t("tailorFlow.success.orderDetailsTitle")}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem' }}>ร้านค้า</Typography>
+            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem' }}>{t("tailorFlow.success.shop")}</Typography>
             <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.85rem' }}>
-              {orderState.shop?.name || "ร้านตัดเย็บคุณหญิง"}
+              {orderState.shop?.name || t("tailorFlow.success.defaultShopName")}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem' }}>ราคา</Typography>
+            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem' }}>{t("tailorFlow.success.price")}</Typography>
             <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.85rem' }}>
-              {orderState.shop?.price.toLocaleString() || "2,590"} บาท
+              {orderState.shop?.price.toLocaleString() || "2,590"} {t("tailorFlow.orderSummary.baht")}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem' }}>ระยะเวลาผลิต</Typography>
+            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem' }}>{t("tailorFlow.success.productionTime")}</Typography>
             <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.85rem' }}>
-              7-10 วันทำการ
+              {t("tailorFlow.success.productionDuration")}
             </Typography>
           </Box>
         </Box>
@@ -65,10 +67,10 @@ export default function OrderSuccessStep({ orderState }: any) {
         </Box>
         <Box>
           <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, fontSize: '0.88rem' }}>
-            ส่งผ้าทางไปรษณีย์
+            {t("tailorFlow.success.shipTitle")}
           </Typography>
           <Typography sx={{ fontFamily: FONT, fontSize: '0.78rem', color: '#6B7280', mt: 0.3, lineHeight: 1.5 }}>
-            คุณส่งผ้าให้ร้านตามที่อยู่ที่ระบบให้ไว้ (มีวิธีแพ็กผ้าและที่อยู่ในแอป)
+            {t("tailorFlow.success.shipDesc")}
           </Typography>
         </Box>
       </Box>
@@ -89,7 +91,7 @@ export default function OrderSuccessStep({ orderState }: any) {
             '&:hover': { bgcolor: '#0F1A30' },
           }}
         >
-          กลับสู่หน้าหลัก
+          {t("tailorFlow.success.backHome")}
         </Button>
       </Link>
 

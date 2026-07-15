@@ -1,22 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import LayaLogo from "@/components/common/LayaLogo";
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import PwaInstallButton from "@/components/pwa/PwaInstallButton";
+import { siteUrl } from "@/lib/seo";
+
+const PAYMENT_LOGO_URL =
+  "https://qxxygqugalqdrapgkcbu.supabase.co/storage/v1/object/public/icon_payment/76b72f88-62ea-43cc-8b81-0101ba42f81e-cover.png";
 
 function buildFooterLinks(f: Dictionary["footer"]) {
   return {
-    marketplace: {
-      label: f.marketplace.label,
-      links: [
-        { label: f.marketplace.exploreProducts, href: "/search" },
-        { label: f.marketplace.categories, href: "/category" },
-        { label: f.marketplace.newArrivals, href: "/search?sort=newest" },
-        { label: f.marketplace.wishlist, href: "/wishlist" },
-      ],
-    },
     services: {
       label: f.services.label,
       links: [
@@ -24,23 +22,6 @@ function buildFooterLinks(f: Dictionary["footer"]) {
         { label: f.services.designClothes, href: "/design-clothes" },
         { label: f.services.aiTryOn, href: "/services" },
         { label: f.services.aiPattern, href: "/custom" },
-      ],
-    },
-    community: {
-      label: f.community.label,
-      links: [
-        { label: f.community.community, href: "/community" },
-        { label: f.community.designers, href: "/search?type=designer" },
-        { label: f.community.weavers, href: "/search?type=weaver" },
-        { label: f.community.heritage, href: "/community" },
-      ],
-    },
-    merchant: {
-      label: f.merchant.label,
-      links: [
-        { label: f.merchant.openShop, href: "/merchant" },
-        { label: f.merchant.manageShop, href: "/merchant" },
-        { label: f.merchant.trackOrders, href: "/orders" },
       ],
     },
     legal: {
@@ -214,49 +195,142 @@ export default function AppFooter() {
             
           </div>
 
-          {/* Link columns */}
-          {Object.values(footerLinks).map((col) => (
-            <div key={col.label}>
-              <p
-                style={{
-                  margin: "0 0 14px",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "#C5A55A",
-                  fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
-                }}
-              >
-                {col.label}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-                {col.links.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    style={{
-                      fontSize: "13px",
-                      color: "rgba(255,255,255,0.55)",
-                      textDecoration: "none",
-                      fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
-                      transition: "color 0.15s",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+          {/* Services column */}
+          <div>
+            <p
+              style={{
+                margin: "0 0 14px",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#C5A55A",
+                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+              }}
+            >
+              {footerLinks.services.label}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+              {footerLinks.services.links.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  style={{
+                    fontSize: "13px",
+                    color: "rgba(255,255,255,0.55)",
+                    textDecoration: "none",
+                    fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+                    transition: "color 0.15s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
 
-       
+          {/* Payment column */}
+          <div>
+            <p
+              style={{
+                margin: "0 0 14px",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#C5A55A",
+                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+              }}
+            >
+              {footerDict.payment.label}
+            </p>
+            <div
+              style={{
+                width: "88px",
+                height: "56px",
+                borderRadius: "8px",
+                overflow: "hidden",
+                position: "relative",
+                background: "rgba(255,255,255,0.9)",
+              }}
+            >
+              <Image src={PAYMENT_LOGO_URL} alt={footerDict.payment.alt} fill style={{ objectFit: "contain" }} />
+            </div>
+          </div>
+
+          {/* Legal / About column */}
+          <div>
+            <p
+              style={{
+                margin: "0 0 14px",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#C5A55A",
+                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+              }}
+            >
+              {footerLinks.legal.label}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+              {footerLinks.legal.links.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  style={{
+                    fontSize: "13px",
+                    color: "rgba(255,255,255,0.55)",
+                    textDecoration: "none",
+                    fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+                    transition: "color 0.15s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* For Mobile column — QR + PWA install */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+            <p
+              style={{
+                margin: "0 0 14px",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#C5A55A",
+                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+              }}
+            >
+              {footerDict.forMobile.label}
+            </p>
+            <div
+              style={{
+                padding: "8px",
+                background: "#FFFFFF",
+                borderRadius: "10px",
+                marginBottom: "14px",
+                lineHeight: 0,
+              }}
+            >
+              <QRCodeSVG value={siteUrl} size={80} bgColor="#FFFFFF" fgColor="#1B2A4A" level="M" />
+            </div>
+            <PwaInstallButton />
+          </div>
+        </div>
 
         {/* Bottom bar */}
         <div
