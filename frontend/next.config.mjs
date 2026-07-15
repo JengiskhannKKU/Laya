@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 // Supabase project ref — ดึงจาก URL หรือ hardcode
 const SUPABASE_HOSTNAME = "qxxygqugalqdrapgkcbu.supabase.co";

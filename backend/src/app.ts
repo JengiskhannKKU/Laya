@@ -31,6 +31,7 @@ import uploadRouter from "./routes/upload";
 import reviewsRouter from "./routes/reviews";
 import chatRouter from "./routes/chat";
 import adminRouter from "./routes/admin";
+import templatesRouter from "./routes/templates";
 
 const app = express();
 
@@ -96,6 +97,7 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/templates", templatesRouter);
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

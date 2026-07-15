@@ -7,18 +7,24 @@
  * ลูกค้าเลือกจากเทมเพลตที่มีอยู่ (ไม่ใช่ custom ทีละชิ้นส่วนแบบเดิมอีกต่อไป) แต่ละเทมเพลตมี 2 มุมมอง
  * (หน้า/หลัง) ระบบนำผ้าที่ลูกค้าอัปโหลดไว้มา map เป็น Preview ให้ดูก่อนสั่งจริง (Preview Engine)
  *
+ * Step นี้มาหลัง "เลือกร้านตัดเย็บ" (select_shop) เสมอ — แสดง template ทั้งหมดของ LAYA (ไม่ซ่อนอันไหน)
+ * แต่ template ที่ร้านที่เลือกไว้ "ไม่รับตัด" จะถูก disable ไว้ (คลิกไม่ได้ + mờ + ป้ายกำกับ) แทนการซ่อน —
+ * ให้ลูกค้าเห็นภาพรวม catalog ทั้งหมดของ LAYA แต่ก็รู้ทันทีว่าอันไหนสั่งกับร้านนี้ไม่ได้ (เหมือน UI ฝั่งร้านค้า)
+ *
  * เทมเพลตทั้งหมดตอนนี้เป็น placeholder silhouette (auto-generated) รอ asset จริงจาก designer —
  * สลับเป็นภาพจริงได้แค่แก้ path ใน catalog.json (templateLibrary) ไม่ต้องแก้โค้ดหน้านี้เลย
  *
  * พรีวิวใช้รูปผ้าจริงที่ผู้ใช้อัปโหลดไว้เสมอ (แทนลายผ้าใน catalog) เพราะ flow นี้คือ "มีผ้าอยู่แล้ว"
  */
 
-import { useEffect, useState } from "react";
-import { Box, Typography, CircularProgress } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import { Box, Typography, CircularProgress, InputBase } from "@mui/material";
 import { motion } from "framer-motion";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import BlockRoundedIcon from "@mui/icons-material/BlockRounded";
 
 import type { Catalog, TemplateLibraryItem } from "@/components/design-clothes/builder/types";
 import { PartPreview } from "@/components/design-clothes/builder/GarmentRenderer";
@@ -28,20 +34,72 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
+const EMPTY_CATALOG: Catalog = {
+  version: 1,
+  canvas: { width: 400, height: 520 },
+  patterns: [],
+  colors: [],
+  options: {} as any,
+  categories: [] as any,
+  templates: [] as any,
+  templateLibrary: [],
+};
+
 export default function ChooseShapeStep({ orderState, setOrderState, onNext }: any) {
   const { t } = useLanguage();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [availableIds, setAvailableIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(orderState.shape?.id ?? null);
   const [view, setView] = useState<"front" | "back">("front");
 
   const fabricImage: string | undefined = orderState.fabricImage;
+  const shopId: string | undefined = orderState.shop?.id;
+  const shopName: string | undefined = orderState.shop?.name;
 
   useEffect(() => {
-    fetch("/assets/garments/catalog.json")
-      .then((res) => res.json())
-      .then((data: Catalog) => setCatalog(data))
-      .catch((err) => console.error("โหลด catalog ไม่สำเร็จ:", err));
-  }, []);
+    // โหลด template ทั้งหมดของ LAYA เสมอ (/api/templates) — ไม่กรองตามร้าน
+    // แล้วโหลดรายการ id ที่ร้านที่เลือกไว้รับตัดจริง (/api/templates/shop/:shopId) มาทำเป็น availableIds
+    // เพื่อ disable รายการที่ร้านนี้ไม่รับตัด แทนการซ่อนออกจาก catalog ทั้งหมด
+    const fetchAll = fetch("/api/templates").then((res) => {
+      if (!res.ok) throw new Error(`API returned ${res.status}: ${res.statusText}`);
+      return res.json();
+    });
+
+    const fetchAvailable = shopId
+      ? fetch(`/api/templates/shop/${shopId}`).then((res) => {
+          if (!res.ok) throw new Error(`API returned ${res.status}: ${res.statusText}`);
+          return res.json();
+        })
+      : Promise.resolve([]);
+
+    Promise.all([fetchAll, fetchAvailable])
+      .then(([all, available]) => {
+        console.log("All templates:", all, "Shop-available templates:", available);
+
+        const allTemplates = Array.isArray(all) ? all : [];
+        const availableList = Array.isArray(available) ? available : [];
+
+        const mockCatalog: Catalog = {
+          ...EMPTY_CATALOG,
+          templateLibrary: allTemplates.map((t) => ({
+            id: t.id,
+            name: t.name,
+            category: t.category,
+            front: t.frontAssetUrl,
+            back: t.backAssetUrl,
+            basePrice: t.basePrice,
+          })),
+        };
+        setCatalog(mockCatalog);
+        setAvailableIds(new Set(availableList.map((t: any) => t.id)));
+      })
+      .catch((err) => {
+        console.error("❌ โหลด templates ไม่สำเร็จ:", err.message);
+        setCatalog(EMPTY_CATALOG);
+        setAvailableIds(new Set());
+      });
+  }, [shopId]);
 
   if (!catalog) {
     return (
@@ -52,8 +110,17 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
     );
   }
 
-  const templates = catalog.templateLibrary ?? [];
-  const selected = templates.find((t) => t.id === selectedId) ?? null;
+  const allTemplates = catalog.templateLibrary ?? [];
+  const filteredTemplates = allTemplates.filter((t) =>
+    t.name.toLowerCase().includes(search.trim().toLowerCase())
+  );
+  const selected = allTemplates.find((t) => t.id === selectedId) ?? null;
+
+  const handleSelectTemplate = (t: TemplateLibraryItem) => {
+    if (!availableIds.has(t.id)) return; // ร้านนี้ไม่รับตัดทรงนี้ — คลิกไม่ได้
+    setSelectedId(t.id);
+    setView("front");
+  };
 
   const handleConfirm = () => {
     if (!selected) return;
@@ -78,31 +145,69 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
               {t("tailorFlow.chooseShape.title")}
             </Typography>
             <Typography sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.8rem", mt: 0.3 }}>
-              {t("tailorFlow.chooseShape.subtitle")}
+              {shopName
+                ? `เทมเพลตที่จางไว้คือแบบที่ "${shopName}" ยังไม่รับตัด — เลือกได้เฉพาะแบบที่คลิกได้เท่านั้น`
+                : "ทุกร้านตัดของ LAYA ใช้เทมเพลตชุดเดียวกัน — เลือกทรงที่ชอบแล้วดูตัวอย่างผ้าของคุณบนทรงนั้น"}
             </Typography>
           </Box>
 
-          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1.5 }}>
-            {templates.map((t) => (
-              <Box
-                key={t.id}
-                component={motion.button}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => { setSelectedId(t.id); setView("front"); }}
-                sx={{
-                  border: "1px solid #EFE9DD", borderRadius: "16px", bgcolor: "#FFFFFF", p: 1.5,
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75, cursor: "pointer",
-                  boxShadow: "0 4px 16px rgba(27,42,74,0.06)",
-                  "&:hover": { borderColor: GOLD },
-                }}
-              >
-                <Box sx={{ width: "100%", aspectRatio: "1/1.3", bgcolor: "#FBF9F5", borderRadius: "10px", p: 1.5 }}>
-                  <PartPreview asset={t.front} mode="mask" patternImage={fabricImage ?? null} color={fabricImage ? null : "#C9B896"} />
-                </Box>
-                <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: "0.85rem" }}>{t.name}</Typography>
-              </Box>
-            ))}
+          {/* ช่องค้นหาเทมเพลต */}
+          <Box sx={{
+            display: "flex", alignItems: "center", gap: 1, bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
+            borderRadius: "14px", px: 1.75, py: 0.9,
+          }}>
+            <SearchRoundedIcon sx={{ fontSize: 20, color: "#9CA3AF" }} />
+            <InputBase
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="ค้นหาเทมเพลต เช่น เชิ้ต, เดรส, เบลเซอร์..."
+              sx={{ flex: 1, fontFamily: FONT, fontSize: "0.85rem", color: NAVY }}
+            />
           </Box>
+
+          {filteredTemplates.length === 0 ? (
+            <Typography sx={{ fontFamily: FONT, textAlign: "center", color: "#9CA3AF", fontSize: "0.85rem", py: 4 }}>
+              ไม่พบเทมเพลตที่ตรงกับคำค้นหา
+            </Typography>
+          ) : (
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1.5 }}>
+              {filteredTemplates.map((t) => {
+                const available = availableIds.has(t.id);
+                return (
+                  <Box
+                    key={t.id}
+                    component={motion.button}
+                    whileTap={available ? { scale: 0.97 } : undefined}
+                    onClick={() => handleSelectTemplate(t)}
+                    sx={{
+                      position: "relative",
+                      border: "1px solid #EFE9DD", borderRadius: "16px", bgcolor: "#FFFFFF", p: 1.5,
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75,
+                      cursor: available ? "pointer" : "not-allowed",
+                      boxShadow: "0 4px 16px rgba(27,42,74,0.06)",
+                      opacity: available ? 1 : 0.45,
+                      filter: available ? "none" : "grayscale(0.6)",
+                      "&:hover": available ? { borderColor: GOLD } : {},
+                    }}
+                  >
+                    {!available && (
+                      <Box sx={{
+                        position: "absolute", top: 8, right: 8, display: "flex", alignItems: "center", gap: 0.4,
+                        bgcolor: "rgba(27,42,74,0.85)", color: "white", px: 1, py: 0.3, borderRadius: "999px",
+                      }}>
+                        <BlockRoundedIcon sx={{ fontSize: 12 }} />
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.62rem", fontWeight: 600 }}>ร้านนี้ไม่รับตัด</Typography>
+                      </Box>
+                    )}
+                    <Box sx={{ width: "100%", aspectRatio: "1/1.3", bgcolor: "#FBF9F5", borderRadius: "10px", p: 1.5 }}>
+                      <PartPreview asset={t.front} mode="mask" patternImage={available ? fabricImage ?? null : null} color={available && fabricImage ? null : "#C9B896"} />
+                    </Box>
+                    <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: "0.85rem" }}>{t.name}</Typography>
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
         </>
       ) : (
         <>

@@ -18,15 +18,26 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
+export const TAILOR_STEPS = [
+  "อัปโหลดผ้า",
+  "วิเคราะห์ผ้า",
+  "เลือกร้าน",
+  "เลือกทรง",
+  "โอกาสใช้งาน",
+  "ถ่ายรูปตัวเอง",
+  "ลองใส่เสมือนจริง",
+  "สรุปออเดอร์",
+] as const;
+
 const STEP_INDEX: Record<string, number> = {
   upload: 0,
   ai_analysis: 1,
-  choose_shape: 2,
-  select_occasion: 3,
-  measurements: 4,
-  virtual_try_on: 5,
-  order_summary: 6,
-  select_shop: 7,
+  select_shop: 2,
+  choose_shape: 3,
+  select_occasion: 4,
+  measurements: 5,
+  virtual_try_on: 6,
+  order_summary: 7,
 };
 
 export default function TailorStepper({ currentStep }: { currentStep: string }) {

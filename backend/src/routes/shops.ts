@@ -354,4 +354,95 @@ router.patch("/:id/status", requireAuth, requireRole("admin"), async (req: Reque
   }
 });
 
+/**
+ * GET /api/shops/mine/templates — merchant's enabled templates with availability status
+ * Shows all templates and whether shop has enabled each one
+ */
+router.get("/mine/templates", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
+  try {
+    const shopRows = await query<{ id: string }>("SELECT id FROM shops WHERE user_id = $1", [req.user!.userId]);
+    if (!shopRows.length) { res.status(404).json({ error: "ยังไม่มีร้านค้า" }); return; }
+    const shopId = shopRows[0].id;
+
+    const rows = await query<Record<string, unknown>>(
+      `SELECT t.id, t.name, t.category, t.base_price, t.front_asset_url, t.back_asset_url,
+              COALESCE(st.is_available, false) AS is_enabled
+       FROM templates t
+       LEFT JOIN shop_templates st ON (st.template_id = t.id AND st.shop_id = $1)
+       WHERE t.is_active = true
+       ORDER BY t.category, t.name`,
+      [shopId]
+    );
+
+    res.json(rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      basePrice: Number(r.base_price),
+      frontAssetUrl: r.front_asset_url,
+      backAssetUrl: r.back_asset_url,
+      isEnabled: r.is_enabled === true,
+    })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch shop templates" });
+  }
+});
+
+/** POST /api/shops/mine/templates — merchant enables/adds templates for their shop */
+router.post("/mine/templates", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
+  try {
+    const { templateIds } = req.body as { templateIds?: string[] };
+    if (!Array.isArray(templateIds)) { res.status(400).json({ error: "templateIds must be an array" }); return; }
+
+    const shopRows = await query<{ id: string }>("SELECT id FROM shops WHERE user_id = $1", [req.user!.userId]);
+    if (!shopRows.length) { res.status(404).json({ error: "ยังไม่มีร้านค้า" }); return; }
+    const shopId = shopRows[0].id;
+
+    // Validate all template IDs exist
+    const validIds = await query<{ id: string }>(
+      `SELECT id FROM templates WHERE id = ANY($1::text[]) AND is_active = true`,
+      [templateIds]
+    );
+    if (validIds.length !== templateIds.length) {
+      res.status(400).json({ error: "Some template IDs are invalid" });
+      return;
+    }
+
+    // Upsert shop_templates records
+    for (const tId of templateIds) {
+      await query(
+        `INSERT INTO shop_templates (shop_id, template_id, is_available)
+         VALUES ($1, $2, true)
+         ON CONFLICT (shop_id, template_id) DO UPDATE SET is_available = true, updated_at = NOW()`,
+        [shopId, tId]
+      );
+    }
+
+    res.json({ success: true, shopId, count: templateIds.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to add templates to shop" });
+  }
+});
+
+/** DELETE /api/shops/mine/templates/:templateId — merchant disables a template */
+router.delete("/mine/templates/:templateId", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
+  try {
+    const shopRows = await query<{ id: string }>("SELECT id FROM shops WHERE user_id = $1", [req.user!.userId]);
+    if (!shopRows.length) { res.status(404).json({ error: "ยังไม่มีร้านค้า" }); return; }
+    const shopId = shopRows[0].id;
+
+    await query(
+      "UPDATE shop_templates SET is_available = false WHERE shop_id = $1 AND template_id = $2",
+      [shopId, req.params.templateId]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to remove template from shop" });
+  }
+});
+
 export default router;
