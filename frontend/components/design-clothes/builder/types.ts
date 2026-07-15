@@ -63,6 +63,20 @@ export interface TemplateDef {
   color: string;
 }
 
+/**
+ * TemplateLibraryItem — เทมเพลตมาตรฐานของ LAYA ตามสเปค "LAYA Template System"
+ * (services.png): silhouette เดียวต่อมุมมอง (หน้า/หลัง) ไม่แยกชิ้นส่วนปรับแต่งได้แบบ TemplateDef เดิม —
+ * ลูกค้าเลือกเทมเพลต ระบบ map ผ้าลงไปเป็น preview เท่านั้น ไม่มีการปรับทีละชิ้นส่วน
+ */
+export interface TemplateLibraryItem {
+  id: string;
+  name: string;
+  category: Category;
+  front: string;
+  back: string;
+  basePrice: number;
+}
+
 export interface Catalog {
   version: number;
   canvas: { width: number; height: number };
@@ -71,6 +85,7 @@ export interface Catalog {
   options: Record<string, OptionDef[]>;
   categories: Record<Category, CategoryDef>;
   templates: TemplateDef[];
+  templateLibrary: TemplateLibraryItem[];
 }
 
 // ─── Renderer contract (เปลี่ยน renderer ได้โดยไม่กระทบ business logic) ──────

@@ -42,7 +42,9 @@ export type TailorStep =
 export interface TailorOrderState {
   fabricImage?: string;
   analysisResult?: any;
-  shape?: { id: string; name: string; category: string; parts: Record<string, string>; pattern: string; color: string };
+  shape?: {
+    id: string; name: string; category: string; front: string; back: string; price: number;
+  };
   occasion?: string;
   bodyPhotos?: { front?: string; back?: string; side?: string };
   tryOnResults?: { front?: string; back?: string; side?: string };

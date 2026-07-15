@@ -833,3 +833,49 @@ Stepper 7 ขั้นพร้อม label เต็มยาวเกินค
   - เพิ่มจุดสีทองเล็กๆ บนแท็บมุมที่ generate เสร็จแล้ว ให้เห็นชัดว่ามุมไหนทำแล้ว/ยังไม่ทำ
   - ปุ่ม "ถัดไป" เปลี่ยนข้อความเป็น "ข้ามการสร้างภาพ — ถัดไป" ถ้ายังไม่ได้ generate มุมไหนเลย (ไม่บังคับต้อง generate ครบทุกมุมถึงจะไปต่อได้)
   - ทดสอบ: `tsc --noEmit` ผ่าน, `next dev` compile หน้า `/tailor/with-fabric` สำเร็จ (200, ไม่มี build error)
+
+---
+
+## 2026-07-15 — จัดโครง /tailor/with-fabric ให้ตรงคอนเซ็ปต์ "LAYA Template System"
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้แนบ `services.png.jpg` (infographic 8 หัวข้อ) อธิบายสเปค LAYA Template System: เทมเพลตมาตรฐานกลางของ LAYA (technical illustration เส้นดำ/พื้นโปร่งใส หน้า+หลัง) ที่แต่ละร้านเลือกได้ว่ารองรับเทมเพลตไหน, Preview Engine เอา fabric texture มา map ลงเทมเพลต (แยก layer: Template/Fabric/Button/Pocket/Shadow), มี disclaimer "Design Visualization" ใต้ภาพพรีวิวเสมอ, ใบสั่งซื้อร้านต้องได้ข้อมูลผ้า+เทมเพลต+พรีวิว+ไซซ์+หมายเหตุครบ — ถามผู้ใช้แล้วเลือกสโคปรอบนี้: **ปรับ flow/UX ให้ตรงคอนเซ็ปต์โดยใช้ asset placeholder เดิมไปก่อน** (ยังไม่ทำ shop↔template DB linkage, ยังไม่มี fashion technical illustration จริง)
+
+- `ChooseShapeStep.tsx` (ขั้น "เลือกทรง"): เปลี่ยน label เป็น "เทมเพลตมาตรฐานของ LAYA — [ชื่อเทมเพลต]" ให้ตรงภาษาสเปค, เพิ่มกล่อง disclaimer "ภาพนี้เป็นเพียงการจำลองการออกแบบ (Design Visualization) ... ผลงานจริงอาจแตกต่างตาม..." ใต้พรีวิวสด (ข้อความตรงจากสเปคผู้ใช้เป๊ะ) — **สังเกตว่า catalog.json ปัจจุบันมีแค่มุมมองเดียว ไม่มี front/back แยก** (สเปคข้อ 2 ต้องการอย่างน้อย 2 มุมมองต่อเทมเพลต) จึงยังทำ front/back toggle ไม่ได้จนกว่าจะมี asset จริง — บันทึกไว้เป็นงานค้าง
+- ตอนกด "ยืนยันแบบนี้" ตอนนี้คำนวณและเก็บข้อมูลเพิ่มเข้า `orderState.shape`:
+  - `partsSummary` — รายชื่อชิ้นส่วน+ตัวเลือกที่เลือกจริง (ใช้แสดงในสรุปออเดอร์โดยไม่ต้อง fetch catalog ซ้ำ)
+  - `price: { base, options, total }` จาก `calcPriceBreakdown(catalog, design)` จริง — **ตัดค่าประมาณผ้าจาก catalog ออก** (คิดแค่ base+options) เพราะ flow นี้ลูกค้ามีผ้าของตัวเองอยู่แล้ว ไม่ควรคิดราคาผ้าจาก catalog ปลอม
+  - เพิ่ม type ใน `TailorWithFabricFlow.tsx` (`TailorOrderState.shape`) รองรับ field ใหม่
+- `OrderSummaryStep.tsx`: เขียนใหม่จาก การ์ดเดียวราคา hardcode 2,590 → **3 การ์ดแยกหมวดตาม mockup ข้อ 7 ของสเปค**: "ข้อมูลผ้า" (รูป+ประเภท+เทคนิคจาก AI analysis จริง), "ข้อมูลแบบ" (ชื่อเทมเพลต + breakdown ทุกชิ้นส่วนที่เลือกจริงจาก `partsSummary`), "โอกาสใช้งาน & ราคา" (ราคาคำนวณจริงจาก `orderState.shape.price` แทน hardcode) + กล่อง disclaimer เดิมซ้ำอีกครั้งก่อนกดเลือกร้าน
+- ทดสอบ: `tsc --noEmit` ผ่าน, `next dev` compile `/services`, `/services/tailor`, `/tailor/with-fabric` สำเร็จหมด (200, ไม่มี build error) — **ไม่ได้ทดสอบคลิกจริงในเบราว์เซอร์รอบนี้** เพราะ Playwright ในเครื่องนี้ไม่มี Chromium binary ติดตั้ง (`npx playwright install` ยังไม่รัน) และขั้น choose_shape/order_summary เข้าถึงได้ผ่าน state จริงเท่านั้น ไม่ใช่ URL ตรง — ตรวจด้วยโค้ดรีวิวละเอียดแทน
+
+**ค้าง**: shop↔template DB linkage (ร้านเลือกได้ว่ารองรับเทมเพลตไหน), เทมเพลต front/back จริงแบบ technical illustration (ต้องรอไฟล์จาก designer), ตอนนี้ยังมีเทมเพลตเดียว (thai-contemporary) ตามที่จำกัดไว้ก่อนหน้า
+
+---
+
+## 2026-07-15 (รอบสอง) — กลับไปเป็น "เลือกเทมเพลต" จริงแบบ services.png แทนปรับทีละชิ้นส่วน
+
+**ทำโดย**: Claude (Sonnet 5)
+
+**บริบท**: ผู้ใช้แก้ไขทันทีหลังรอบก่อน — บอกว่ายังไม่ตรงคอนเซ็ปต์ เพราะขั้น "เลือกทรง" ยังให้ปรับทีละชิ้นส่วนอยู่ (ของเดิมจากหลาย session ก่อน) ทั้งที่สเปค LAYA Template System ต้องการให้ลูกค้า **เลือกจาก Template Library สำเร็จรูป** เท่านั้น ไม่มี custom ทีละชิ้นส่วน — ระบุรายชื่อเทมเพลตที่ต้องการ (เฉพาะหมวดเสื้อ): Blazer, Jacket, Dress, Polo, Crop, Vest, Shirt, Kimono ทุกตัวต้องมี Front + Back
+
+### Asset ใหม่ (placeholder — ยังไม่ใช่ fashion technical illustration จริง)
+- catalog เดิมมีแค่ 4 body shape (shirt/blouse/polo/dress) และไม่มี front/back แยกเลย — ไม่พอสำหรับ 8 เทมเพลตที่ขอ
+- เขียนสคริปต์ generator (`/tmp/gen_templates.py`) สร้าง silhouette SVG ใหม่ 16 ไฟล์ (8 เทมเพลต × หน้า/หลัง) ที่ `frontend/public/assets/garments/tops/templates/{id}-front.svg` / `{id}-back.svg` — ทรงแยกตามประเภท (ตัวยาว/สั้น, มีแขน/ไม่มีแขนสำหรับเวสต์, แขนกว้างแบบ dolman สำหรับกิโมโน), front มี neckline เปิดเป็น V, back เป็นคอกลมทึบ (วิธีแยกหน้า-หลังโดยไม่ต้องมี asset จริงจากดีไซเนอร์)
+- เรนเดอร์ตรวจดูจริงด้วย `sharp` (ไม่มี rsvg-convert/ImageMagick ในเครื่อง) — พบว่าคุณภาพหยาบ (แขนลอยไม่ติดตัวเสื้อ สัดส่วนไม่สวย) ถามผู้ใช้แล้วเลือก **"ใช้ placeholder หยาบไปก่อน สลับทีหลังได้เมื่อมี asset จริง"** — ระบบเป็น asset-driven อยู่แล้ว สลับแค่แก้ path ใน catalog.json ไม่ต้องแก้โค้ด
+- เพิ่มคีย์ใหม่ `templateLibrary` ใน `catalog.json` (ไม่แตะ `templates`/`categories`/`options` เดิมที่ `/design-clothes` ยังใช้อยู่): 8 รายการ `{id, name, category:"top", front, back, basePrice}` — ราคาตั้งตามความซับซ้อนโดยประมาณ (เชิ้ต 990, โปโล 890, เวสต์ 790, ครอป 690, เดรส 1290, แจ็คเก็ต 1690, เบลเซอร์ 1890, กิโมโน 1490)
+- เพิ่ม `TemplateLibraryItem` interface + `templateLibrary: TemplateLibraryItem[]` ใน `Catalog` type (`components/design-clothes/builder/types.ts`)
+
+### เขียนใหม่ `ChooseShapeStep.tsx` ทั้งหมด — ตัดการปรับทีละชิ้นส่วนออก 100%
+- ลบ `resolveLayers`/`calcPriceBreakdown`/`GarmentRenderer`/`PartOptionsGrid`/`OptionCard` ออกทั้งหมด (ของเดิมสำหรับปรับทีละส่วน ไม่ใช้แล้ว)
+- ขั้นตอนใหม่: **กริดเลือกเทมเพลต** (การ์ด 2 คอลัมน์ ใช้ `PartPreview` mask+fabric texture เป็น thumbnail หน้า) → คลิกเลือก → **พรีวิวใหญ่พร้อม toggle ด้านหน้า/ด้านหลัง** (สลับ asset front/back ของเทมเพลตนั้น) → กล่อง disclaimer "Design Visualization" เดิม → "ยืนยันเทมเพลตนี้" → บันทึก `orderState.shape = { id, name, category, front, back, price }` (price เป็นตัวเลขเดียวจาก `basePrice` ของเทมเพลต ไม่ใช่ breakdown อีกต่อไป)
+- ปรับ `TailorWithFabricFlow.tsx`: type `TailorOrderState.shape` ตัด `parts`/`pattern`/`color`/`partsSummary`/`price breakdown` ออก เหลือแค่ `{ id, name, category, front, back, price: number }`
+- ปรับ `OrderSummaryStep.tsx`: การ์ด "ข้อมูลแบบ" ตัด breakdown รายชิ้นส่วนออก (ไม่มีให้แสดงแล้ว) เหลือแค่ชื่อเทมเพลต+โอกาสใช้งาน, การ์ดราคาใช้ `shape.price` ตรงๆ (เลขเดียว ไม่ใช่ base+options อีกต่อไป)
+
+### ทดสอบ
+- `tsc --noEmit` ผ่านทุกไฟล์ที่แก้ (error อื่นที่เจอในโปรเจกต์ — `papaparse`/`vitest` missing module — เป็นของเดิมไม่เกี่ยวกับรอบนี้)
+- `next dev` compile `/tailor/with-fabric` สำเร็จ (200), fetch `catalog.json` ผ่าน API route จริงตรวจแล้วว่ามี `templateLibrary` 8 รายการครบ, ไฟล์ SVG ทั้ง 16 (front+back × 8) โหลดได้ 200 ทุกไฟล์
+- **ไม่ได้ทดสอบคลิกจริงในเบราว์เซอร์** เพราะ Playwright ไม่มี Chromium binary ในเครื่องนี้เหมือนรอบก่อน — ตรวจด้วยโค้ดรีวิวละเอียด + สคริปต์ทดสอบ HTTP แทน
+
+**ค้าง**: asset จริงจากดีไซเนอร์ (technical illustration แบบในภาพอ้างอิงของผู้ใช้) ยังไม่มี — silhouette ตอนนี้เป็น auto-generated แบบหยาบ สลับได้ทันทีที่มีไฟล์จริงโดยแก้แค่ path ใน `catalog.json.templateLibrary`, shop↔template DB linkage ยังไม่ทำ (ตอนนี้ลูกค้าเห็นทั้ง 8 เทมเพลตเสมอ ไม่กรองตามร้าน)
