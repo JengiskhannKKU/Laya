@@ -118,7 +118,7 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
               '&:hover': { bgcolor: '#0F1A30' },
             }}
           >
-            เลือกโอกาสใช้งาน
+            เลือกร้านตัดเย็บ
           </Button>
         </Box>
       )}

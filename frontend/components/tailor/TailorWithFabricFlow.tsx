@@ -24,19 +24,22 @@ const IVORY = "#FAF6F0";
 
 // ลำดับ (ต่างจาก flow_1.png ตรงตำแหน่ง "เลือกทรงที่ชอบ" — mockup วางไว้หลังเลือกโอกาสใช้งาน แต่ผู้ใช้
 // ขอให้ย้ายมาก่อนแทน เป็นการตัดสินใจของผู้ใช้เอง):
-// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → เลือกทรงที่ชอบ → เลือกโอกาสใช้งาน → ถ่ายรูปตัวเอง/ส่งขนาด →
-// ลองใส่เสมือนจริง → สรุปออเดอร์ → เลือกร้านตัดเย็บ → สำเร็จ
+// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → เลือกร้านตัดเย็บ → เลือกทรงที่ชอบ → เลือกโอกาสใช้งาน → ถ่ายรูปตัวเอง/ส่งขนาด →
+// ลองใส่เสมือนจริง → สรุปออเดอร์ → สำเร็จ
 // (ถ่ายรูปตัวเองต้องมาก่อนลองใส่เสมือนจริงเสมอ — ใน mockup เดิมข้อ 11 อยู่หลังข้อ 8 ซึ่งสลับกันผิด)
+//
+// เลือกร้านตัดเย็บย้ายมาก่อน "เลือกทรง" (แทนที่จะอยู่ท้าย flow) เพื่อให้ลูกค้าเลือกทรงได้เฉพาะที่ร้านนั้นรับตัดจริง —
+// ไม่งั้นลูกค้าจะเสียเวลาเลือกทรงที่ร้านที่เลือกไว้ตัดไม่ได้ (ChooseShapeStep กรอง template ตาม shop.id ที่เลือกไว้แล้ว)
 
 export type TailorStep =
   | "upload"
   | "ai_analysis"
+  | "select_shop"
   | "choose_shape"
   | "select_occasion"
   | "measurements"
   | "virtual_try_on"
   | "order_summary"
-  | "select_shop"
   | "success";
 
 export interface TailorOrderState {
@@ -60,12 +63,12 @@ export default function TailorWithFabricFlow() {
   const handleBack = () => {
     switch (currentStep) {
       case "ai_analysis": goNext("upload"); break;
-      case "choose_shape": goNext("ai_analysis"); break;
+      case "select_shop": goNext("ai_analysis"); break;
+      case "choose_shape": goNext("select_shop"); break;
       case "select_occasion": goNext("choose_shape"); break;
       case "measurements": goNext("select_occasion"); break;
       case "virtual_try_on": goNext("measurements"); break;
       case "order_summary": goNext("virtual_try_on"); break;
-      case "select_shop": goNext("order_summary"); break;
       default: break;
     }
   };
@@ -74,12 +77,12 @@ export default function TailorWithFabricFlow() {
     switch (currentStep) {
       case "upload": return "อัปโหลดรูปผ้า";
       case "ai_analysis": return "ผลการวิเคราะห์ผ้า";
+      case "select_shop": return "เลือกร้านตัดเย็บ";
       case "choose_shape": return "เลือกทรงที่ชอบ";
       case "select_occasion": return "เลือกโอกาสใช้งาน";
       case "measurements": return "ถ่ายรูปเพื่อวัดสัดส่วน";
       case "virtual_try_on": return "ลองใส่เสมือนจริง";
       case "order_summary": return "สรุปออเดอร์";
-      case "select_shop": return "เลือกร้านตัดเย็บ";
       case "success": return "ร้านคอนเฟิร์มออเดอร์แล้ว!";
       default: return "";
     }
@@ -121,7 +124,10 @@ export default function TailorWithFabricFlow() {
             <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
           )}
           {currentStep === "ai_analysis" && (
-            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("choose_shape")} />
+            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_shop")} />
+          )}
+          {currentStep === "select_shop" && (
+            <SelectTailorShopStep key="select_shop" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("choose_shape")} />
           )}
           {currentStep === "choose_shape" && (
             <ChooseShapeStep key="choose_shape" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
@@ -136,10 +142,7 @@ export default function TailorWithFabricFlow() {
             <VirtualTryOnStep key="virtual_try_on" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("order_summary")} />
           )}
           {currentStep === "order_summary" && (
-            <OrderSummaryStep key="order_summary" orderState={orderState} onNext={() => goNext("select_shop")} />
-          )}
-          {currentStep === "select_shop" && (
-            <SelectTailorShopStep key="select_shop" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("success")} />
+            <OrderSummaryStep key="order_summary" orderState={orderState} onNext={() => goNext("success")} />
           )}
           {currentStep === "success" && (
             <OrderSuccessStep key="success" orderState={orderState} />
