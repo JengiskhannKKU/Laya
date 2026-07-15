@@ -54,9 +54,9 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
       {/* ข้อมูลแบบ (Template) */}
       <SectionCard title={t("tailorFlow.orderSummary.templateInfoTitle")}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
-          <Row label="ร้านตัดเย็บ" value={orderState.shop?.name || "ไม่ระบุ"} />
-          <Row label="เทมเพลต" value={shape?.name || "ไม่ระบุ"} />
-          <Row label="โอกาสใช้งาน" value={orderState.occasion || "ไม่ระบุ"} />
+          <Row label={t("tailorFlow.orderSummary.shopLabel")} value={orderState.shop?.name || unspecified} />
+          <Row label={t("tailorFlow.orderSummary.template")} value={shape?.name || unspecified} />
+          <Row label={t("tailorFlow.orderSummary.occasion")} value={orderState.occasion || unspecified} />
         </Box>
       </SectionCard>
 
@@ -97,7 +97,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
           '&:hover': { bgcolor: '#0F1A30' },
         }}
       >
-        ยืนยันสั่งตัด
+        {t("tailorFlow.orderSummary.confirmOrderButton")}
       </Button>
 
     </Box>

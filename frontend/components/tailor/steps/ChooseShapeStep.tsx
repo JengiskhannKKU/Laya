@@ -146,8 +146,8 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
             </Typography>
             <Typography sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.8rem", mt: 0.3 }}>
               {shopName
-                ? `เทมเพลตที่จางไว้คือแบบที่ "${shopName}" ยังไม่รับตัด — เลือกได้เฉพาะแบบที่คลิกได้เท่านั้น`
-                : "ทุกร้านตัดของ LAYA ใช้เทมเพลตชุดเดียวกัน — เลือกทรงที่ชอบแล้วดูตัวอย่างผ้าของคุณบนทรงนั้น"}
+                ? t("tailorFlow.chooseShape.subtitleWithShop").replace("{shop}", shopName)
+                : t("tailorFlow.chooseShape.subtitle")}
             </Typography>
           </Box>
 
@@ -160,25 +160,25 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
             <InputBase
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ค้นหาเทมเพลต เช่น เชิ้ต, เดรส, เบลเซอร์..."
+              placeholder={t("tailorFlow.chooseShape.searchPlaceholder")}
               sx={{ flex: 1, fontFamily: FONT, fontSize: "0.85rem", color: NAVY }}
             />
           </Box>
 
           {filteredTemplates.length === 0 ? (
             <Typography sx={{ fontFamily: FONT, textAlign: "center", color: "#9CA3AF", fontSize: "0.85rem", py: 4 }}>
-              ไม่พบเทมเพลตที่ตรงกับคำค้นหา
+              {t("tailorFlow.chooseShape.noSearchResults")}
             </Typography>
           ) : (
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1.5 }}>
-              {filteredTemplates.map((t) => {
-                const available = availableIds.has(t.id);
+              {filteredTemplates.map((tpl) => {
+                const available = availableIds.has(tpl.id);
                 return (
                   <Box
-                    key={t.id}
+                    key={tpl.id}
                     component={motion.button}
                     whileTap={available ? { scale: 0.97 } : undefined}
-                    onClick={() => handleSelectTemplate(t)}
+                    onClick={() => handleSelectTemplate(tpl)}
                     sx={{
                       position: "relative",
                       border: "1px solid #EFE9DD", borderRadius: "16px", bgcolor: "#FFFFFF", p: 1.5,
@@ -196,13 +196,13 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
                         bgcolor: "rgba(27,42,74,0.85)", color: "white", px: 1, py: 0.3, borderRadius: "999px",
                       }}>
                         <BlockRoundedIcon sx={{ fontSize: 12 }} />
-                        <Typography sx={{ fontFamily: FONT, fontSize: "0.62rem", fontWeight: 600 }}>ร้านนี้ไม่รับตัด</Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: "0.62rem", fontWeight: 600 }}>{t("tailorFlow.chooseShape.shopUnavailableBadge")}</Typography>
                       </Box>
                     )}
                     <Box sx={{ width: "100%", aspectRatio: "1/1.3", bgcolor: "#FBF9F5", borderRadius: "10px", p: 1.5 }}>
-                      <PartPreview asset={t.front} mode="mask" patternImage={available ? fabricImage ?? null : null} color={available && fabricImage ? null : "#C9B896"} />
+                      <PartPreview asset={tpl.front} mode="mask" patternImage={available ? fabricImage ?? null : null} color={available && fabricImage ? null : "#C9B896"} />
                     </Box>
-                    <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: "0.85rem" }}>{t.name}</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: "0.85rem" }}>{tpl.name}</Typography>
                   </Box>
                 );
               })}

@@ -18,17 +18,6 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
-export const TAILOR_STEPS = [
-  "อัปโหลดผ้า",
-  "วิเคราะห์ผ้า",
-  "เลือกร้าน",
-  "เลือกทรง",
-  "โอกาสใช้งาน",
-  "ถ่ายรูปตัวเอง",
-  "ลองใส่เสมือนจริง",
-  "สรุปออเดอร์",
-] as const;
-
 const STEP_INDEX: Record<string, number> = {
   upload: 0,
   ai_analysis: 1,

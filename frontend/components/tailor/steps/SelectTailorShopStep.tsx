@@ -9,6 +9,7 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
@@ -97,10 +98,10 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
 
       <Box sx={{ textAlign: "center" }}>
         <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, fontSize: "0.95rem" }}>
-          เลือกร้านตัดเย็บ
+          {t("tailorFlow.selectShop.title")}
         </Typography>
         <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.8rem', mt: 0.3 }}>
-          เลือกร้านที่คุณไว้ใจ — ทรงที่เลือกได้ในขั้นถัดไปจะขึ้นอยู่กับร้านนี้
+          {t("tailorFlow.selectShop.subtitle")}
         </Typography>
       </Box>
 
@@ -113,7 +114,7 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
         <InputBase
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="ค้นหาร้าน ชื่อจังหวัด หรือความเชี่ยวชาญ..."
+          placeholder={t("tailorFlow.selectShop.searchPlaceholder")}
           sx={{ flex: 1, fontFamily: FONT, fontSize: "0.85rem", color: NAVY }}
         />
       </Box>
@@ -130,14 +131,14 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
             <StorefrontRoundedIcon sx={{ fontSize: 32, color: "#9CA3AF" }} />
           </Box>
           <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#9CA3AF', fontSize: '0.85rem' }}>
-            ยังไม่มีร้านตัดเย็บให้เลือกในขณะนี้
+            {t("tailorFlow.selectShop.noShopsYet")}
           </Typography>
         </Box>
       )}
 
       {!loading && shops.length > 0 && filteredShops.length === 0 && (
         <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#9CA3AF', fontSize: '0.85rem', py: 4 }}>
-          ไม่พบร้านที่ตรงกับคำค้นหา
+          {t("tailorFlow.selectShop.noSearchResults")}
         </Typography>
       )}
 
@@ -212,7 +213,7 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
                       fontFamily: FONT, fontSize: '0.72rem', color: '#9CA3AF',
                       display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden",
                     }}>
-                      {shop.province || "ไม่ระบุจังหวัด"}
+                      {shop.province || t("tailorFlow.selectShop.noProvinceSpecified")}
                     </Typography>
                   </Box>
 
