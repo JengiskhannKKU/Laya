@@ -4,7 +4,7 @@ export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 const NB_BASE = "https://api.kie.ai/api/v1/gpt4o-image";
-const API_KEY = process.env.NANO_BANANA_API_KEY ?? "";
+const API_KEY = process.env.KIE_IMAGE_API_KEY ?? "";
 
 /** Patterns that indicate credits/quota exhaustion in API responses */
 function isCreditsError(body: any): boolean {
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "prompt is required" }, { status: 400 });
     }
     if (!API_KEY) {
-      return NextResponse.json({ error: "NANO_BANANA_API_KEY is not configured" }, { status: 500 });
+      return NextResponse.json({ error: "KIE_IMAGE_API_KEY is not configured" }, { status: 500 });
     }
 
     // 1. Submit task

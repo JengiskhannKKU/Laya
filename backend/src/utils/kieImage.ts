@@ -7,7 +7,7 @@
  */
 
 const NB_BASE = "https://api.kie.ai/api/v1/gpt4o-image";
-const API_KEY = process.env.NANO_BANANA_API_KEY ?? "";
+const API_KEY = process.env.KIE_IMAGE_API_KEY ?? "";
 
 function isCreditsError(body: any): boolean {
   const msg: string = (body?.msg ?? body?.message ?? body?.error ?? "").toLowerCase();
@@ -87,7 +87,7 @@ export interface GenerateImageResult {
 }
 
 export async function generateImage(params: GenerateImageParams): Promise<GenerateImageResult> {
-  if (!API_KEY) throw new Error("NANO_BANANA_API_KEY is not configured");
+  if (!API_KEY) throw new Error("KIE_IMAGE_API_KEY is not configured");
   if (!params.prompt && !(params.filesUrl && params.filesUrl.length)) {
     throw new Error("ต้องมี prompt หรือ filesUrl อย่างน้อยหนึ่งอย่าง");
   }
