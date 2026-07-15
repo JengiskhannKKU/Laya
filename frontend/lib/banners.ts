@@ -2,7 +2,12 @@
  * แบนเนอร์หน้าแรกจริงจาก backend (`GET /api/banners`) — แทนที่ mock `banners` array
  */
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// เบราว์เซอร์ใช้ path สัมพัทธ์เสมอ (proxy ผ่าน next.config.mjs / nginx) — server ใช้ absolute URL
+// (บั๊กเดิม: absolute URL ตรงๆ ทุกที่ ทำให้เบราว์เซอร์ผู้ใช้จริงบน production fetch fail เงียบๆ)
+export const API_BASE =
+  typeof window === "undefined"
+    ? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+    : "";
 
 export interface Banner {
   id: string;

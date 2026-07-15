@@ -4,7 +4,14 @@
  * ใช้ได้ทั้ง server component (product/[id]) และ client hook (use-live-products)
  */
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// ฝั่งเบราว์เซอร์ใช้ path สัมพัทธ์เสมอ (proxy ผ่าน next.config.mjs ตอน dev / nginx ตอน production) —
+// ฝั่ง server (product/[id] เป็นต้น) fetch ต้องใช้ absolute URL เพราะไม่มี browser origin ให้ resolve relative path ได้
+// (บั๊กเดิม: ใช้ absolute localhost:4000 ตรงๆ ทุกที่ ทำให้เบราว์เซอร์ผู้ใช้จริงบน production fetch fail เงียบๆ
+// จนสินค้าที่ "คัดสรรสำหรับคุณ" หน้าแรกหายไปทั้ง section — เหมือนบั๊กที่เจอใน lib/communities.ts)
+export const API_BASE =
+  typeof window === "undefined"
+    ? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+    : "";
 
 export interface ProductionStep {
   step: number;
