@@ -3,6 +3,7 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface SectionHeaderProps {
   eyebrow?: string;
@@ -17,8 +18,10 @@ export default function SectionHeader({
   title,
   subtitle,
   href,
-  actionLabel = "ดูทั้งหมด",
+  actionLabel,
 }: SectionHeaderProps) {
+  const { t } = useLanguage();
+  const resolvedActionLabel = actionLabel ?? t("common.seeAll");
   return (
     <Box
       sx={{
@@ -97,7 +100,7 @@ export default function SectionHeader({
                 transition: "color 0.25s ease",
               }}
             >
-              {actionLabel}
+              {resolvedActionLabel}
             </Typography>
             <Box
               className="laya-seeall-underline"

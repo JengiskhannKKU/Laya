@@ -19,14 +19,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/cart-store";
 import { useNotifications } from "@/lib/notification-context";
 import { useChat } from "@/lib/chat-context";
-
-const navLinks = [
-  { label: "หน้าหลัก", path: "/" },
-  { label: "สำรวจ", path: "/search" },
-  { label: "หมวดหมู่", path: "/category" },
-  { label: "ชุมชน", path: "/community" },
-  { label: "สั่งตัด/สั่งทอ", path: "/services" },
-];
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const NAV_BG = "#1B2A4A";
 const NAV_ICON = "rgba(255,255,255,0.85)";
@@ -44,6 +37,15 @@ export default function AppTopNav() {
   const cartItems = useCartStore((s) => s.items);
   const { unreadCount } = useNotifications();
   const { unreadCount: unreadChatCount } = useChat();
+  const { locale, toggleLocale, t } = useLanguage();
+
+  const navLinks = [
+    { label: t("nav.home"), path: "/" },
+    { label: t("nav.explore"), path: "/search" },
+    { label: t("nav.categories"), path: "/category" },
+    { label: t("nav.community"), path: "/community" },
+    { label: t("nav.services"), path: "/services" },
+  ];
 
   useEffect(() => { setMounted(true); }, []);
   const isMobile = !mounted || isMobileMQ;
@@ -202,7 +204,7 @@ export default function AppTopNav() {
             {!isMobile && (
               <IconButton
                 onClick={() => router.push(user ? "/wishlist" : "/auth/login")}
-                aria-label="รายการโปรด"
+                aria-label={t("nav.wishlist")}
                 sx={{
                   width: 36,
                   height: 36,
@@ -218,7 +220,7 @@ export default function AppTopNav() {
             {/* Cart */}
             <IconButton
               onClick={() => router.push("/cart")}
-              aria-label="ตะกร้าสินค้า"
+              aria-label={t("nav.cart")}
               sx={{
                 width: 36,
                 height: 36,
@@ -248,7 +250,7 @@ export default function AppTopNav() {
             {!isMobile && (
               <IconButton
                 onClick={() => router.push(user ? "/messages" : "/auth/login")}
-                aria-label="ข้อความ"
+                aria-label={t("nav.messages")}
                 sx={{
                   width: 36,
                   height: 36,
@@ -305,6 +307,30 @@ export default function AppTopNav() {
               </IconButton>
             )}
 
+            {/* Language toggle */}
+            <Button
+              onClick={toggleLocale}
+              size="small"
+              aria-label="Toggle language"
+              sx={{
+                minWidth: 0,
+                width: 40,
+                height: 30,
+                borderRadius: "999px",
+                color: NAV_ICON,
+                border: "1px solid rgba(255,255,255,0.2)",
+                fontFamily: '"Kanit", sans-serif',
+                fontWeight: 600,
+                fontSize: "0.68rem",
+                letterSpacing: "0.02em",
+                px: 0,
+                textTransform: "none",
+                "&:hover": { bgcolor: NAV_ICON_HOVER, borderColor: "rgba(255,255,255,0.35)" },
+              }}
+            >
+              {locale === "th" ? "EN" : "TH"}
+            </Button>
+
             {/* User */}
             {user ? (
               <Avatar
@@ -345,7 +371,7 @@ export default function AppTopNav() {
                   },
                 }}
               >
-                เข้าสู่ระบบ
+                {t("nav.login")}
               </Button>
             )}
           </Box>

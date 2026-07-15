@@ -4,8 +4,10 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function MissionSection() {
+  const { t } = useLanguage();
   return (
     <Box
       component={motion.div}
@@ -94,7 +96,7 @@ export default function MissionSection() {
               mx: "auto"
             }}
           >
-            “แพลตฟอร์ม Laya มีเป้าหมายในการต่อยอดพระราชปณิธานในการอนุรักษ์และส่งเสริมผ้าไหมไทย”
+            {t("home.mission.quote")}
           </Typography>
 
           <Box 

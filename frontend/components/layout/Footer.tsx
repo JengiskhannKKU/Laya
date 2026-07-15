@@ -3,51 +3,55 @@
 import Link from "next/link";
 import LayaLogo from "@/components/common/LayaLogo";
 import { useState } from "react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-const footerLinks = {
-  marketplace: {
-    label: "Marketplace",
-    links: [
-      { label: "สำรวจสินค้า", href: "/search" },
-      { label: "หมวดหมู่", href: "/category" },
-      { label: "สินค้าใหม่", href: "/search?sort=newest" },
-      { label: "Wishlist", href: "/wishlist" },
-    ],
-  },
-  services: {
-    label: "บริการ",
-    links: [
-      { label: "สั่งตัด / สั่งทอ", href: "/services" },
-      { label: "ออกแบบเสื้อผ้า", href: "/design-clothes" },
-      { label: "AI Try-On", href: "/services" },
-      { label: "AI ออกแบบลาย", href: "/custom" },
-    ],
-  },
-  community: {
-    label: "ชุมชน",
-    links: [
-      { label: "Community", href: "/community" },
-      { label: "นักออกแบบ", href: "/search?type=designer" },
-      { label: "ช่างทอ", href: "/search?type=weaver" },
-      { label: "ผ้าไทย Heritage", href: "/community" },
-    ],
-  },
-  merchant: {
-    label: "สำหรับร้านค้า",
-    links: [
-      { label: "เปิดร้านค้า", href: "/merchant" },
-      { label: "จัดการร้าน", href: "/merchant" },
-      { label: "ติดตามออเดอร์", href: "/orders" },
-    ],
-  },
-  legal: {
-    label: "About",
-    links: [
-      { label: "นโยบายความเป็นส่วนตัว", href: "/privacy-policy" },
-      { label: "ข้อกำหนดการใช้งาน", href: "/terms" },
-    ],
-  },
-};
+function buildFooterLinks(f: Dictionary["footer"]) {
+  return {
+    marketplace: {
+      label: f.marketplace.label,
+      links: [
+        { label: f.marketplace.exploreProducts, href: "/search" },
+        { label: f.marketplace.categories, href: "/category" },
+        { label: f.marketplace.newArrivals, href: "/search?sort=newest" },
+        { label: f.marketplace.wishlist, href: "/wishlist" },
+      ],
+    },
+    services: {
+      label: f.services.label,
+      links: [
+        { label: f.services.tailorWeave, href: "/services" },
+        { label: f.services.designClothes, href: "/design-clothes" },
+        { label: f.services.aiTryOn, href: "/services" },
+        { label: f.services.aiPattern, href: "/custom" },
+      ],
+    },
+    community: {
+      label: f.community.label,
+      links: [
+        { label: f.community.community, href: "/community" },
+        { label: f.community.designers, href: "/search?type=designer" },
+        { label: f.community.weavers, href: "/search?type=weaver" },
+        { label: f.community.heritage, href: "/community" },
+      ],
+    },
+    merchant: {
+      label: f.merchant.label,
+      links: [
+        { label: f.merchant.openShop, href: "/merchant" },
+        { label: f.merchant.manageShop, href: "/merchant" },
+        { label: f.merchant.trackOrders, href: "/orders" },
+      ],
+    },
+    legal: {
+      label: f.legal.label,
+      links: [
+        { label: f.legal.privacyPolicy, href: "/privacy-policy" },
+        { label: f.legal.terms, href: "/terms" },
+      ],
+    },
+  };
+}
 
 const socialLinks = [
   {
@@ -96,6 +100,9 @@ const socialLinks = [
 
 export default function AppFooter() {
   const [hoveredSocial, setHoveredSocial] = useState<string | null>(null);
+  const { t } = useLanguage();
+  const footerDict = t<Dictionary["footer"]>("footer");
+  const footerLinks = buildFooterLinks(footerDict);
 
   return (
     <footer
@@ -167,7 +174,7 @@ export default function AppFooter() {
                 maxWidth: "220px",
               }}
             >
-              Fashion Tech Marketplace ที่เชื่อมโยงผู้บริโภค นักออกแบบ ช่างทอ และชุมชนผ้าไทยผ่านเทคโนโลยี AI
+              {footerDict.tagline}
             </p>
 
             {/* Social icons */}
@@ -271,7 +278,7 @@ export default function AppFooter() {
               fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
             }}
           >
-            © 2026 LAYA. All Rights Reserved.
+            {footerDict.copyright}
           </p>
 
           <p
@@ -284,7 +291,7 @@ export default function AppFooter() {
               letterSpacing: "0.04em",
             }}
           >
-            Every Pattern Tells a Story.&nbsp;&nbsp;Preserving Thai Heritage Through Technology.
+            {footerDict.slogan}
           </p>
         </div>
       </div>

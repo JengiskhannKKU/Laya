@@ -9,12 +9,13 @@ import Chip from "@mui/material/Chip";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-
-const popularTags = ["ผ้าไหม", "ผ้าฝ้าย", "คราม", "กระเป๋า", "ผ้าทอมือ", "Community Collection"];
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function HeroSearch() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const { t } = useLanguage();
+  const popularTags = t<string[]>("home.hero.tags");
 
   const handleSearch = () => {
     if (query.trim()) {
@@ -50,7 +51,7 @@ export default function HeroSearch() {
           mb: 1.5,
         }}
       >
-        The LAYA Marketplace
+        {t("home.hero.eyebrow")}
       </Typography>
 
       {/* Main heading */}
@@ -64,7 +65,7 @@ export default function HeroSearch() {
           letterSpacing: "-0.02em",
         }}
       >
-        ผ้าไทยทอมือ
+        {t("home.hero.title")}
       </Typography>
 
       {/* Editorial accent line */}
@@ -79,7 +80,7 @@ export default function HeroSearch() {
           letterSpacing: "0.01em",
         }}
       >
-        A Curated Heritage Collection
+        {t("home.hero.accent")}
       </Typography>
 
       {/* Sub heading */}
@@ -94,7 +95,7 @@ export default function HeroSearch() {
           mx: "auto",
         }}
       >
-        เลือกสรรผ้าทอมือจากชุมชนช่างฝีมือทั่วไทย — สั่งตัด สั่งทอ และสะสมลวดลายอันเป็นเอกลักษณ์
+        {t("home.hero.subtitle")}
       </Typography>
 
       {/* Search box */}
@@ -125,7 +126,7 @@ export default function HeroSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="ค้นหาผ้าไหม ชุมชนทอผ้า หรือลวดลาย…"
+          placeholder={t("home.hero.searchPlaceholder")}
           sx={{
             flex: 1,
             fontFamily: '"Kanit", sans-serif',
@@ -151,7 +152,7 @@ export default function HeroSearch() {
             "&:hover": { bgcolor: "#14213a", boxShadow: "none" },
           }}
         >
-          ค้นหา
+          {t("home.hero.searchButton")}
         </Button>
       </Box>
 
@@ -175,7 +176,7 @@ export default function HeroSearch() {
             letterSpacing: "0.04em",
           }}
         >
-          ยอดนิยม
+          {t("home.hero.popular")}
         </Typography>
         {popularTags.map((tag) => (
           <Chip

@@ -6,8 +6,10 @@ import Button from "@mui/material/Button";
 import PlayCircleFilledRoundedIcon from "@mui/icons-material/PlayCircleFilledRounded";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function InspirationSection() {
+  const { t } = useLanguage();
   return (
     <Box
       sx={{
@@ -27,7 +29,7 @@ export default function InspirationSection() {
             mb: 0.75,
           }}
         >
-          Our Inspiration
+          {t("home.inspiration.eyebrow")}
         </Typography>
         <Typography
           sx={{
@@ -39,7 +41,7 @@ export default function InspirationSection() {
             letterSpacing: "-0.01em",
           }}
         >
-          แรงบันดาลใจของ Laya
+          {t("home.inspiration.title")}
         </Typography>
       </Box>
 
@@ -106,7 +108,7 @@ export default function InspirationSection() {
                 textTransform: "uppercase",
               }}
             >
-              โครงการในพระราชดำริ
+              {t("home.inspiration.tag")}
             </Typography>
           </Box>
 
@@ -120,7 +122,7 @@ export default function InspirationSection() {
               mb: 1,
             }}
           >
-            แรงบันดาลใจของ Laya
+            {t("home.inspiration.heading")}
           </Typography>
 
           <Typography
@@ -131,7 +133,7 @@ export default function InspirationSection() {
               mb: 1, // Adjusted margin since button is gone
             }}
           >
-            จากพระราชดำริ…สู่ผ้าไหมที่คุณออกแบบได้วันนี้
+            {t("home.inspiration.body")}
           </Typography>
         </Box>
       </Box>

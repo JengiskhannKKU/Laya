@@ -5,18 +5,20 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
 import { Home, Compass, Scissors, LayoutGrid, User } from "lucide-react";
-
-const navItems = [
-  { label: "Home", icon: <Home size={22} strokeWidth={1.5} />, path: "/" },
-  { label: "ชุมชน", icon: <Compass size={22} strokeWidth={1.5} />, path: "/community" },
-  { label: "สั่งตัด/ทอ", icon: null, path: "/services" },
-  { label: "หมวดหมู่", icon: <LayoutGrid size={22} strokeWidth={1.5} />, path: "/category" },
-  { label: "Profile", icon: <User size={22} strokeWidth={1.5} />, path: "/profile" },
-];
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function AppBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { label: t("bottomNav.home"), icon: <Home size={22} strokeWidth={1.5} />, path: "/" },
+    { label: t("bottomNav.community"), icon: <Compass size={22} strokeWidth={1.5} />, path: "/community" },
+    { label: t("bottomNav.services"), icon: null, path: "/services" },
+    { label: t("bottomNav.categories"), icon: <LayoutGrid size={22} strokeWidth={1.5} />, path: "/category" },
+    { label: t("bottomNav.profile"), icon: <User size={22} strokeWidth={1.5} />, path: "/profile" },
+  ];
 
   const currentIndex = navItems.findIndex(
     (item) => item.path === pathname || pathname.startsWith(item.path + "/")

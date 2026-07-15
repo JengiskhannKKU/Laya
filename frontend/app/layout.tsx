@@ -6,6 +6,8 @@ import MuiProvider from "@/components/providers/MuiProvider";
 import AuthProviderWrapper from "@/components/providers/AuthProviderWrapper";
 import { AppModalProvider } from "@/components/providers/AppModalProvider";
 import CookieConsentBanner from "@/components/layout/CookieConsentBanner";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import {
   absoluteUrl,
   defaultDescription,
@@ -108,6 +110,11 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: siteName,
+  },
 };
 
 const organizationJsonLd = {
@@ -171,13 +178,16 @@ export default function RootLayout({
             gtag('config', 'G-ZCPR1SEDZ4');
           `}
         </Script>
-        <MuiProvider>
-          <AuthProviderWrapper>
-            <AppModalProvider>{children}</AppModalProvider>
-          </AuthProviderWrapper>
-        </MuiProvider>
+        <LanguageProvider>
+          <MuiProvider>
+            <AuthProviderWrapper>
+              <AppModalProvider>{children}</AppModalProvider>
+            </AuthProviderWrapper>
+          </MuiProvider>
+        </LanguageProvider>
         <Analytics />
         <CookieConsentBanner />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

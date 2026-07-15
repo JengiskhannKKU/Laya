@@ -7,8 +7,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function EditorialSection() {
+  const { t } = useLanguage();
   return (
     <Box
       component={motion.div}
@@ -67,7 +69,7 @@ export default function EditorialSection() {
               mb: 1.5,
             }}
           >
-            The Heritage Collection
+            {t("home.editorial.eyebrow")}
           </Typography>
 
           <Typography
@@ -81,7 +83,7 @@ export default function EditorialSection() {
               mb: 2,
             }}
           >
-            The Story Behind Thai Silk
+            {t("home.editorial.title")}
           </Typography>
 
           <Typography
@@ -95,8 +97,7 @@ export default function EditorialSection() {
               maxWidth: 460,
             }}
           >
-            ผ้าไหมไทยแต่ละผืนคือเรื่องราวของช่างทอที่สืบทอดภูมิปัญญาผ่านหลายชั่วอายุคน
-            จากเส้นใยธรรมชาติ สีย้อมจากพืชพรรณ สู่ลวดลายที่บอกเล่าตัวตนของแต่ละชุมชน
+            {t("home.editorial.body")}
           </Typography>
 
           <Box>
@@ -117,7 +118,7 @@ export default function EditorialSection() {
                   "&:hover": { bgcolor: "#14213a", boxShadow: "none" },
                 }}
               >
-                อ่านเรื่องราว
+                {t("home.editorial.cta")}
               </Button>
             </Link>
           </Box>

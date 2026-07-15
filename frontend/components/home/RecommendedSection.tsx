@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { useLiveProducts } from "@/lib/use-live-products";
 import SectionHeader from "./SectionHeader";
 import ProductCard from "./ProductCard";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function RecommendedSection() {
   const { products } = useLiveProducts();
+  const { t } = useLanguage();
   return (
     <Box
       component={motion.div}
@@ -18,9 +20,9 @@ export default function RecommendedSection() {
       sx={{ py: { xs: 4, md: 7 } }}
     >
       <SectionHeader
-        eyebrow="Curated"
-        title="คัดสรรสำหรับคุณ"
-        subtitle="Handpicked based on your interests"
+        eyebrow={t("home.recommended.eyebrow")}
+        title={t("home.recommended.title")}
+        subtitle={t("home.recommended.subtitle")}
         href="/community"
       />
 

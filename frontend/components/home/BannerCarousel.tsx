@@ -6,8 +6,10 @@ import Typography from "@mui/material/Typography";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchBanners, type Banner } from "@/lib/banners";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function BannerCarousel() {
+  const { t } = useLanguage();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -104,7 +106,7 @@ export default function BannerCarousel() {
                     mb: { xs: 1, md: 1.5 },
                   }}
                 >
-                  Featured Collection
+                  {t("home.banner.featured")}
                 </Typography>
                 <Typography
                   sx={{

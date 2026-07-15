@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { fetchCategories, type Category } from "@/lib/categories";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
   Layers,
   Shirt,
@@ -32,6 +33,7 @@ const getCategoryIcon = (id: string, color: string) => {
 };
 
 export default function CategorySection() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -50,9 +52,9 @@ export default function CategorySection() {
       sx={{ py: { xs: 4, md: 6 } }}
     >
       <SectionHeader
-        eyebrow="Browse"
-        title="หมวดหมู่"
-        subtitle="Explore by craft and creation"
+        eyebrow={t("home.category.eyebrow")}
+        title={t("home.category.title")}
+        subtitle={t("home.category.subtitle")}
         href="/category"
       />
 

@@ -10,9 +10,11 @@ import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 function CommunityCard({ community }: { community: LiveCommunity }) {
   const [imgSrc, setImgSrc] = useState(community.image || "/placeholder.webp");
+  const { t } = useLanguage();
 
   return (
     <Link href={`/community/${community.id}`} style={{ textDecoration: "none" }}>
@@ -107,7 +109,7 @@ function CommunityCard({ community }: { community: LiveCommunity }) {
               gap: 0.2,
             }}
           >
-            {community.productCount} ผลิตภัณฑ์
+            {community.productCount} {t("home.communities.products")}
             {community.rating > 0 && (
               <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.2, ml: 0.3 }}>
                 · <StarRoundedIcon sx={{ fontSize: "0.8rem" }} /> {community.rating.toFixed(1)}
@@ -121,6 +123,7 @@ function CommunityCard({ community }: { community: LiveCommunity }) {
 }
 
 export default function CommunitiesSection() {
+  const { t } = useLanguage();
   const [communities, setCommunities] = useState<LiveCommunity[]>([]);
 
   useEffect(() => {
@@ -142,9 +145,9 @@ export default function CommunitiesSection() {
       sx={{ py: { xs: 4, md: 7 } }}
     >
       <SectionHeader
-        eyebrow="Community"
-        title="ชุมชนทอผ้า"
-        subtitle="Discover authentic weaving villages across Thailand"
+        eyebrow={t("home.communities.eyebrow")}
+        title={t("home.communities.title")}
+        subtitle={t("home.communities.subtitle")}
         href="/community"
       />
 
