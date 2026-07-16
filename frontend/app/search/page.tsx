@@ -1,396 +1,429 @@
-﻿"use client";
+"use client";
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
-import Slider from "@mui/material/Slider";
-import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import Drawer from "@mui/material/Drawer";
+import Fab from "@mui/material/Fab";
+import Rating from "@mui/material/Rating";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
-import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
-import StarRoundedIcon from "@mui/icons-material/StarRounded";
-import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
-import SortRoundedIcon from "@mui/icons-material/SortRounded";
+import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
+import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
+import RateReviewRoundedIcon from "@mui/icons-material/RateReviewRounded";
 
 import MobileLayout from "@/components/layout/MobileLayout";
-import type { Product } from "@/lib/live-products";
-import { useLiveProducts } from "@/lib/use-live-products";
+import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import {
+  getAllMoments,
+  saveUserMoment,
+  toggleLike,
+  loadLikedIds,
+  MOMENT_TOPICS,
+  COVER_PRESETS,
+  type Moment,
+  type MomentType,
+} from "@/lib/moments";
 
-// ค่าฟิลเตอร์คงเป็นภาษาไทยเสมอ (ต้อง match กับข้อมูลสินค้าจริงจาก backend ที่ยังไม่แปล)
-// ส่วนที่แปลคือ label ที่แสดงผลเท่านั้น ผ่าน provinceLabel()/fabricLabel() ด้านล่าง
-const ALL_VALUE = "ทั้งหมด";
-const PROVINCE_VALUES = ["ทั้งหมด", "ลำพูน", "ชัยภูมิ", "สกลนคร", "กาฬสินธุ์", "ราชบุรี", "กรุงเทพมหานคร"];
-const FABRIC_VALUES = ["ทั้งหมด", "ผ้าไหม", "ผ้าฝ้าย", "ผ้าไหมผสมฝ้าย", "ผ้าทอมือ"];
+// padding มาตรฐานให้เนื้อหาตรงแนวเดียวกับ TopNav — bar เต็มขอบ แต่คอนเทนต์ยังมีระยะขอบ
+const CONTENT_PX = { xs: 2.5, sm: 3, md: 5 };
+// อัตราส่วนปกหลายแบบ วนตาม index — masonry แบบ Pinterest/Lemon8
+const PIN_RATIOS = ["3 / 4", "1 / 1", "4 / 5", "3 / 4", "1 / 1.25", "4 / 3"];
+
+/** การ์ดโพสต์ (บทความ/รีวิว) สไตล์ Lemon8 — ปก + ป้ายประเภท/เรตติ้ง, หัวข้อ, ผู้เขียน, ไลก์ */
+function MomentCard({
+  moment,
+  index,
+  liked,
+  onLike,
+  onOpen,
+}: {
+  moment: Moment;
+  index: number;
+  liked: boolean;
+  onLike: (id: string) => void;
+  onOpen: (m: Moment) => void;
+}) {
+  const { t } = useLanguage();
+  const ratio = PIN_RATIOS[index % PIN_RATIOS.length];
+  const initial = (moment.authorName?.[0] ?? "L").toUpperCase();
+  const isReview = moment.type === "review";
+
+  return (
+    <Box
+      component={motion.div}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * 0.02, 0.4), duration: 0.45, ease: "easeOut" }}
+      onClick={() => onOpen(moment)}
+      sx={{
+        breakInside: "avoid",
+        WebkitColumnBreakInside: "avoid",
+        display: "inline-block",
+        width: "100%",
+        mb: { xs: 1.5, md: 2 },
+        cursor: "pointer",
+        borderRadius: "16px",
+        overflow: "hidden",
+        bgcolor: "#FFFFFF",
+        border: "1px solid rgba(19,40,75,0.06)",
+        transition: "transform 0.28s ease, box-shadow 0.28s ease",
+        "&:hover": { transform: "translateY(-4px)", boxShadow: "0 14px 32px rgba(27,42,74,0.14)" },
+        "&:hover .laya-pin-img": { transform: "scale(1.05)" },
+      }}
+    >
+      <Box sx={{ position: "relative", width: "100%", aspectRatio: ratio, overflow: "hidden", bgcolor: "#F0EBE3" }}>
+        <Box className="laya-pin-img" sx={{ position: "absolute", inset: 0, transition: "transform 0.6s cubic-bezier(0.22,0.61,0.36,1)" }}>
+          <Image src={moment.cover} alt={moment.title} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw" />
+        </Box>
+
+        {/* ป้ายประเภท: บทความ / รีวิว(+ดาว) */}
+        <Box
+          sx={{
+            position: "absolute", top: 10, left: 10, display: "inline-flex", alignItems: "center", gap: 0.4,
+            bgcolor: isReview ? "rgba(197,90,90,0.94)" : "rgba(19,40,75,0.9)", px: 0.9, py: 0.35, borderRadius: "999px",
+          }}
+        >
+          {isReview ? <RateReviewRoundedIcon sx={{ fontSize: 11, color: "#FFFFFF" }} /> : <ArticleRoundedIcon sx={{ fontSize: 11, color: "#FFFFFF" }} />}
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.58rem", fontWeight: 700, color: "#FFFFFF", lineHeight: 1 }}>
+            {isReview ? t("search.feed.typeReview") : t("search.feed.typeBlog")}
+            {isReview && moment.rating ? ` ${moment.rating}` : ""}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* เนื้อหาการ์ด */}
+      <Box sx={{ px: 1.25, pt: 1, pb: 1.25 }}>
+        <Typography
+          sx={{
+            fontFamily: '"Kanit", sans-serif', fontWeight: 500, fontSize: "0.85rem", color: "#13284B", lineHeight: 1.35,
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+          }}
+        >
+          {moment.title}
+        </Typography>
+
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 0.9 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.6, minWidth: 0 }}>
+            <Box sx={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, bgcolor: "rgba(197,165,90,0.18)", border: "1px solid rgba(197,165,90,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.6rem", fontWeight: 700, color: "#B8954A", lineHeight: 1 }}>{initial}</Typography>
+            </Box>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.68rem", fontWeight: 300, color: "#7A7468", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {moment.authorName}
+            </Typography>
+            {moment.official && <VerifiedRoundedIcon sx={{ fontSize: 13, color: "#C5A55A", flexShrink: 0 }} />}
+          </Box>
+
+          <Box
+            onClick={(e) => { e.stopPropagation(); onLike(moment.id); }}
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.3, flexShrink: 0, cursor: "pointer" }}
+          >
+            {liked ? <FavoriteRoundedIcon sx={{ fontSize: 15, color: "#C5573C" }} /> : <FavoriteBorderRoundedIcon sx={{ fontSize: 15, color: "#9CA3AF" }} />}
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.68rem", color: "#7A7468" }}>{moment.likeCount}</Typography>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+/** ตัวเขียนโพสต์ (ต้นแบบ — บันทึกลง localStorage) */
+function ComposeSheet({
+  open,
+  onClose,
+  onSubmit,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (m: { type: MomentType; title: string; body: string; cover: string; topic: string; rating?: number; taggedProduct?: string }) => void;
+}) {
+  const { t } = useLanguage();
+  const [type, setType] = useState<MomentType>("blog");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [cover, setCover] = useState(COVER_PRESETS[0]);
+  const [topic, setTopic] = useState<string>(MOMENT_TOPICS[0]);
+  const [rating, setRating] = useState<number>(5);
+  const [taggedProduct, setTaggedProduct] = useState("");
+  const [error, setError] = useState(false);
+
+  const reset = () => {
+    setType("blog"); setTitle(""); setBody(""); setCover(COVER_PRESETS[0]);
+    setTopic(MOMENT_TOPICS[0]); setRating(5); setTaggedProduct(""); setError(false);
+  };
+
+  const submit = () => {
+    if (!title.trim() || !body.trim()) { setError(true); return; }
+    onSubmit({
+      type, title: title.trim(), body: body.trim(), cover, topic,
+      rating: type === "review" ? rating : undefined,
+      taggedProduct: taggedProduct.trim() || undefined,
+    });
+    reset();
+  };
+
+  const inputSx = {
+    "& .MuiOutlinedInput-root": { borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", bgcolor: "#FFFFFF" },
+  };
+
+  return (
+    <Drawer anchor="bottom" open={open} onClose={onClose} PaperProps={{ sx: { borderTopLeftRadius: "24px", borderTopRightRadius: "24px", maxHeight: "92vh", maxWidth: 620, mx: "auto", width: "100%" } }}>
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.15rem", color: "#1B2A4A" }}>{t("search.feed.composeTitle")}</Typography>
+          <IconButton onClick={onClose}><CloseRoundedIcon /></IconButton>
+        </Box>
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.83rem", color: "#6B7280", mb: 2 }}>{t("search.feed.composeSubtitle")}</Typography>
+
+        {/* ประเภท */}
+        <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+          {(["blog", "review"] as MomentType[]).map((ty) => {
+            const active = type === ty;
+            return (
+              <Box
+                key={ty}
+                onClick={() => setType(ty)}
+                sx={{
+                  flex: 1, textAlign: "center", py: 1, borderRadius: "12px", cursor: "pointer",
+                  border: `1px solid ${active ? "#13284B" : "#E5DFD6"}`, bgcolor: active ? "#13284B" : "#FFFFFF",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", fontWeight: 600, color: active ? "#FFFFFF" : "#5A6472" }}>
+                  {ty === "blog" ? t("search.feed.typeBlog") : t("search.feed.typeReview")}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* รูปปก */}
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.82rem", color: "#1B2A4A", mb: 0.75 }}>{t("search.feed.composeCoverLabel")}</Typography>
+        <Box sx={{ display: "flex", gap: 1, overflowX: "auto", pb: 1, mb: 2, "&::-webkit-scrollbar": { display: "none" } }}>
+          {COVER_PRESETS.map((c) => (
+            <Box
+              key={c}
+              onClick={() => setCover(c)}
+              sx={{
+                position: "relative", flexShrink: 0, width: 72, height: 72, borderRadius: "12px", overflow: "hidden", cursor: "pointer",
+                border: `2px solid ${cover === c ? "#C5A55A" : "transparent"}`,
+              }}
+            >
+              <Image src={c} alt="cover" fill style={{ objectFit: "cover" }} sizes="72px" />
+            </Box>
+          ))}
+        </Box>
+
+        <TextField fullWidth placeholder={t("search.feed.composeTitlePlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} sx={{ ...inputSx, mb: 1.5 }} />
+        <TextField fullWidth multiline minRows={4} placeholder={t("search.feed.composeBodyPlaceholder")} value={body} onChange={(e) => setBody(e.target.value)} sx={{ ...inputSx, mb: 2 }} />
+
+        {/* หัวข้อ */}
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.82rem", color: "#1B2A4A", mb: 0.75 }}>{t("search.feed.composeTopicLabel")}</Typography>
+        <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 2 }}>
+          {MOMENT_TOPICS.map((tp) => {
+            const active = topic === tp;
+            return (
+              <Box key={tp} onClick={() => setTopic(tp)} sx={{ px: 1.5, py: 0.6, borderRadius: "999px", cursor: "pointer", bgcolor: active ? "#13284B" : "#F0EBE3" }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.76rem", fontWeight: active ? 600 : 400, color: active ? "#FFFFFF" : "#5A6472" }}>{tp}</Typography>
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* เรตติ้ง (เฉพาะรีวิว) */}
+        {type === "review" && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.82rem", color: "#1B2A4A" }}>{t("search.feed.composeRatingLabel")}</Typography>
+            <Rating value={rating} onChange={(_, v) => setRating(v ?? 0)} precision={0.5} sx={{ color: "#C5A55A" }} />
+          </Box>
+        )}
+
+        <TextField fullWidth placeholder={t("search.feed.composeTagProductPlaceholder")} label={t("search.feed.composeTagProduct")} value={taggedProduct} onChange={(e) => setTaggedProduct(e.target.value)} InputLabelProps={{ sx: { fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem" } }} sx={{ ...inputSx, mb: 1.5 }} />
+
+        {error && (
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", color: "#C5573C", mb: 1 }}>{t("search.feed.composeRequired")}</Typography>
+        )}
+
+        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF", mb: 1.5 }}>{t("search.feed.composeLocalNote")}</Typography>
+
+        <Button fullWidth onClick={submit} variant="contained" sx={{ borderRadius: "12px", bgcolor: "#13284B", fontWeight: 600, fontFamily: '"Kanit", sans-serif', textTransform: "none", py: 1.25, "&:hover": { bgcolor: "#0e1f3c" } }}>
+          {t("search.feed.composeSubmit")}
+        </Button>
+      </Box>
+    </Drawer>
+  );
+}
 
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { products } = useLiveProducts();
+  const { user } = useAuth();
   const { t } = useLanguage();
-  const initialQuery = searchParams.get("q") || "";
 
-  const provinceLabels: Record<string, string> = {
-    "ทั้งหมด": t("common.all"),
-    "ลำพูน": t("search.provinces.lamphun"),
-    "ชัยภูมิ": t("search.provinces.chaiyaphum"),
-    "สกลนคร": t("search.provinces.sakonNakhon"),
-    "กาฬสินธุ์": t("search.provinces.kalasin"),
-    "ราชบุรี": t("search.provinces.ratchaburi"),
-    "กรุงเทพมหานคร": t("search.provinces.bangkok"),
-  };
-  const fabricLabels: Record<string, string> = {
-    "ทั้งหมด": t("common.all"),
-    "ผ้าไหม": t("search.fabricTypes.silk"),
-    "ผ้าฝ้าย": t("search.fabricTypes.cotton"),
-    "ผ้าไหมผสมฝ้าย": t("search.fabricTypes.silkCottonBlend"),
-    "ผ้าทอมือ": t("search.fabricTypes.handwoven"),
-  };
-  const provinces = PROVINCE_VALUES;
-  const fabricTypes = FABRIC_VALUES;
-  const sortOptions = [
-    { value: "popular", label: t("search.sort.popular") },
-    { value: "price_low", label: t("search.sort.priceLow") },
-    { value: "price_high", label: t("search.sort.priceHigh") },
-    { value: "rating", label: t("search.sort.rating") },
-    { value: "newest", label: t("search.sort.newest") },
+  const [moments, setMoments] = useState<Moment[]>([]);
+  const [likedIds, setLikedIds] = useState<string[]>([]);
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [selectedChip, setSelectedChip] = useState("all");
+  const [composeOpen, setComposeOpen] = useState(false);
+
+  useEffect(() => {
+    setMoments(getAllMoments());
+    setLikedIds(loadLikedIds());
+  }, []);
+
+  // ชิปกรอง: ทั้งหมด / รีวิว / บทความ / หัวข้อผ้า
+  const chips: { key: string; label: string }[] = [
+    { key: "all", label: t("search.feed.allTopics") },
+    { key: "type:review", label: t("search.feed.typeReview") },
+    { key: "type:blog", label: t("search.feed.typeBlog") },
+    ...MOMENT_TOPICS.map((tp) => ({ key: `topic:${tp}`, label: tp })),
   ];
 
-  const [query, setQuery] = useState(initialQuery);
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState<number[]>([0, 10000]);
-  const [selectedProvince, setSelectedProvince] = useState(ALL_VALUE);
-  const [selectedFabric, setSelectedFabric] = useState(ALL_VALUE);
-  const [giOnly, setGiOnly] = useState(false);
-  const [sortBy, setSortBy] = useState("popular");
-
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
-
-    // Text search
+  const filtered = useMemo(() => {
+    let result = [...moments];
+    if (selectedChip.startsWith("type:")) {
+      const ty = selectedChip.slice(5);
+      result = result.filter((m) => m.type === ty);
+    } else if (selectedChip.startsWith("topic:")) {
+      const tp = selectedChip.slice(6);
+      result = result.filter((m) => m.topic === tp);
+    }
     if (query.trim()) {
       const q = query.toLowerCase();
       result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.community.toLowerCase().includes(q) ||
-          p.province.toLowerCase().includes(q) ||
-          p.fabricType.toLowerCase().includes(q) ||
-          (p.tags || []).some((t) => t.toLowerCase().includes(q))
+        (m) => m.title.toLowerCase().includes(q) || m.body.toLowerCase().includes(q) || m.authorName.toLowerCase().includes(q) || m.topic.toLowerCase().includes(q)
       );
     }
-
-    // Price range
-    result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
-
-    // Province
-    if (selectedProvince !== "ทั้งหมด") {
-      result = result.filter((p) => p.province === selectedProvince);
-    }
-
-    // Fabric type
-    if (selectedFabric !== "ทั้งหมด") {
-      result = result.filter((p) => p.fabricType === selectedFabric);
-    }
-
-    // GI only
-    if (giOnly) {
-      result = result.filter((p) => p.hasGI);
-    }
-
-    // Sort
-    switch (sortBy) {
-      case "price_low":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "price_high":
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case "newest":
-        result.reverse();
-        break;
-      default:
-        result.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0));
-    }
-
     return result;
-  }, [products, query, priceRange, selectedProvince, selectedFabric, giOnly, sortBy]);
+  }, [moments, selectedChip, query]);
 
-  const activeFilterCount = [
-    selectedProvince !== "ทั้งหมด",
-    selectedFabric !== "ทั้งหมด",
-    giOnly,
-    priceRange[0] > 0 || priceRange[1] < 10000,
-  ].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setPriceRange([0, 10000]);
-    setSelectedProvince("ทั้งหมด");
-    setSelectedFabric("ทั้งหมด");
-    setGiOnly(false);
-    setSortBy("popular");
+  const handleLike = (id: string) => {
+    if (!user) { router.push("/auth/login"); return; }
+    const nextLiked = toggleLike(id);
+    const nowLiked = nextLiked.includes(id);
+    setLikedIds(nextLiked);
+    setMoments((prev) => prev.map((m) => (m.id === id ? { ...m, likeCount: Math.max(0, m.likeCount + (nowLiked ? 1 : -1)) } : m)));
   };
 
-  // padding มาตรฐานให้เนื้อหาตรงแนวเดียวกับ TopNav — bar เต็มขอบ แต่คอนเทนต์ยังมีระยะขอบ
-  const CONTENT_PX = { xs: 2.5, sm: 3, md: 5 };
+  const handlePost = (input: { type: MomentType; title: string; body: string; cover: string; topic: string; rating?: number; taggedProduct?: string }) => {
+    const authorName = user?.email ? user.email.split("@")[0] : "คุณ";
+    const all = saveUserMoment({ ...input, authorName });
+    setMoments(all);
+    setComposeOpen(false);
+  };
+
+  const openCompose = () => {
+    if (!user) { router.push("/auth/login"); return; }
+    setComposeOpen(true);
+  };
 
   return (
     <MobileLayout>
-      {/* mx: calc(50% - 50vw) ดึงทั้งหน้าออกจาก padding ของ MobileLayout ให้เต็มความกว้าง viewport —
-          bar (Search/Sort) จึงชนขอบเหมือน top bar ส่วนคอนเทนต์ด้านล่างจัดระยะขอบเองผ่าน CONTENT_PX */}
+      {/* mx: calc(50% - 50vw) → bar เต็มขอบเหมือน top bar, คอนเทนต์จัดระยะขอบเองผ่าน CONTENT_PX */}
       <Box sx={{ mx: "calc(50% - 50vw)", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
-        {/* Header — แถบขาวเต็มขอบ, เนื้อหาข้างในจัดกึ่งกลาง maxWidth 1440 */}
+        {/* ── Sticky bar: ค้นหา + ปุ่มเขียน + ชิปกรอง ── */}
         <Box sx={{ bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #E5DFD6" }}>
-          <Box sx={{ maxWidth: 1440, mx: "auto", px: CONTENT_PX, pt: 4, pb: 1.5 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
-              <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
-            </IconButton>
-            <Box sx={{
-              flex: 1, display: "flex", alignItems: "center", bgcolor: "#FAF6F0",
-              borderRadius: "12px", px: 1.5, py: 0.5, border: "1px solid #E5DFD6",
-            }}>
-              <SearchRoundedIcon sx={{ color: "#9CA3AF", fontSize: 20, mr: 1 }} />
-              <TextField
-                fullWidth
-                variant="standard"
-                placeholder={t("search.placeholder")}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                InputProps={{ disableUnderline: true }}
-                autoFocus
-                sx={{ "& input": { fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", py: 0.8, color: "#1B2A4A" } }}
-              />
-            </Box>
-            <IconButton onClick={() => setFilterOpen(true)} sx={{ color: "#1B2A4A", position: "relative" }}>
-              <TuneRoundedIcon sx={{ fontSize: 22 }} />
-              {activeFilterCount > 0 && (
-                <Box sx={{
-                  position: "absolute", top: 4, right: 4, width: 16, height: 16, borderRadius: "50%",
-                  bgcolor: "#C5A55A", display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, color: "#FFFFFF" }}>{activeFilterCount}</Typography>
-                </Box>
-              )}
-            </IconButton>
-          </Box>
-
-          {/* Sort Bar */}
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1.5 }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280" }}>
-              {t("search.resultsCount").replace("{n}", String(filteredProducts.length))}
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <SortRoundedIcon sx={{ fontSize: 16, color: "#6B7280" }} />
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                variant="standard"
-                disableUnderline
-                sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}
+          <Box sx={{ maxWidth: 1440, mx: "auto", px: CONTENT_PX, pt: 3, pb: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box sx={{ flex: 1, display: "flex", alignItems: "center", bgcolor: "#FAF6F0", borderRadius: "999px", px: 2, py: 0.5, border: "1px solid #E5DFD6" }}>
+                <SearchRoundedIcon sx={{ color: "#9CA3AF", fontSize: 20, mr: 1 }} />
+                <TextField
+                  fullWidth variant="standard" placeholder={t("search.placeholder")} value={query}
+                  onChange={(e) => setQuery(e.target.value)} InputProps={{ disableUnderline: true }}
+                  sx={{ "& input": { fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", py: 0.8, color: "#1B2A4A" } }}
+                />
+              </Box>
+              <Button
+                onClick={openCompose}
+                startIcon={<EditRoundedIcon sx={{ fontSize: 18 }} />}
+                sx={{
+                  display: { xs: "none", sm: "inline-flex" }, flexShrink: 0, bgcolor: "#13284B", color: "#FFFFFF",
+                  borderRadius: "999px", px: 2.25, textTransform: "none", fontFamily: '"Kanit", sans-serif', fontWeight: 500, fontSize: "0.82rem",
+                  "&:hover": { bgcolor: "#0e1f3c" },
+                }}
               >
-                {sortOptions.map((o) => (
-                  <MenuItem key={o.value} value={o.value} sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem" }}>
-                    {o.label}
-                  </MenuItem>
-                ))}
-              </Select>
+                {user ? t("search.feed.postMoment") : t("search.feed.loginToPost")}
+              </Button>
             </Box>
-          </Box>
+
+            {/* ชิปกรอง */}
+            <Box sx={{ display: "flex", gap: 1, overflowX: "auto", pt: 1.5, pb: 0.25, "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}>
+              {chips.map((c) => {
+                const active = selectedChip === c.key;
+                return (
+                  <Box
+                    key={c.key}
+                    onClick={() => setSelectedChip(c.key)}
+                    sx={{ flexShrink: 0, px: 1.6, py: 0.7, borderRadius: "999px", cursor: "pointer", bgcolor: active ? "#13284B" : "#F0EBE3", transition: "background 0.2s" }}
+                  >
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", fontWeight: active ? 600 : 400, color: active ? "#FFFFFF" : "#5A6472", whiteSpace: "nowrap" }}>
+                      {c.label}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
         </Box>
 
-        {/* Results — จัดกึ่งกลาง maxWidth 1440 มีระยะขอบ (ไม่ชนขอบเหมือน bar) */}
-        <Box sx={{ maxWidth: 1440, mx: "auto", px: CONTENT_PX, pt: 2, pb: 10 }}>
-          {filteredProducts.length === 0 ? (
+        {/* ── หัวข้อ + ฟีด masonry ── */}
+        <Box sx={{ maxWidth: 1440, mx: "auto", px: CONTENT_PX, pt: { xs: 2.5, md: 3.5 }, pb: 12 }}>
+          <Box sx={{ mb: { xs: 2, md: 2.5 } }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.66rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C5A55A", mb: 0.5 }}>
+              {t("search.feed.eyebrow")}
+            </Typography>
+            <Typography component="h1" sx={{ fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif', fontWeight: 700, fontSize: { xs: "1.5rem", md: "1.9rem" }, color: "#13284B", lineHeight: 1.15 }}>
+              {t("search.feed.title")}
+            </Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 300, fontSize: { xs: "0.8rem", md: "0.88rem" }, color: "#7A7468", mt: 0.75 }}>
+              {t("search.feed.subtitle")}
+            </Typography>
+          </Box>
+
+          {filtered.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 10 }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
-                {t("search.noResultsTitle")}
-              </Typography>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 3 }}>
-                {t("search.noResultsSubtitle")}
-              </Typography>
-              <Button onClick={clearFilters} variant="outlined" sx={{ borderRadius: "20px", fontFamily: '"Kanit", sans-serif' }}>
-                {t("search.clearFilters")}
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#9CA3AF", mb: 3 }}>{t("search.feed.empty")}</Typography>
+              <Button onClick={openCompose} variant="contained" startIcon={<EditRoundedIcon />} sx={{ borderRadius: "999px", bgcolor: "#13284B", fontFamily: '"Kanit", sans-serif', textTransform: "none", "&:hover": { bgcolor: "#0e1f3c" } }}>
+                {user ? t("search.feed.postMoment") : t("search.feed.loginToPost")}
               </Button>
             </Box>
           ) : (
-            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(5, 1fr)" }, gap: { xs: 1.5, md: 2 } }}>
+            <Box sx={{ columnCount: { xs: 2, sm: 3, md: 4, lg: 5 }, columnGap: { xs: 1.5, md: 2 } }}>
               <AnimatePresence>
-                {filteredProducts.map((product, idx) => (
-                  <Box
-                    key={product.id}
-                    component={motion.div}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.03 }}
-                    onClick={() => router.push(`/product/${product.id}`)}
-                    sx={{
-                      bgcolor: "#FFFFFF", borderRadius: "16px", overflow: "hidden", cursor: "pointer",
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.04)", border: "1px solid #E5DFD6",
-                      transition: "transform 0.2s", "&:active": { transform: "scale(0.98)" },
-                    }}
-                  >
-                    <Box sx={{ position: "relative", aspectRatio: "1 / 1" }}>
-                      <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw" />
-                      {product.hasGI && (
-                        <Box sx={{
-                          position: "absolute", top: 8, left: 8, bgcolor: "rgba(197,165,90,0.9)",
-                          px: 1, py: 0.2, borderRadius: "6px", display: "flex", alignItems: "center", gap: 0.3,
-                        }}>
-                          <VerifiedRoundedIcon sx={{ fontSize: 10, color: "#FFFFFF" }} />
-                          <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, color: "#FFFFFF" }}>GI</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                    <Box sx={{ p: 1.5 }}>
-                      <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A", lineHeight: 1.3 }}>
-                        {product.name}
-                      </Typography>
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", color: "#6B7280", mt: 0.3 }}>
-                        {product.community}
-                      </Typography>
-                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1 }}>
-                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#C5A55A" }}>
-                          ฿{product.price.toLocaleString()}
-                        </Typography>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-                          <StarRoundedIcon sx={{ fontSize: 12, color: "#C5A55A" }} />
-                          <Typography sx={{ fontSize: "0.7rem", color: "#6B7280" }}>{product.rating}</Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Box>
+                {filtered.map((m, idx) => (
+                  <MomentCard key={m.id} moment={m} index={idx} liked={likedIds.includes(m.id)} onLike={handleLike} onOpen={(mm) => router.push(`/moment/${mm.id}`)} />
                 ))}
               </AnimatePresence>
             </Box>
           )}
         </Box>
 
-        {/* Filter Drawer */}
-        <Drawer anchor="bottom" open={filterOpen} onClose={() => setFilterOpen(false)} PaperProps={{ sx: { borderTopLeftRadius: "24px", borderTopRightRadius: "24px", maxHeight: "80vh" } }}>
-          <Box sx={{ p: 3 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A" }}>
-                {t("search.filters")}
-              </Typography>
-              <IconButton onClick={() => setFilterOpen(false)}>
-                <CloseRoundedIcon />
-              </IconButton>
-            </Box>
+        {/* ปุ่มลอยเขียนโพสต์ (มือถือ) */}
+        <Fab
+          variant="extended"
+          onClick={openCompose}
+          sx={{
+            position: "fixed", bottom: { xs: 24, md: 32 }, right: { xs: 16, md: 32 }, zIndex: 20,
+            bgcolor: "#13284B", color: "#FFFFFF", textTransform: "none", fontFamily: '"Kanit", sans-serif', fontWeight: 500,
+            px: 2.25, boxShadow: "0 10px 26px rgba(19,40,75,0.32)", "&:hover": { bgcolor: "#0e1f3c" },
+          }}
+        >
+          <EditRoundedIcon sx={{ fontSize: 20, mr: 1 }} />
+          {user ? t("search.feed.postMoment") : t("search.feed.loginToPost")}
+        </Fab>
 
-            {/* Price Range */}
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
-              {t("search.priceRange")}
-            </Typography>
-            <Box sx={{ px: 1, mb: 3 }}>
-              <Slider
-                value={priceRange}
-                onChange={(_, v) => setPriceRange(v as number[])}
-                valueLabelDisplay="auto"
-                valueLabelFormat={(v) => `฿${v.toLocaleString()}`}
-                min={0}
-                max={10000}
-                step={100}
-                sx={{ color: "#C5A55A" }}
-              />
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>฿{priceRange[0].toLocaleString()}</Typography>
-                <Typography sx={{ fontSize: "0.8rem", color: "#6B7280" }}>฿{priceRange[1].toLocaleString()}</Typography>
-              </Box>
-            </Box>
-
-            {/* Province */}
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
-              {t("search.province")}
-            </Typography>
-            <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 3 }}>
-              {provinces.map((p) => (
-                <Chip
-                  key={p}
-                  label={provinceLabels[p] ?? p}
-                  onClick={() => setSelectedProvince(p)}
-                  sx={{
-                    fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem",
-                    bgcolor: selectedProvince === p ? "#1B2A4A" : "#F0EBE3",
-                    color: selectedProvince === p ? "#FFFFFF" : "#6B7280",
-                    fontWeight: selectedProvince === p ? 700 : 400,
-                  }}
-                />
-              ))}
-            </Box>
-
-            {/* Fabric Type */}
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.9rem", color: "#1B2A4A", mb: 1 }}>
-              {t("search.fabricType")}
-            </Typography>
-            <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 3 }}>
-              {fabricTypes.map((f) => (
-                <Chip
-                  key={f}
-                  label={fabricLabels[f] ?? f}
-                  onClick={() => setSelectedFabric(f)}
-                  sx={{
-                    fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem",
-                    bgcolor: selectedFabric === f ? "#1B2A4A" : "#F0EBE3",
-                    color: selectedFabric === f ? "#FFFFFF" : "#6B7280",
-                    fontWeight: selectedFabric === f ? 700 : 400,
-                  }}
-                />
-              ))}
-            </Box>
-
-            {/* GI Toggle */}
-            <Chip
-              label={t("search.giOnly")}
-              icon={<VerifiedRoundedIcon sx={{ fontSize: 14, color: giOnly ? "#FFFFFF" : "#C5A55A" }} />}
-              onClick={() => setGiOnly(!giOnly)}
-              sx={{
-                fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", mb: 3,
-                bgcolor: giOnly ? "#C5A55A" : "#FAF6F0",
-                color: giOnly ? "#FFFFFF" : "#1B2A4A",
-                fontWeight: 600, px: 1,
-              }}
-            />
-
-            {/* Actions */}
-            <Box sx={{ display: "flex", gap: 1.5, mt: 2 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={clearFilters}
-                sx={{ borderRadius: "12px", borderColor: "#E5DFD6", color: "#6B7280", fontFamily: '"Kanit", sans-serif', fontWeight: 600 }}
-              >
-                {t("search.clearAll")}
-              </Button>
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={() => setFilterOpen(false)}
-                sx={{
-                  borderRadius: "12px", bgcolor: "#1B2A4A", fontWeight: 700, fontFamily: '"Kanit", sans-serif',
-                  "&:hover": { bgcolor: "#0F1A30" },
-                }}
-              >
-                {t("search.showResults").replace("{n}", String(filteredProducts.length))}
-              </Button>
-            </Box>
-          </Box>
-        </Drawer>
+        <ComposeSheet open={composeOpen} onClose={() => setComposeOpen(false)} onSubmit={handlePost} />
       </Box>
     </MobileLayout>
   );

@@ -11,6 +11,7 @@ import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRound
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,18 +33,62 @@ const PRODUCTION_PROCESS = [
   { id: 4, title: "ทอด้วยมือ", desc: "ใช้เวลา 3-15 วันขึ้นกับความซับซ้อนของลาย" },
 ];
 
-const TABS = [
-  { id: "story", label: "เรื่องราว" },
-  { id: "products", label: "สินค้า" },
-];
+/** หัวข้อพร้อมขีดทองสั้น ๆ ใช้ซ้ำในหลาย section */
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+        {children}
+      </Typography>
+      <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
+    </Box>
+  );
+}
+
+function ProductCard({ p }: { p: Product }) {
+  return (
+    <Link href={`/product/${p.id}`} style={{ textDecoration: "none" }}>
+      <Box
+        sx={{
+          bgcolor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5DFD6", overflow: "hidden",
+          transition: "transform 0.25s ease, box-shadow 0.25s ease",
+          "&:hover": { transform: "translateY(-3px)", boxShadow: "0 12px 26px rgba(27,42,74,0.12)" },
+          "&:hover .laya-cp-img": { transform: "scale(1.05)" },
+        }}
+      >
+        <Box sx={{ position: "relative", width: "100%", aspectRatio: "1 / 1", overflow: "hidden", bgcolor: "#F0EBE3" }}>
+          <Box className="laya-cp-img" sx={{ position: "absolute", inset: 0, transition: "transform 0.5s cubic-bezier(0.22,0.61,0.36,1)" }}>
+            <Image src={p.images[0]} alt={p.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 900px) 45vw, 25vw" />
+          </Box>
+        </Box>
+        <Box sx={{ p: 1.5 }}>
+          <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.82rem", color: "#1B2A4A" }}>
+            {p.name}
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mt: 0.5 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#CBA258" }}>
+              {p.price.toLocaleString()} ฿/{p.priceUnit}
+            </Typography>
+            {p.rating > 0 && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
+                <StarRoundedIcon sx={{ fontSize: 13, color: "#C9A86A" }} />
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#7A7468" }}>{p.rating}</Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Box>
+    </Link>
+  );
+}
 
 export default function CommunityDetailView({ community }: CommunityDetailViewProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("story");
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [startingChat, setStartingChat] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const startChat = async () => {
     if (!user) { router.push("/auth/login"); return; }
@@ -72,13 +117,9 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
     return () => { cancelled = true; };
   }, [community.id]);
 
-  const scrollToSection = (id: string) => {
-    setActiveTab(id);
-    const element = document.getElementById(id);
-    if (element) {
-      window.scrollTo({ top: element.offsetTop - 140, behavior: "smooth" });
-    }
-  };
+  // โชว์ตัวอย่าง 4 ชิ้น (2 แถว) — กด "ดูทั้งหมด" ค่อยขยายในหน้า
+  const visibleProducts = showAll ? products : products.slice(0, 4);
+  const hasMore = products.length > 4;
 
   const stats = [
     { label: "ผลิตภัณฑ์", value: String(community.productCount) },
@@ -88,25 +129,13 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
 
   return (
     <Box sx={{ width: "100%", pb: { xs: 12, md: 8 } }}>
-      {/* 1. Hero */}
-      <Box sx={{ position: "relative", width: "100%", height: 320 }}>
-        <Image
-          src={community.image || "/placeholder.webp"}
-          alt={community.name}
-          fill
-          style={{ objectFit: "cover" }}
-          priority
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to bottom, rgba(27,42,74,0.4) 0%, rgba(27,42,74,0.85) 100%)",
-          }}
-        />
+      {/* Hero — เต็มความกว้าง */}
+      <Box sx={{ position: "relative", width: "100%", height: { xs: 300, md: 340 } }}>
+        <Image src={community.image || "/placeholder.webp"} alt={community.name} fill style={{ objectFit: "cover" }} priority />
+        <Box sx={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(27,42,74,0.4) 0%, rgba(27,42,74,0.85) 100%)" }} />
 
         <Box sx={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", justifyContent: "space-between", zIndex: 10 }}>
-          <Link href="/">
+          <Link href="/community">
             <IconButton sx={{ bgcolor: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}>
               <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF", mr: -0.5 }} />
             </IconButton>
@@ -116,179 +145,160 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
           </IconButton>
         </Box>
 
-        <Box sx={{ position: "absolute", bottom: 20, left: 20, right: 20 }}>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.5rem", color: "#FFFFFF" }}>
-            {community.name}
-          </Typography>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "rgba(255,255,255,0.8)", mt: 0.2 }}>
-            จ.{community.province}
-          </Typography>
+        <Box sx={{ position: "absolute", bottom: 20, left: 0, right: 0, px: { xs: 2.5, md: 4 } }}>
+          <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: { xs: "1.5rem", md: "2rem" }, color: "#FFFFFF" }}>
+              {community.name}
+            </Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "rgba(255,255,255,0.8)", mt: 0.2 }}>
+              จ.{community.province}
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
-      {/* 2. Stats Grid Box — เฉพาะข้อมูลจริงจากร้าน */}
-      <Box sx={{ bgcolor: "#FFFFFF", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", py: 2, borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-        {stats.map((stat, i) => (
-          <Box key={i} sx={{ textAlign: "center", position: "relative" }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.2rem", fontWeight: 700, color: "#1B2A4A" }}>
-              {stat.value}
-            </Typography>
-            <Typography sx={{ fontSize: "0.7rem", color: "#6B7280", mt: 0.2 }}>
-              {stat.label}
-            </Typography>
-            {i !== stats.length - 1 && <Box sx={{ position: "absolute", right: 0, top: "20%", bottom: "20%", width: "1px", bgcolor: "#E5DFD6" }} />}
-          </Box>
-        ))}
+      {/* Stats */}
+      <Box sx={{ bgcolor: "#FFFFFF", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+        <Box sx={{ maxWidth: 1200, mx: "auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", py: 2 }}>
+          {stats.map((stat, i) => (
+            <Box key={i} sx={{ textAlign: "center", position: "relative" }}>
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1.2rem", fontWeight: 700, color: "#1B2A4A" }}>{stat.value}</Typography>
+              <Typography sx={{ fontSize: "0.7rem", color: "#6B7280", mt: 0.2 }}>{stat.label}</Typography>
+              {i !== stats.length - 1 && <Box sx={{ position: "absolute", right: 0, top: "20%", bottom: "20%", width: "1px", bgcolor: "#E5DFD6" }} />}
+            </Box>
+          ))}
+        </Box>
       </Box>
 
-      {/* 3. Sticky Tab Navigation */}
+      {/* เนื้อหา 2 คอลัมน์ (desktop) — ซ้าย: ชุมชน / ขวา: สินค้า */}
       <Box
         sx={{
-          position: "sticky", top: 0, zIndex: 50, bgcolor: "#FAF6F0",
-          borderBottom: "1px solid #E5DFD6", display: "flex", px: 2,
+          maxWidth: 1200, mx: "auto", px: { xs: 2.5, md: 4 }, pt: { xs: 3, md: 4 },
+          display: "grid", gridTemplateColumns: { xs: "1fr", md: "0.9fr 1.1fr" }, gap: { xs: 0, md: 5 },
+          alignItems: "start",
         }}
       >
-        {TABS.map((tab) => (
-          <Box
-            key={tab.id}
-            onClick={() => scrollToSection(tab.id)}
-            sx={{ flex: 1, textAlign: "center", py: 1.5, cursor: "pointer", position: "relative" }}
-          >
-            <Typography sx={{ fontSize: "0.85rem", fontWeight: activeTab === tab.id ? 700 : 500, color: activeTab === tab.id ? "#1B2A4A" : "#9CA3AF" }}>
-              {tab.label}
-            </Typography>
-            {activeTab === tab.id && (
-              <Box sx={{ position: "absolute", bottom: -1, left: "15%", right: "15%", height: 3, bgcolor: "#D8BC82", borderRadius: "3px 3px 0 0" }} />
-            )}
+        {/* ── คอลัมน์ซ้าย: ชุมชน ── */}
+        <Box>
+          {/* เรื่องราวชุมชน */}
+          <Box sx={{ mb: 4 }}>
+            <SectionTitle>เรื่องราวชุมชน</SectionTitle>
+            <Box sx={{ bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
+              {community.description ? (
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7 }}>
+                  {community.description}
+                </Typography>
+              ) : (
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic" }}>
+                  ร้านนี้ยังไม่ได้เพิ่มเรื่องราวชุมชน
+                </Typography>
+              )}
+            </Box>
           </Box>
-        ))}
-      </Box>
 
-      {/* Main Content Area */}
-      <Box sx={{ px: 2.5, pt: 3 }}>
-
-        {/* Story Section — เรื่องราวจริงจากร้าน (shops.description) */}
-        <Box id="story" sx={{ mb: 4, scrollMarginTop: "140px" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-              เรื่องราวชุมชน
-            </Typography>
-            <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
-          </Box>
-          <Box sx={{ bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
-            {community.description ? (
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7 }}>
-                {community.description}
-              </Typography>
-            ) : (
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic" }}>
-                ร้านนี้ยังไม่ได้เพิ่มเรื่องราวชุมชน
-              </Typography>
-            )}
-          </Box>
-        </Box>
-
-        {/* Production Process — ข้อมูลความรู้ทั่วไปเรื่องการทอผ้าไทย */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-              กระบวนการผลิตโดยทั่วไป
-            </Typography>
-            <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
-          </Box>
-          <Box sx={{ position: "relative", ml: 1.5 }}>
-            <Box sx={{ position: "absolute", left: 11, top: 12, bottom: 20, width: 2, bgcolor: "#E5DFD6" }} />
-            {PRODUCTION_PROCESS.map((step) => (
-              <Box key={step.id} sx={{ display: "flex", gap: 2, mb: 2.5, position: "relative" }}>
-                <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: "#1B2A4A", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, zIndex: 2 }}>
-                  {step.id}
+          {/* กระบวนการผลิตทั่วไป */}
+          <Box sx={{ mb: 4 }}>
+            <SectionTitle>กระบวนการผลิตโดยทั่วไป</SectionTitle>
+            <Box sx={{ position: "relative", ml: 1.5 }}>
+              <Box sx={{ position: "absolute", left: 11, top: 12, bottom: 20, width: 2, bgcolor: "#E5DFD6" }} />
+              {PRODUCTION_PROCESS.map((step) => (
+                <Box key={step.id} sx={{ display: "flex", gap: 2, mb: 2.5, position: "relative" }}>
+                  <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: "#1B2A4A", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, zIndex: 2, flexShrink: 0 }}>
+                    {step.id}
+                  </Box>
+                  <Box sx={{ mt: -0.2 }}>
+                    <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A" }}>{step.title}</Typography>
+                    <Typography sx={{ fontSize: "0.8rem", color: "#6B7280", mt: 0.3 }}>{step.desc}</Typography>
+                  </Box>
                 </Box>
-                <Box sx={{ mt: -0.2 }}>
-                  <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A" }}>{step.title}</Typography>
-                  <Typography sx={{ fontSize: "0.8rem", color: "#6B7280", mt: 0.3 }}>{step.desc}</Typography>
+              ))}
+            </Box>
+          </Box>
+
+          {/* คะแนนรีวิว */}
+          {community.reviewCount > 0 && (
+            <Box sx={{ mb: 4 }}>
+              <SectionTitle>คะแนนรีวิว</SectionTitle>
+              <Box sx={{ bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6", display: "flex", alignItems: "center", gap: 2 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: "2rem", color: "#1B2A4A", lineHeight: 1 }}>{community.rating.toFixed(1)}</Typography>
+                <Box>
+                  <Rating value={community.rating} precision={0.1} readOnly size="small" sx={{ "& .MuiRating-iconFilled": { color: "#C5A55A" } }} />
+                  <Typography sx={{ fontSize: "0.7rem", color: "#6B7280" }}>{community.reviewCount} รีวิว</Typography>
                 </Box>
               </Box>
-            ))}
+            </Box>
+          )}
+
+          {/* ที่ตั้งชุมชน */}
+          {community.address && (
+            <Box sx={{ mb: 4 }}>
+              <SectionTitle>ที่ตั้งชุมชน</SectionTitle>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
+                <LocationOnRoundedIcon sx={{ color: "#D8BC82", fontSize: 20 }} />
+                <Typography sx={{ fontSize: "0.85rem", color: "#4B5563" }}>{community.address}</Typography>
+              </Box>
+            </Box>
+          )}
+
+          {/* ปุ่มแชท — desktop (มือถือใช้ bottom bar) */}
+          <Box sx={{ display: { xs: "none", md: "block" }, mb: 2 }}>
+            <Button
+              onClick={startChat} disabled={startingChat}
+              startIcon={<ChatBubbleOutlineRoundedIcon />}
+              sx={{ bgcolor: "#FFFFFF", color: "#1B2A4A", border: "1px solid #C5A55A", borderRadius: "24px", py: 1.25, px: 3, fontWeight: 600, fontSize: "0.9rem", fontFamily: '"Kanit", sans-serif', textTransform: "none", "&:hover": { bgcolor: "rgba(197,165,90,0.08)" } }}
+            >
+              แชทกับชุมชน
+            </Button>
           </Box>
         </Box>
 
-        {/* Products Grid Section — สินค้าจริงจากร้านนี้ */}
-        <Box id="products" sx={{ mb: 4, scrollMarginTop: "140px" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-              สินค้าจากชุมชนนี้
-            </Typography>
-            <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
+        {/* ── คอลัมน์ขวา: สินค้าของชุมชนนี้ ── */}
+        <Box id="community-products" sx={{ scrollMarginTop: "80px" }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}>
+            <SectionTitle>สินค้าจากชุมชนนี้</SectionTitle>
+            {hasMore && !showAll && (
+              <Box
+                onClick={() => setShowAll(true)}
+                sx={{ cursor: "pointer", flexShrink: 0, "&:hover .laya-seeall": { color: "#C5A55A" } }}
+              >
+                <Typography className="laya-seeall" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", fontWeight: 500, color: "#1B2A4A", transition: "color 0.2s", mb: 2 }}>
+                  ดูทั้งหมด ({products.length}) ›
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           {loadingProducts ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
               <CircularProgress size={22} sx={{ color: "#C5A55A" }} />
             </Box>
           ) : products.length === 0 ? (
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic", textAlign: "center", py: 3 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic", textAlign: "center", py: 4 }}>
               ยังไม่มีสินค้าวางขายจากร้านนี้
             </Typography>
           ) : (
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
-              {products.map((p) => (
-                <Link key={p.id} href={`/product/${p.id}`} style={{ textDecoration: "none" }}>
-                  <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "12px", border: "1px solid #E5DFD6", overflow: "hidden" }}>
-                    <Box sx={{ position: "relative", width: "100%", height: 120 }}>
-                      <Image src={p.images[0]} alt={p.name} fill style={{ objectFit: "cover" }} />
-                    </Box>
-                    <Box sx={{ p: 1.5 }}>
-                      <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A" }}>
-                        {p.name}
-                      </Typography>
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#CBA258", mt: 0.5 }}>
-                        {p.price.toLocaleString()} ฿/{p.priceUnit}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Link>
-              ))}
-            </Box>
+            <>
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: { xs: 1.5, md: 2 } }}>
+                {visibleProducts.map((p) => (
+                  <ProductCard key={p.id} p={p} />
+                ))}
+              </Box>
+              {hasMore && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5 }}>
+                  <Button
+                    onClick={() => setShowAll((s) => !s)}
+                    sx={{ borderRadius: "999px", border: "1px solid #D8CFC0", color: "#13284B", px: 3, py: 1, fontFamily: '"Kanit", sans-serif', fontWeight: 500, fontSize: "0.82rem", textTransform: "none", "&:hover": { bgcolor: "#13284B", color: "#FFFFFF", borderColor: "#13284B" } }}
+                  >
+                    {showAll ? "ย่อ" : `ดูสินค้าทั้งหมด (${products.length})`}
+                  </Button>
+                </Box>
+              )}
+            </>
           )}
         </Box>
-
-        {/* Rating summary — เฉพาะตัวเลขรวมจริง (ไม่มีระบบรีวิวรายบุคคลตอนนี้) */}
-        {community.reviewCount > 0 && (
-          <Box sx={{ mb: 4 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-                คะแนนรีวิว
-              </Typography>
-              <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
-            </Box>
-            <Box sx={{ bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6", display: "flex", alignItems: "center", gap: 2 }}>
-              <Typography sx={{ fontWeight: 700, fontSize: "2rem", color: "#1B2A4A", lineHeight: 1 }}>{community.rating.toFixed(1)}</Typography>
-              <Box>
-                <Rating value={community.rating} precision={0.1} readOnly size="small" sx={{ "& .MuiRating-iconFilled": { color: "#C5A55A" } }} />
-                <Typography sx={{ fontSize: "0.7rem", color: "#6B7280" }}>{community.reviewCount} รีวิว</Typography>
-              </Box>
-            </Box>
-          </Box>
-        )}
-
-        {/* Location — แสดงเฉพาะเมื่อร้านกรอกที่อยู่ไว้จริง */}
-        {community.address && (
-          <Box sx={{ mb: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-                ที่ตั้งชุมชน
-              </Typography>
-              <Box sx={{ width: 16, height: 2, bgcolor: "#D8BC82" }} />
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
-              <LocationOnRoundedIcon sx={{ color: "#D8BC82", fontSize: 20 }} />
-              <Typography sx={{ fontSize: "0.85rem", color: "#4B5563" }}>{community.address}</Typography>
-            </Box>
-          </Box>
-        )}
       </Box>
 
-      {/* Sticky Bottom Action Bar */}
+      {/* Bottom action bar — มือถือเท่านั้น */}
       <Box
         sx={{
           display: { md: "none" }, position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1300,
@@ -303,14 +313,16 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
           >
             แชท
           </Button>
-          <Link href={`/search?q=${encodeURIComponent(community.name)}`} style={{ textDecoration: "none", flex: 1 }}>
-            <Button
-              fullWidth
-              sx={{ bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "24px", py: 1.5, fontWeight: 600, fontSize: "0.95rem", "&:hover": { bgcolor: "#0F1A30" } }}
-            >
-              ดูสินค้าทั้งหมดจากชุมชนนี้ ›
-            </Button>
-          </Link>
+          <Button
+            onClick={() => {
+              setShowAll(true);
+              document.getElementById("community-products")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            fullWidth
+            sx={{ bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "24px", py: 1.5, fontWeight: 600, fontSize: "0.95rem", "&:hover": { bgcolor: "#0F1A30" } }}
+          >
+            ดูสินค้าทั้งหมดจากชุมชนนี้ ›
+          </Button>
         </Box>
       </Box>
     </Box>

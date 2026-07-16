@@ -16,6 +16,9 @@ function mapCommunity(row: Record<string, unknown>) {
     rating: Number(row.rating ?? 0),
     reviewCount: Number(row.review_count ?? 0),
     productCount: Number(row.product_count ?? 0),
+    // ค่าจริงจากตอนร้านสมัคร (shops.merchant_type): "weaving_community" = ชุมชนช่างทอ, "designer" = ร้านค้า/นักออกแบบ
+    // ใช้แยกสอง section บนหน้า /community (ชุมชน vs ร้านค้า) — ไม่ใช่ค่าที่เดาเอง
+    merchantType: (row.merchant_type as string) ?? "weaving_community",
   };
 }
 
@@ -24,7 +27,7 @@ router.get("/", async (_req: Request, res: Response) => {
   try {
     const rows = await query<Record<string, unknown>>(
       `SELECT
-         s.id, s.name, s.province, s.cover_image_url, s.profile_image_url, s.rating, s.review_count,
+         s.id, s.name, s.province, s.cover_image_url, s.profile_image_url, s.rating, s.review_count, s.merchant_type,
          (SELECT COUNT(*) FROM products p WHERE p.shop_id = s.id AND p.is_active = true) AS product_count,
          (SELECT images[1] FROM products p WHERE p.shop_id = s.id AND p.is_active = true AND array_length(images, 1) > 0 ORDER BY p.created_at ASC LIMIT 1) AS sample_image
        FROM shops s
@@ -44,7 +47,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     const rows = await query<Record<string, unknown>>(
       `SELECT
          s.id, s.name, s.province, s.address, s.description, s.cover_image_url, s.profile_image_url,
-         s.rating, s.review_count,
+         s.rating, s.review_count, s.merchant_type,
          (SELECT COUNT(*) FROM products p WHERE p.shop_id = s.id AND p.is_active = true) AS product_count,
          (SELECT images[1] FROM products p WHERE p.shop_id = s.id AND p.is_active = true AND array_length(images, 1) > 0 ORDER BY p.created_at ASC LIMIT 1) AS sample_image
        FROM shops s
