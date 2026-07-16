@@ -257,6 +257,16 @@ const th = {
       searchPlaceholder: "ค้นหาลายผ้า หรือจังหวัด",
       noResults: "ไม่พบลายผ้าที่ค้นหา",
       fullStoryLink: "ดูเรื่องราวเต็มในแผนที่ผ้าไทย",
+      provincePrefix: "จ.",
+      provinceWord: "จังหวัด",
+      regions: {
+        north: "ภาคเหนือ",
+        northeast: "ภาคตะวันออกเฉียงเหนือ",
+        central: "ภาคกลาง",
+        east: "ภาคตะวันออก",
+        west: "ภาคตะวันตก",
+        south: "ภาคใต้",
+      },
     },
   },
   cart: {
@@ -852,6 +862,16 @@ const en = {
       searchPlaceholder: "Search fabric patterns or provinces",
       noResults: "No matching fabric patterns found",
       fullStoryLink: "See the Full Story on the Thai Fabric Map",
+      provincePrefix: "",
+      provinceWord: "Province",
+      regions: {
+        north: "North",
+        northeast: "Northeast",
+        central: "Central",
+        east: "East",
+        west: "West",
+        south: "South",
+      },
     },
   },
   cart: {
