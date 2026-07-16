@@ -602,7 +602,7 @@
       "name": "เชิ้ต",
       "category": "top",
       "front": "/assets/garments/tops/templates/shirt-front.png",
-      "back": "/assets/garments/tops/templates/shirt-back.svg",
+      "back": "/assets/garments/tops/templates/shirt-back.png",
       "basePrice": 990
     },
     {
@@ -610,7 +610,7 @@
       "name": "เบลเซอร์",
       "category": "top",
       "front": "/assets/garments/tops/templates/blazer-front.png",
-      "back": "/assets/garments/tops/templates/blazer-back.svg",
+      "back": "/assets/garments/tops/templates/blazer-back.png",
       "basePrice": 1890
     },
     {
@@ -618,7 +618,7 @@
       "name": "แจ็คเก็ต",
       "category": "top",
       "front": "/assets/garments/tops/templates/jacket-front.png",
-      "back": "/assets/garments/tops/templates/jacket-back.svg",
+      "back": "/assets/garments/tops/templates/jacket-back.png",
       "basePrice": 1690
     },
     {
@@ -626,7 +626,7 @@
       "name": "เดรส",
       "category": "top",
       "front": "/assets/garments/tops/templates/dress-front.png",
-      "back": "/assets/garments/tops/templates/dress-back.svg",
+      "back": "/assets/garments/tops/templates/dress-back.png",
       "basePrice": 1290
     },
     {
@@ -634,7 +634,7 @@
       "name": "โปโล",
       "category": "top",
       "front": "/assets/garments/tops/templates/polo-front.png",
-      "back": "/assets/garments/tops/templates/polo-back.svg",
+      "back": "/assets/garments/tops/templates/polo-back.png",
       "basePrice": 890
     },
     {
@@ -642,7 +642,7 @@
       "name": "ครอปท็อป",
       "category": "top",
       "front": "/assets/garments/tops/templates/crop-front.png",
-      "back": "/assets/garments/tops/templates/crop-back.svg",
+      "back": "/assets/garments/tops/templates/crop-back.png",
       "basePrice": 690
     },
     {
@@ -650,15 +650,15 @@
       "name": "เวสต์ (เสื้อกั๊ก)",
       "category": "top",
       "front": "/assets/garments/tops/templates/vest-front.png",
-      "back": "/assets/garments/tops/templates/vest-back.svg",
+      "back": "/assets/garments/tops/templates/vest-back.png",
       "basePrice": 790
     },
     {
       "id": "kimono",
       "name": "กิโมโน",
       "category": "top",
-      "front": "/assets/garments/tops/templates/kimono-front.svg",
-      "back": "/assets/garments/tops/templates/kimono-back.svg",
+      "front": "/assets/garments/tops/templates/kimono-front.png",
+      "back": "/assets/garments/tops/templates/kimono-back.png",
       "basePrice": 1490
     }
   ]

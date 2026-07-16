@@ -4,17 +4,16 @@
  * ChooseShapeStep — ขั้น "เลือกเทมเพลต" ของ Flow 1 (สั่งตัดด้วยผ้าที่มีอยู่แล้ว)
  *
  * ปรับตามสเปค "LAYA Template System" (services.png): LAYA เป็นเจ้าของ Template Library มาตรฐาน
- * ลูกค้าเลือกจากเทมเพลตที่มีอยู่ (ไม่ใช่ custom ทีละชิ้นส่วนแบบเดิมอีกต่อไป) แต่ละเทมเพลตมี 2 มุมมอง
- * (หน้า/หลัง) ระบบนำผ้าที่ลูกค้าอัปโหลดไว้มา map เป็น Preview ให้ดูก่อนสั่งจริง (Preview Engine)
+ * ลูกค้าเลือกจากเทมเพลตที่มีอยู่ (ไม่ใช่ custom ทีละชิ้นส่วนแบบเดิมอีกต่อไป) แต่ละเทมเพลตมี 2 มุมมอง (หน้า/หลัง)
  *
  * Step นี้มาหลัง "เลือกร้านตัดเย็บ" (select_shop) เสมอ — แสดง template ทั้งหมดของ LAYA (ไม่ซ่อนอันไหน)
  * แต่ template ที่ร้านที่เลือกไว้ "ไม่รับตัด" จะถูก disable ไว้ (คลิกไม่ได้ + mờ + ป้ายกำกับ) แทนการซ่อน —
  * ให้ลูกค้าเห็นภาพรวม catalog ทั้งหมดของ LAYA แต่ก็รู้ทันทีว่าอันไหนสั่งกับร้านนี้ไม่ได้ (เหมือน UI ฝั่งร้านค้า)
  *
- * เทมเพลตทั้งหมดตอนนี้เป็น placeholder silhouette (auto-generated) รอ asset จริงจาก designer —
- * สลับเป็นภาพจริงได้แค่แก้ path ใน catalog.json (templateLibrary) ไม่ต้องแก้โค้ดหน้านี้เลย
- *
- * พรีวิวใช้รูปผ้าจริงที่ผู้ใช้อัปโหลดไว้เสมอ (แทนลายผ้าใน catalog) เพราะ flow นี้คือ "มีผ้าอยู่แล้ว"
+ * แสดงภาพเทมเพลตจริงแบบ mode="image" ตรงๆ (ไม่ใช่ mode="mask" ผสมลายผ้าเหมือนที่เคยตั้งใจไว้) เพราะ:
+ * 1) ตอนนี้ step นี้อยู่ก่อนขั้นอัปโหลดผ้า (upload) เสมอ — orderState.fabricImage ยังไม่มีค่าให้ผสมอยู่ดี
+ * 2) การแปลงภาพ artwork จริง (เส้น/กระดุม/ปกเสื้อ) ให้เป็น solid silhouette สำหรับทำ mask จะทำลายรายละเอียด
+ *    ของภาพจริงไปหมด เหลือแค่ blob ทึบสีเดียว ดูไม่ออกว่าเป็นภาพชุดไหน — ขัดกับจุดประสงค์ที่อยากให้เห็นภาพจริง
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -67,7 +66,6 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
   const [selectedId, setSelectedId] = useState<string | null>(orderState.shape?.id ?? null);
   const [view, setView] = useState<"front" | "back">("front");
 
-  const fabricImage: string | undefined = orderState.fabricImage;
   const shopId: string | undefined = orderState.shop?.id;
   const shopName: string | undefined = orderState.shop?.name;
 
@@ -243,7 +241,7 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
                       </Box>
                     )}
                     <Box sx={{ width: "100%", aspectRatio: "1/1.3", bgcolor: "#FBF9F5", borderRadius: "10px", p: 1.5 }}>
-                      <PartPreview asset={tpl.front} mode="mask" patternImage={available ? fabricImage ?? null : null} color={available && fabricImage ? null : "#C9B896"} />
+                      <PartPreview asset={tpl.front} mode="image" patternImage={null} color={null} />
                     </Box>
                     <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: "0.85rem" }}>{tpl.name}</Typography>
                   </Box>
@@ -282,8 +280,8 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
             width: "100%", height: 320, borderRadius: "18px", bgcolor: "#FBF9F5", border: "1px solid #EFE9DD",
             boxShadow: "0 4px 20px rgba(27,42,74,0.06)", p: 2.5, position: "relative",
           }}>
-            <PartPreview asset={view === "front" ? selected.front : selected.back} mode="mask"
-              patternImage={fabricImage ?? null} color={fabricImage ? null : "#C9B896"} />
+            <PartPreview asset={view === "front" ? selected.front : selected.back} mode="image"
+              patternImage={null} color={null} />
             <Box sx={{ position: "absolute", top: 10, left: 10, bgcolor: "rgba(27,42,74,0.85)", color: "white", px: 1.5, py: 0.4, borderRadius: "999px" }}>
               <Typography sx={{ fontFamily: FONT, fontSize: "0.7rem", fontWeight: 600 }}>{selected.name}</Typography>
             </Box>
