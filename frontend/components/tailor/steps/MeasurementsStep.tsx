@@ -23,6 +23,11 @@ export interface BodyMeasurements {
   chest: number;
   waist: number;
   hip: number;
+  // เพิ่มตามสเปค custom_design_flow.jpg — ไม่บังคับกรอก (ให้ AI/ร้านใช้ค่าประมาณถ้าไม่ระบุ)
+  shoulderWidth?: number;
+  armLength?: number;
+  garmentLength?: number;
+  notes?: string;
 }
 
 /**
@@ -195,6 +200,14 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
   const [chest, setChest] = useState(existing.chest ? String(existing.chest) : "");
   const [waist, setWaist] = useState(existing.waist ? String(existing.waist) : "");
   const [hip, setHip] = useState(existing.hip ? String(existing.hip) : "");
+  // ฟิลด์เพิ่มเติมตามสเปค custom_design_flow.jpg — ไม่บังคับกรอก ซ่อนไว้หลังปุ่ม "+ เพิ่มรายละเอียดเพิ่มเติม"
+  const [showMore, setShowMore] = useState(
+    !!(existing.shoulderWidth || existing.armLength || existing.garmentLength || existing.notes)
+  );
+  const [shoulderWidth, setShoulderWidth] = useState(existing.shoulderWidth ? String(existing.shoulderWidth) : "");
+  const [armLength, setArmLength] = useState(existing.armLength ? String(existing.armLength) : "");
+  const [garmentLength, setGarmentLength] = useState(existing.garmentLength ? String(existing.garmentLength) : "");
+  const [notes, setNotes] = useState(existing.notes ?? "");
 
   const allFilled = !!gender && [height, weight, chest, waist, hip].every((v) => Number(v) > 0);
 
@@ -209,6 +222,10 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
         chest: Number(chest),
         waist: Number(waist),
         hip: Number(hip),
+        ...(shoulderWidth ? { shoulderWidth: Number(shoulderWidth) } : {}),
+        ...(armLength ? { armLength: Number(armLength) } : {}),
+        ...(garmentLength ? { garmentLength: Number(garmentLength) } : {}),
+        ...(notes ? { notes } : {}),
       },
     });
     onNext();
@@ -312,6 +329,62 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
             InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
           />
         </Box>
+
+        {!showMore ? (
+          <Box
+            onClick={() => setShowMore(true)}
+            sx={{ cursor: 'pointer', color: GOLD, fontFamily: FONT, fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}
+          >
+            {t("tailorFlow.measurements.addDetails")}
+          </Box>
+        ) : (
+          <>
+            {/* ไหล่กว้าง / ความยาวแขน / ความยาวเสื้อ — ไม่บังคับกรอก */}
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <TextField
+                label={t("tailorFlow.measurements.shoulderWidth")}
+                type="number"
+                fullWidth
+                size="small"
+                value={shoulderWidth}
+                onChange={(e) => setShoulderWidth(e.target.value)}
+                sx={numberFieldSx}
+                InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+              />
+              <TextField
+                label={t("tailorFlow.measurements.armLength")}
+                type="number"
+                fullWidth
+                size="small"
+                value={armLength}
+                onChange={(e) => setArmLength(e.target.value)}
+                sx={numberFieldSx}
+                InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+              />
+              <TextField
+                label={t("tailorFlow.measurements.garmentLength")}
+                type="number"
+                fullWidth
+                size="small"
+                value={garmentLength}
+                onChange={(e) => setGarmentLength(e.target.value)}
+                sx={numberFieldSx}
+                InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+              />
+            </Box>
+
+            <TextField
+              placeholder={t("tailorFlow.measurements.notesPlaceholder")}
+              multiline
+              minRows={2}
+              fullWidth
+              size="small"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              sx={{ '& .MuiInputBase-input': { fontFamily: FONT, fontSize: '0.85rem' } }}
+            />
+          </>
+        )}
       </Box>
 
       <Button

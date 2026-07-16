@@ -23,20 +23,16 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const IVORY = "#FAF6F0";
 
-// ลำดับ (ต่างจาก flow_1.png ตรงตำแหน่ง "เลือกทรงที่ชอบ" — mockup วางไว้หลังเลือกโอกาสใช้งาน แต่ผู้ใช้
-// ขอให้ย้ายมาก่อนแทน เป็นการตัดสินใจของผู้ใช้เอง):
-// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → เลือกร้านตัดเย็บ → เลือกทรงที่ชอบ → เลือกโอกาสใช้งาน → ถ่ายรูปตัวเอง/ส่งขนาด →
+// ลำดับ: เลือกร้าน → เลือกทรงที่ชอบ (ย้ายมาก่อนอัปโหลดผ้า เพราะทรงขึ้นกับร้านที่เลือกไว้ ไม่ขึ้นกับผ้า
+// เลือกทรงไว้ก่อนได้เลยแม้ยังไม่มีรูปผ้า — ตอน preview จะขึ้น placeholder สีจนกว่าจะอัปโหลดผ้าจริง) →
+// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → บรีฟการใช้งาน/สไตล์/ความพอดี → สัดส่วนร่างกาย (ถ่ายรูป/กรอกสัดส่วน) →
 // ลองใส่เสมือนจริง → สรุปออเดอร์ → สำเร็จ
-// (ถ่ายรูปตัวเองต้องมาก่อนลองใส่เสมือนจริงเสมอ — ใน mockup เดิมข้อ 11 อยู่หลังข้อ 8 ซึ่งสลับกันผิด)
-//
-// เลือกร้านตัดเย็บย้ายมาก่อน "เลือกทรง" (แทนที่จะอยู่ท้าย flow) เพื่อให้ลูกค้าเลือกทรงได้เฉพาะที่ร้านนั้นรับตัดจริง —
-// ไม่งั้นลูกค้าจะเสียเวลาเลือกทรงที่ร้านที่เลือกไว้ตัดไม่ได้ (ChooseShapeStep กรอง template ตาม shop.id ที่เลือกไว้แล้ว)
 
 export type TailorStep =
-  | "upload"
-  | "ai_analysis"
   | "select_shop"
   | "choose_shape"
+  | "upload"
+  | "ai_analysis"
   | "select_occasion"
   | "measurements"
   | "virtual_try_on"
@@ -50,6 +46,8 @@ export interface TailorOrderState {
     id: string; name: string; category: string; front: string; back: string; price: number;
   };
   occasion?: string;
+  // บรีฟการใช้งาน/สไตล์/ความพอดี — เพิ่มตามสเปค custom_design_flow.jpg (เดิมมีแค่ occasion)
+  designBrief?: { style?: string; fit?: string; notes?: string };
   // เลือกวิธีลองใส่เสมือนจริง: ใช้รูปตัวเองจริง (photo) หรือกรอกสัดส่วนให้ AI สร้างแบบจำลองแทน (measurements)
   bodyInputMode?: "photo" | "measurements";
   bodyPhotos?: { front?: string; back?: string; side?: string };
@@ -60,6 +58,10 @@ export interface TailorOrderState {
     chest: number; // ซม.
     waist: number; // ซม.
     hip: number; // ซม.
+    shoulderWidth?: number; // ซม. — ตามสเปค custom_design_flow.jpg
+    armLength?: number; // ซม.
+    garmentLength?: number; // ซม.
+    notes?: string;
   };
   tryOnResults?: { front?: string; back?: string; side?: string };
   shop?: any;
@@ -67,17 +69,17 @@ export interface TailorOrderState {
 
 export default function TailorWithFabricFlow() {
   const { t } = useLanguage();
-  const [currentStep, setCurrentStep] = useState<TailorStep>("upload");
+  const [currentStep, setCurrentStep] = useState<TailorStep>("select_shop");
   const [orderState, setOrderState] = useState<TailorOrderState>({});
 
   const goNext = (step: TailorStep) => setCurrentStep(step);
 
   const handleBack = () => {
     switch (currentStep) {
-      case "ai_analysis": goNext("upload"); break;
-      case "select_shop": goNext("ai_analysis"); break;
       case "choose_shape": goNext("select_shop"); break;
-      case "select_occasion": goNext("choose_shape"); break;
+      case "upload": goNext("choose_shape"); break;
+      case "ai_analysis": goNext("upload"); break;
+      case "select_occasion": goNext("ai_analysis"); break;
       case "measurements": goNext("select_occasion"); break;
       case "virtual_try_on": goNext("measurements"); break;
       case "order_summary": goNext("virtual_try_on"); break;
@@ -87,9 +89,9 @@ export default function TailorWithFabricFlow() {
 
   const getHeaderTitle = () => {
     switch (currentStep) {
+      case "select_shop": return t("tailorFlow.headerTitles.selectShop");
       case "upload": return t("tailorFlow.headerTitles.upload");
       case "ai_analysis": return t("tailorFlow.headerTitles.aiAnalysis");
-      case "select_shop": return t("tailorFlow.headerTitles.selectShop");
       case "choose_shape": return t("tailorFlow.headerTitles.chooseShape");
       case "select_occasion": return t("tailorFlow.headerTitles.selectOccasion");
       case "measurements": return t("tailorFlow.headerTitles.measurements");
@@ -109,7 +111,7 @@ export default function TailorWithFabricFlow() {
           bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #EFE9DD",
         }}>
           <Box sx={{ display: "flex", alignItems: "center", maxWidth: 960, width: "100%", mx: "auto" }}>
-            {currentStep === "upload" ? (
+            {currentStep === "select_shop" ? (
               <Link href="/services/tailor">
                 <IconButton sx={{ color: NAVY }}>
                   <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18 }} />
@@ -132,17 +134,17 @@ export default function TailorWithFabricFlow() {
         {currentStep !== "success" && <TailorStepper currentStep={currentStep} />}
 
         <AnimatePresence mode="wait">
-          {currentStep === "upload" && (
-            <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
-          )}
-          {currentStep === "ai_analysis" && (
-            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_shop")} />
-          )}
           {currentStep === "select_shop" && (
             <SelectTailorShopStep key="select_shop" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("choose_shape")} />
           )}
           {currentStep === "choose_shape" && (
-            <ChooseShapeStep key="choose_shape" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
+            <ChooseShapeStep key="choose_shape" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("upload")} />
+          )}
+          {currentStep === "upload" && (
+            <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
+          )}
+          {currentStep === "ai_analysis" && (
+            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
           )}
           {currentStep === "select_occasion" && (
             <SelectOccasionStep key="select_occasion" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("measurements")} />

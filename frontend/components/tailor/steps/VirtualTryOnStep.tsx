@@ -95,6 +95,8 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
           perspective: p,
           analysisResult: orderState.analysisResult,
           occasion: orderState.occasion,
+          // ทรง/เทมเพลตที่เลือกไว้ (ChooseShapeStep) — ให้ AI ใส่ทรงนี้จริงๆ แทนคำว่า "outfit" กว้างๆ เดิม
+          shape: orderState.shape ? { id: orderState.shape.id, name: orderState.shape.name } : undefined,
         }),
       });
       const json = await res.json();

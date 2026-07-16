@@ -58,23 +58,46 @@ function describeBodyBuild(m: BodyMeasurements): string {
     + `with a chest measurement of ${m.chest}cm, waist ${m.waist}cm, and hip ${m.hip}cm`;
 }
 
+// แปล template id (LAYA Template Library — backend/_seed_templates.js) เป็นคำอธิบายทรงเสื้อภาษาอังกฤษ
+// ให้ AI เข้าใจชัดเจนว่าต้องตัดเย็บเป็นทรงไหน แทนคำกว้างๆ ว่า "outfit" เดิม — ใช้ชื่อไทย (shape.name) เป็น fallback
+// เผื่อมี template ใหม่ที่ยังไม่ได้เพิ่มในนี้
+const GARMENT_SHAPE_DESC: Record<string, string> = {
+  shirt: "a tailored button-up shirt",
+  blazer: "a tailored blazer jacket",
+  jacket: "a tailored jacket",
+  dress: "a fitted dress",
+  polo: "a polo shirt",
+  crop: "a cropped top",
+  vest: "a fitted vest (waistcoat)",
+  kimono: "a kimono-style outer layer",
+};
+
+function describeGarmentShape(shape?: { id?: string; name?: string }): string {
+  if (!shape) return "outfit";
+  return (shape.id && GARMENT_SHAPE_DESC[shape.id]) || `a ${shape.name ?? "tailored"} garment`;
+}
+
 /**
  * POST /api/tryon/generate
- * body: { bodyPhotoUrl?, bodyMeasurements?, fabricImageUrl?, perspective, analysisResult?, occasion? }
+ * body: { bodyPhotoUrl?, bodyMeasurements?, fabricImageUrl?, perspective, analysisResult?, occasion?, shape? }
  * ให้ AI (kie.ai gpt4o-image, image-to-image) ใส่ชุดจากผ้าอ้างอิงลงบนคนตามมุมที่ระบุ — รับได้ 2 ทาง:
  *  - bodyPhotoUrl: ใช้รูปตัวเองจริงของผู้ใช้เป็นต้นแบบ (คงหน้าตา/สัดส่วนเดิมไว้เป๊ะ)
  *  - bodyMeasurements: ไม่มีรูปจริง — ให้ AI สร้างแบบจำลองใหม่ตามสัดส่วนที่ระบุแทน (ไม่ใช่ตัวผู้ใช้จริง)
  * ต้องมีอย่างใดอย่างหนึ่งเสมอ
+ *
+ * shape: { id, name } ของเทมเพลตที่เลือกไว้ใน ChooseShapeStep — ใช้ระบุทรงเสื้อผ้าจริงในพรอมต์
+ * (เดิมพรอมต์เขียนแค่ "outfit" กว้างๆ ไม่สนใจว่าลูกค้าเลือกทรงไหนไว้ — ทำให้ผลลัพธ์ไม่ตรงกับทรงที่เลือก)
  */
 router.post("/generate", async (req: Request, res: Response) => {
   try {
-    const { bodyPhotoUrl, bodyMeasurements, fabricImageUrl, perspective, analysisResult, occasion } = req.body as {
+    const { bodyPhotoUrl, bodyMeasurements, fabricImageUrl, perspective, analysisResult, occasion, shape } = req.body as {
       bodyPhotoUrl?: string;
       bodyMeasurements?: BodyMeasurements;
       fabricImageUrl?: string;
       perspective?: Perspective;
       analysisResult?: { type?: string; technique?: string; pattern?: string; tone?: string };
       occasion?: string;
+      shape?: { id?: string; name?: string };
     };
 
     if (!bodyPhotoUrl && !bodyMeasurements) {
@@ -90,6 +113,8 @@ router.post("/generate", async (req: Request, res: Response) => {
       ? `${analysisResult.type ?? "ผ้าไทย"} ลาย${analysisResult.pattern ?? "ทอมือ"} โทนสี${analysisResult.tone ?? ""} เทคนิค${analysisResult.technique ?? ""}`.trim()
       : "the Thai fabric shown in the reference image";
 
+    const garmentDesc = describeGarmentShape(shape);
+
     const subjectInstruction = bodyPhotoUrl
       ? "Using the first reference image as the exact person — preserve their face, hair, skin tone, and body proportions exactly, do not change their identity —"
       : `Generate ${describeBodyBuild(bodyMeasurements!)} as a photorealistic fashion model (not a real specific person, a newly generated model matching these proportions) —`;
@@ -97,7 +122,7 @@ router.post("/generate", async (req: Request, res: Response) => {
     const prompt = [
       subjectInstruction,
       fabricImageUrl ? `and the ${bodyPhotoUrl ? "second" : "first"} reference image as the fabric texture and color reference,` : "",
-      `generate a photorealistic full-body fashion photograph of this person wearing an elegant tailored Thai-style outfit made from ${fabricDesc}`,
+      `generate a photorealistic full-body fashion photograph of this person wearing ${garmentDesc}, tailored Thai-style, made from ${fabricDesc}`,
       occasion ? `, appropriate for the occasion: ${occasion}` : "",
       `. Camera angle: ${PERSPECTIVE_DESC[perspective]}. Studio lighting, professional fashion photography, plain neutral background, natural standing pose.`,
     ].filter(Boolean).join(" ");

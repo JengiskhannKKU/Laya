@@ -45,11 +45,25 @@ const EMPTY_CATALOG: Catalog = {
   templateLibrary: [],
 };
 
+// จัดกลุ่มเทมเพลตเป็นแท็บหมวดหมู่ (ทั้งหมด/เดรส/เสื้อ/สูท) ตามสเปค custom_design_flow.jpg —
+// จับกลุ่มฝั่ง frontend เท่านั้นจาก template id ไม่แตะ field "category" จริงใน DB (top/bottom/skirt)
+// เพราะ field นั้นหมายถึง "ตำแหน่งชิ้นส่วนร่างกาย" ใช้ที่อื่นในระบบอยู่แล้ว (design-clothes builder) คนละความหมายกัน
+type GarmentGroup = "dress" | "shirt" | "suit";
+const GARMENT_GROUP: Record<string, GarmentGroup> = {
+  dress: "dress",
+  shirt: "shirt", polo: "shirt", crop: "shirt", kimono: "shirt",
+  blazer: "suit", vest: "suit", jacket: "suit",
+};
+function garmentGroupOf(id: string): GarmentGroup {
+  return GARMENT_GROUP[id] ?? "shirt";
+}
+
 export default function ChooseShapeStep({ orderState, setOrderState, onNext }: any) {
   const { t } = useLanguage();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [availableIds, setAvailableIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<GarmentGroup | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(orderState.shape?.id ?? null);
   const [view, setView] = useState<"front" | "back">("front");
 
@@ -111,10 +125,18 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
   }
 
   const allTemplates = catalog.templateLibrary ?? [];
-  const filteredTemplates = allTemplates.filter((t) =>
-    t.name.toLowerCase().includes(search.trim().toLowerCase())
+  const filteredTemplates = allTemplates.filter((tpl) =>
+    tpl.name.toLowerCase().includes(search.trim().toLowerCase()) &&
+    (categoryFilter === "all" || garmentGroupOf(tpl.id) === categoryFilter)
   );
   const selected = allTemplates.find((t) => t.id === selectedId) ?? null;
+
+  const CATEGORY_TABS: { key: GarmentGroup | "all"; label: string }[] = [
+    { key: "all", label: t("tailorFlow.chooseShape.categoryAll") },
+    { key: "dress", label: t("tailorFlow.chooseShape.categoryDress") },
+    { key: "shirt", label: t("tailorFlow.chooseShape.categoryShirt") },
+    { key: "suit", label: t("tailorFlow.chooseShape.categorySuit") },
+  ];
 
   const handleSelectTemplate = (t: TemplateLibraryItem) => {
     if (!availableIds.has(t.id)) return; // ร้านนี้ไม่รับตัดทรงนี้ — คลิกไม่ได้
@@ -163,6 +185,27 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
               placeholder={t("tailorFlow.chooseShape.searchPlaceholder")}
               sx={{ flex: 1, fontFamily: FONT, fontSize: "0.85rem", color: NAVY }}
             />
+          </Box>
+
+          {/* แท็บหมวดหมู่ (ทั้งหมด/เดรส/เสื้อ/สูท) */}
+          <Box sx={{ display: "flex", gap: 0.75, overflowX: "auto", pb: 0.5, "&::-webkit-scrollbar": { display: "none" } }}>
+            {CATEGORY_TABS.map((tab) => {
+              const active = categoryFilter === tab.key;
+              return (
+                <Box
+                  key={tab.key}
+                  onClick={() => setCategoryFilter(tab.key)}
+                  sx={{
+                    px: 1.6, py: 0.7, borderRadius: "999px", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+                    bgcolor: active ? NAVY : "#FFFFFF", color: active ? "#FFFFFF" : NAVY,
+                    border: active ? "none" : "1px solid #EFE9DD",
+                    fontFamily: FONT, fontSize: "0.78rem", fontWeight: 600, transition: "all 0.2s",
+                  }}
+                >
+                  {tab.label}
+                </Box>
+              );
+            })}
           </Box>
 
           {filteredTemplates.length === 0 ? (

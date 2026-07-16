@@ -33,6 +33,8 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
   const shape = orderState.shape;
   const total = shape?.price ?? 990;
   const unspecified = t("tailorFlow.orderSummary.unspecified");
+  const brief = orderState.designBrief;
+  const measurementNotes = orderState.bodyMeasurements?.notes;
 
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
@@ -57,6 +59,10 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
           <Row label={t("tailorFlow.orderSummary.shopLabel")} value={orderState.shop?.name || unspecified} />
           <Row label={t("tailorFlow.orderSummary.template")} value={shape?.name || unspecified} />
           <Row label={t("tailorFlow.orderSummary.occasion")} value={orderState.occasion || unspecified} />
+          <Row label={t("tailorFlow.orderSummary.style")} value={brief?.style || unspecified} />
+          <Row label={t("tailorFlow.orderSummary.fit")} value={brief?.fit || unspecified} />
+          {brief?.notes && <Row label={t("tailorFlow.orderSummary.briefNotes")} value={brief.notes} />}
+          {measurementNotes && <Row label={t("tailorFlow.orderSummary.measurementNotes")} value={measurementNotes} />}
         </Box>
       </SectionCard>
 
