@@ -24,7 +24,9 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
   const fullBleed = isMobile && pathname !== "/";
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF6F0", overflowX: "hidden" }}>
+    // overflowX ต้องเป็น clip ไม่ใช่ hidden — hidden ทำให้ ancestor กลายเป็น scroll container
+    // แล้ว position:sticky ของ TopNav ใช้ไม่ได้ (แถบไม่ติดขอบบนตอน scroll)
+    <Box sx={{ minHeight: "100vh", bgcolor: "#FAF6F0", overflowX: "clip" }}>
       {/* Top Nav — always visible */}
       <AppTopNav />
       {/* Centered content container */}

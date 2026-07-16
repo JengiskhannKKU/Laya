@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 import HeroSearch from "@/components/home/HeroSearch";
-import BannerCarousel from "@/components/home/BannerCarousel";
-import MissionSection from "@/components/home/MissionSection";
-import CategorySection from "@/components/home/CategorySection";
+import FloatingSearch from "@/components/home/FloatingSearch";
 import RecommendedSection from "@/components/home/RecommendedSection";
 import EditorialSection from "@/components/home/EditorialSection";
 import CommunitiesSection from "@/components/home/CommunitiesSection";
-import InspirationSection from "@/components/home/InspirationSection";
 
 // หมายเหตุ: ตัด NewArrivalsSection + ExploreSection ออกจากหน้าแรก (ธีม declutter)
 // ทั้งสองซ้ำซ้อนกับสิ่งที่มีอยู่แล้ว: NewArrivals โชว์กริดสินค้าเดิมซ้ำกับ Recommended,
 // Explore เป็น mini-browse เต็มรูปแบบที่ซ้ำกับหน้า /search และ /category — ไฟล์ยังอยู่เผื่อใช้ที่อื่น
+//
+// BannerCarousel ไม่ได้หายไป — ถูกรวมเข้าไปเป็นภาพ cinematic ฝั่งขวาของ HeroSearch
+// (redesign แบบ split hero) เนื้อหา banner จาก backend ยังแสดงครบผ่าน overlay + dots
 
 // title/description เจาะจงหน้าแรก (เดิมไม่มี metadata export เลย ใช้ fallback ทั่วไปจาก layout.tsx)
 // คง alternates.languages ของเดิมจาก layout.tsx ไว้ (createPageMetadata ไม่ได้ตั้งฟิลด์นี้ ถ้าไม่ระบุซ้ำจะหายไปตอน merge)
@@ -32,14 +32,14 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <MobileLayout>
+      {/* ลำดับตาม mockup: hero (ภาพชนขอบขวา) → ค้นหาลอย → Curated For You →
+          Story + Royal Quote (การ์ดคู่) → ชุมชน → แรงบันดาลใจ
+          หมายเหตุ: TrustBar ถอดออกตาม mockup ล่าสุด, คำคมพระราชปณิธานย้ายไปอยู่ใน EditorialSection */}
       <HeroSearch />
-      <BannerCarousel />
-   
+      <FloatingSearch />
       <RecommendedSection />
       <EditorialSection />
       <CommunitiesSection />
-      <MissionSection />
-      <InspirationSection />
     </MobileLayout>
   );
 }

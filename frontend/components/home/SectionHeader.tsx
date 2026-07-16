@@ -6,11 +6,15 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface SectionHeaderProps {
+  /** แสดงเฉพาะ variant="editorial" — ป้ายทองตัวพิมพ์ใหญ่เหนือหัวข้อ */
   eyebrow?: string;
   title: string;
   subtitle?: string;
   href?: string;
   actionLabel?: string;
+  /** "editorial" = eyebrow ทอง + หัวข้อ serif ใหญ่ (mockup หน้าแรกล่าสุด) —
+   * default คงสไตล์เดิม (uppercase tracking) ไว้ให้ผู้ใช้ component นี้หน้าอื่นไม่กระทบ */
+  variant?: "default" | "editorial";
 }
 
 export default function SectionHeader({
@@ -19,9 +23,11 @@ export default function SectionHeader({
   subtitle,
   href,
   actionLabel,
+  variant = "default",
 }: SectionHeaderProps) {
   const { t } = useLanguage();
   const resolvedActionLabel = actionLabel ?? t("common.seeAll");
+  const isEditorial = variant === "editorial";
   return (
     <Box
       sx={{
@@ -33,30 +39,45 @@ export default function SectionHeader({
       }}
     >
       <Box sx={{ minWidth: 0 }}>
-        {eyebrow && (
+        {isEditorial && eyebrow && (
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
-              fontSize: "0.6rem",
-              letterSpacing: "0.22em",
+              fontSize: "0.66rem",
+              letterSpacing: "0.3em",
               textTransform: "uppercase",
               color: "#C5A55A",
-              mb: 0.75,
+              lineHeight: 1.4,
+              mb: 0.5,
             }}
           >
             {eyebrow}
           </Typography>
         )}
+        {/* editorial: หัวข้อ serif navy ใหญ่ตาม mockup / default: uppercase tracking เดิม */}
         <Typography
-          sx={{
-            fontFamily: '"Cormorant Garamond", "Georgia", serif',
-            fontStyle: "italic",
-            fontWeight: 600,
-            fontSize: { xs: "1.55rem", md: "2.05rem" },
-            color: "#1B2A4A",
-            lineHeight: 1.2,
-          }}
+          component="h2"
+          sx={
+            isEditorial
+              ? {
+                  fontFamily:
+                    'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif',
+                  fontWeight: 700,
+                  fontSize: { xs: "1.45rem", md: "1.8rem" },
+                  color: "#13284B",
+                  lineHeight: 1.2,
+                }
+              : {
+                  fontFamily: '"Kanit", sans-serif',
+                  fontWeight: 600,
+                  fontSize: { xs: "0.82rem", md: "0.95rem" },
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  color: "#13284B",
+                  lineHeight: 1.4,
+                }
+          }
         >
           {title}
         </Typography>
@@ -65,8 +86,8 @@ export default function SectionHeader({
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 300,
-              fontSize: { xs: "0.78rem", md: "0.9rem" },
-              color: "#7A7468",
+              fontSize: { xs: "0.78rem", md: isEditorial ? "0.85rem" : "0.9rem" },
+              color: isEditorial ? "#A89F94" : "#7A7468",
               mt: 0.5,
             }}
           >

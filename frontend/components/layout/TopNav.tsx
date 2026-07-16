@@ -22,10 +22,6 @@ import { useChat } from "@/lib/chat-context";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const NAV_BG = "#1B2A4A";
-const NAV_ICON = "rgba(255,255,255,0.85)";
-const NAV_ICON_HOVER = "rgba(255,255,255,0.12)";
-const NAV_LINK = "rgba(255,255,255,0.65)";
-const NAV_LINK_ACTIVE = "#FFFFFF";
 
 export default function AppTopNav() {
   const pathname = usePathname();
@@ -34,16 +30,36 @@ export default function AppTopNav() {
   const theme = useTheme();
   const isMobileMQ = useMediaQuery(theme.breakpoints.down("md"));
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const cartItems = useCartStore((s) => s.items);
   const { unreadCount } = useNotifications();
   const { unreadCount: unreadChatCount } = useChat();
   const { locale, toggleLocale, t } = useLanguage();
+
+  // หน้าแรกใช้ nav แบบ light editorial: โปร่งใสตอนอยู่บนสุด → glass ขาวเมื่อ scroll
+  // หน้าอื่นใช้ navy: ทึบตอนอยู่บนสุด → glass navy เมื่อ scroll (glassmorphism ทุกหน้า)
+  const light = pathname === "/";
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // ชุดสีตาม variant — light (หน้าแรก) ตัวอักษร navy บนพื้นครีม/ขาว, navy (หน้าอื่น) ตามเดิม
+  const NAV_ICON = light ? "#13284B" : "rgba(255,255,255,0.85)";
+  const NAV_ICON_HOVER = light ? "rgba(19,40,75,0.07)" : "rgba(255,255,255,0.12)";
+  const NAV_LINK = light ? "rgba(19,40,75,0.6)" : "rgba(255,255,255,0.65)";
+  const NAV_LINK_ACTIVE = light ? "#13284B" : "#FFFFFF";
+  const NAV_LINK_HOVER = light ? "#13284B" : "#FFFFFF";
 
   const navLinks = [
     { label: t("nav.home"), path: "/" },
     { label: t("nav.explore"), path: "/search" },
     { label: t("nav.categories"), path: "/category" },
     { label: t("nav.community"), path: "/community" },
+    { label: t("nav.stories"), path: "/community/heritage" },
     { label: t("nav.services"), path: "/services" },
   ];
 
@@ -71,11 +87,29 @@ export default function AppTopNav() {
           position: "sticky",
           top: 0,
           zIndex: 1100,
-          bgcolor: NAV_BG,
-          boxShadow: "0 1px 0 rgba(255,255,255,0.06)",
-          height: 68,
+          // Glassmorphism: พื้นหลังโปร่งแสง + blur เมื่อ scroll — ที่บนสุดคงหน้าตาเดิม
+          // (home โปร่งใส, หน้าอื่น navy ทึบ) เพื่อไม่เปลี่ยน layout/ความสูงใดๆ
+          bgcolor: light
+            ? scrolled
+              ? "rgba(255,255,255,0.72)"
+              : "transparent"
+            : scrolled
+              ? "rgba(27,42,74,0.78)"
+              : NAV_BG,
+          backdropFilter: scrolled ? "blur(16px) saturate(160%)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(16px) saturate(160%)" : "none",
+          boxShadow: light
+            ? scrolled
+              ? "0 1px 0 rgba(19,40,75,0.06), 0 8px 28px rgba(19,40,75,0.08)"
+              : "none"
+            : scrolled
+              ? "0 1px 0 rgba(255,255,255,0.08), 0 8px 28px rgba(11,20,40,0.32)"
+              : "0 1px 0 rgba(255,255,255,0.06)",
+          height: 72,
           display: "flex",
           alignItems: "center",
+          transition:
+            "background-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease",
         }}
       >
         <Box
@@ -102,7 +136,7 @@ export default function AppTopNav() {
               justifyContent: "center",
             }}
           >
-            <LayaLogo variant="white" height={28} priority />
+            <LayaLogo variant={light ? "navy" : "white"} height={28} priority />
             <Typography
               sx={{
                 fontFamily: '"Cormorant Garamond", "Georgia", serif',
@@ -140,7 +174,7 @@ export default function AppTopNav() {
                       cursor: "pointer",
                       pb: "4px",
                       "&:hover .laya-nav-underline": { width: "100%" },
-                      "&:hover .laya-nav-text": { color: "#FFFFFF" },
+                      "&:hover .laya-nav-text": { color: NAV_LINK_HOVER },
                     }}
                   >
                     <Typography
@@ -323,14 +357,19 @@ export default function AppTopNav() {
                 ml: { xs: 0.25, md: 0.75 },
                 borderRadius: "999px",
                 color: NAV_ICON,
-                border: "1px solid rgba(255,255,255,0.2)",
+                border: light
+                  ? "1px solid rgba(19,40,75,0.22)"
+                  : "1px solid rgba(255,255,255,0.2)",
                 fontFamily: '"Kanit", sans-serif',
                 fontWeight: 600,
                 fontSize: "0.68rem",
                 letterSpacing: "0.02em",
                 px: 0,
                 textTransform: "none",
-                "&:hover": { bgcolor: NAV_ICON_HOVER, borderColor: "rgba(255,255,255,0.35)" },
+                "&:hover": {
+                  bgcolor: NAV_ICON_HOVER,
+                  borderColor: light ? "rgba(19,40,75,0.4)" : "rgba(255,255,255,0.35)",
+                },
               }}
             >
               {locale === "th" ? "EN" : "TH"}
@@ -359,9 +398,9 @@ export default function AppTopNav() {
                 size="small"
                 onClick={openAuthModal}
                 sx={{
-                  bgcolor: "transparent",
-                  color: "#C5A55A",
-                  border: "1px solid rgba(197,165,90,0.5)",
+                  bgcolor: light ? "#13284B" : "transparent",
+                  color: light ? "#FFFFFF" : "#C5A55A",
+                  border: light ? "1px solid #13284B" : "1px solid rgba(197,165,90,0.5)",
                   borderRadius: "999px",
                   fontSize: "0.75rem",
                   fontFamily: '"Kanit", sans-serif',
@@ -370,10 +409,12 @@ export default function AppTopNav() {
                   py: 0.5,
                   textTransform: "none",
                   whiteSpace: "nowrap",
-                  "&:hover": {
-                    bgcolor: "rgba(197,165,90,0.12)",
-                    borderColor: "#C5A55A",
-                  },
+                  "&:hover": light
+                    ? { bgcolor: "#0e1f3c", borderColor: "#0e1f3c" }
+                    : {
+                        bgcolor: "rgba(197,165,90,0.12)",
+                        borderColor: "#C5A55A",
+                      },
                 }}
               >
                 {t("nav.login")}

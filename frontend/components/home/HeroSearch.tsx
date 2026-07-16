@@ -1,31 +1,80 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import InputBase from "@mui/material/InputBase";
 import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { fetchBanners, type Banner } from "@/lib/banners";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
+/**
+ * Hero สองเวอร์ชันตามขนาดจอ (สลับด้วย CSS ล้วน — ไม่มี hydration mismatch):
+ * - Desktop (md+): split 45/55 ตาม mockup — ข้อความ serif ซ้ายบนพื้นครีม ภาพชนขอบขวาจอ
+ * - Mobile (xs–sm): immersive เต็มความกว้าง ภาพ cinematic สูง ~68vh พร้อม scrim navy
+ *   ข้อความซ้อนบนภาพด้านล่าง สไตล์แอป luxury — FloatingSearch จะลอยคาบขอบล่างต่อ
+ * ภาพหมุนวนจาก backend banners ทั้งสองเวอร์ชัน
+ */
 export default function HeroSearch() {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
   const { t } = useLanguage();
-  const popularTags = t<string[]>("home.hero.tags");
 
-  const handleSearch = () => {
-    if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
-  };
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [current, setCurrent] = useState(0);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
-  };
+  useEffect(() => {
+    fetchBanners().then(setBanners).catch(() => setBanners([]));
+  }, []);
+
+  const nextSlide = useCallback(() => {
+    setCurrent((prev) => (banners.length ? (prev + 1) % banners.length : 0));
+  }, [banners.length]);
+
+  useEffect(() => {
+    if (banners.length < 2) return;
+    const timer = setInterval(nextSlide, 6000);
+    return () => clearInterval(timer);
+  }, [nextSlide, banners.length]);
+
+  const activeBanner = banners[current];
+
+  /** ชั้นภาพ banner — ภาพนิ่งคมๆ ไม่มีอนิเมชันซูม/เฟด สลับสไลด์ทันทีตามจุดที่เลือก */
+  const bannerLayers = (
+    <Image
+      src={activeBanner ? activeBanner.image : "/img_hero.png"}
+      alt={activeBanner ? activeBanner.title : "Thai silk heritage"}
+      fill
+      style={{ objectFit: "cover" }}
+      priority
+      sizes="(max-width: 900px) 100vw, 55vw"
+    />
+  );
+
+  const renderDots = (dark: boolean) =>
+    banners.length > 1 && (
+      <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-start" }}>
+        {banners.map((_, index) => (
+          <Box
+            key={index}
+            onClick={() => setCurrent(index)}
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              cursor: "pointer",
+              border: dark
+                ? "1px solid rgba(255,255,255,0.7)"
+                : "1px solid #C9A86A",
+              bgcolor: index === current ? "#C9A86A" : "transparent",
+              borderColor: index === current ? "#C9A86A" : undefined,
+              transition: "background-color 0.3s ease, border-color 0.3s ease",
+            }}
+          />
+        ))}
+      </Box>
+    );
 
   return (
     <Box
@@ -34,176 +83,210 @@ export default function HeroSearch() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       sx={{
-        pt: { xs: 5, md: 9 },
-        pb: { xs: 4, md: 7 },
-        textAlign: "center",
+        // เต็มความกว้าง viewport ทั้งสองเวอร์ชัน
+        mx: "calc(50% - 50vw)",
       }}
     >
-      {/* Eyebrow */}
-      <Typography
-        sx={{
-          fontFamily: '"Kanit", sans-serif',
-          fontWeight: 600,
-          fontSize: "0.65rem",
-          letterSpacing: "0.28em",
-          color: "#C5A55A",
-          textTransform: "uppercase",
-          mb: 1.5,
-        }}
-      >
-        {t("home.hero.eyebrow")}
-      </Typography>
-
-      {/* Main heading */}
-      <Typography
-        sx={{
-          fontFamily: '"Kanit", sans-serif',
-          fontWeight: 700,
-          fontSize: { xs: "2.1rem", md: "3.4rem" },
-          color: "#1B2A4A",
-          lineHeight: 1.12,
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {t("home.hero.title")}
-      </Typography>
-
-      {/* Editorial accent line */}
-      <Typography
-        sx={{
-          fontFamily: '"Cormorant Garamond", "Georgia", serif',
-          fontStyle: "italic",
-          fontWeight: 500,
-          fontSize: { xs: "1.15rem", md: "1.7rem" },
-          color: "#B8954A",
-          mt: 0.5,
-          letterSpacing: "0.01em",
-        }}
-      >
-        {t("home.hero.accent")}
-      </Typography>
-
-      {/* Sub heading */}
-      <Typography
-        sx={{
-          fontFamily: '"Kanit", sans-serif',
-          fontWeight: 300,
-          fontSize: { xs: "0.9rem", md: "1.05rem" },
-          color: "#7A7468",
-          mt: 2,
-          maxWidth: 520,
-          mx: "auto",
-        }}
-      >
-        {t("home.hero.subtitle")}
-      </Typography>
-
-      {/* Search box */}
+      {/* ═════ Mobile: immersive image hero + overlay text ═════ */}
       <Box
         sx={{
-          maxWidth: 620,
-          mx: "auto",
-          mt: { xs: 3.5, md: 4.5 },
-          display: "flex",
-          alignItems: "center",
-          bgcolor: "#FFFFFF",
-          borderRadius: "999px",
-          border: "1px solid #E5DFD6",
-          pl: 3,
-          pr: 1,
-          py: 1,
-          gap: 1.5,
-          boxShadow: "0 10px 30px rgba(27,42,74,0.08)",
-          transition: "border-color 0.25s ease, box-shadow 0.25s ease",
-          "&:focus-within": {
-            borderColor: "#C5A55A",
-            boxShadow: "0 12px 34px rgba(197,165,90,0.18)",
-          },
+          display: { xs: "block", md: "none" },
+          position: "relative",
+          height: "min(68vh, 560px)",
+          minHeight: 430,
+          overflow: "hidden",
         }}
       >
-        <SearchRoundedIcon sx={{ color: "#A89F94", fontSize: 24, flexShrink: 0 }} />
-        <InputBase
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={t("home.hero.searchPlaceholder")}
+        {bannerLayers}
+
+        {/* Scrim navy — ให้ตัวอักษรขาวอ่านชัดบนภาพ */}
+        <Box
+          aria-hidden
           sx={{
-            flex: 1,
-            fontFamily: '"Kanit", sans-serif',
-            fontSize: "1rem",
-            color: "#1B2A4A",
-            "& input::placeholder": { color: "#A89F94", opacity: 1 },
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(15,26,48,0.85) 0%, rgba(15,26,48,0.42) 42%, rgba(15,26,48,0.08) 68%, transparent 100%)",
           }}
         />
-        <Button
-          onClick={handleSearch}
-          sx={{
-            bgcolor: "#1B2A4A",
-            color: "#FFFFFF",
-            fontFamily: '"Kanit", sans-serif',
-            fontWeight: 500,
-            fontSize: "0.9rem",
-            height: 46,
-            borderRadius: "999px",
-            px: 3.5,
-            textTransform: "none",
-            flexShrink: 0,
-            boxShadow: "none",
-            "&:hover": { bgcolor: "#14213a", boxShadow: "none" },
-          }}
-        >
-          {t("home.hero.searchButton")}
-        </Button>
-      </Box>
 
-      {/* Popular tags */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          gap: 1,
-          mt: 2.5,
-        }}
-      >
-        <Typography
-          sx={{
-            fontFamily: '"Kanit", sans-serif',
-            fontSize: "0.75rem",
-            color: "#A89F94",
-            fontWeight: 400,
-            letterSpacing: "0.04em",
-          }}
-        >
-          {t("home.hero.popular")}
-        </Typography>
-        {popularTags.map((tag) => (
-          <Chip
-            key={tag}
-            label={tag}
-            onClick={() => router.push(`/search?q=${encodeURIComponent(tag)}`)}
-            variant="outlined"
-            size="small"
+        {/* Overlay content — ชิดล่างซ้าย, เว้นที่ให้ FloatingSearch ลอยคาบ */}
+        <Box sx={{ position: "absolute", left: 0, right: 0, bottom: 0, px: 3, pb: 6.5 }}>
+          <Typography
+            component="h1"
+            sx={{
+              fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif',
+              fontWeight: 700,
+              fontSize: "2.3rem",
+              color: "#FFFFFF",
+              lineHeight: 1.08,
+              textShadow: "0 2px 18px rgba(0,0,0,0.35)",
+            }}
+          >
+            {t("home.hero.title")}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Georgia", serif',
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: "1.15rem",
+              color: "#D8BC82",
+              mt: 0.75,
+            }}
+          >
+            {t("home.hero.accent")}
+          </Typography>
+
+          <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
-              fontWeight: 400,
-              fontSize: "0.75rem",
-              height: 30,
-              bgcolor: "#FFFFFF",
-              borderColor: "#E5DFD6",
-              color: "#4A5468",
-              borderRadius: "999px",
-              cursor: "pointer",
-              transition: "all 0.25s ease",
-              "&:hover": {
-                bgcolor: "#1B2A4A",
-                color: "#FFFFFF",
-                borderColor: "#1B2A4A",
-              },
+              fontWeight: 300,
+              fontSize: "0.83rem",
+              color: "rgba(255,255,255,0.85)",
+              mt: 1.25,
+              maxWidth: 340,
+              lineHeight: 1.7,
+              // จำกัด 2 บรรทัดกัน hero สูงเกินบนจอเล็ก
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
-          />
-        ))}
+          >
+            {t("home.hero.subtitle")}
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2.25 }}>
+            <Link href="/search" style={{ textDecoration: "none" }}>
+              <Button
+                endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 16 }} />}
+                sx={{
+                  bgcolor: "#FFFFFF",
+                  color: "#13284B",
+                  fontFamily: '"Kanit", sans-serif',
+                  fontWeight: 500,
+                  fontSize: "0.84rem",
+                  borderRadius: "999px",
+                  px: 2.75,
+                  py: 1,
+                  textTransform: "none",
+                  boxShadow: "0 10px 26px rgba(0,0,0,0.28)",
+                  "&:hover": { bgcolor: "#F3EDE2" },
+                }}
+              >
+                {t("home.hero.ctaPrimary")}
+              </Button>
+            </Link>
+            {renderDots(true)}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ═════ Desktop: split 45/55 — ข้อความซ้าย ภาพชนขอบขวาจอ ═════ */}
+      <Box
+        sx={{
+          display: { xs: "none", md: "grid" },
+          gridTemplateColumns: "0.9fr 1.1fr",
+          alignItems: "center",
+          gap: 6,
+        }}
+      >
+        {/* Left: copy + CTA + dots */}
+        <Box
+          sx={{
+            textAlign: "left",
+            pl: "max(calc((100vw - 1440px) / 2 + 40px), 40px)",
+            pt: 6,
+            pb: 6,
+          }}
+        >
+          <Typography
+            component="h1"
+            sx={{
+              fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif',
+              fontWeight: 700,
+              fontSize: { md: "3.4rem", lg: "4rem" },
+              color: "#13284B",
+              lineHeight: 1.05,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("home.hero.title")}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Georgia", serif',
+              fontStyle: "italic",
+              fontWeight: 500,
+              fontSize: "1.75rem",
+              color: "#B8954A",
+              mt: 1.25,
+              letterSpacing: "0.01em",
+            }}
+          >
+            {t("home.hero.accent")}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontFamily: '"Kanit", sans-serif',
+              fontWeight: 300,
+              fontSize: "0.98rem",
+              color: "#7A7468",
+              mt: 2.5,
+              maxWidth: 430,
+              lineHeight: 1.85,
+            }}
+          >
+            {t("home.hero.subtitle")}
+          </Typography>
+
+          <Box sx={{ mt: 3.5 }}>
+            <Link href="/search" style={{ textDecoration: "none" }}>
+              <Button
+                endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 17 }} />}
+                sx={{
+                  bgcolor: "#13284B",
+                  color: "#FFFFFF",
+                  fontFamily: '"Kanit", sans-serif',
+                  fontWeight: 500,
+                  fontSize: "0.88rem",
+                  borderRadius: "999px",
+                  px: 3.5,
+                  py: 1.3,
+                  textTransform: "none",
+                  boxShadow: "0 12px 28px rgba(19,40,75,0.22)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    bgcolor: "#0e1f3c",
+                    boxShadow: "0 14px 32px rgba(19,40,75,0.3)",
+                    transform: "translateY(-1px)",
+                  },
+                }}
+              >
+                {t("home.hero.ctaPrimary")}
+              </Button>
+            </Link>
+          </Box>
+
+          <Box sx={{ mt: 5 }}>{renderDots(false)}</Box>
+        </Box>
+
+        {/* Right: silk photography bleeding to the right edge — เหลี่ยมคมทุกมุม
+            สไตล์ fashion editorial spread แทนการ์ดโค้งมน */}
+        <Box
+          sx={{
+            position: "relative",
+            overflow: "hidden",
+            height: 560,
+            borderRadius: 0,
+          }}
+        >
+          {bannerLayers}
+        </Box>
       </Box>
     </Box>
   );

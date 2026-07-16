@@ -117,7 +117,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
+    /* clip ไม่ใช่ hidden — hidden ทำให้ body เป็น scroll container แล้ว position:sticky ของ header พัง */
+    overflow-x: clip;
     /* Almost-invisible handmade-paper warmth over the ivory base */
     background-color: var(--cream);
     background-image:
@@ -139,7 +140,8 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  /* clip ไม่ใช่ hidden — เหตุผลเดียวกับ body: กัน sticky header พัง */
+  overflow-x: clip;
 }
 
 /* ============================================================

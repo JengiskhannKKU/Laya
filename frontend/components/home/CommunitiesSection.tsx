@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect } from "react";
 
 import Box from "@mui/material/Box";
@@ -6,12 +6,12 @@ import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
 import { fetchCommunities, type LiveCommunity } from "@/lib/communities";
 import Image from "next/image";
-import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
-import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
+/** การ์ดชุมชนตาม mockup ล่าสุด — ภาพเต็มใบ + scrim navy ด้านล่าง
+ * ข้อความซ้อนบนภาพ: ป้ายจังหวัด (จุดทอง) / ชื่อชุมชนขาว / จำนวนผลิตภัณฑ์ */
 function CommunityCard({ community }: { community: LiveCommunity }) {
   const [imgSrc, setImgSrc] = useState(community.image || "/placeholder.webp");
   const { t } = useLanguage();
@@ -21,19 +21,18 @@ function CommunityCard({ community }: { community: LiveCommunity }) {
       <Box
         sx={{
           position: "relative",
-          minWidth: { xs: 260, md: "auto" },
-          height: { xs: 200, md: 300 },
-          borderRadius: "20px",
+          minWidth: { xs: 240, md: "auto" },
+          aspectRatio: "16 / 11",
+          borderRadius: "14px",
           overflow: "hidden",
           cursor: "pointer",
-          boxShadow: "0 4px 18px rgba(27,42,74,0.07)",
           transition:
             "transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s ease",
           "&:hover": {
-            transform: "translateY(-6px)",
-            boxShadow: "0 18px 40px rgba(27,42,74,0.16)",
+            transform: "translateY(-4px)",
+            boxShadow: "0 14px 32px rgba(27,42,74,0.18)",
           },
-          "&:hover .laya-comm-img": { transform: "scale(1.06)" },
+          "&:hover .laya-comm-img": { transform: "scale(1.05)" },
         }}
       >
         <Box
@@ -49,72 +48,79 @@ function CommunityCard({ community }: { community: LiveCommunity }) {
             alt={community.name}
             fill
             style={{ objectFit: "cover" }}
+            sizes="(max-width: 900px) 65vw, 33vw"
             onError={() => setImgSrc("/assets/province-fallback.jpg")}
           />
         </Box>
 
-        {/* Editorial scrim */}
+        {/* Scrim navy — ให้ตัวอักษรขาวอ่านชัดบนภาพ */}
         <Box
+          aria-hidden
           sx={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(15,26,48,0.82) 0%, rgba(15,26,48,0.15) 55%, transparent 100%)",
+              "linear-gradient(to top, rgba(15,26,48,0.82) 0%, rgba(15,26,48,0.32) 45%, rgba(15,26,48,0.05) 70%, transparent 100%)",
           }}
         />
 
-        <Box sx={{ position: "absolute", left: 18, right: 18, bottom: 16 }}>
+        {/* Overlay text — ชิดล่างซ้าย */}
+        <Box sx={{ position: "absolute", left: 0, right: 0, bottom: 0, px: 1.75, pb: 1.5 }}>
+          {/* ป้ายจังหวัด — จุดทอง + พื้นโปร่งเบลอ */}
           <Box
             sx={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 0.4,
+              gap: 0.5,
+              bgcolor: "rgba(255,255,255,0.16)",
+              backdropFilter: "blur(6px)",
+              px: 1,
+              py: 0.35,
+              borderRadius: "999px",
               mb: 0.75,
             }}
           >
-            <PlaceRoundedIcon sx={{ fontSize: 13, color: "#D4BA7A" }} />
+            <Box sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: "#C9A86A" }} />
             <Typography
               sx={{
                 fontFamily: '"Kanit", sans-serif',
-                fontSize: "0.65rem",
                 fontWeight: 400,
-                letterSpacing: "0.06em",
-                color: "#D4BA7A",
+                fontSize: "0.62rem",
+                letterSpacing: "0.04em",
+                color: "#FFFFFF",
+                lineHeight: 1.2,
               }}
             >
               {community.province}
             </Typography>
           </Box>
+
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
-              fontSize: { xs: "1rem", md: "1.15rem" },
+              fontSize: "0.92rem",
               color: "#FFFFFF",
-              lineHeight: 1.3,
-              textShadow: "0 2px 10px rgba(0,0,0,0.35)",
+              lineHeight: 1.35,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              textShadow: "0 1px 8px rgba(0,0,0,0.25)",
             }}
           >
             {community.name}
           </Typography>
+
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 300,
               fontSize: "0.68rem",
-              color: "rgba(255,255,255,0.8)",
-              mt: 0.4,
-              display: "flex",
-              alignItems: "center",
-              gap: 0.2,
+              color: "rgba(255,255,255,0.78)",
+              mt: 0.2,
             }}
           >
             {community.productCount} {t("home.communities.products")}
-            {community.rating > 0 && (
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.2, ml: 0.3 }}>
-                · <StarRoundedIcon sx={{ fontSize: "0.8rem" }} /> {community.rating.toFixed(1)}
-              </Box>
-            )}
           </Typography>
         </Box>
       </Box>
@@ -140,23 +146,25 @@ export default function CommunitiesSection() {
     <Box
       component={motion.div}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.45, duration: 0.5 }}
-      sx={{ py: { xs: 4, md: 7 } }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6 }}
+      sx={{ py: { xs: 4, md: 6 } }}
     >
       <SectionHeader
+        variant="editorial"
         eyebrow={t("home.communities.eyebrow")}
         title={t("home.communities.title")}
         subtitle={t("home.communities.subtitle")}
         href="/community"
       />
 
-      {/* Community Cards — horizontal scroll on mobile, 3-col grid on desktop */}
+      {/* 3 คอลัมน์ × 2 แถว (6 ใบ) บน desktop ตาม mockup — มือถือเลื่อนแนวนอน */}
       <Box
         sx={{
           display: { xs: "flex", md: "grid" },
           gridTemplateColumns: { md: "repeat(3, 1fr)" },
-          gap: { xs: 2, md: 3 },
+          gap: { xs: 2, md: 2.5 },
           overflowX: { xs: "auto", md: "visible" },
           pb: 1,
           "&::-webkit-scrollbar": { display: "none" },

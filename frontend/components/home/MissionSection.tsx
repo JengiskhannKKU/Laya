@@ -1,11 +1,19 @@
-﻿"use client";
+"use client";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
+/** ลายไทยเรขาคณิตแบบ minimal (ขนมเปียกปูน/ลายตาราง) — สีทองจางมากบนพื้น navy */
+const THAI_LATTICE = `url("data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56"><g fill="none" stroke="#C9A86A" stroke-width="0.7" opacity="0.1"><path d="M28 2L54 28L28 54L2 28Z"/><path d="M28 14L42 28L28 42L14 28Z"/></g></svg>',
+)}")`;
+
+/**
+ * Royal Vision Quote — แถบ navy เต็มความกว้างจอ (full-bleed ออกนอก container กลาง)
+ * คำคมกลางจอ อัญประกาศทอง + ลายไทยจางๆ ทำหน้าที่เป็น visual break ของหน้า
+ */
 export default function MissionSection() {
   const { t } = useLanguage();
   return (
@@ -15,98 +23,103 @@ export default function MissionSection() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      sx={{ py: { xs: 4, md: 7 } }}
+      sx={{
+        py: { xs: 4, md: 7.5 },
+        // ดันออกเต็มความกว้าง viewport — MobileLayout ครอบด้วย container กลาง 1440 + padding
+        mx: "calc(50% - 50vw)",
+      }}
     >
       <Box
         sx={{
           position: "relative",
-          minHeight: { xs: 280, md: 420 },
-          borderRadius: "28px",
           overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 20px 40px rgba(27,42,74,0.18)",
+          background: "linear-gradient(160deg, #13284B 0%, #0F1A30 100%)",
+          px: { xs: 3.5, md: 12 },
+          py: { xs: 7, md: 12 },
+          textAlign: "center",
         }}
       >
-        {/* Background Image - Impactful Heritage */}
-        <Image
-          src="/Thai.webp"
-          alt="Thai Silk Heritage"
-          fill
-          priority
-          loading="eager"
-          style={{ objectFit: "cover", filter: "brightness(0.55)" }}
-        />
-        
-        {/* Elegant Gradient Overlay */}
-        <Box 
-          sx={{ 
-            position: "absolute", 
-            inset: 0, 
-            background: "linear-gradient(135deg, rgba(27,42,74,0.95) 0%, rgba(27,42,74,0.4) 100%)",
-            zIndex: 1
-          }} 
+        {/* ลายไทยเรขาคณิต — จางมากพอเป็น texture ไม่แย่งสายตา */}
+        <Box
+          aria-hidden
+          sx={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: THAI_LATTICE,
+            backgroundSize: "56px 56px",
+            pointerEvents: "none",
+          }}
         />
 
-        {/* Content */}
-        <Box 
-          sx={{ 
-            position: "relative", 
-            zIndex: 2, 
-            px: 3, 
-            py: 4,
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 2
+        {/* Gold hairline บน-ล่างของแถบ */}
+        <Box
+          aria-hidden
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "1px",
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(201,168,106,0.5) 50%, transparent 100%)",
           }}
-        >
-          {/* Decorative Icon */}
-          <Box 
-            sx={{ 
-              width: 48, 
-              height: 48, 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center",
-              borderRadius: "50%",
-              bgcolor: "rgba(216, 188, 130, 0.15)",
-              border: "1px solid rgba(216, 188, 130, 0.3)",
-              color: "#D8BC82",
-              mb: 1
+        />
+
+        <Box sx={{ position: "relative", zIndex: 1, maxWidth: 780, mx: "auto" }}>
+          {/* Serif quotation mark ornament */}
+          <Typography
+            aria-hidden
+            sx={{
+              fontFamily: '"Cormorant Garamond", "Georgia", serif',
+              fontSize: { xs: "3.5rem", md: "4.5rem" },
+              lineHeight: 0.6,
+              color: "#C89A3D",
+              mb: { xs: 2, md: 3 },
+              userSelect: "none",
             }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          </Box>
+            &ldquo;
+          </Typography>
 
           <Typography
+            component="blockquote"
             sx={{
               fontFamily: '"Kanit", sans-serif',
-              fontWeight: 700,
-              fontSize: { xs: "1.05rem", md: "1.35rem" },
+              fontWeight: 400,
+              fontSize: { xs: "1.1rem", md: "1.6rem" },
               color: "#FFFFFF",
-              lineHeight: 1.8,
-              textShadow: "0 2px 8px rgba(0,0,0,0.4)",
-              letterSpacing: "0.2px",
-              maxWidth: "90%",
-              mx: "auto"
+              lineHeight: 2,
+              letterSpacing: "0.01em",
+              m: 0,
             }}
           >
             {t("home.mission.quote")}
           </Typography>
 
-          <Box 
-            sx={{ 
-              width: 60, 
-              height: 2, 
-              background: "linear-gradient(to right, transparent, #D8BC82, transparent)",
-              mt: 1
-            }} 
+          {/* Gold hairline */}
+          <Box
+            sx={{
+              width: 72,
+              height: "1px",
+              background:
+                "linear-gradient(to right, transparent, #C89A3D, transparent)",
+              mx: "auto",
+              mt: { xs: 3, md: 4 },
+            }}
           />
+
+          <Typography
+            sx={{
+              fontFamily: '"Cormorant Garamond", "Georgia", serif',
+              fontStyle: "italic",
+              fontSize: { xs: "0.85rem", md: "1rem" },
+              color: "rgba(212,186,122,0.75)",
+              letterSpacing: "0.14em",
+              mt: 2,
+            }}
+          >
+            LAYA — Every Pattern Tells a Story
+          </Typography>
         </Box>
       </Box>
     </Box>

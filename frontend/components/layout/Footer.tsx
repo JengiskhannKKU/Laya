@@ -13,20 +13,42 @@ import { siteUrl } from "@/lib/seo";
 const PAYMENT_LOGO_URL =
   "https://qxxygqugalqdrapgkcbu.supabase.co/storage/v1/object/public/icon_payment/76b72f88-62ea-43cc-8b81-0101ba42f81e-cover.png";
 
+/** อีเมล support ที่เผยแพร่อยู่แล้วบนหน้า privacy-policy/terms — newsletter ใช้ mailto ไปที่นี่
+ * (ยังไม่มี endpoint สมัครรับข่าวสารใน backend — ตามหลัก honest-data ไม่ทำปุ่มหลอก) */
+const SUPPORT_EMAIL = "support@laya-th.com";
+
 function buildFooterLinks(f: Dictionary["footer"]) {
   return {
-    services: {
-      label: f.services.label,
+    shop: {
+      label: f.shop.label,
       links: [
-        { label: f.services.tailorWeave, href: "/services" },
-        { label: f.services.designClothes, href: "/design-clothes" },
-        { label: f.services.aiTryOn, href: "/services" },
-        { label: f.services.aiPattern, href: "/custom" },
+        { label: f.shop.allProducts, href: "/search" },
+        { label: f.shop.categories, href: "/category" },
+        { label: f.shop.tailorWeave, href: "/services" },
+        { label: f.shop.designClothes, href: "/design-clothes" },
+        { label: f.shop.aiPattern, href: "/custom" },
       ],
     },
-    legal: {
-      label: f.legal.label,
+    communities: {
+      label: f.communitiesCol.label,
       links: [
+        { label: f.communitiesCol.weaving, href: "/community" },
+        { label: f.communitiesCol.artisanStories, href: "/community/heritage" },
+        { label: f.communitiesCol.collection, href: "/search?q=Community%20Collection" },
+      ],
+    },
+    stories: {
+      label: f.heritage.label,
+      links: [
+        { label: f.heritage.story, href: "/community/heritage" },
+        { label: f.heritage.inspiration, href: "/community/heritage" },
+      ],
+    },
+    about: {
+      label: f.about.label,
+      links: [
+        { label: f.about.aboutUs, href: "/about" },
+        { label: f.about.help, href: "/help" },
         { label: f.legal.privacyPolicy, href: "/privacy-policy" },
         { label: f.legal.terms, href: "/terms" },
       ],
@@ -55,15 +77,6 @@ const socialLinks = [
       </svg>
     ),
   },
-  // {
-  //   label: "TikTok",
-  //   href: "https://tiktok.com",
-  //   icon: (
-  //     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-  //       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.72a8.18 8.18 0 0 0 4.78 1.52V6.79a4.85 4.85 0 0 1-1.01-.1z" />
-  //     </svg>
-  //   ),
-  // },
   {
     label: "Line",
     href: "https://lin.ee/UaBTbfz",
@@ -79,16 +92,76 @@ const socialLinks = [
   },
 ];
 
+const COLUMN_LABEL_STYLE: React.CSSProperties = {
+  margin: "0 0 14px",
+  fontSize: "11px",
+  fontWeight: 600,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  color: "#C5A55A",
+  fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+};
+
+const LINK_STYLE: React.CSSProperties = {
+  fontSize: "13px",
+  color: "rgba(255,255,255,0.55)",
+  textDecoration: "none",
+  fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+  transition: "color 0.15s",
+};
+
+/** ชิปโลโก้ช่องทางชำระเงิน — ขาวมุมมนขนาดเท่ากันทุกใบ */
+const PAYMENT_CHIP_STYLE: React.CSSProperties = {
+  width: "62px",
+  height: "38px",
+  borderRadius: "8px",
+  background: "rgba(255,255,255,0.94)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
 export default function AppFooter() {
   const [hoveredSocial, setHoveredSocial] = useState<string | null>(null);
-  const { t } = useLanguage();
+  const [email, setEmail] = useState("");
+  const { t, locale, toggleLocale } = useLanguage();
   const footerDict = t<Dictionary["footer"]>("footer");
   const footerLinks = buildFooterLinks(footerDict);
+
+  // ไม่มี endpoint newsletter — เปิดอีเมลถึง support (ที่อยู่จริงที่เผยแพร่บนเว็บ) แทนการหลอกว่าสมัครสำเร็จ
+  const handleSubscribe = () => {
+    const subject = encodeURIComponent("Subscribe to LAYA newsletter");
+    const body = encodeURIComponent(`Please add me to the LAYA newsletter: ${email}`);
+    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+  };
+
+  // Community + Stories จัดกลุ่มอยู่คอลัมน์เดียวกัน (สอง section ซ้อนกัน)
+  // เพื่อเปิดที่ให้คอลัมน์ Payment — คอลัมน์เดี่ยว: Shop, About LAYA
+  const singleColumns = [footerLinks.shop, footerLinks.about];
+
+  const renderLinkGroup = (col: { label: string; links: { label: string; href: string }[] }) => (
+    <>
+      <p style={COLUMN_LABEL_STYLE}>{col.label}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+        {col.links.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            style={LINK_STYLE}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </>
+  );
 
   return (
     <footer
       style={{
-        background: "linear-gradient(180deg, #0F1A30 0%, #1B2A4A 100%)",
+        background: "linear-gradient(180deg, #0F1A30 0%, #162445 100%)",
         color: "#FFFFFF",
         paddingTop: "56px",
         position: "relative",
@@ -129,18 +202,17 @@ export default function AppFooter() {
           zIndex: 1,
         }}
       >
-        {/* Main grid */}
+        {/* Main grid — Brand / Shop / Communities / Stories / About LAYA / Newsletter */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-            gap: "40px 32px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))",
+            gap: "40px 28px",
             paddingBottom: "48px",
           }}
         >
           {/* Brand column */}
-          <div style={{ gridColumn: "span 1", minWidth: "200px" }}>
-            {/* Logo */}
+          <div style={{ minWidth: "200px" }}>
             <div style={{ marginBottom: "16px" }}>
               <LayaLogo variant="white" height={32} />
             </div>
@@ -172,7 +244,7 @@ export default function AppFooter() {
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "10px",
+                    borderRadius: "50%",
                     border: "1px solid rgba(197,165,90,0.25)",
                     display: "flex",
                     alignItems: "center",
@@ -190,149 +262,182 @@ export default function AppFooter() {
                 </a>
               ))}
             </div>
-
-            {/* Contact */}
-            
           </div>
 
-          {/* Services column */}
+          {/* Shop column */}
+          <div>{renderLinkGroup(singleColumns[0])}</div>
+
+          {/* Community + Stories — จัดกลุ่มสอง section ในคอลัมน์เดียว */}
           <div>
-            <p
-              style={{
-                margin: "0 0 14px",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "#C5A55A",
-                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
-              }}
-            >
-              {footerLinks.services.label}
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-              {footerLinks.services.links.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  style={{
-                    fontSize: "13px",
-                    color: "rgba(255,255,255,0.55)",
-                    textDecoration: "none",
-                    fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
-                    transition: "color 0.15s",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            {renderLinkGroup(footerLinks.communities)}
+            <div style={{ marginTop: "26px" }}>
+              {renderLinkGroup(footerLinks.stories)}
+              {/* คำคมพระราชปณิธาน — ท้าย section Stories */}
+              <Link
+                href="/community/heritage"
+                style={{
+                  display: "block",
+                  fontSize: "12px",
+                  color: "rgba(197,165,90,0.65)",
+                  textDecoration: "none",
+                  fontStyle: "italic",
+                  lineHeight: 1.7,
+                  maxWidth: "230px",
+                  fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+                  transition: "color 0.15s",
+                  marginTop: "10px",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#D4BA7A")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(197,165,90,0.65)")}
+              >
+                {t<string>("home.mission.quote")}
+              </Link>
             </div>
           </div>
 
-          {/* Payment column */}
+          {/* About LAYA column */}
+          <div>{renderLinkGroup(singleColumns[1])}</div>
+
+          {/* Payment column — โลโก้ช่องทางชำระเงินเป็นชิปขาวมุมมน */}
           <div>
-            <p
-              style={{
-                margin: "0 0 14px",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "#C5A55A",
-                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
-              }}
-            >
-              {footerDict.payment.label}
-            </p>
+            <p style={COLUMN_LABEL_STYLE}>{footerDict.payment.label}</p>
             <div
               style={{
-                width: "88px",
-                height: "56px",
-                borderRadius: "8px",
-                overflow: "hidden",
-                position: "relative",
-                background: "rgba(255,255,255,0.9)",
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 62px)",
+                gap: "8px",
               }}
             >
-              <Image src={PAYMENT_LOGO_URL} alt={footerDict.payment.alt} fill style={{ objectFit: "contain" }} />
-            </div>
-          </div>
-
-          {/* Legal / About column */}
-          <div>
-            <p
-              style={{
-                margin: "0 0 14px",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "#C5A55A",
-                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
-              }}
-            >
-              {footerLinks.legal.label}
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-              {footerLinks.legal.links.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
+              {/* Visa */}
+              {/* <div style={PAYMENT_CHIP_STYLE} title="Visa" aria-label="Visa">
+                <span
                   style={{
-                    fontSize: "13px",
-                    color: "rgba(255,255,255,0.55)",
-                    textDecoration: "none",
-                    fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
-                    transition: "color 0.15s",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontStyle: "italic",
+                    fontWeight: 800,
+                    fontSize: "14px",
+                    letterSpacing: "0.02em",
+                    color: "#1A1F71",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
                 >
-                  {link.label}
-                </Link>
-              ))}
+                  VISA
+                </span>
+              </div> */}
+
+              {/* Mastercard */}
+              {/* <div style={PAYMENT_CHIP_STYLE} title="Mastercard" aria-label="Mastercard">
+                <svg width="34" height="21" viewBox="0 0 34 21" aria-hidden="true">
+                  <circle cx="13" cy="10.5" r="9" fill="#EB001B" />
+                  <circle cx="21" cy="10.5" r="9" fill="#F79E1B" />
+                  <path d="M17 3.6a9 9 0 0 1 0 13.8 9 9 0 0 1 0-13.8z" fill="#FF5F00" />
+                </svg>
+              </div> */}
+
+              {/* PromptPay — โลโก้จริงที่ใช้อยู่เดิม */}
+              <div style={{ ...PAYMENT_CHIP_STYLE, position: "relative", overflow: "hidden" }} title="PromptPay" aria-label="PromptPay">
+                <Image src={PAYMENT_LOGO_URL} alt={footerDict.payment.alt} fill style={{ objectFit: "contain", padding: "3px" }} />
+              </div>
+
+              {/* QR Payment */}
+              <div style={PAYMENT_CHIP_STYLE} title="QR Payment" aria-label="QR Payment">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B2A4A" strokeWidth="1.8" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM18 18h3v3h-3z" strokeWidth="1.2" />
+                </svg>
+              </div>
             </div>
           </div>
 
-          {/* For Mobile column — QR + PWA install */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          {/* Newsletter column */}
+          <div style={{ minWidth: "200px" }}>
+            <p style={COLUMN_LABEL_STYLE}>{footerDict.newsletter.label}</p>
             <p
               style={{
-                margin: "0 0 14px",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "#C5A55A",
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.55)",
+                lineHeight: 1.7,
+                margin: "0 0 12px",
                 fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
               }}
             >
-              {footerDict.forMobile.label}
+              {footerDict.newsletter.blurb}
             </p>
+
+            {/* Email field + gold arrow */}
             <div
               style={{
-                padding: "8px",
-                background: "#FFFFFF",
-                borderRadius: "10px",
-                marginBottom: "14px",
-                lineHeight: 0,
+                display: "flex",
+                alignItems: "center",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.14)",
+                borderRadius: "999px",
+                padding: "4px 4px 4px 16px",
+                marginBottom: "18px",
+                maxWidth: "250px",
               }}
             >
-              <QRCodeSVG value={siteUrl} size={80} bgColor="#FFFFFF" fgColor="#1B2A4A" level="M" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && email.trim()) handleSubscribe(); }}
+                placeholder={footerDict.newsletter.placeholder}
+                aria-label={footerDict.newsletter.label}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "#FFFFFF",
+                  fontSize: "12.5px",
+                  fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => { if (email.trim()) handleSubscribe(); }}
+                aria-label={footerDict.newsletter.submit}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  flexShrink: 0,
+                  borderRadius: "50%",
+                  border: "none",
+                  background: "#C9A86A",
+                  color: "#FFFFFF",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
             </div>
-            <PwaInstallButton />
+
+            {/* QR + PWA install — ของจริงที่มีอยู่เดิม เก็บไว้ใต้ newsletter */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+              <div
+                style={{
+                  padding: "6px",
+                  background: "#FFFFFF",
+                  borderRadius: "10px",
+                  lineHeight: 0,
+                }}
+              >
+                <QRCodeSVG value={siteUrl} size={64} bgColor="#FFFFFF" fgColor="#1B2A4A" level="M" />
+              </div>
+              <PwaInstallButton />
+            </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom bar — copyright / privacy·terms / payment / EN-TH */}
         <div
           style={{
             borderTop: "1px solid rgba(255,255,255,0.06)",
@@ -341,7 +446,7 @@ export default function AppFooter() {
             flexWrap: "wrap",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "12px",
+            gap: "14px",
           }}
         >
           <p
@@ -355,18 +460,29 @@ export default function AppFooter() {
             {footerDict.copyright}
           </p>
 
-          <p
-            style={{
-              margin: 0,
-              fontSize: "13px",
-              color: "rgba(197,165,90,0.5)",
-              fontStyle: "italic",
-              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {footerDict.slogan}
-          </p>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {/* Language toggle — EN / TH ตาม mockup */}
+            <button
+              type="button"
+              onClick={toggleLocale}
+              aria-label="Toggle language"
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontFamily: "var(--font-kanit), 'Kanit', sans-serif",
+                color: "rgba(255,255,255,0.55)",
+                letterSpacing: "0.05em",
+                padding: 0,
+              }}
+            >
+              <span style={{ color: locale === "en" ? "#D4BA7A" : undefined }}>EN</span>
+              {" / "}
+              <span style={{ color: locale === "th" ? "#D4BA7A" : undefined }}>TH</span>
+            </button>
+          </div>
         </div>
       </div>
     </footer>

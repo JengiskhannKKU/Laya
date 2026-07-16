@@ -9,6 +9,7 @@ const th = {
     explore: "สำรวจ",
     categories: "หมวดหมู่",
     community: "ชุมชน",
+    stories: "เรื่องราว",
     services: "สั่งตัด/สั่งทอ",
     login: "เข้าสู่ระบบ",
     search: "ค้นหา",
@@ -36,14 +37,23 @@ const th = {
       title: "ผ้าไทยทอมือ",
       accent: "A Curated Heritage Collection",
       subtitle:
-        "เลือกสรรผ้าทอมือจากชุมชนช่างฝีมือทั่วไทย — สั่งตัด สั่งทอ และสะสมลวดลายอันเป็นเอกลักษณ์",
+        "ผ้าทอมือคัดสรรจากชุมชนช่างฝีมือทั่วไทย — ที่ซึ่งประเพณี ลวดลายการทอ และเรื่องราวทางวัฒนธรรมมาบรรจบกัน",
       searchPlaceholder: "ค้นหาผ้าไหม ชุมชนทอผ้า หรือลวดลาย…",
       searchButton: "ค้นหา",
       popular: "ยอดนิยม",
       tags: ["ผ้าไหม", "ผ้าฝ้าย", "คราม", "กระเป๋า", "ผ้าทอมือ", "Community Collection"],
+      ctaPrimary: "สำรวจคอลเลกชัน",
     },
     banner: {
       featured: "Featured Collection",
+    },
+    trust: {
+      items: [
+        { title: "ผ้าไทยแท้จากชุมชน", desc: "งานทอมือจากช่างฝีมือทั่วประเทศ" },
+        { title: "คุณภาพผ่านการรับรอง", desc: "สินค้า GI และร้านค้าที่ตรวจสอบแล้ว" },
+        { title: "จัดส่งทั่วประเทศ", desc: "ติดตามพัสดุได้ทุกขั้นตอน" },
+        { title: "การันตีความพึงพอใจ", desc: "ดูแลหลังการขายโดยทีม LAYA" },
+      ],
     },
     mission: {
       quote:
@@ -58,6 +68,15 @@ const th = {
       eyebrow: "Curated",
       title: "คัดสรรสำหรับคุณ",
       subtitle: "Handpicked based on your interests",
+      tabs: {
+        all: "ทั้งหมด",
+        trending: "มาแรง",
+        gi: "GI รับรอง",
+        premium: "พรีเมียม",
+      },
+      quickView: "ดูรายละเอียด",
+      viewAll: "ดูสินค้าทั้งหมด",
+      baht: "บาท",
     },
     editorial: {
       eyebrow: "The Heritage Collection",
@@ -70,17 +89,44 @@ const th = {
       title: "ชุมชนทอผ้า",
       subtitle: "Discover authentic weaving villages across Thailand",
       products: "ผลิตภัณฑ์",
+      viewCommunity: "เยี่ยมชมชุมชน",
     },
     inspiration: {
       eyebrow: "Our Inspiration",
       title: "แรงบันดาลใจของ Laya",
       tag: "โครงการในพระราชดำริ",
       heading: "แรงบันดาลใจของ Laya",
-      body: "จากพระราชดำริ…สู่ผ้าไหมที่คุณออกแบบได้วันนี้",
+      body: "จากโครงการพระราชดำริ สู่แพลตฟอร์มดิจิทัลที่สืบสานผ้าไหมไทยเพื่อคนรุ่นต่อไป",
+      cta: "ค้นพบแรงบันดาลใจ",
     },
   },
   footer: {
     tagline: "Fashion Tech Marketplace ที่เชื่อมโยงผู้บริโภค นักออกแบบ ช่างทอ และชุมชนผ้าไทยผ่านเทคโนโลยี AI",
+    shop: {
+      label: "ช้อป",
+      allProducts: "สินค้าทั้งหมด",
+      categories: "หมวดหมู่",
+      tailorWeave: "สั่งตัด / สั่งทอ",
+      designClothes: "ออกแบบเสื้อผ้า",
+      aiPattern: "AI ออกแบบลาย",
+    },
+    communitiesCol: {
+      label: "ชุมชน",
+      weaving: "ชุมชนทอผ้า",
+      artisanStories: "เรื่องราวช่างทอ",
+      collection: "Community Collection",
+    },
+    about: {
+      label: "About LAYA",
+      aboutUs: "เกี่ยวกับเรา",
+      help: "ศูนย์ช่วยเหลือ",
+    },
+    newsletter: {
+      label: "Newsletter",
+      blurb: "รับข่าวสารคอลเลกชันใหม่และเรื่องราวจากชุมชนทอผ้า",
+      placeholder: "อีเมลของคุณ",
+      submit: "สมัครรับข่าวสาร",
+    },
     services: {
       label: "บริการ",
       tailorWeave: "สั่งตัด / สั่งทอ",
@@ -97,6 +143,11 @@ const th = {
       privacyPolicy: "นโยบายความเป็นส่วนตัว",
       terms: "ข้อกำหนดการใช้งาน",
     },
+    heritage: {
+      label: "เรื่องราว",
+      story: "เรื่องราวเบื้องหลังผ้าไหมไทย",
+      inspiration: "แรงบันดาลใจของ Laya",
+    },
     forMobile: {
       label: "สำหรับมือถือ",
       install: "ติดตั้งแอป",
@@ -104,6 +155,35 @@ const th = {
     },
     copyright: "© 2026 LAYA. All Rights Reserved.",
     slogan: "Every Pattern Tells a Story.  Preserving Thai Heritage Through Technology.",
+  },
+  about: {
+    eyebrow: "About LAYA",
+    title: "เกี่ยวกับ LAYA",
+    lede: "LAYA คือแพลตฟอร์มผ้าไทยที่เชื่อมโยงชุมชนช่างทอทั่วประเทศเข้ากับผู้คนทั่วโลก — ทุกลวดลายมีเรื่องราว",
+    storyTitle: "เรื่องราวของเรา",
+    storyBody1:
+      "LAYA ถือกำเนิดจากแรงบันดาลใจในพระราชปณิธานด้านการอนุรักษ์และส่งเสริมผ้าไหมไทย เราเชื่อว่าผ้าทอมือแต่ละผืนคือมรดกทางวัฒนธรรมที่มีชีวิต — บันทึกภูมิปัญญา ความประณีต และตัวตนของชุมชนผู้ทอ",
+    storyBody2:
+      "จากกี่ทอในหมู่บ้าน สู่แพลตฟอร์มดิจิทัล เราทำงานร่วมกับชุมชนช่างทอโดยตรง เพื่อให้งานฝีมือไทยเดินทางไกลขึ้น โดยไม่ทิ้งรากของมันไว้ข้างหลัง",
+    missionTitle: "พันธกิจของเรา",
+    pillars: [
+      {
+        title: "ของแท้จากชุมชน",
+        body: "ทุกชิ้นมาจากช่างทอและชุมชนจริง พร้อมข้อมูลแหล่งที่มาและตรารับรอง GI ที่ตรวจสอบได้",
+      },
+      {
+        title: "เทคโนโลยีรับใช้งานฝีมือ",
+        body: "AI ช่วยออกแบบลาย สั่งตัด สั่งทอ — เทคโนโลยีของเราทำหน้าที่ขยายคุณค่างานฝีมือ ไม่ใช่แทนที่",
+      },
+      {
+        title: "รายได้กลับสู่ช่างทอ",
+        body: "เราเชื่อมผู้ซื้อกับชุมชนโดยตรง เพื่อให้คุณค่าและรายได้กลับคืนสู่ผู้สร้างสรรค์อย่างเป็นธรรม",
+      },
+    ],
+    ctaTitle: "ร่วมเดินทางไปกับเรา",
+    ctaBody: "สำรวจคอลเลกชันผ้าทอมือ หรือทำความรู้จักชุมชนช่างทอทั่วไทย",
+    ctaExplore: "สำรวจคอลเลกชัน",
+    ctaCommunities: "เยี่ยมชมชุมชน",
   },
   search: {
     placeholder: "ค้นหาสินค้า, ชุมชน, จังหวัด...",
@@ -147,10 +227,13 @@ const th = {
     emptySubtitle: "ลองเลือกหมวดหมู่อื่น",
   },
   community: {
+    eyebrow: "Community",
     title: "ชุมชนช่างทอ",
     subtitle: "ร้านค้า/วิสาหกิจชุมชนที่ผ่านการรับรองจาก LAYA",
     emptyText: "ยังไม่มีชุมชนในระบบ",
     productsUnit: "สินค้า",
+    explore: "สำรวจผลงาน",
+    newBadge: "ชุมชนใหม่",
   },
   services: {
     chooseTitle: "เลือกบริการ",
@@ -465,6 +548,7 @@ const en = {
     explore: "Explore",
     categories: "Categories",
     community: "Community",
+    stories: "Stories",
     services: "Tailor/Weave",
     login: "Log in",
     search: "Search",
@@ -492,14 +576,23 @@ const en = {
       title: "Handwoven Thai Fabric",
       accent: "A Curated Heritage Collection",
       subtitle:
-        "Curated handwoven fabric from artisan communities across Thailand — order tailoring, order weaving, and collect signature patterns",
+        "Curated handwoven fabric from artisan communities across Thailand — where tradition, color weaving, and cultural stories come together.",
       searchPlaceholder: "Search Thai silk, weaving communities, or patterns…",
       searchButton: "Search",
       popular: "Popular",
-      tags: ["Thai Silk", "Cotton", "Indigo", "Bags", "Handwoven", "Community Collection"],
+      tags: ["Thai Silk", "Cotton", "Indigo", "Bag", "Handwoven", "Community Collection"],
+      ctaPrimary: "Explore Collection",
     },
     banner: {
       featured: "Featured Collection",
+    },
+    trust: {
+      items: [
+        { title: "Authentic Thai Fabric", desc: "Handwoven by artisans nationwide" },
+        { title: "Certified Quality", desc: "GI products and verified shops" },
+        { title: "Nationwide Shipping", desc: "Trackable at every step" },
+        { title: "Satisfaction Guaranteed", desc: "After-sales care by the LAYA team" },
+      ],
     },
     mission: {
       quote:
@@ -514,6 +607,15 @@ const en = {
       eyebrow: "Curated",
       title: "Curated For You",
       subtitle: "Handpicked based on your interests",
+      tabs: {
+        all: "All",
+        trending: "Trending",
+        gi: "GI Certified",
+        premium: "Premium",
+      },
+      quickView: "View details",
+      viewAll: "View All Products",
+      baht: "THB",
     },
     editorial: {
       eyebrow: "The Heritage Collection",
@@ -526,17 +628,44 @@ const en = {
       title: "Weaving Communities",
       subtitle: "Discover authentic weaving villages across Thailand",
       products: "products",
+      viewCommunity: "View community",
     },
     inspiration: {
       eyebrow: "Our Inspiration",
       title: "The Inspiration Behind Laya",
       tag: "A Royal Initiative Project",
       heading: "The Inspiration Behind Laya",
-      body: "From a royal initiative… to Thai silk you can design today.",
+      body: "From a royal initiative to a digital platform preserving Thai silk for future generations.",
+      cta: "Discover the Inspiration",
     },
   },
   footer: {
     tagline: "A Fashion Tech Marketplace connecting consumers, designers, weavers, and Thai fabric communities through AI technology",
+    shop: {
+      label: "Shop",
+      allProducts: "All Products",
+      categories: "Categories",
+      tailorWeave: "Tailor / Weave",
+      designClothes: "Design Clothing",
+      aiPattern: "AI Pattern Design",
+    },
+    communitiesCol: {
+      label: "Communities",
+      weaving: "Weaving Communities",
+      artisanStories: "Artisan Stories",
+      collection: "Community Collection",
+    },
+    about: {
+      label: "About LAYA",
+      aboutUs: "About Us",
+      help: "Help Center",
+    },
+    newsletter: {
+      label: "Newsletter",
+      blurb: "Subscribe to get updates on new collections and stories.",
+      placeholder: "Your email",
+      submit: "Subscribe",
+    },
     services: {
       label: "Services",
       tailorWeave: "Tailor / Weave",
@@ -553,6 +682,11 @@ const en = {
       privacyPolicy: "Privacy Policy",
       terms: "Terms of Use",
     },
+    heritage: {
+      label: "Stories",
+      story: "The Story Behind Thai Silk",
+      inspiration: "The Inspiration Behind Laya",
+    },
     forMobile: {
       label: "For Mobile",
       install: "Install App",
@@ -560,6 +694,35 @@ const en = {
     },
     copyright: "© 2026 LAYA. All Rights Reserved.",
     slogan: "Every Pattern Tells a Story.  Preserving Thai Heritage Through Technology.",
+  },
+  about: {
+    eyebrow: "About LAYA",
+    title: "About Us",
+    lede: "LAYA is a Thai fabric marketplace connecting weaving communities across Thailand with the world — every pattern tells a story.",
+    storyTitle: "Our Story",
+    storyBody1:
+      "LAYA was born from the royal vision of preserving and promoting Thai silk. We believe every handwoven piece is living cultural heritage — a record of wisdom, craftsmanship, and the identity of the community that wove it.",
+    storyBody2:
+      "From village looms to a digital platform, we work directly with weaving communities so Thai craft can travel further without leaving its roots behind.",
+    missionTitle: "Our Mission",
+    pillars: [
+      {
+        title: "Authentic, From the Source",
+        body: "Every piece comes from real artisans and communities, with traceable origins and verified GI certification.",
+      },
+      {
+        title: "Technology in Service of Craft",
+        body: "AI-assisted pattern design, tailoring, and weaving orders — our technology amplifies craftsmanship, never replaces it.",
+      },
+      {
+        title: "Value Back to Weavers",
+        body: "We connect buyers directly with communities so value and income return fairly to the makers.",
+      },
+    ],
+    ctaTitle: "Join the Journey",
+    ctaBody: "Explore the handwoven collection or meet the weaving communities across Thailand.",
+    ctaExplore: "Explore Collection",
+    ctaCommunities: "Visit Communities",
   },
   search: {
     placeholder: "Search products, communities, provinces...",
@@ -603,10 +766,13 @@ const en = {
     emptySubtitle: "Try selecting another category",
   },
   community: {
+    eyebrow: "Community",
     title: "Weaving Communities",
     subtitle: "Verified shops and community enterprises on LAYA",
     emptyText: "No communities yet",
     productsUnit: "products",
+    explore: "Explore collection",
+    newBadge: "New community",
   },
   services: {
     chooseTitle: "Choose a Service",

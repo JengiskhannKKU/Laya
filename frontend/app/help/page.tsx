@@ -12,10 +12,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import MobileLayout from "@/components/layout/MobileLayout";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const FONT = '"Kanit", sans-serif';
 
-const FAQ_GROUPS: { title: string; items: { q: string; a: string }[] }[] = [
+type FaqGroup = { title: string; items: { q: string; a: string }[] };
+
+const FAQ_GROUPS_TH: FaqGroup[] = [
   {
     title: "การสั่งซื้อ",
     items: [
@@ -48,6 +51,39 @@ const FAQ_GROUPS: { title: string; items: { q: string; a: string }[] }[] = [
   },
 ];
 
+const FAQ_GROUPS_EN: FaqGroup[] = [
+  {
+    title: "Orders",
+    items: [
+      { q: "How do I order ready-made fabric?", a: "Choose the product you want, add it to your cart, then check out directly from the cart page." },
+      { q: "Can I commission a custom weave?", a: "Yes. Go to the \"Order Weaving\" menu, choose a pattern and weaving community, and enter the length you need — the system calculates an estimated price automatically." },
+      { q: "Can I cancel an order?", a: "If the order hasn't been confirmed by the shop yet, you can message the shop in-app to request a cancellation." },
+    ],
+  },
+  {
+    title: "Payment",
+    items: [
+      { q: "What payment methods are available?", a: "Pay via PromptPay or bank transfer, then attach your payment slip on the checkout page — the system verifies the slip automatically." },
+      { q: "I attached a slip but the status hasn't updated?", a: "Slip verification can take a moment. If it's still pending after 10 minutes, please contact the shop through in-app messages." },
+    ],
+  },
+  {
+    title: "Shipping",
+    items: [
+      { q: "Where can I track my shipment?", a: "Go to \"Order History\" and select the order — you'll see its status and tracking number (if the shop has provided one)." },
+      { q: "How long does shipping take?", a: "Timing varies by shop, especially for made-to-order weaving that requires production time. Estimated timelines are shown on the product page, or you can ask the shop directly." },
+    ],
+  },
+  {
+    title: "Account",
+    items: [
+      { q: "I forgot my password — what do I do?", a: "Tap \"Forgot password\" on the login page. We'll send a password reset link to your registered email." },
+      { q: "Where do I change my profile info or password?", a: "Go to \"Settings\" on your profile page." },
+      { q: "How do I open a shop on LAYA?", a: "Register as a shop from the login page by selecting \"Register as a LAYA shop\" and filling in your shop details — our team will review and approve it." },
+    ],
+  },
+];
+
 function AccordionItem({ q, a, isFirst }: { q: string; a: string; isFirst: boolean }) {
   const [open, setOpen] = useState(false);
   return (
@@ -74,6 +110,9 @@ function AccordionItem({ q, a, isFirst }: { q: string; a: string; isFirst: boole
 
 export default function HelpPage() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const faqGroups = locale === "en" ? FAQ_GROUPS_EN : FAQ_GROUPS_TH;
+  const isEn = locale === "en";
 
   return (
     <MobileLayout>
@@ -95,12 +134,12 @@ export default function HelpPage() {
           </IconButton>
           <HelpOutlineRoundedIcon sx={{ color: "#C5A55A" }} />
           <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1.15rem", color: "#1B2A4A" }}>
-            ช่วยเหลือ
+            {isEn ? "Help Center" : "ช่วยเหลือ"}
           </Typography>
         </Box>
 
         {/* FAQ Groups */}
-        {FAQ_GROUPS.map((group, gi) => (
+        {faqGroups.map((group, gi) => (
           <Box key={group.title} component={motion.div} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + gi * 0.04 }} sx={{ mb: 2 }}>
             <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "0.8rem", color: "#C5A55A", mb: 1, ml: 0.5, textTransform: "uppercase", letterSpacing: 0.5 }}>
               {group.title}
@@ -129,10 +168,10 @@ export default function HelpPage() {
             <ChatBubbleOutlineRoundedIcon sx={{ color: "#C5A55A" }} />
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: "#FFFFFF", fontSize: "0.88rem" }}>
-                ยังไม่พบคำตอบที่ต้องการ?
+                {isEn ? "Still haven't found what you need?" : "ยังไม่พบคำตอบที่ต้องการ?"}
               </Typography>
               <Typography sx={{ fontFamily: FONT, fontSize: "0.75rem", color: "rgba(255,255,255,0.6)" }}>
-                ติดต่อร้านค้าที่เกี่ยวข้องโดยตรงผ่านข้อความในแอป
+                {isEn ? "Contact the relevant shop directly through in-app messages" : "ติดต่อร้านค้าที่เกี่ยวข้องโดยตรงผ่านข้อความในแอป"}
               </Typography>
             </Box>
           </Box>

@@ -145,11 +145,17 @@ function SearchContent() {
     setSortBy("popular");
   };
 
+  // padding มาตรฐานให้เนื้อหาตรงแนวเดียวกับ TopNav — bar เต็มขอบ แต่คอนเทนต์ยังมีระยะขอบ
+  const CONTENT_PX = { xs: 2.5, sm: 3, md: 5 };
+
   return (
     <MobileLayout>
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
-        {/* Header */}
-        <Box sx={{ px: 2, pt: 4, pb: 1.5, bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #E5DFD6" }}>
+      {/* mx: calc(50% - 50vw) ดึงทั้งหน้าออกจาก padding ของ MobileLayout ให้เต็มความกว้าง viewport —
+          bar (Search/Sort) จึงชนขอบเหมือน top bar ส่วนคอนเทนต์ด้านล่างจัดระยะขอบเองผ่าน CONTENT_PX */}
+      <Box sx={{ mx: "calc(50% - 50vw)", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
+        {/* Header — แถบขาวเต็มขอบ, เนื้อหาข้างในจัดกึ่งกลาง maxWidth 1440 */}
+        <Box sx={{ bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #E5DFD6" }}>
+          <Box sx={{ maxWidth: 1440, mx: "auto", px: CONTENT_PX, pt: 4, pb: 1.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
               <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20 }} />
@@ -205,10 +211,11 @@ function SearchContent() {
               </Select>
             </Box>
           </Box>
+          </Box>
         </Box>
 
-        {/* Results */}
-        <Box sx={{ px: 2, pt: 2, pb: 10 }}>
+        {/* Results — จัดกึ่งกลาง maxWidth 1440 มีระยะขอบ (ไม่ชนขอบเหมือน bar) */}
+        <Box sx={{ maxWidth: 1440, mx: "auto", px: CONTENT_PX, pt: 2, pb: 10 }}>
           {filteredProducts.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 10 }}>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "1rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
@@ -222,7 +229,7 @@ function SearchContent() {
               </Button>
             </Box>
           ) : (
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(5, 1fr)" }, gap: { xs: 1.5, md: 2 } }}>
               <AnimatePresence>
                 {filteredProducts.map((product, idx) => (
                   <Box
@@ -238,8 +245,8 @@ function SearchContent() {
                       transition: "transform 0.2s", "&:active": { transform: "scale(0.98)" },
                     }}
                   >
-                    <Box sx={{ position: "relative", height: 140 }}>
-                      <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: "cover" }} />
+                    <Box sx={{ position: "relative", aspectRatio: "1 / 1" }}>
+                      <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw" />
                       {product.hasGI && (
                         <Box sx={{
                           position: "absolute", top: 8, left: 8, bgcolor: "rgba(197,165,90,0.9)",

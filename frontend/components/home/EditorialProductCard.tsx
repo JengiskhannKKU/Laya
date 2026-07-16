@@ -14,25 +14,22 @@ import { useAuth } from "@/lib/auth-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-interface ProductCardProps {
+interface EditorialProductCardProps {
   product: Product;
-  /** ยังรับไว้เพื่อ backward-compat — สไตล์ mockup ใช้ชื่อชุมชนเป็น eyebrow แทน */
-  collection?: string;
-  /** fixed vs fluid width (fluid fills grid cell) */
-  variant?: "carousel" | "grid";
 }
 
-export default function ProductCard({
-  product,
-  variant = "grid",
-}: ProductCardProps) {
+/**
+ * การ์ดสินค้าเฉพาะหน้าแรก (Curated For You) ตาม mockup ล่าสุด:
+ * ภาพพอร์เทรต 4:5 + GI badge + หัวใจ / ใต้ภาพ: ป้ายทอง CURATED,
+ * ชื่อสินค้า Kanit หนา, ชุมชน · จังหวัด, ราคา "X บาท" + ดาวเรตติ้ง
+ * แยกจาก ProductCard.tsx เดิม (หน้า search/wishlist ยังใช้อยู่) — ไม่แตะของเดิม
+ */
+export default function EditorialProductCard({ product }: EditorialProductCardProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { isWishlisted, toggle } = useWishlist();
   const { t } = useLanguage();
   const fav = isWishlisted(product.id);
-
-  const isCarousel = variant === "carousel";
 
   return (
     <Box
@@ -41,52 +38,42 @@ export default function ProductCard({
       sx={{
         textDecoration: "none",
         display: "block",
-        // grid: minWidth 0 กันข้อความ nowrap ดันคอลัมน์ให้กว้างไม่เท่ากัน
-        // carousel (มือถือ): ห้ามหด ไม่งั้นการ์ดซ้อนกันใน scroll แถวนอน
-        minWidth: isCarousel ? { xs: 180, md: 0 } : 0,
-        flexShrink: isCarousel ? 0 : undefined,
+        minWidth: 0,
+        "&:hover .laya-ed-frame": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 12px 28px rgba(27,42,74,0.12)",
+          borderColor: "rgba(19,40,75,0.14)",
+        },
+        "&:hover .laya-ed-img": { transform: "scale(1.05)" },
+        "&:hover .laya-ed-cta": {
+          opacity: 1,
+          transform: "translateX(-50%) translateY(0)",
+        },
       }}
     >
       <Box
+        className="laya-ed-frame"
         sx={{
-          width: isCarousel ? { xs: 180, md: "100%" } : "100%",
-          cursor: "pointer",
-          scrollSnapAlign: "start",
-          "&:hover .laya-card-img": { transform: "scale(1.06)" },
-          "&:hover .laya-card-frame": {
-            transform: "translateY(-6px)",
-            boxShadow: "0 18px 40px rgba(27,42,74,0.16)",
-          },
-          "&:hover .laya-card-quick": {
-            opacity: 1,
-            transform: "translateX(-50%) translateY(0)",
-          },
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: "1px solid rgba(19,40,75,0.08)",
+          bgcolor: "#FFFFFF",
+          transition:
+            "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
         }}
       >
-        {/* Card frame — ภาพ + ข้อความรวมเป็นการ์ดเดียว พื้นหลังขาว */}
-        <Box
-          className="laya-card-frame"
-          sx={{
-            borderRadius: "20px",
-            overflow: "hidden",
-            bgcolor: "#FFFFFF",
-            boxShadow: "0 4px 18px rgba(27,42,74,0.07)",
-            transition:
-              "transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s ease",
-          }}
-        >
-        {/* Image — สัดส่วนจัตุรัสตาม mockup */}
+        {/* ภาพ — พอร์เทรต 4:5 ตาม mockup */}
         <Box
           sx={{
             position: "relative",
             width: "100%",
-            aspectRatio: "1 / 1",
+            aspectRatio: "4 / 5",
             overflow: "hidden",
             bgcolor: "#F0EBE3",
           }}
         >
           <Box
-            className="laya-card-img"
+            className="laya-ed-img"
             sx={{
               position: "absolute",
               inset: 0,
@@ -102,13 +89,13 @@ export default function ProductCard({
             />
           </Box>
 
-          {/* GI / verified badge */}
+          {/* GI / verified badge — มุมซ้ายบนตาม mockup */}
           {product.hasGI && (
             <Box
               sx={{
                 position: "absolute",
-                top: 12,
-                left: 12,
+                top: 10,
+                left: 10,
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 0.4,
@@ -120,12 +107,7 @@ export default function ProductCard({
               }}
             >
               <Box
-                sx={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  bgcolor: "#C5A55A",
-                }}
+                sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: "#C5A55A" }}
               />
               <Typography
                 sx={{
@@ -142,9 +124,8 @@ export default function ProductCard({
             </Box>
           )}
 
-          {/* Wishlist — วงกลมขาวมุมขวาบน มองเห็นตลอดตาม mockup */}
+          {/* Wishlist — วงกลมขาวมุมขวาบน */}
           <IconButton
-            className="laya-card-fav"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -154,44 +135,44 @@ export default function ProductCard({
             size="small"
             sx={{
               position: "absolute",
-              top: 10,
-              right: 10,
-              width: 34,
-              height: 34,
+              top: 8,
+              right: 8,
+              width: 30,
+              height: 30,
               bgcolor: "rgba(255,255,255,0.92)",
               backdropFilter: "blur(6px)",
-              boxShadow: "0 2px 10px rgba(19,40,75,0.12)",
+              boxShadow: "0 2px 8px rgba(19,40,75,0.12)",
               transition: "background-color 0.25s ease, transform 0.25s ease",
               "&:hover": { bgcolor: "#FFFFFF", transform: "scale(1.06)" },
             }}
           >
             {fav ? (
-              <FavoriteRoundedIcon sx={{ fontSize: 16, color: "#C5A55A" }} />
+              <FavoriteRoundedIcon sx={{ fontSize: 14, color: "#C5A55A" }} />
             ) : (
-              <FavoriteBorderRoundedIcon sx={{ fontSize: 16, color: "#1B2A4A" }} />
+              <FavoriteBorderRoundedIcon sx={{ fontSize: 14, color: "#1B2A4A" }} />
             )}
           </IconButton>
 
-          {/* Quick view pill — โผล่ตอน hover (desktop) ทั้งการ์ดเป็นลิงก์อยู่แล้ว ปุ่มนี้ชี้ทางให้ชัดขึ้น */}
+          {/* View Details — โผล่ตอน hover (desktop) */}
           <Box
-            className="laya-card-quick"
+            className="laya-ed-cta"
             sx={{
               position: "absolute",
               left: "50%",
-              bottom: 14,
+              bottom: 12,
               transform: "translateX(-50%) translateY(8px)",
               display: { xs: "none", md: "inline-flex" },
               alignItems: "center",
-              px: 2.25,
-              py: 0.75,
+              px: 2,
+              py: 0.65,
               borderRadius: "999px",
               bgcolor: "rgba(255,255,255,0.94)",
               backdropFilter: "blur(6px)",
-              boxShadow: "0 6px 18px rgba(19,40,75,0.18)",
+              boxShadow: "0 6px 16px rgba(19,40,75,0.16)",
               opacity: 0,
               transition: "opacity 0.3s ease, transform 0.3s ease",
               fontFamily: '"Kanit", sans-serif',
-              fontSize: "0.72rem",
+              fontSize: "0.68rem",
               fontWeight: 500,
               letterSpacing: "0.06em",
               color: "#13284B",
@@ -203,30 +184,30 @@ export default function ProductCard({
           </Box>
         </Box>
 
-        {/* Meta ตาม mockup: ชุมชน (เทาเล็ก) / ชื่อสินค้า (serif navy) / ฿ราคา + ดาวทอง */}
-        <Box sx={{ px: 1.75, pt: 1.25, pb: 1.5, bgcolor: "#FFFFFF" }}>
+        {/* Meta ตาม mockup: CURATED ทอง / ชื่อหนา / ชุมชน · จังหวัด / ราคา บาท + ดาว */}
+        <Box sx={{ px: 1.5, pt: 1.1, pb: 1.35 }}>
           <Typography
             sx={{
               fontFamily: '"Kanit", sans-serif',
-              fontWeight: 300,
-              fontSize: "0.72rem",
-              color: "#A89F94",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              fontWeight: 600,
+              fontSize: "0.55rem",
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              color: "#C5A55A",
+              lineHeight: 1.4,
             }}
           >
-            {product.community}
+            {t("home.recommended.eyebrow")}
           </Typography>
 
           <Typography
             sx={{
-              fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif',
+              fontFamily: '"Kanit", sans-serif',
               fontWeight: 600,
-              fontSize: "1.18rem",
+              fontSize: "0.88rem",
               color: "#13284B",
-              lineHeight: 1.3,
-              mt: 0.3,
+              lineHeight: 1.35,
+              mt: 0.25,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -235,30 +216,51 @@ export default function ProductCard({
             {product.name}
           </Typography>
 
+          <Typography
+            sx={{
+              fontFamily: '"Kanit", sans-serif',
+              fontWeight: 300,
+              fontSize: "0.66rem",
+              color: "#A89F94",
+              mt: 0.2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {product.community} · {product.province}
+          </Typography>
+
           <Box
             sx={{
               display: "flex",
               alignItems: "baseline",
               justifyContent: "space-between",
-              mt: 0.75,
+              mt: 0.7,
             }}
           >
             <Typography
               sx={{
                 fontFamily: '"Kanit", sans-serif',
                 fontWeight: 600,
-                fontSize: "1.05rem",
+                fontSize: "0.95rem",
                 color: "#13284B",
               }}
             >
-              ฿{product.price.toLocaleString()}
+              {product.price.toLocaleString()}{" "}
+              <Box
+                component="span"
+                sx={{ fontWeight: 300, fontSize: "0.68rem", color: "#7A7468" }}
+              >
+                {t("home.recommended.baht")}
+              </Box>
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
-              <StarRoundedIcon sx={{ color: "#C9A86A", fontSize: 15 }} />
+              <StarRoundedIcon sx={{ color: "#C9A86A", fontSize: 14 }} />
               <Typography
                 sx={{
                   fontFamily: '"Kanit", sans-serif',
-                  fontSize: "0.78rem",
+                  fontSize: "0.72rem",
                   fontWeight: 400,
                   color: "#7A7468",
                 }}
@@ -267,7 +269,6 @@ export default function ProductCard({
               </Typography>
             </Box>
           </Box>
-        </Box>
         </Box>
       </Box>
     </Box>
