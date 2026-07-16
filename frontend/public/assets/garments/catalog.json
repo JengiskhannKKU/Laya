@@ -601,7 +601,7 @@
       "id": "shirt",
       "name": "เชิ้ต",
       "category": "top",
-      "front": "/assets/garments/tops/templates/shirt-front.svg",
+      "front": "/assets/garments/tops/templates/shirt-front.png",
       "back": "/assets/garments/tops/templates/shirt-back.svg",
       "basePrice": 990
     },
@@ -609,7 +609,7 @@
       "id": "blazer",
       "name": "เบลเซอร์",
       "category": "top",
-      "front": "/assets/garments/tops/templates/blazer-front.svg",
+      "front": "/assets/garments/tops/templates/blazer-front.png",
       "back": "/assets/garments/tops/templates/blazer-back.svg",
       "basePrice": 1890
     },
@@ -617,7 +617,7 @@
       "id": "jacket",
       "name": "แจ็คเก็ต",
       "category": "top",
-      "front": "/assets/garments/tops/templates/jacket-front.svg",
+      "front": "/assets/garments/tops/templates/jacket-front.png",
       "back": "/assets/garments/tops/templates/jacket-back.svg",
       "basePrice": 1690
     },
@@ -625,7 +625,7 @@
       "id": "dress",
       "name": "เดรส",
       "category": "top",
-      "front": "/assets/garments/tops/templates/dress-front.svg",
+      "front": "/assets/garments/tops/templates/dress-front.png",
       "back": "/assets/garments/tops/templates/dress-back.svg",
       "basePrice": 1290
     },
@@ -633,7 +633,7 @@
       "id": "polo",
       "name": "โปโล",
       "category": "top",
-      "front": "/assets/garments/tops/templates/polo-front.svg",
+      "front": "/assets/garments/tops/templates/polo-front.png",
       "back": "/assets/garments/tops/templates/polo-back.svg",
       "basePrice": 890
     },
@@ -641,7 +641,7 @@
       "id": "crop",
       "name": "ครอปท็อป",
       "category": "top",
-      "front": "/assets/garments/tops/templates/crop-front.svg",
+      "front": "/assets/garments/tops/templates/crop-front.png",
       "back": "/assets/garments/tops/templates/crop-back.svg",
       "basePrice": 690
     },
@@ -649,7 +649,7 @@
       "id": "vest",
       "name": "เวสต์ (เสื้อกั๊ก)",
       "category": "top",
-      "front": "/assets/garments/tops/templates/vest-front.svg",
+      "front": "/assets/garments/tops/templates/vest-front.png",
       "back": "/assets/garments/tops/templates/vest-back.svg",
       "basePrice": 790
     },
