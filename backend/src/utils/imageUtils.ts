@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import path from "path";
 import { randomUUID } from "crypto";
 import { supabaseAdmin, supabaseAdminConfigured } from "./supabaseAdmin";
 
@@ -146,6 +147,57 @@ export async function uploadRawFile(
   const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(path);
 
   return { url: pub.publicUrl, sizeBytes: inputBuffer.length, filename };
+}
+
+/**
+ * Template silhouette masks (solid navy fill, transparent bg) ที่ slice ไว้จาก shapes.png/Shapes-2.png
+ * เก็บอยู่ฝั่ง frontend (frontend/public/assets/garments/tops/templates) — backend อ่านตรงจาก
+ * disk ได้เลยเพราะ frontend/backend อยู่ใน monorepo เดียวกัน ไม่ต้องยิง HTTP
+ */
+const TEMPLATES_DIR = path.join(process.cwd(), "..", "frontend", "public", "assets", "garments", "tops", "templates");
+
+/**
+ * ผสมลายผ้าของลูกค้าเข้ากับทรงเทมเพลตที่เลือกไว้ (mask) เพื่อสร้าง "product image" จริง
+ * ให้ FASHN virtual try-on ใช้เป็นชุดอ้างอิง — FASHN ต้องการรูปเสื้อผ้าจริง ไม่ใช่ line art เปล่าๆ
+ *
+ * @param fabricBuffer - buffer ของรูปลายผ้า (จะถูกปูซ้ำ/ครอบให้เต็มทรง)
+ * @param templateId   - id เทมเพลต (shirt/blazer/jacket/dress/polo/crop/vest/kimono)
+ * @param perspective  - front หรือ back — เลือก mask คนละไฟล์ (ไม่มี mask สำหรับ side ใช้ front แทน)
+ * @returns buffer ของรูป PNG พื้นหลังขาว มีทรงเสื้อผ้าลายผ้าเต็มตัว พร้อมส่งให้ FASHN
+ */
+export async function compositeFabricOntoTemplate(
+  fabricBuffer: Buffer,
+  templateId: string,
+  perspective: "front" | "back" | "side"
+): Promise<Buffer> {
+  const maskFile = perspective === "back" ? `${templateId}-back-mask.png` : `${templateId}-mask.png`;
+  const maskPath = path.join(TEMPLATES_DIR, maskFile);
+
+  const maskImage = sharp(maskPath);
+  const maskMeta = await maskImage.metadata();
+  const width = maskMeta.width ?? 512;
+  const height = maskMeta.height ?? 512;
+
+  // ปูลายผ้าให้ครอบทรงเต็ม (cover) แล้ว clip ด้วย alpha ของ mask (dest-in)
+  const fabricResized = await sharp(fabricBuffer)
+    .resize(width, height, { fit: "cover" })
+    .ensureAlpha()
+    .toBuffer();
+
+  const clipped = await sharp(fabricResized)
+    .composite([{ input: maskPath, blend: "dest-in" }])
+    .png()
+    .toBuffer();
+
+  // วางลงพื้นขาว (FASHN ต้องการรูปทึบ ไม่ใช่พื้นหลังโปร่งใส)
+  const finalBuffer = await sharp({
+    create: { width, height, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } },
+  })
+    .composite([{ input: clipped }])
+    .png()
+    .toBuffer();
+
+  return finalBuffer;
 }
 
 // ── Bucket bootstrap (idempotent) ────────────────────────────────────────────

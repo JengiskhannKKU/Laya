@@ -17,6 +17,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
@@ -101,13 +102,22 @@ export default function MerchantPatternsPage() {
         <Typography sx={{ fontFamily: FONT, fontSize: "1.3rem", fontWeight: 700, color: "#1B2A4A" }}>
           ลายผ้า
         </Typography>
-        <Button
-          component={Link} href="/merchant/patterns/create"
-          variant="contained" startIcon={<AddRoundedIcon />}
-          sx={{ bgcolor: "#1B2A4A", borderRadius: "10px", fontFamily: FONT, textTransform: "none", fontWeight: 600 }}
-        >
-          เพิ่มลายผ้า
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            component={Link} href="/merchant/patterns/capabilities"
+            variant="outlined" startIcon={<CheckCircleRoundedIcon />}
+            sx={{ borderColor: "#E5DFD6", color: "#1B2A4A", borderRadius: "10px", fontFamily: FONT, textTransform: "none", fontWeight: 600 }}
+          >
+            ลายที่ฉันทอได้
+          </Button>
+          <Button
+            component={Link} href="/merchant/patterns/create"
+            variant="contained" startIcon={<AddRoundedIcon />}
+            sx={{ bgcolor: "#1B2A4A", borderRadius: "10px", fontFamily: FONT, textTransform: "none", fontWeight: 600 }}
+          >
+            เพิ่มลายผ้า
+          </Button>
+        </Box>
       </Box>
 
       {error && (

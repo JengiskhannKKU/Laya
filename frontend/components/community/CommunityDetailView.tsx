@@ -27,6 +27,18 @@ interface CommunityDetailViewProps {
   community: LiveCommunityDetail;
 }
 
+/** ลายผ้าที่ชุมชนนี้ทอได้ — ของตัวเอง (shop_id ตรงกัน) + ลายระบบที่ประกาศว่าทอได้ (จาก GET ?shopId=) */
+interface WeavePattern {
+  id: string;
+  name: string;
+  description: string | null;
+  originProvince: string | null;
+  region: string | null;
+  storyHistory: string | null;
+  storyWeaving: string | null;
+  thumbnailUrl: string | null;
+}
+
 const PRODUCTION_PROCESS = [
   { id: 1, title: "เลี้ยงไหม & สาวไหม", desc: "ไหมธรรมชาติเลี้ยงในชุมชน สาวเส้นสม่ำเสมอ" },
   { id: 2, title: "ย้อมสีธรรมชาติ", desc: "ใช้เปลือกไม้ ใบไม้ และรากพืชท้องถิ่น ไม่มีสารเคมี" },
@@ -83,6 +95,49 @@ function ProductCard({ p }: { p: Product }) {
   );
 }
 
+/** การ์ดผลงาน — ลายผ้าที่ชุมชนนี้ทอได้ พร้อมเรื่องราว/เอกลักษณ์ (เอาข้อมูลจริงจาก weave_patterns
+ * มาแสดง ไม่ปั้นฟิลด์ "วัตถุดิบ" ใหม่ที่ยังไม่มีจริงในระบบ) */
+function PatternPortfolioCard({ pattern, shopId }: { pattern: WeavePattern; shopId: string }) {
+  const narrative = [pattern.storyHistory, pattern.storyWeaving, pattern.description].filter(Boolean).join(" — ");
+  return (
+    <Box sx={{ bgcolor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5DFD6", overflow: "hidden" }}>
+      <Box sx={{ position: "relative", width: "100%", aspectRatio: "4 / 3", bgcolor: "#F0EBE3" }}>
+        {pattern.thumbnailUrl ? (
+          <Image src={pattern.thumbnailUrl} alt={pattern.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 900px) 90vw, 45vw" />
+        ) : (
+          <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <StorefrontRoundedIcon sx={{ fontSize: 36, color: "#D8CFC0" }} />
+          </Box>
+        )}
+      </Box>
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: narrative ? 1 : 0 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.92rem", color: "#1B2A4A" }}>
+            {pattern.name}
+          </Typography>
+          {(pattern.originProvince || pattern.region) && (
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.68rem", color: "#9CA3AF", flexShrink: 0 }}>
+              {pattern.originProvince ?? pattern.region}
+            </Typography>
+          )}
+        </Box>
+        {narrative && (
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", lineHeight: 1.7, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {narrative}
+          </Typography>
+        )}
+        <Button
+          component={Link} href={`/weaving-order?shopId=${shopId}&patternId=${pattern.id}`}
+          size="small"
+          sx={{ mt: 1.5, fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", fontWeight: 600, color: "#13284B", textTransform: "none", px: 0, "&:hover": { bgcolor: "transparent", color: "#C5A55A" } }}
+        >
+          สั่งทอลายนี้ ›
+        </Button>
+      </Box>
+    </Box>
+  );
+}
+
 export default function CommunityDetailView({ community }: CommunityDetailViewProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -90,6 +145,8 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [startingChat, setStartingChat] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [patterns, setPatterns] = useState<WeavePattern[]>([]);
+  const [loadingPatterns, setLoadingPatterns] = useState(true);
 
   const startChat = async () => {
     if (!user) { router.push("/auth/login"); return; }
@@ -115,6 +172,17 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
       .then((list) => { if (!cancelled) setProducts(list); })
       .catch(() => { if (!cancelled) setProducts([]); })
       .finally(() => { if (!cancelled) setLoadingProducts(false); });
+    return () => { cancelled = true; };
+  }, [community.id]);
+
+  // ลายผ้าที่ชุมชนนี้ทอได้ — ของตัวเอง + ลายระบบที่ประกาศว่าทอได้ (backend กรองด้วย ?shopId=)
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/api/weave-patterns?shopId=${community.id}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((list) => { if (!cancelled) setPatterns(list); })
+      .catch(() => { if (!cancelled) setPatterns([]); })
+      .finally(() => { if (!cancelled) setLoadingPatterns(false); });
     return () => { cancelled = true; };
   }, [community.id]);
 
@@ -208,6 +276,26 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
                 </Typography>
               )}
             </Box>
+          </Box>
+
+          {/* ผลงาน & ลายผ้าที่ทอได้ — ของตัวเอง + ลายระบบที่ประกาศว่าทอได้ */}
+          <Box sx={{ mb: 4 }}>
+            <SectionTitle>ผลงาน & ลายผ้าที่ทอได้</SectionTitle>
+            {loadingPatterns ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <CircularProgress size={22} sx={{ color: "#C5A55A" }} />
+              </Box>
+            ) : patterns.length === 0 ? (
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic" }}>
+                ชุมชนนี้ยังไม่ได้เพิ่มลายผ้าในพอร์ตโฟลิโอ
+              </Typography>
+            ) : (
+              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}>
+                {patterns.map((p) => (
+                  <PatternPortfolioCard key={p.id} pattern={p} shopId={community.id} />
+                ))}
+              </Box>
+            )}
           </Box>
 
           {/* กระบวนการผลิตทั่วไป */}

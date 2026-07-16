@@ -284,7 +284,7 @@ const th = {
     },
     weave: {
       title: "สั่งทอผ้า",
-      desc: "ออกแบบลายผ้าด้วย AI แล้วสั่งทอกับช่างทอในชุมชนโดยตรง",
+      desc: "เลือกลายผ้าหรือชุมชนทอผ้าก่อนก็ได้ แล้วให้ช่างทอในชุมชนผลิตให้คุณ",
       pageTitle: "เลือกทอผ้า",
       subtitle: "เลือกลายผ้าแรงบันดาลใจจากทั่วประเทศ หรือให้ AI ช่วยออกแบบลายใหม่ในแบบของคุณ",
       generateTitle: "เจนลายผ้าใหม่ด้วย AI",
@@ -932,7 +932,7 @@ const en = {
     },
     weave: {
       title: "Order Woven Fabric",
-      desc: "Design a fabric pattern with AI, then order it woven directly by community weavers",
+      desc: "Pick a pattern or a weaving community first, then have our weavers produce it for you",
       pageTitle: "Choose Fabric to Weave",
       subtitle: "Choose an inspiration pattern from across the country, or let AI design a new pattern for you",
       generateTitle: "Generate a New Pattern with AI",

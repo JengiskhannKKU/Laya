@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
-import { uploadBase64AsWebP, BUCKETS } from "../utils/imageUtils";
+import { uploadBase64AsWebP, uploadImageAsWebP, compositeFabricOntoTemplate, BUCKETS } from "../utils/imageUtils";
 import { supabaseAdminConfigured } from "../utils/supabaseAdmin";
 import { generateImage } from "../utils/kieImage";
+import { runTryOn } from "../utils/fashn";
 
 const router = Router();
 
@@ -122,6 +123,28 @@ router.post("/generate", async (req: Request, res: Response) => {
     if (!perspective || !PERSPECTIVE_DESC[perspective]) {
       res.status(400).json({ error: "perspective must be one of: front, back, side" });
       return;
+    }
+
+    // มีรูปตัวเองจริง + เลือกทรงเทมเพลตไว้แล้ว + มีรูปผ้า → ใช้ FASHN virtual try-on (ทำมาสำหรับใส่เสื้อผ้า
+    // ลงบนรูปคนจริงโดยเฉพาะ ผลลัพธ์แม่นกว่า image-editing ทั่วไปแบบ kie.ai) แทน
+    // ต้องผสมลายผ้าลงในทรงเทมเพลตก่อน (compositeFabricOntoTemplate) เพราะ FASHN ต้องการรูปเสื้อผ้าจริง
+    // ไม่ใช่ line art เปล่าๆ — ถ้าไม่มีเงื่อนไขครบ (เช่น โหมด measurements หรือยังไม่เลือกทรง/ผ้า) fallback ไป kie.ai เดิม
+    if (bodyPhotoUrl && shape?.id && fabricImageUrl) {
+      try {
+        const fabricRes = await fetch(fabricImageUrl);
+        if (!fabricRes.ok) throw new Error(`โหลดรูปผ้าไม่สำเร็จ: ${fabricRes.status}`);
+        const fabricBuffer = Buffer.from(await fabricRes.arrayBuffer());
+
+        const productBuffer = await compositeFabricOntoTemplate(fabricBuffer, shape.id, perspective);
+        const productUpload = await uploadImageAsWebP(productBuffer, BUCKETS.tryonUploads, "fashn-products");
+
+        const result = await runTryOn({ modelImageUrl: bodyPhotoUrl, productImageUrl: productUpload.url });
+        res.json({ success: true, perspective, ...result });
+        return;
+      } catch (fashnErr: any) {
+        console.error("[tryon/generate] FASHN path failed, falling back to kie.ai:", fashnErr.message);
+        // ตกไปใช้ kie.ai เดิมด้านล่างต่อ (ไม่ throw ทันที กันเคสไม่มี mask ของทรงนี้ หรือ FASHN ล่มชั่วคราว)
+      }
     }
 
     const fabricDesc = analysisResult
