@@ -16,6 +16,17 @@ const GOLD = "#C5A55A";
 export type Perspective = "front" | "back" | "side";
 export type BodyInputMode = "photo" | "measurements";
 
+// สเกลสีผิว 6 โทน (แนวเดียวกับ emoji skin tone modifier / Fitzpatrick scale) — ใช้บอก AI ตอนสร้างแบบจำลอง
+// ในโหมดกรอกสัดส่วน (ไม่มีรูปตัวเองจริงให้อ้างอิงสีผิว) ต้องมีให้เลือกเสมอ ไม่ปล่อยให้ AI สุ่มเอง
+const SKIN_TONES: { id: string; hex: string; checkColor: string }[] = [
+  { id: "tone1", hex: "#FFDBB4", checkColor: "#1B2A4A" },
+  { id: "tone2", hex: "#EDB98A", checkColor: "#1B2A4A" },
+  { id: "tone3", hex: "#D08B5B", checkColor: "#FFFFFF" },
+  { id: "tone4", hex: "#AE7242", checkColor: "#FFFFFF" },
+  { id: "tone5", hex: "#8D5524", checkColor: "#FFFFFF" },
+  { id: "tone6", hex: "#5C3836", checkColor: "#FFFFFF" },
+];
+
 export interface BodyMeasurements {
   gender: "male" | "female";
   height: number;
@@ -23,6 +34,9 @@ export interface BodyMeasurements {
   chest: number;
   waist: number;
   hip: number;
+  // สีผิว — บังคับกรอกเฉพาะโหมดกรอกสัดส่วน (ไม่มีรูปจริงให้ AI อ้างอิง) เพื่อให้แบบจำลองที่สร้างมีสีผิว
+  // ใกล้เคียงผู้ใช้จริง แทนที่ AI จะสุ่มเอง (ดู tryon.ts backend — describeBodyBuild ใช้ค่านี้ต่อ)
+  skinTone?: string;
   // เพิ่มตามสเปค custom_design_flow.jpg — ไม่บังคับกรอก (ให้ AI/ร้านใช้ค่าประมาณถ้าไม่ระบุ)
   shoulderWidth?: number;
   armLength?: number;
@@ -200,6 +214,7 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
   const [chest, setChest] = useState(existing.chest ? String(existing.chest) : "");
   const [waist, setWaist] = useState(existing.waist ? String(existing.waist) : "");
   const [hip, setHip] = useState(existing.hip ? String(existing.hip) : "");
+  const [skinTone, setSkinTone] = useState(existing.skinTone);
   // ฟิลด์เพิ่มเติมตามสเปค custom_design_flow.jpg — ไม่บังคับกรอก ซ่อนไว้หลังปุ่ม "+ เพิ่มรายละเอียดเพิ่มเติม"
   const [showMore, setShowMore] = useState(
     !!(existing.shoulderWidth || existing.armLength || existing.garmentLength || existing.notes)
@@ -209,10 +224,10 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
   const [garmentLength, setGarmentLength] = useState(existing.garmentLength ? String(existing.garmentLength) : "");
   const [notes, setNotes] = useState(existing.notes ?? "");
 
-  const allFilled = !!gender && [height, weight, chest, waist, hip].every((v) => Number(v) > 0);
+  const allFilled = !!gender && !!skinTone && [height, weight, chest, waist, hip].every((v) => Number(v) > 0);
 
   const handleNext = () => {
-    if (!allFilled || !gender) return;
+    if (!allFilled || !gender || !skinTone) return;
     setOrderState({
       ...orderState,
       bodyMeasurements: {
@@ -222,6 +237,7 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
         chest: Number(chest),
         waist: Number(waist),
         hip: Number(hip),
+        skinTone,
         ...(shoulderWidth ? { shoulderWidth: Number(shoulderWidth) } : {}),
         ...(armLength ? { armLength: Number(armLength) } : {}),
         ...(garmentLength ? { garmentLength: Number(garmentLength) } : {}),
@@ -269,6 +285,34 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
                 {g === "male" ? t("tailorFlow.measurements.genderMale") : t("tailorFlow.measurements.genderFemale")}
               </Box>
             ))}
+          </Box>
+        </Box>
+
+        {/* สีผิว — ไม่มีรูปตัวเองให้ AI อ้างอิง ต้องระบุเองเพื่อให้แบบจำลองใกล้เคียงตัวจริงที่สุด */}
+        <Box>
+          <Typography sx={{ fontFamily: FONT, color: NAVY, fontWeight: 600, fontSize: '0.85rem', mb: 0.8 }}>
+            {t("tailorFlow.measurements.skinToneLabel")}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1.2 }}>
+            {SKIN_TONES.map((tone) => {
+              const isSelected = skinTone === tone.id;
+              return (
+                <Box
+                  key={tone.id}
+                  onClick={() => setSkinTone(tone.id)}
+                  sx={{
+                    width: 40, height: 40, borderRadius: '50%', bgcolor: tone.hex, cursor: 'pointer',
+                    border: isSelected ? `3px solid ${GOLD}` : '1px solid rgba(0,0,0,0.1)',
+                    boxShadow: isSelected ? '0 2px 8px rgba(197,165,90,0.4)' : 'none',
+                    transition: 'all 0.15s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                  title={t<string>(`tailorFlow.measurements.skinTones.${tone.id}`)}
+                >
+                  {isSelected && <CheckRoundedIcon sx={{ fontSize: 18, color: tone.checkColor }} />}
+                </Box>
+              );
+            })}
           </Box>
         </Box>
 

@@ -47,14 +47,29 @@ interface BodyMeasurements {
   chest: number; // cm
   waist: number; // cm
   hip: number; // cm
+  /** id ของสวอตช์สีผิวที่เลือกไว้ (ดู SKIN_TONES ใน MeasurementsStep.tsx ฝั่ง frontend — tone1..tone6) */
+  skinTone?: string;
 }
+
+// ต้อง sync id ให้ตรงกับ SKIN_TONES ใน frontend/components/tailor/steps/MeasurementsStep.tsx เป๊ะ
+const SKIN_TONE_DESC: Record<string, string> = {
+  tone1: "fair/light skin tone",
+  tone2: "light skin tone with warm undertone",
+  tone3: "golden tan skin tone",
+  tone4: "tan skin tone",
+  tone5: "deep honey/brown skin tone",
+  tone6: "dark skin tone",
+};
 
 /** บรรยายรูปร่างจากสัดส่วนเป็นข้อความให้ AI ใช้สร้างแบบจำลอง (ไม่ใช้รูปจริงของผู้ใช้) */
 function describeBodyBuild(m: BodyMeasurements): string {
   const bmi = m.weight / (m.height / 100) ** 2;
   const build = bmi < 18.5 ? "slender" : bmi < 25 ? "average" : bmi < 30 ? "fuller-figured" : "plus-size";
   const genderWord = m.gender === "male" ? "male" : "female";
-  return `a Thai ${genderWord} model with a ${build} build, approximately ${m.height}cm tall and ${m.weight}kg, `
+  // ไม่มีรูปตัวเองให้ AI อ้างอิงสีผิวได้ในโหมดนี้ — ถ้าผู้ใช้ไม่ได้ระบุ ให้ AI เลือกเองตามความเหมาะสมกับคนไทย
+  // (fallback นี้ไม่ควรเกิดขึ้นจริงเพราะ frontend บังคับเลือกสีผิวก่อนถึงจะกด "ถัดไป" ได้)
+  const skinDesc = m.skinTone ? SKIN_TONE_DESC[m.skinTone] ?? "medium skin tone" : "a skin tone typical of Thai people";
+  return `a Thai ${genderWord} model with a ${build} build and ${skinDesc}, approximately ${m.height}cm tall and ${m.weight}kg, `
     + `with a chest measurement of ${m.chest}cm, waist ${m.waist}cm, and hip ${m.hip}cm`;
 }
 
