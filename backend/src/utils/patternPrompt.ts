@@ -25,6 +25,12 @@ export interface PatternPromptInput {
   region?: string;
   dyeType?: "natural" | "chemical";
   moodText?: string;
+  /**
+   * มี URL รูปเทมเพลตลายจริงที่เลือกไว้หรือไม่ — ถ้ามี ต้องประกอบ prompt แบบ "recolor เทมเพลตเดิม"
+   * (image-to-image, ห้ามเปลี่ยนลายเปลี่ยนโครงสร้าง แค่เปลี่ยนสี) แทนแบบเดิมที่ให้ AI "แต่งลายใหม่ที่ได้แรงบันดาลใจจาก"
+   * ชื่อลาย (text-to-image, มักได้ลายที่ไม่ตรงกับเทมเพลตจริงเลย)
+   */
+  hasReferenceImage?: boolean;
 }
 
 const DENSITY_TEXT: Record<NonNullable<AdvancedSettings["density"]>, string> = {
@@ -64,10 +70,16 @@ export function buildPatternPrompt(input: PatternPromptInput): string {
   const advanced = input.advanced ?? {};
 
   const lines = [
-    "Create a premium seamless textile pattern for fabric printing.",
-    `Style: ${input.style}.`,
-    input.references.length ? `Inspired by: ${input.references.join(", ")}.` : "",
-    colorDesc ? `Primary colors: ${colorDesc}.` : "",
+    input.hasReferenceImage
+      ? "Using the reference image as the exact pattern template — keep the same motif, layout, composition, and repeat structure completely unchanged —"
+        + ` recolor it using only these colors: ${colorDesc || "the colors shown in the reference image"}.`
+        + " Do not redesign, do not change the shapes or arrangement, only replace the existing colors with the new palette."
+      : [
+          "Create a premium seamless textile pattern for fabric printing.",
+          `Style: ${input.style}.`,
+          input.references.length ? `Inspired by: ${input.references.join(", ")}.` : "",
+          colorDesc ? `Primary colors: ${colorDesc}.` : "",
+        ].filter(Boolean).join(" "),
     input.weaveType ? `Weaving technique: ${input.weaveType}.` : "",
     input.region ? `Regional style: ${input.region}.` : "",
     input.dyeType ? `Dyeing technique: ${input.dyeType === "natural" ? "natural plant-based dye, subtle organic color variation" : "chemical dye, precise saturated color"}.` : "",
@@ -76,7 +88,7 @@ export function buildPatternPrompt(input: PatternPromptInput): string {
     advanced.texture ? `Texture: ${advanced.texture}.` : "",
     advanced.mood?.length ? `Mood: ${advanced.mood.join(", ")}.` : "",
     advanced.density ? `Pattern density: ${DENSITY_TEXT[advanced.density]}.` : "",
-    advanced.complexity ? `Detail level: ${COMPLEXITY_TEXT[advanced.complexity]}.` : "",
+    !input.hasReferenceImage && advanced.complexity ? `Detail level: ${COMPLEXITY_TEXT[advanced.complexity]}.` : "",
     advanced.repeat ? `Repeat style: ${REPEAT_TEXT[advanced.repeat]}.` : "",
     advanced.resolution ? `Render at ultra-high resolution, approximately ${advanced.resolution}px, crisp fine detail.` : "",
     MANDATORY_KEYWORDS,

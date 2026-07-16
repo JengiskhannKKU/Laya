@@ -22,6 +22,8 @@ import { useAuth } from "@/lib/auth-context";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 import { useAppModal } from "@/components/providers/AppModalProvider";
 import type { ShopMatch, WeavingRequestResult } from "@/components/custom/types";
+import { getPatternImageByName } from "@/components/custom/PatternGallery";
+import { absoluteUrl } from "@/lib/seo";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -58,6 +60,12 @@ export default function CustomGenerator() {
       .filter((h): h is string => !!h);
     const complexityBucket = (merged.complexity ?? 50) >= 75 ? "detailed" : (merged.complexity ?? 50) >= 40 ? "medium" : "simple";
 
+    // ใช้ลายเทมเพลตจริงที่เลือกไว้เป็นภาพอ้างอิง (image-to-image) แทนการให้ AI แต่งลายใหม่จากชื่อ —
+    // ตอนนี้ flow คือ "recolor เทมเพลตเดิม" ไม่ใช่ "ผสมหลายลายเป็นดีไซน์ใหม่" (ดู patternPrompt.ts ฝั่ง backend)
+    const selectedPatternName = merged.selectedPatterns?.[0];
+    const patternAssetPath = selectedPatternName ? getPatternImageByName(selectedPatternName) : undefined;
+    const referenceImageUrl = patternAssetPath ? absoluteUrl(patternAssetPath) : undefined;
+
     try {
       const res = await authFetch(`${API_BASE}/api/patterns/generate`, {
         method: "POST",
@@ -65,6 +73,7 @@ export default function CustomGenerator() {
           colors: colorHex.length ? colorHex : ["#1B2A4A", "#C5A55A", "#8B0000"],
           colorNames: merged.colors,
           references: merged.selectedPatterns ?? [],
+          referenceImageUrl,
           style: "Traditional Thai silk, pixel art style",
           weaveType: merged.weaveType,
           region: merged.region,

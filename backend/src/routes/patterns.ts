@@ -42,13 +42,18 @@ function mapPattern(r: PatternRow) {
 
 /**
  * POST /api/patterns/generate
- * body: { colors: string[], colorNames?: string[], references: string[], style: string, advanced?: AdvancedSettings }
+ * body: { colors: string[], colorNames?: string[], references: string[], style: string, advanced?: AdvancedSettings,
+ *         referenceImageUrl?: string }
  * Guided wizard ไม่ให้ผู้ใช้พิมพ์ prompt เอง — ประกอบ prompt ฝั่ง server จากตัวเลือกที่ผู้ใช้กด แล้วยิงเข้า kie.ai จริง
+ *
+ * referenceImageUrl: URL รูปเทมเพลตลายจริงที่ผู้ใช้เลือกไว้ (ดู PatternGallery.tsx ฝั่ง frontend) — ถ้ามี จะยิงเป็น
+ * image-to-image ให้ AI recolor เทมเพลตเดิมเท่านั้น (ไม่เปลี่ยนลาย) แทนการ generate ลายใหม่จากชื่อแบบเดิม
+ * (เดิมส่งแค่ "references" เป็นชื่อลาย ไม่เคยส่งรูปจริงไปเลย ทำให้ AI ต้องเดาลายเอาเองจากชื่อ ไม่ตรงกับเทมเพลตจริง)
  */
 router.post("/generate", requireAuth, async (req: Request, res: Response) => {
   const started = Date.now();
   try {
-    const { colors, colorNames, references, style, advanced, weaveType, region, dyeType, moodText } = req.body as {
+    const { colors, colorNames, references, style, advanced, weaveType, region, dyeType, moodText, referenceImageUrl } = req.body as {
       colors?: string[];
       colorNames?: string[];
       references?: string[];
@@ -58,15 +63,23 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
       region?: string;
       dyeType?: "natural" | "chemical";
       moodText?: string;
+      referenceImageUrl?: string;
     };
 
     if (!colors?.length) { res.status(400).json({ error: "ต้องเลือกโทนสีอย่างน้อย 1 สี" }); return; }
     if (!style) { res.status(400).json({ error: "ต้องเลือกสไตล์ลาย" }); return; }
 
-    const prompt = buildPatternPrompt({ colors, colorNames, references: references ?? [], style, advanced, weaveType, region, dyeType, moodText });
+    const prompt = buildPatternPrompt({
+      colors, colorNames, references: references ?? [], style, advanced, weaveType, region, dyeType, moodText,
+      hasReferenceImage: !!referenceImageUrl,
+    });
     const size = aspectRatioToSize(advanced?.aspectRatio);
 
-    const { imageUrl, mock } = await generateImage({ prompt, size });
+    const { imageUrl, mock } = await generateImage({
+      prompt,
+      size,
+      filesUrl: referenceImageUrl ? [referenceImageUrl] : undefined,
+    });
 
     // ฟิลด์เฉพาะโฟลว์ /custom เก็บรวมไว้ใน advanced_settings JSONB (ไม่ต้อง migrate schema เพิ่ม)
     const storedSettings = { ...(advanced ?? {}), weaveType, region, dyeType, moodText };

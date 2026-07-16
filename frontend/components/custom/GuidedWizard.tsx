@@ -531,7 +531,7 @@ export default function GuidedWizard({ onGenerate }: GuidedWizardProps) {
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2, bgcolor: "#FFFFFF", p: 3, borderRadius: 4, border: "1px solid #E5DFD6" }}>
               <Box>
-                <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mb: 0.5 }}>Pattern (Blended)</Typography>
+                <Typography sx={{ fontSize: "0.75rem", color: "#6B7280", mb: 0.5 }}>Pattern Template</Typography>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                   {patternData.selectedPatterns?.map(p => (
                     <Chip key={p} label={p} size="small" sx={{ bgcolor: "rgba(197,165,90,0.1)", color: "#1B2A4A", fontWeight: 600 }} />
