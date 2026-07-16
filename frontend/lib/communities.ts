@@ -11,9 +11,12 @@
  * communities = [] แล้วทั้ง section หายไปเลย (CommunitiesSection return null ถ้า list ว่าง)
  */
 
+// ตัด trailing slash เสมอ — ถ้า env var ลงท้ายด้วย "/" (พบจริงใน .env.local) การต่อ string ตรงๆ จะได้
+// "http://host//api/..." (double slash) ซึ่ง Express ไม่ match เป็น route เดียวกัน ทำให้ fetch 404 เงียบๆ
+// แล้วหน้า /community/[id] (server component) เรียก notFound() ทั้งหน้าเลย ไม่ใช่แค่รูปหาย
 const BASE_URL =
   typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+    ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "")
     : "";
 
 /** ค่าจริงจาก shops.merchant_type ตอนร้านสมัคร — ใช้แยก "ชุมชนช่างทอ" กับ "ร้านค้า/นักออกแบบ" บนหน้า /community */

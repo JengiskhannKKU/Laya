@@ -8,9 +8,11 @@
 // ฝั่ง server (product/[id] เป็นต้น) fetch ต้องใช้ absolute URL เพราะไม่มี browser origin ให้ resolve relative path ได้
 // (บั๊กเดิม: ใช้ absolute localhost:4000 ตรงๆ ทุกที่ ทำให้เบราว์เซอร์ผู้ใช้จริงบน production fetch fail เงียบๆ
 // จนสินค้าที่ "คัดสรรสำหรับคุณ" หน้าแรกหายไปทั้ง section — เหมือนบั๊กที่เจอใน lib/communities.ts)
+// ตัด trailing slash เสมอ — env var ที่ลงท้ายด้วย "/" จะทำให้ได้ URL "http://host//api/..." (double slash)
+// ซึ่ง Express ไม่ match เป็น route เดียวกัน ทำให้ fetch 404 เงียบๆ (เจอจริงกับ NEXT_PUBLIC_API_URL ใน .env.local)
 export const API_BASE =
   typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+    ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "")
     : "";
 
 export interface ProductionStep {

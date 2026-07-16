@@ -7,7 +7,6 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUncheckedRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAppModal } from "@/components/providers/AppModalProvider";
 
 export interface PatternItem {
   id: string;
@@ -44,7 +43,7 @@ const PATTERN_DATA: PatternItem[] = [
 ];
 
 // Direct pattern id → pixel-art image (one unique image per pattern)
-const PATTERN_IMAGE: Record<string, string> = {
+export const PATTERN_IMAGE: Record<string, string> = {
   p1:  "/patterns/lotus.webp",
   p2:  "/patterns/naga.webp",
   p3:  "/patterns/diamond.webp",
@@ -57,8 +56,16 @@ const PATTERN_IMAGE: Record<string, string> = {
   p10: "/patterns/star_moon.webp",
 };
 
+export { PATTERN_DATA };
+
 function getPatternImage(item: PatternItem): string {
   return PATTERN_IMAGE[item.id] ?? "/patterns/lotus.webp";
+}
+
+/** หา path รูปลายจาก "ชื่อ" ลาย (ค่าที่เก็บใน CustomPatternData.selectedPatterns) — ใช้ตอนส่งไป generate จริง */
+export function getPatternImageByName(name: string): string | undefined {
+  const item = PATTERN_DATA.find((p) => p.name === name);
+  return item ? PATTERN_IMAGE[item.id] : undefined;
 }
 
 interface PatternGalleryProps {
@@ -68,7 +75,6 @@ interface PatternGalleryProps {
 }
 
 export default function PatternGallery({ selectedPatterns, onChange, onNext }: PatternGalleryProps) {
-  const { showAlert } = useAppModal();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
@@ -78,15 +84,13 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
     return matchSearch && matchCat;
   });
 
+  // เลือกได้ทีละ 1 ลายเท่านั้น (single-select) — เพราะตอนนี้ flow คือ "ใช้ลายเทมเพลตนี้จริง แล้วแค่เปลี่ยนสี"
+  // ไม่ใช่ให้ AI ผสม (blend) หลายลายเป็นดีไซน์ใหม่แบบเดิมอีกต่อไป เลือกลายใหม่จะแทนที่ลายเดิมทันที
   const togglePattern = (name: string) => {
     if (selectedPatterns.includes(name)) {
-      onChange(selectedPatterns.filter(p => p !== name));
+      onChange([]);
     } else {
-      if (selectedPatterns.length < 3) {
-        onChange([...selectedPatterns, name]);
-      } else {
-        showAlert({ title: "เลือกลายครบแล้ว", message: "เบลนด์ (Blend) ลายได้สูงสุด 3 ลาย — เอาลายที่เลือกไว้ออกก่อน แล้วเลือกลายใหม่ได้เลย", tone: "warning" });
-      }
+      onChange([name]);
     }
   };
 
@@ -248,7 +252,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
             แสดง {filteredPatterns.length} จาก {PATTERN_DATA.length} ลาย
           </Typography>
           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.95rem", color: "#1B2A4A" }}>
-            ลายที่เลือก (Blend)
+            ลายที่เลือก
           </Typography>
         </Box>
 
@@ -290,7 +294,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
                 }}
               >
                 <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#A68A3A" }}>
-                  + กดเลือกรูปเพื่อเพิ่มลาย
+                  + กดเลือกลายเทมเพลตที่ต้องการ
                 </Typography>
               </Box>
             )}
@@ -313,7 +317,7 @@ export default function PatternGallery({ selectedPatterns, onChange, onNext }: P
             "&.Mui-disabled": { bgcolor: "#E5DFD6", color: "#9CA3AF" },
           }}
         >
-          {selectedPatterns.length > 0 ? `ดำเนินการต่อ (${selectedPatterns.length} ลาย)` : "โปรดเลือกลาย"}
+          {selectedPatterns.length > 0 ? `ดำเนินการต่อ (${selectedPatterns[0]})` : "โปรดเลือกลาย"}
         </Button>
       </Box>
     </Box>

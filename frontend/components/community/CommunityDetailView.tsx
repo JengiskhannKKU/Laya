@@ -12,6 +12,7 @@ import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -131,7 +132,20 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
     <Box sx={{ width: "100%", pb: { xs: 12, md: 8 } }}>
       {/* Hero — เต็มความกว้าง */}
       <Box sx={{ position: "relative", width: "100%", height: { xs: 300, md: 340 } }}>
-        <Image src={community.image || "/placeholder.webp"} alt={community.name} fill style={{ objectFit: "cover" }} priority />
+        {community.image ? (
+          <Image src={community.image} alt={community.name} fill style={{ objectFit: "cover" }} priority />
+        ) : (
+          // ร้านที่ไม่มีรูป cover/profile/สินค้าเลย — เดิม fallback ไปที่ "/placeholder.webp" ซึ่งจริงๆ เป็นไฟล์ webp
+          // ขนาด 1x1 พิกเซล (ไม่ใช่รูปจริง) พอถูกยืดเต็ม hero แล้วดูเหมือนรูปหน้าร้านหายไปเฉยๆ
+          // ใช้พื้นหลังไล่สีของแบรนด์ + ไอคอนแทน ยังไงก็ดูตั้งใจแทนที่จะดูเหมือนบั๊ก
+          <Box sx={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(135deg, #1B2A4A 0%, #2A3F66 60%, #C5A55A 140%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <StorefrontRoundedIcon sx={{ fontSize: 64, color: "rgba(255,255,255,0.35)" }} />
+          </Box>
+        )}
         <Box sx={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(27,42,74,0.4) 0%, rgba(27,42,74,0.85) 100%)" }} />
 
         <Box sx={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", justifyContent: "space-between", zIndex: 10 }}>

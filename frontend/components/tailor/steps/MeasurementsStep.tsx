@@ -1,8 +1,11 @@
-import { useRef } from "react";
-import { Box, Typography, Button } from "@mui/material";
+import { useRef, useState } from "react";
+import { Box, Typography, Button, TextField } from "@mui/material";
 import { motion } from "framer-motion";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import StraightenRoundedIcon from "@mui/icons-material/StraightenRounded";
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -11,45 +14,429 @@ const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
 export type Perspective = "front" | "back" | "side";
+export type BodyInputMode = "photo" | "measurements";
+
+// สเกลสีผิว 6 โทน (แนวเดียวกับ emoji skin tone modifier / Fitzpatrick scale) — ใช้บอก AI ตอนสร้างแบบจำลอง
+// ในโหมดกรอกสัดส่วน (ไม่มีรูปตัวเองจริงให้อ้างอิงสีผิว) ต้องมีให้เลือกเสมอ ไม่ปล่อยให้ AI สุ่มเอง
+const SKIN_TONES: { id: string; hex: string; checkColor: string }[] = [
+  { id: "tone1", hex: "#FFDBB4", checkColor: "#1B2A4A" },
+  { id: "tone2", hex: "#EDB98A", checkColor: "#1B2A4A" },
+  { id: "tone3", hex: "#D08B5B", checkColor: "#FFFFFF" },
+  { id: "tone4", hex: "#AE7242", checkColor: "#FFFFFF" },
+  { id: "tone5", hex: "#8D5524", checkColor: "#FFFFFF" },
+  { id: "tone6", hex: "#5C3836", checkColor: "#FFFFFF" },
+];
+
+export interface BodyMeasurements {
+  gender: "male" | "female";
+  height: number;
+  weight: number;
+  chest: number;
+  waist: number;
+  hip: number;
+  // สีผิว — บังคับกรอกเฉพาะโหมดกรอกสัดส่วน (ไม่มีรูปจริงให้ AI อ้างอิง) เพื่อให้แบบจำลองที่สร้างมีสีผิว
+  // ใกล้เคียงผู้ใช้จริง แทนที่ AI จะสุ่มเอง (ดู tryon.ts backend — describeBodyBuild ใช้ค่านี้ต่อ)
+  skinTone?: string;
+  // เพิ่มตามสเปค custom_design_flow.jpg — ไม่บังคับกรอก (ให้ AI/ร้านใช้ค่าประมาณถ้าไม่ระบุ)
+  shoulderWidth?: number;
+  armLength?: number;
+  garmentLength?: number;
+  notes?: string;
+}
 
 /**
- * ถ่ายรูปตัวเอง 3 มุม (หน้า/หลัง/ข้าง) — เดิมมีแค่มุมเดียวและเป็นกล่องตกแต่งเฉยๆ ไม่มี input จริง
- * ตอนนี้ต้องอัปโหลดครบ 3 มุมก่อนไปขั้นลองใส่เสมือนจริง เพราะ AI ต้อง compositing ชุดแยกทีละมุมจริง
- * เก็บที่ orderState.bodyPhotos = { front, back, side } (base64 ไว้พรีวิว — VirtualTryOnStep จะอัปโหลด
- * ขึ้น Supabase Storage เพื่อได้ URL public ส่งให้ AI ต่อเอง)
+ * ถ่ายรูปตัวเอง / กรอกสัดส่วนร่างกาย — ให้ผู้ใช้เลือกได้ 2 ทาง ก่อนไปขั้นลองใส่เสมือนจริง:
+ *  - photo: ถ่ายรูปตัวเองจริง 3 มุม (หน้า/หลัง/ข้าง) — AI ใช้รูปจริง compositing ชุดลงบนตัวผู้ใช้เอง
+ *  - measurements: กรอกสัดส่วนร่างกาย (ส่วนสูง/น้ำหนัก/รอบอก/รอบเอว/รอบสะโพก) แทนการถ่ายรูป — AI จะสร้าง
+ *    แบบจำลอง (ไม่ใช่ตัวผู้ใช้เอง) ที่มีสัดส่วนใกล้เคียงคุณ เหมาะกับคนที่ไม่สะดวกถ่ายรูปตัวเอง
+ * เก็บที่ orderState.bodyInputMode บอกว่าเลือกทางไหน, orderState.bodyPhotos หรือ orderState.bodyMeasurements
+ * ตามโหมดที่เลือก — VirtualTryOnStep จะแตกกิ่งใช้ข้อมูลจากโหมดที่ถูกต้อง
  */
 export default function MeasurementsStep({ orderState, setOrderState, onNext }: any) {
   const { t } = useLanguage();
+  const mode: BodyInputMode | undefined = orderState.bodyInputMode;
+
   const PERSPECTIVES: { key: Perspective; label: string; hint: string }[] = [
     { key: "front", label: t("tailorFlow.measurements.front"), hint: t("tailorFlow.measurements.hintFront") },
     { key: "back", label: t("tailorFlow.measurements.back"), hint: t("tailorFlow.measurements.hintBack") },
     { key: "side", label: t("tailorFlow.measurements.side"), hint: t("tailorFlow.measurements.hintSide") },
   ];
   const photos: Partial<Record<Perspective, string>> = orderState.bodyPhotos ?? {};
-  const allDone = PERSPECTIVES.every((p) => !!photos[p.key]);
+  const allPhotosDone = PERSPECTIVES.every((p) => !!photos[p.key]);
   const doneCount = Object.values(photos).filter(Boolean).length;
 
   const setPhoto = (key: Perspective, dataUrl: string) => {
     setOrderState({ ...orderState, bodyPhotos: { ...photos, [key]: dataUrl } });
   };
 
+  const setMode = (next: BodyInputMode) => {
+    setOrderState({ ...orderState, bodyInputMode: next });
+  };
+
+  const backToModePicker = () => {
+    setOrderState({ ...orderState, bodyInputMode: undefined });
+  };
+
+  // ---- โหมดยังไม่ได้เลือก: การ์ดเลือกวิธี ----
+  if (!mode) {
+    return (
+      <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, fontSize: '0.95rem' }}>
+            {t("tailorFlow.measurements.modeTitle")}
+          </Typography>
+          <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.8rem', mt: 0.3 }}>
+            {t("tailorFlow.measurements.modeSubtitle")}
+          </Typography>
+        </Box>
+
+        <Box
+          component={motion.div}
+          whileHover={{ y: -3 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setMode("photo")}
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 2, p: 2.4, bgcolor: '#FFFFFF', borderRadius: '18px',
+            border: '1px solid #EFE9DD', cursor: 'pointer', boxShadow: '0 4px 16px rgba(27,42,74,0.06)',
+            '&:hover': { borderColor: GOLD },
+          }}
+        >
+          <Box sx={{ width: 52, height: 52, borderRadius: '14px', bgcolor: `${NAVY}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <CameraAltRoundedIcon sx={{ fontSize: 26, color: GOLD }} />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.9rem' }}>
+              {t("tailorFlow.measurements.modePhotoTitle")}
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.76rem', mt: 0.3 }}>
+              {t("tailorFlow.measurements.modePhotoDesc")}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box
+          component={motion.div}
+          whileHover={{ y: -3 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setMode("measurements")}
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 2, p: 2.4, bgcolor: '#FFFFFF', borderRadius: '18px',
+            border: '1px solid #EFE9DD', cursor: 'pointer', boxShadow: '0 4px 16px rgba(27,42,74,0.06)',
+            '&:hover': { borderColor: GOLD },
+          }}
+        >
+          <Box sx={{ width: 52, height: 52, borderRadius: '14px', bgcolor: `${NAVY}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <StraightenRoundedIcon sx={{ fontSize: 26, color: GOLD }} />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.9rem' }}>
+              {t("tailorFlow.measurements.modeMeasureTitle")}
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.76rem', mt: 0.3 }}>
+              {t("tailorFlow.measurements.modeMeasureDesc")}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // ---- โหมดถ่ายรูปตัวเอง ----
+  if (mode === "photo") {
+    return (
+      <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch', pt: 1 }}>
+
+        <ChangeModeLink onClick={backToModePicker} label={t("tailorFlow.measurements.changeMode")} />
+
+        <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#6B7280', fontSize: '0.88rem' }}>
+          {t("tailorFlow.measurements.subtitle")}
+        </Typography>
+
+        {PERSPECTIVES.map((p) => (
+          <PhotoSlot key={p.key} label={p.label} hint={p.hint} value={photos[p.key]} onCapture={(dataUrl) => setPhoto(p.key, dataUrl)} />
+        ))}
+
+        <Button
+          variant="contained"
+          fullWidth
+          disabled={!allPhotosDone}
+          onClick={onNext}
+          sx={{
+            bgcolor: NAVY,
+            color: 'white',
+            py: 1.7,
+            borderRadius: '14px',
+            fontFamily: FONT,
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            mt: 0.5,
+            boxShadow: allPhotosDone ? '0 4px 14px rgba(27,42,74,0.25)' : 'none',
+            '&:hover': { bgcolor: '#0F1A30' },
+            '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
+          }}
+        >
+          {allPhotosDone ? t("tailorFlow.measurements.nextReady") : t("tailorFlow.measurements.nextProgress").replace("{n}", String(doneCount))}
+        </Button>
+
+      </Box>
+    );
+  }
+
+  // ---- โหมดกรอกสัดส่วนร่างกาย ----
+  return (
+    <MeasurementsForm
+      orderState={orderState}
+      setOrderState={setOrderState}
+      onBack={backToModePicker}
+      onNext={onNext}
+    />
+  );
+}
+
+function ChangeModeLink({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <Box onClick={onClick} sx={{ display: 'flex', alignItems: 'center', gap: 0.3, cursor: 'pointer', color: NAVY, alignSelf: 'flex-start' }}>
+      <ChevronLeftRoundedIcon sx={{ fontSize: 18 }} />
+      <Typography sx={{ fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600 }}>{label}</Typography>
+    </Box>
+  );
+}
+
+function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
+  const { t } = useLanguage();
+  const existing: Partial<BodyMeasurements> = orderState.bodyMeasurements ?? {};
+  const [gender, setGender] = useState<"male" | "female" | undefined>(existing.gender);
+  const [height, setHeight] = useState(existing.height ? String(existing.height) : "");
+  const [weight, setWeight] = useState(existing.weight ? String(existing.weight) : "");
+  const [chest, setChest] = useState(existing.chest ? String(existing.chest) : "");
+  const [waist, setWaist] = useState(existing.waist ? String(existing.waist) : "");
+  const [hip, setHip] = useState(existing.hip ? String(existing.hip) : "");
+  const [skinTone, setSkinTone] = useState(existing.skinTone);
+  // ฟิลด์เพิ่มเติมตามสเปค custom_design_flow.jpg — ไม่บังคับกรอก ซ่อนไว้หลังปุ่ม "+ เพิ่มรายละเอียดเพิ่มเติม"
+  const [showMore, setShowMore] = useState(
+    !!(existing.shoulderWidth || existing.armLength || existing.garmentLength || existing.notes)
+  );
+  const [shoulderWidth, setShoulderWidth] = useState(existing.shoulderWidth ? String(existing.shoulderWidth) : "");
+  const [armLength, setArmLength] = useState(existing.armLength ? String(existing.armLength) : "");
+  const [garmentLength, setGarmentLength] = useState(existing.garmentLength ? String(existing.garmentLength) : "");
+  const [notes, setNotes] = useState(existing.notes ?? "");
+
+  const allFilled = !!gender && !!skinTone && [height, weight, chest, waist, hip].every((v) => Number(v) > 0);
+
+  const handleNext = () => {
+    if (!allFilled || !gender || !skinTone) return;
+    setOrderState({
+      ...orderState,
+      bodyMeasurements: {
+        gender,
+        height: Number(height),
+        weight: Number(weight),
+        chest: Number(chest),
+        waist: Number(waist),
+        hip: Number(hip),
+        skinTone,
+        ...(shoulderWidth ? { shoulderWidth: Number(shoulderWidth) } : {}),
+        ...(armLength ? { armLength: Number(armLength) } : {}),
+        ...(garmentLength ? { garmentLength: Number(garmentLength) } : {}),
+        ...(notes ? { notes } : {}),
+      },
+    });
+    onNext();
+  };
+
+  const numberFieldSx = {
+    '& .MuiInputBase-input': { fontFamily: FONT, fontSize: '0.9rem' },
+  };
+
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch', pt: 1 }}>
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
 
-      <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#6B7280', fontSize: '0.88rem' }}>
-        {t("tailorFlow.measurements.subtitle")}
+      <ChangeModeLink onClick={onBack} label={t("tailorFlow.measurements.changeMode")} />
+
+      <Typography sx={{ fontFamily: FONT, textAlign: 'center', color: '#6B7280', fontSize: '0.85rem' }}>
+        {t("tailorFlow.measurements.formSubtitle")}
       </Typography>
 
-      {PERSPECTIVES.map((p) => (
-        <PhotoSlot key={p.key} label={p.label} hint={p.hint} value={photos[p.key]} onCapture={(dataUrl) => setPhoto(p.key, dataUrl)} />
-      ))}
+      <Box sx={{ bgcolor: '#FFFFFF', border: '1px solid #EFE9DD', borderRadius: '18px', boxShadow: '0 4px 20px rgba(27,42,74,0.06)', p: 2.2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+        {/* เพศ */}
+        <Box>
+          <Typography sx={{ fontFamily: FONT, color: NAVY, fontWeight: 600, fontSize: '0.85rem', mb: 0.8 }}>
+            {t("tailorFlow.measurements.gender")}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {(["male", "female"] as const).map((g) => (
+              <Box
+                key={g}
+                onClick={() => setGender(g)}
+                sx={{
+                  flex: 1, py: 1.1, textAlign: 'center', borderRadius: '12px', cursor: 'pointer',
+                  bgcolor: gender === g ? NAVY : '#F9F6F0', color: gender === g ? 'white' : NAVY,
+                  border: gender === g ? 'none' : '1px solid #EFE9DD',
+                  fontFamily: FONT, fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.6,
+                }}
+              >
+                <PersonRoundedIcon sx={{ fontSize: 18 }} />
+                {g === "male" ? t("tailorFlow.measurements.genderMale") : t("tailorFlow.measurements.genderFemale")}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* สีผิว — ไม่มีรูปตัวเองให้ AI อ้างอิง ต้องระบุเองเพื่อให้แบบจำลองใกล้เคียงตัวจริงที่สุด */}
+        <Box>
+          <Typography sx={{ fontFamily: FONT, color: NAVY, fontWeight: 600, fontSize: '0.85rem', mb: 0.8 }}>
+            {t("tailorFlow.measurements.skinToneLabel")}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1.2 }}>
+            {SKIN_TONES.map((tone) => {
+              const isSelected = skinTone === tone.id;
+              return (
+                <Box
+                  key={tone.id}
+                  onClick={() => setSkinTone(tone.id)}
+                  sx={{
+                    width: 40, height: 40, borderRadius: '50%', bgcolor: tone.hex, cursor: 'pointer',
+                    border: isSelected ? `3px solid ${GOLD}` : '1px solid rgba(0,0,0,0.1)',
+                    boxShadow: isSelected ? '0 2px 8px rgba(197,165,90,0.4)' : 'none',
+                    transition: 'all 0.15s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                  title={t<string>(`tailorFlow.measurements.skinTones.${tone.id}`)}
+                >
+                  {isSelected && <CheckRoundedIcon sx={{ fontSize: 18, color: tone.checkColor }} />}
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+
+        {/* ส่วนสูง / น้ำหนัก */}
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <TextField
+            label={t("tailorFlow.measurements.height")}
+            type="number"
+            fullWidth
+            size="small"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
+            sx={numberFieldSx}
+            InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+          />
+          <TextField
+            label={t("tailorFlow.measurements.weight")}
+            type="number"
+            fullWidth
+            size="small"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            sx={numberFieldSx}
+            InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+          />
+        </Box>
+
+        {/* รอบอก / รอบเอว / รอบสะโพก */}
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <TextField
+            label={t("tailorFlow.measurements.chest")}
+            type="number"
+            fullWidth
+            size="small"
+            value={chest}
+            onChange={(e) => setChest(e.target.value)}
+            sx={numberFieldSx}
+            InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+          />
+          <TextField
+            label={t("tailorFlow.measurements.waist")}
+            type="number"
+            fullWidth
+            size="small"
+            value={waist}
+            onChange={(e) => setWaist(e.target.value)}
+            sx={numberFieldSx}
+            InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+          />
+          <TextField
+            label={t("tailorFlow.measurements.hip")}
+            type="number"
+            fullWidth
+            size="small"
+            value={hip}
+            onChange={(e) => setHip(e.target.value)}
+            sx={numberFieldSx}
+            InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+          />
+        </Box>
+
+        {!showMore ? (
+          <Box
+            onClick={() => setShowMore(true)}
+            sx={{ cursor: 'pointer', color: GOLD, fontFamily: FONT, fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}
+          >
+            {t("tailorFlow.measurements.addDetails")}
+          </Box>
+        ) : (
+          <>
+            {/* ไหล่กว้าง / ความยาวแขน / ความยาวเสื้อ — ไม่บังคับกรอก */}
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <TextField
+                label={t("tailorFlow.measurements.shoulderWidth")}
+                type="number"
+                fullWidth
+                size="small"
+                value={shoulderWidth}
+                onChange={(e) => setShoulderWidth(e.target.value)}
+                sx={numberFieldSx}
+                InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+              />
+              <TextField
+                label={t("tailorFlow.measurements.armLength")}
+                type="number"
+                fullWidth
+                size="small"
+                value={armLength}
+                onChange={(e) => setArmLength(e.target.value)}
+                sx={numberFieldSx}
+                InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+              />
+              <TextField
+                label={t("tailorFlow.measurements.garmentLength")}
+                type="number"
+                fullWidth
+                size="small"
+                value={garmentLength}
+                onChange={(e) => setGarmentLength(e.target.value)}
+                sx={numberFieldSx}
+                InputLabelProps={{ sx: { fontFamily: FONT, fontSize: '0.85rem' } }}
+              />
+            </Box>
+
+            <TextField
+              placeholder={t("tailorFlow.measurements.notesPlaceholder")}
+              multiline
+              minRows={2}
+              fullWidth
+              size="small"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              sx={{ '& .MuiInputBase-input': { fontFamily: FONT, fontSize: '0.85rem' } }}
+            />
+          </>
+        )}
+      </Box>
 
       <Button
         variant="contained"
         fullWidth
-        disabled={!allDone}
-        onClick={onNext}
+        disabled={!allFilled}
+        onClick={handleNext}
+        startIcon={<CheckRoundedIcon sx={{ fontSize: 18 }} />}
         sx={{
           bgcolor: NAVY,
           color: 'white',
@@ -58,13 +445,12 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
           fontFamily: FONT,
           fontWeight: 600,
           fontSize: '0.95rem',
-          mt: 0.5,
-          boxShadow: allDone ? '0 4px 14px rgba(27,42,74,0.25)' : 'none',
+          boxShadow: allFilled ? '0 4px 14px rgba(27,42,74,0.25)' : 'none',
           '&:hover': { bgcolor: '#0F1A30' },
           '&:disabled': { bgcolor: '#EFE9DD', color: '#A09C95' },
         }}
       >
-        {allDone ? t("tailorFlow.measurements.nextReady") : t("tailorFlow.measurements.nextProgress").replace("{n}", String(doneCount))}
+        {t("tailorFlow.measurements.nextReady")}
       </Button>
 
     </Box>

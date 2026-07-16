@@ -160,6 +160,11 @@ export function PartPreview({ asset, patternImage, color, mode }: {
         backgroundSize: '90px 90px',
         backgroundRepeat: 'repeat',
         backgroundBlendMode: patternImage ? 'multiply' : undefined,
+        // ระบุ mask-mode ตรงๆ ว่าใช้ alpha channel ของรูป — เดิมปล่อยเป็นค่า default (match-source) ตอนใช้ SVG
+        // placeholder แบบ solid fill ไม่มีปัญหา แต่พอเปลี่ยนมาใช้ PNG จริง (เส้นขอบ anti-alias, สี navy เข้ม)
+        // บางเบราว์เซอร์/บาง engine ตีความ default เป็น luminance mask แทน ทำให้พื้นที่สีเข้ม (navy) กับพื้นหลัง
+        // โปร่งใสมี luminance ใกล้เคียงกัน (ทั้งคู่ต่ำ) จนมาสก์ทั้งรูปดูเหมือนหายไปหมด — บังคับ alpha ชัดเจนกันปัญหานี้
+        ...({ WebkitMaskMode: 'alpha', maskMode: 'alpha' } as React.CSSProperties),
       }}
     />
   );

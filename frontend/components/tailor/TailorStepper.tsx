@@ -19,10 +19,10 @@ const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
 const STEP_INDEX: Record<string, number> = {
-  upload: 0,
-  ai_analysis: 1,
-  select_shop: 2,
-  choose_shape: 3,
+  select_shop: 0,
+  choose_shape: 1,
+  upload: 2,
+  ai_analysis: 3,
   select_occasion: 4,
   measurements: 5,
   virtual_try_on: 6,
