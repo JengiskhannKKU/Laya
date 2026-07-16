@@ -50,7 +50,17 @@ export interface TailorOrderState {
     id: string; name: string; category: string; front: string; back: string; price: number;
   };
   occasion?: string;
+  // เลือกวิธีลองใส่เสมือนจริง: ใช้รูปตัวเองจริง (photo) หรือกรอกสัดส่วนให้ AI สร้างแบบจำลองแทน (measurements)
+  bodyInputMode?: "photo" | "measurements";
   bodyPhotos?: { front?: string; back?: string; side?: string };
+  bodyMeasurements?: {
+    gender: "male" | "female";
+    height: number; // ซม.
+    weight: number; // กก.
+    chest: number; // ซม.
+    waist: number; // ซม.
+    hip: number; // ซม.
+  };
   tryOnResults?: { front?: string; back?: string; side?: string };
   shop?: any;
 }

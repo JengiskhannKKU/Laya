@@ -36,6 +36,8 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
     { key: "side", label: t("tailorFlow.virtualTryOn.side") },
   ];
   const bodyPhotos = orderState.bodyPhotos as Record<Perspective, string> | undefined;
+  const bodyMeasurements = orderState.bodyMeasurements;
+  const isMeasurementMode = orderState.bodyInputMode === "measurements";
   const [active, setActive] = useState<Perspective>("front");
   const [slots, setSlots] = useState<Record<Perspective, SlotState>>({
     front: { status: "idle" }, back: { status: "idle" }, side: { status: "idle" },
@@ -68,12 +70,16 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
   const runPerspective = async (p: Perspective) => {
     setSlots((s) => ({ ...s, [p]: { status: "loading" } }));
     try {
-      let bodyUrl = uploadedUrls.current.body[p];
-      if (!bodyUrl && bodyPhotos?.[p]) {
-        bodyUrl = await uploadOnce(bodyPhotos[p]);
-        uploadedUrls.current.body[p] = bodyUrl;
+      // โหมด measurements ไม่มีรูปตัวเองจริง — ให้ AI สร้างแบบจำลองจากสัดส่วนแทน ไม่ต้องอัปโหลด/ส่ง bodyPhotoUrl
+      let bodyUrl: string | undefined;
+      if (!isMeasurementMode) {
+        bodyUrl = uploadedUrls.current.body[p];
+        if (!bodyUrl && bodyPhotos?.[p]) {
+          bodyUrl = await uploadOnce(bodyPhotos[p]);
+          uploadedUrls.current.body[p] = bodyUrl;
+        }
+        if (!bodyUrl) throw new Error(t("tailorFlow.virtualTryOn.bodyPhotoMissing"));
       }
-      if (!bodyUrl) throw new Error(t("tailorFlow.virtualTryOn.bodyPhotoMissing"));
 
       if (!uploadedUrls.current.fabric && orderState.fabricImage) {
         uploadedUrls.current.fabric = await uploadOnce(orderState.fabricImage);
@@ -84,6 +90,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bodyPhotoUrl: bodyUrl,
+          bodyMeasurements: isMeasurementMode ? bodyMeasurements : undefined,
           fabricImageUrl: uploadedUrls.current.fabric,
           perspective: p,
           analysisResult: orderState.analysisResult,
@@ -110,6 +117,14 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch', pt: 1 }}>
+
+      {isMeasurementMode && (
+        <Box sx={{ bgcolor: `${NAVY}0A`, borderRadius: '14px', px: 2, py: 1.2 }}>
+          <Typography sx={{ fontFamily: FONT, color: NAVY, fontSize: '0.78rem', textAlign: 'center' }}>
+            {t("tailorFlow.virtualTryOn.measurementModeNote")}
+          </Typography>
+        </Box>
+      )}
 
       {anyLoading && (
         <Box sx={{ bgcolor: `${GOLD}14`, border: `1px solid ${GOLD}40`, borderRadius: '14px', px: 2, py: 1.4 }}>

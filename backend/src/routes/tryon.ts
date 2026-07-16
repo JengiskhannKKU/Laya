@@ -40,23 +40,45 @@ const PERSPECTIVE_DESC: Record<Perspective, string> = {
   side: "from the side, profile / side view, full body visible head to toe",
 };
 
+interface BodyMeasurements {
+  gender: "male" | "female";
+  height: number; // cm
+  weight: number; // kg
+  chest: number; // cm
+  waist: number; // cm
+  hip: number; // cm
+}
+
+/** บรรยายรูปร่างจากสัดส่วนเป็นข้อความให้ AI ใช้สร้างแบบจำลอง (ไม่ใช้รูปจริงของผู้ใช้) */
+function describeBodyBuild(m: BodyMeasurements): string {
+  const bmi = m.weight / (m.height / 100) ** 2;
+  const build = bmi < 18.5 ? "slender" : bmi < 25 ? "average" : bmi < 30 ? "fuller-figured" : "plus-size";
+  const genderWord = m.gender === "male" ? "male" : "female";
+  return `a Thai ${genderWord} model with a ${build} build, approximately ${m.height}cm tall and ${m.weight}kg, `
+    + `with a chest measurement of ${m.chest}cm, waist ${m.waist}cm, and hip ${m.hip}cm`;
+}
+
 /**
  * POST /api/tryon/generate
- * body: { bodyPhotoUrl, fabricImageUrl?, perspective, analysisResult?, occasion? }
- * ให้ AI (kie.ai gpt4o-image, image-to-image) ใส่ชุดจากผ้าอ้างอิงลงบนรูปคนจริงตามมุมที่ระบุ
+ * body: { bodyPhotoUrl?, bodyMeasurements?, fabricImageUrl?, perspective, analysisResult?, occasion? }
+ * ให้ AI (kie.ai gpt4o-image, image-to-image) ใส่ชุดจากผ้าอ้างอิงลงบนคนตามมุมที่ระบุ — รับได้ 2 ทาง:
+ *  - bodyPhotoUrl: ใช้รูปตัวเองจริงของผู้ใช้เป็นต้นแบบ (คงหน้าตา/สัดส่วนเดิมไว้เป๊ะ)
+ *  - bodyMeasurements: ไม่มีรูปจริง — ให้ AI สร้างแบบจำลองใหม่ตามสัดส่วนที่ระบุแทน (ไม่ใช่ตัวผู้ใช้จริง)
+ * ต้องมีอย่างใดอย่างหนึ่งเสมอ
  */
 router.post("/generate", async (req: Request, res: Response) => {
   try {
-    const { bodyPhotoUrl, fabricImageUrl, perspective, analysisResult, occasion } = req.body as {
+    const { bodyPhotoUrl, bodyMeasurements, fabricImageUrl, perspective, analysisResult, occasion } = req.body as {
       bodyPhotoUrl?: string;
+      bodyMeasurements?: BodyMeasurements;
       fabricImageUrl?: string;
       perspective?: Perspective;
       analysisResult?: { type?: string; technique?: string; pattern?: string; tone?: string };
       occasion?: string;
     };
 
-    if (!bodyPhotoUrl) {
-      res.status(400).json({ error: "bodyPhotoUrl is required" });
+    if (!bodyPhotoUrl && !bodyMeasurements) {
+      res.status(400).json({ error: "bodyPhotoUrl or bodyMeasurements is required" });
       return;
     }
     if (!perspective || !PERSPECTIVE_DESC[perspective]) {
@@ -68,9 +90,13 @@ router.post("/generate", async (req: Request, res: Response) => {
       ? `${analysisResult.type ?? "ผ้าไทย"} ลาย${analysisResult.pattern ?? "ทอมือ"} โทนสี${analysisResult.tone ?? ""} เทคนิค${analysisResult.technique ?? ""}`.trim()
       : "the Thai fabric shown in the reference image";
 
+    const subjectInstruction = bodyPhotoUrl
+      ? "Using the first reference image as the exact person — preserve their face, hair, skin tone, and body proportions exactly, do not change their identity —"
+      : `Generate ${describeBodyBuild(bodyMeasurements!)} as a photorealistic fashion model (not a real specific person, a newly generated model matching these proportions) —`;
+
     const prompt = [
-      "Using the first reference image as the exact person — preserve their face, hair, skin tone, and body proportions exactly, do not change their identity —",
-      fabricImageUrl ? "and the second reference image as the fabric texture and color reference," : "",
+      subjectInstruction,
+      fabricImageUrl ? `and the ${bodyPhotoUrl ? "second" : "first"} reference image as the fabric texture and color reference,` : "",
       `generate a photorealistic full-body fashion photograph of this person wearing an elegant tailored Thai-style outfit made from ${fabricDesc}`,
       occasion ? `, appropriate for the occasion: ${occasion}` : "",
       `. Camera angle: ${PERSPECTIVE_DESC[perspective]}. Studio lighting, professional fashion photography, plain neutral background, natural standing pose.`,
