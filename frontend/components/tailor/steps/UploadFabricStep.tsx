@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
@@ -25,8 +25,18 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewStatus, setPreviewStatus] = useState<PreviewStatus>("idle");
   const [previewImage, setPreviewImage] = useState<string | undefined>(undefined);
+  const [elapsedSec, setElapsedSec] = useState(0);
 
   const shapeName = orderState.shape?.name ?? "";
+
+  // นับเวลาที่ผ่านไปตอนกำลังสร้างตัวอย่าง — AI generate ใช้เวลาจริงได้ถึง ~5 นาที (kie.ai image-to-image
+  // ใช้ 2 รูปอ้างอิง) กันคนคิดว่าค้าง เหมือนที่ทำไว้แล้วใน VirtualTryOnStep.tsx
+  useEffect(() => {
+    if (previewStatus !== 'loading') { setElapsedSec(0); return; }
+    setElapsedSec(0);
+    const timer = setInterval(() => setElapsedSec((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, [previewStatus]);
 
   const runCompositePreview = async (fabricImageBase64: string) => {
     if (!orderState.shape?.id) {
@@ -36,6 +46,8 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
     }
     setPreviewStatus("loading");
     try {
+      // กัน fetch ค้างตลอดไปฝั่ง browser ถ้า connection มีปัญหาแบบไม่ error ชัดเจน (10 นาที > เวลาที่ใช้จริงสูงสุด
+      // ~5 นาที ของ backend เผื่อไว้พอสมควร) — ให้จบด้วย error state แทนสปินเนอร์ค้างตลอดไปแบบไม่มีทางออก
       const res = await fetch(`${API_BASE}/api/tryon/composite-preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,6 +56,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
           shape: { id: orderState.shape.id },
           perspective: "front",
         }),
+        signal: AbortSignal.timeout(600_000),
       });
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error ?? "preview failed");
@@ -175,6 +188,11 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
               <CircularProgress sx={{ color: NAVY }} />
               <Typography sx={{ fontFamily: FONT, color: NAVY, textAlign: 'center', fontSize: '0.9rem' }}>
                 {t("tailorFlow.upload.previewGenerating").replace("{shape}", shapeName)}
+              </Typography>
+              <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.75rem', textAlign: 'center' }}>
+                {t("tailorFlow.virtualTryOn.elapsed")
+                  .replace("{mm}", String(Math.floor(elapsedSec / 60)).padStart(2, '0'))
+                  .replace("{ss}", String(elapsedSec % 60).padStart(2, '0'))}
               </Typography>
             </Box>
           )}
