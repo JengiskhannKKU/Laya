@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import LayaLogo from "@/components/common/LayaLogo";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -44,7 +44,7 @@ const fieldSx = {
   "& .MuiInputLabel-root.Mui-focused": { color: "#C5A55A" },
 };
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams ? searchParams.get("redirect") : null;
@@ -238,5 +238,19 @@ export default function LoginPage() {
         </Box>
       </Box>
     </Box>
+  );
+}
+
+// useSearchParams() ต้องอยู่ใต้ Suspense ไม่งั้น build จะ error ตอน prerender
+// (เจอจริงตอน deploy: "useSearchParams() should be wrapped in a suspense boundary")
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <Box sx={{ minHeight: "100vh", bgcolor: "#FAF6F0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <CircularProgress sx={{ color: "#C5A55A" }} />
+      </Box>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }
