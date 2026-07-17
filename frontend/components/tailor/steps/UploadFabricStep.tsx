@@ -3,6 +3,7 @@ import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -106,6 +107,27 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
     handleClickUpload();
   };
 
+  // ดาวน์โหลดรูปตัวอย่างที่ AI generate ไว้ — fetch เป็น blob ก่อนแล้วค่อยสร้างลิงก์ดาวน์โหลด
+  // (ใช้ <a href={url} download> ตรงๆ ไม่ได้ผลเพราะรูปมาจากคนละโดเมน (Supabase) บางเบราว์เซอร์จะเปิดแท็บใหม่แทน
+  // การดาวน์โหลด — fetch มาเป็น blob ก่อนแก้ปัญหานี้ได้ เพราะ bucket เปิด CORS ไว้อยู่แล้ว)
+  const handleSaveImage = async () => {
+    if (!previewImage) return;
+    try {
+      const res = await fetch(previewImage);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `laya-${orderState.shape?.id ?? 'garment'}-preview.webp`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(previewImage, '_blank');
+    }
+  };
+
   // ปุ่มข้าม (debug) — ใส่รูปผ้าตัวอย่างแทนของจริง ให้ทดสอบขั้นถัดๆ ไปได้เร็วโดยไม่ต้องอัปโหลดจริงทุกรอบ
   const handleSkip = () => {
     setOrderState({ ...orderState, fabricImage: orderState.fabricImage ?? "/images/fabric1.webp" });
@@ -204,6 +226,16 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
                 position: 'relative', overflow: 'hidden', boxShadow: '0 4px 20px rgba(27,42,74,0.06)',
               }}>
               <Image src={previewImage} alt="Fabric on shape preview" fill style={{ objectFit: 'contain' }} />
+              <Box
+                onClick={handleSaveImage}
+                sx={{
+                  position: 'absolute', bottom: 16, right: 16, bgcolor: 'rgba(255,255,255,0.92)', p: 1,
+                  borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.12)', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <DownloadRoundedIcon sx={{ color: NAVY }} />
+              </Box>
             </Box>
           )}
 
