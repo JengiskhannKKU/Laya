@@ -1,8 +1,9 @@
 import { Router, Request, Response } from "express";
-import { uploadBase64AsWebP, uploadImageAsWebP, compositeFabricOntoTemplate, BUCKETS } from "../utils/imageUtils";
+import { uploadBase64AsWebP, BUCKETS } from "../utils/imageUtils";
 import { supabaseAdminConfigured } from "../utils/supabaseAdmin";
 import { generateImage } from "../utils/kieImage";
 import { runTryOn } from "../utils/fashn";
+import { generateGarmentProductImage } from "../utils/garmentProduct";
 
 const router = Router();
 
@@ -35,9 +36,9 @@ router.post("/upload", async (req: Request, res: Response) => {
 
 /**
  * POST /api/tryon/composite-preview — body: { fabricImageBase64, shape: { id }, perspective? } → { previewImage }
- * ผสมลายผ้าที่เพิ่งอัปโหลด (ยังไม่ทันอัปโหลดขึ้น Storage) ลงบนทรงเทมเพลตที่เลือกไว้แล้ว (ChooseShapeStep มาก่อน
- * UploadFabricStep เสมอ) แล้วส่งรูปตัวอย่างกลับเป็น base64 ทันที — ให้ลูกค้าเห็นภาพผ้าที่ปูบนทรงจริงๆ
- * หลังอัปโหลดเสร็จ ก่อนจะไปขั้นถ่ายรูปตัวเอง/สัดส่วน (ไม่ upload ขึ้น Supabase เพราะเป็นแค่ preview ชั่วคราว)
+ * ให้ AI (kie.ai image-to-image) generate รูปชุดจริงจากทรงเทมเพลตที่เลือกไว้แล้ว (ChooseShapeStep มาก่อน
+ * UploadFabricStep เสมอ) ผสมกับลายผ้าที่เพิ่งอัปโหลด แล้วส่ง URL รูปตัวอย่างกลับ — ให้ลูกค้าเห็นภาพชุดจริง
+ * ก่อนจะไปขั้นถ่ายรูปตัวเอง/สัดส่วน (เดิมใช้ sharp mask compositing ตรงๆ แต่ขอบภาพเบลอ/หยาบเกินไป)
  */
 router.post("/composite-preview", async (req: Request, res: Response) => {
   try {
@@ -55,15 +56,13 @@ router.post("/composite-preview", async (req: Request, res: Response) => {
       return;
     }
 
-    const match = fabricImageBase64.match(/^data:image\/[a-zA-Z0-9.+-]+;base64,(.+)$/);
-    const base64Data = match ? match[1] : fabricImageBase64;
-    const fabricBuffer = Buffer.from(base64Data, "base64");
-
-    const productBuffer = await compositeFabricOntoTemplate(fabricBuffer, shape.id, perspective ?? "front");
-    res.json({ success: true, previewImage: `data:image/png;base64,${productBuffer.toString("base64")}` });
+    // AI generate ต้องการ URL อินเทอร์เน็ตของรูปผ้า ไม่รับ base64 ตรงๆ — อัปโหลดขึ้น Storage ก่อน
+    const fabricUpload = await uploadBase64AsWebP(fabricImageBase64, BUCKETS.tryonUploads, "fabric-previews");
+    const product = await generateGarmentProductImage(shape.id, perspective ?? "front", fabricUpload.url);
+    res.json({ success: true, previewImage: product.url, mock: product.mock });
   } catch (err: any) {
     console.error("[tryon/composite-preview] error:", err.message);
-    res.status(500).json({ error: err.message ?? "ผสมลายผ้าลงทรงเสื้อไม่สำเร็จ" });
+    res.status(500).json({ error: err.message ?? "สร้างตัวอย่างชุดไม่สำเร็จ" });
   }
 });
 
@@ -161,23 +160,18 @@ router.post("/generate", async (req: Request, res: Response) => {
 
     // มีรูปตัวเองจริง + เลือกทรงเทมเพลตไว้แล้ว + มีรูปผ้า → ใช้ FASHN virtual try-on (ทำมาสำหรับใส่เสื้อผ้า
     // ลงบนรูปคนจริงโดยเฉพาะ ผลลัพธ์แม่นกว่า image-editing ทั่วไปแบบ kie.ai) แทน
-    // ต้องผสมลายผ้าลงในทรงเทมเพลตก่อน (compositeFabricOntoTemplate) เพราะ FASHN ต้องการรูปเสื้อผ้าจริง
-    // ไม่ใช่ line art เปล่าๆ — ถ้าไม่มีเงื่อนไขครบ (เช่น โหมด measurements หรือยังไม่เลือกทรง/ผ้า) fallback ไป kie.ai เดิม
+    // ต้องสร้างรูป "ชุดจริง" จากทรงเทมเพลต + ผ้าก่อน (generateGarmentProductImage — ใช้ AI generate ไม่ใช่
+    // sharp mask compositing เพราะขอบภาพเบลอ/หยาบ) เพราะ FASHN ต้องการรูปเสื้อผ้าจริง ไม่ใช่ line art เปล่าๆ
+    // ถ้าไม่มีเงื่อนไขครบ (เช่น โหมด measurements หรือยังไม่เลือกทรง/ผ้า) fallback ไป kie.ai เดิม
     if (bodyPhotoUrl && shape?.id && fabricImageUrl) {
       try {
-        const fabricRes = await fetch(fabricImageUrl, { signal: AbortSignal.timeout(20_000) });
-        if (!fabricRes.ok) throw new Error(`โหลดรูปผ้าไม่สำเร็จ: ${fabricRes.status}`);
-        const fabricBuffer = Buffer.from(await fabricRes.arrayBuffer());
-
-        const productBuffer = await compositeFabricOntoTemplate(fabricBuffer, shape.id, perspective);
-        const productUpload = await uploadImageAsWebP(productBuffer, BUCKETS.tryonUploads, "fashn-products");
-
-        const result = await runTryOn({ modelImageUrl: bodyPhotoUrl, productImageUrl: productUpload.url });
+        const product = await generateGarmentProductImage(shape.id, perspective, fabricImageUrl);
+        const result = await runTryOn({ modelImageUrl: bodyPhotoUrl, productImageUrl: product.url });
         res.json({ success: true, perspective, ...result });
         return;
       } catch (fashnErr: any) {
         console.error("[tryon/generate] FASHN path failed, falling back to kie.ai:", fashnErr.message);
-        // ตกไปใช้ kie.ai เดิมด้านล่างต่อ (ไม่ throw ทันที กันเคสไม่มี mask ของทรงนี้ หรือ FASHN ล่มชั่วคราว)
+        // ตกไปใช้ kie.ai เดิมด้านล่างต่อ (ไม่ throw ทันที กันเคสไม่มี artwork ของทรงนี้ หรือ FASHN ล่มชั่วคราว)
       }
     }
 

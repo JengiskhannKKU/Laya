@@ -1,5 +1,6 @@
 import sharp from "sharp";
 import path from "path";
+import { promises as fs } from "fs";
 import { randomUUID } from "crypto";
 import { supabaseAdmin, supabaseAdminConfigured } from "./supabaseAdmin";
 
@@ -150,65 +151,35 @@ export async function uploadRawFile(
 }
 
 /**
- * Template silhouette masks (solid navy fill, transparent bg) ที่ slice ไว้จาก shapes.png/Shapes-2.png
+ * Template artwork จริง (เส้น/รายละเอียดชุด ไม่ใช่ mask ทึบ) ที่ slice ไว้จาก shapes.png/Shapes-2.png
  * เก็บอยู่ฝั่ง frontend (frontend/public/assets/garments/tops/templates) — backend อ่านตรงจาก
  * disk ได้เลยเพราะ frontend/backend อยู่ใน monorepo เดียวกัน ไม่ต้องยิง HTTP
+ *
+ * เดิมใช้วิธี sharp mask compositing (dest-in) ปูลายผ้าลงบน silhouette ทึบ แต่ขอบภาพเบลอ/หยาบมาก
+ * (เพราะ mask ต้นฉบับมีขนาดเล็ก ~100-250px ต้อง upscale) เปลี่ยนมาใช้ AI (kie.ai image-to-image) generate
+ * รูปชุดจากผ้าจริงแทน — ดู generateGarmentProductImage ใน garmentProduct.ts
  */
 const TEMPLATES_DIR = path.join(process.cwd(), "..", "frontend", "public", "assets", "garments", "tops", "templates");
 
+const _templateArtworkUrlCache = new Map<string, Promise<string>>();
+
 /**
- * ผสมลายผ้าของลูกค้าเข้ากับทรงเทมเพลตที่เลือกไว้ (mask) เพื่อสร้าง "product image" จริง
- * ให้ FASHN virtual try-on ใช้เป็นชุดอ้างอิง — FASHN ต้องการรูปเสื้อผ้าจริง ไม่ใช่ line art เปล่าๆ
- *
- * @param fabricBuffer - buffer ของรูปลายผ้า (จะถูกปูซ้ำ/ครอบให้เต็มทรง)
- * @param templateId   - id เทมเพลต (shirt/blazer/jacket/dress/polo/crop/vest/kimono)
- * @param perspective  - front หรือ back — เลือก mask คนละไฟล์ (ไม่มี mask สำหรับ side ใช้ front แทน)
- * @returns buffer ของรูป PNG พื้นหลังขาว มีทรงเสื้อผ้าลายผ้าเต็มตัว พร้อมส่งให้ FASHN
+ * อัปโหลด artwork จริงของเทมเพลต (front/back) ขึ้น Supabase Storage ครั้งแรกที่ถูกเรียกใช้ แล้ว cache URL
+ * ไว้ในหน่วยความจำ (ไม่ต้องอัปโหลดซ้ำทุก request) — เพื่อให้ kie.ai เข้าถึงเป็น URL อินเทอร์เน็ตได้ (ต้องการ
+ * public URL ไม่รับ base64/ไฟล์ในเครื่อง)
  */
-export async function compositeFabricOntoTemplate(
-  fabricBuffer: Buffer,
-  templateId: string,
-  perspective: "front" | "back" | "side"
-): Promise<Buffer> {
-  const maskFile = perspective === "back" ? `${templateId}-back-mask.png` : `${templateId}-mask.png`;
-  const maskPath = path.join(TEMPLATES_DIR, maskFile);
-
-  const maskMeta = await sharp(maskPath).metadata();
-  const rawWidth = maskMeta.width ?? 512;
-  const rawHeight = maskMeta.height ?? 512;
-
-  // มาสก์ต้นฉบับที่ slice ไว้มีขนาดเล็กมาก (~100-250px) — FASHN ต้องการรูปอย่างน้อย 128px ต่อด้าน
-  // (เจอจริงตอนทดสอบ: "Product image dimensions must be at least 128px on each side") ต้อง upscale
-  // ก่อนเสมอให้ด้านสั้นสุดอย่างน้อย ~1024px เพื่อความคมชัดของลายผ้าด้วย ไม่ใช่แค่ผ่านเกณฑ์ขั้นต่ำ
-  const MIN_SIDE = 1024;
-  const scale = MIN_SIDE / Math.min(rawWidth, rawHeight);
-  const width = Math.round(rawWidth * scale);
-  const height = Math.round(rawHeight * scale);
-
-  const maskResizedBuffer = await sharp(maskPath)
-    .resize(width, height, { fit: "fill" })
-    .toBuffer();
-
-  // ปูลายผ้าให้ครอบทรงเต็ม (cover) แล้ว clip ด้วย alpha ของ mask (dest-in)
-  const fabricResized = await sharp(fabricBuffer)
-    .resize(width, height, { fit: "cover" })
-    .ensureAlpha()
-    .toBuffer();
-
-  const clipped = await sharp(fabricResized)
-    .composite([{ input: maskResizedBuffer, blend: "dest-in" }])
-    .png()
-    .toBuffer();
-
-  // วางลงพื้นขาว (FASHN ต้องการรูปทึบ ไม่ใช่พื้นหลังโปร่งใส)
-  const finalBuffer = await sharp({
-    create: { width, height, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } },
-  })
-    .composite([{ input: clipped }])
-    .png()
-    .toBuffer();
-
-  return finalBuffer;
+export async function getTemplateArtworkUrl(templateId: string, perspective: "front" | "back"): Promise<string> {
+  const key = `${templateId}-${perspective}`;
+  if (!_templateArtworkUrlCache.has(key)) {
+    const p = (async () => {
+      const filePath = path.join(TEMPLATES_DIR, `${templateId}-${perspective}.png`);
+      const buffer = await fs.readFile(filePath);
+      const upload = await uploadImageAsWebP(buffer, BUCKETS.tryonUploads, "template-artwork");
+      return upload.url;
+    })();
+    _templateArtworkUrlCache.set(key, p);
+  }
+  return _templateArtworkUrlCache.get(key)!;
 }
 
 // ── Bucket bootstrap (idempotent) ────────────────────────────────────────────
