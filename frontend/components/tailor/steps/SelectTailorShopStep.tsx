@@ -260,6 +260,13 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
         {t("tailorFlow.selectShop.confirmButton")}
       </Button>
 
+      <Button
+        onClick={onNext}
+        sx={{ color: '#9B958A', fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600, textTransform: 'none' }}
+      >
+        {t("tailorFlow.common.skipStep")}
+      </Button>
+
     </Box>
   );
 }

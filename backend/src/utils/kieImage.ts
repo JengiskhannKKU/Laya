@@ -35,11 +35,25 @@ class CreditsExhaustedError extends Error {
 async function pollTask(taskId: string, maxWait = 330_000, interval = 4_000): Promise<string> {
   const deadline = Date.now() + maxWait;
   while (Date.now() < deadline) {
-    const res = await fetch(`${NB_BASE}/record-info?taskId=${taskId}`, {
-      headers: { Authorization: `Bearer ${API_KEY}` },
-    });
-    if (!res.ok) throw new Error(`Poll failed: ${res.status}`);
-    const body = (await res.json()) as any;
+    // ตั้ง timeout ต่อการเรียกแต่ละครั้ง (ไม่ใช่ทั้งลูป) กัน fetch ค้างตลอดไปถ้า kie.ai ไม่ตอบ —
+    // เจอเคสจริงที่ fetch ค้างเกิน maxWait ไปมาก เพราะ deadline check ใน while ไม่มีทางถูกเช็คถ้า
+    // await fetch(...) เองไม่เคย resolve/reject เลย ต้อง abort แล้ว retry รอบถัดไปแทน
+    let body: any;
+    try {
+      const res = await fetch(`${NB_BASE}/record-info?taskId=${taskId}`, {
+        headers: { Authorization: `Bearer ${API_KEY}` },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) throw new Error(`Poll failed: ${res.status}`);
+      body = await res.json();
+    } catch (err: any) {
+      // timeout/network error ต่อการเรียกครั้งเดียว — ไม่ใช่ error จริงจากงาน ให้ retry รอบถัดไปแทน
+      if (err?.name === "TimeoutError" || err?.name === "AbortError" || err instanceof TypeError) {
+        await new Promise((r) => setTimeout(r, interval));
+        continue;
+      }
+      throw err;
+    }
 
     if (isCreditsError(body)) throw new CreditsExhaustedError();
 
@@ -104,6 +118,7 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
         filesUrl: params.filesUrl,
         size: params.size ?? "1:1",
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!submitRes.ok) {

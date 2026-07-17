@@ -21,11 +21,23 @@ function isCreditsError(msg: string): boolean {
 async function pollPrediction(id: string, maxWait = 120_000, interval = 3_000): Promise<string> {
   const deadline = Date.now() + maxWait;
   while (Date.now() < deadline) {
-    const res = await fetch(`${FASHN_BASE}/status/${id}`, {
-      headers: { Authorization: `Bearer ${API_KEY}` },
-    });
-    if (!res.ok) throw new Error(`FASHN poll failed: ${res.status}`);
-    const body = (await res.json()) as { id: string; status: FashnStatus; output?: string[]; error?: { name?: string; message?: string } | string };
+    // ตั้ง timeout ต่อการเรียกแต่ละครั้ง กัน fetch ค้างตลอดไปถ้า FASHN ไม่ตอบ (เจอเคสจริงที่ fetch ค้าง
+    // เกิน maxWait ไปมาก เพราะ deadline check ใน while ไม่มีทางถูกเช็คถ้า await fetch(...) ไม่เคย resolve เลย)
+    let body: { id: string; status: FashnStatus; output?: string[]; error?: { name?: string; message?: string } | string };
+    try {
+      const res = await fetch(`${FASHN_BASE}/status/${id}`, {
+        headers: { Authorization: `Bearer ${API_KEY}` },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) throw new Error(`FASHN poll failed: ${res.status}`);
+      body = (await res.json()) as typeof body;
+    } catch (err: any) {
+      if (err?.name === "TimeoutError" || err?.name === "AbortError" || err instanceof TypeError) {
+        await new Promise((r) => setTimeout(r, interval));
+        continue;
+      }
+      throw err;
+    }
 
     if (body.status === "completed") {
       const url = body.output?.[0];
@@ -74,6 +86,7 @@ export async function runTryOn(params: RunTryOnParams): Promise<RunTryOnResult> 
           output_format: "png",
         },
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!submitRes.ok) {

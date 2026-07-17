@@ -1,5 +1,6 @@
 import sharp from "sharp";
 import path from "path";
+import { promises as fs } from "fs";
 import { randomUUID } from "crypto";
 import { supabaseAdmin, supabaseAdminConfigured } from "./supabaseAdmin";
 
@@ -20,6 +21,24 @@ export const BUCKETS = {
 } as const;
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
+
+/**
+ * supabase-js เรียก fetch ภายในโดยไม่มี timeout ใดๆ เลย — ถ้า Supabase Storage ค้าง/ตอบช้าผิดปกติ
+ * request จะแขวนตลอดไปไม่มีวัน resolve/reject (เจอจริง: kie.ai generate เสร็จแล้ว แต่ frontend ค้าง
+ * loading ตลอดเพราะขั้น re-upload ผลลัพธ์ขึ้น Supabase หลังจากนั้นค้างอยู่แบบไม่มี error ให้เห็นเลย)
+ * ต้อง race กับ timeout เองแทน เหมือนที่ทำกับ fetch ไปยัง kie.ai/FASHN ไว้แล้ว
+ */
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    clearTimeout(timer!);
+  }
+}
 
 /** ขนาด output สูงสุด (px) แต่ละ bucket */
 const BUCKET_MAX_SIZE: Record<BucketName, number> = {
@@ -79,12 +98,14 @@ export async function uploadImageAsWebP(
   const filename = `${randomUUID()}.webp`;
   const path = folder ? `${folder.replace(/\/$/, "")}/${filename}` : filename;
 
-  const { error: uploadError } = await supabaseAdmin.storage
-    .from(bucket)
-    .upload(path, outputBuffer, {
+  const { error: uploadError } = await withTimeout(
+    supabaseAdmin.storage.from(bucket).upload(path, outputBuffer, {
       contentType: "image/webp",
       upsert: false,
-    });
+    }),
+    30_000,
+    "Supabase Storage upload"
+  );
 
   if (uploadError) throw uploadError;
 
@@ -138,9 +159,11 @@ export async function uploadRawFile(
   const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   const path = folder ? `${folder.replace(/\/$/, "")}/${randomUUID()}-${safeName}` : `${randomUUID()}-${safeName}`;
 
-  const { error: uploadError } = await supabaseAdmin.storage
-    .from(bucket)
-    .upload(path, inputBuffer, { contentType, upsert: false });
+  const { error: uploadError } = await withTimeout(
+    supabaseAdmin.storage.from(bucket).upload(path, inputBuffer, { contentType, upsert: false }),
+    30_000,
+    "Supabase Storage upload"
+  );
 
   if (uploadError) throw uploadError;
 
@@ -150,54 +173,38 @@ export async function uploadRawFile(
 }
 
 /**
- * Template silhouette masks (solid navy fill, transparent bg) ที่ slice ไว้จาก shapes.png/Shapes-2.png
+ * Template artwork จริง (เส้น/รายละเอียดชุด ไม่ใช่ mask ทึบ) ที่ slice ไว้จาก shapes.png/Shapes-2.png
  * เก็บอยู่ฝั่ง frontend (frontend/public/assets/garments/tops/templates) — backend อ่านตรงจาก
  * disk ได้เลยเพราะ frontend/backend อยู่ใน monorepo เดียวกัน ไม่ต้องยิง HTTP
+ *
+ * เดิมใช้วิธี sharp mask compositing (dest-in) ปูลายผ้าลงบน silhouette ทึบ แต่ขอบภาพเบลอ/หยาบมาก
+ * (เพราะ mask ต้นฉบับมีขนาดเล็ก ~100-250px ต้อง upscale) เปลี่ยนมาใช้ AI (kie.ai image-to-image) generate
+ * รูปชุดจากผ้าจริงแทน — ดู generateGarmentProductImage ใน garmentProduct.ts
  */
 const TEMPLATES_DIR = path.join(process.cwd(), "..", "frontend", "public", "assets", "garments", "tops", "templates");
 
+const _templateArtworkUrlCache = new Map<string, Promise<string>>();
+
 /**
- * ผสมลายผ้าของลูกค้าเข้ากับทรงเทมเพลตที่เลือกไว้ (mask) เพื่อสร้าง "product image" จริง
- * ให้ FASHN virtual try-on ใช้เป็นชุดอ้างอิง — FASHN ต้องการรูปเสื้อผ้าจริง ไม่ใช่ line art เปล่าๆ
- *
- * @param fabricBuffer - buffer ของรูปลายผ้า (จะถูกปูซ้ำ/ครอบให้เต็มทรง)
- * @param templateId   - id เทมเพลต (shirt/blazer/jacket/dress/polo/crop/vest/kimono)
- * @param perspective  - front หรือ back — เลือก mask คนละไฟล์ (ไม่มี mask สำหรับ side ใช้ front แทน)
- * @returns buffer ของรูป PNG พื้นหลังขาว มีทรงเสื้อผ้าลายผ้าเต็มตัว พร้อมส่งให้ FASHN
+ * อัปโหลด artwork จริงของเทมเพลต (front/back) ขึ้น Supabase Storage ครั้งแรกที่ถูกเรียกใช้ แล้ว cache URL
+ * ไว้ในหน่วยความจำ (ไม่ต้องอัปโหลดซ้ำทุก request) — เพื่อให้ kie.ai เข้าถึงเป็น URL อินเทอร์เน็ตได้ (ต้องการ
+ * public URL ไม่รับ base64/ไฟล์ในเครื่อง)
  */
-export async function compositeFabricOntoTemplate(
-  fabricBuffer: Buffer,
-  templateId: string,
-  perspective: "front" | "back" | "side"
-): Promise<Buffer> {
-  const maskFile = perspective === "back" ? `${templateId}-back-mask.png` : `${templateId}-mask.png`;
-  const maskPath = path.join(TEMPLATES_DIR, maskFile);
-
-  const maskImage = sharp(maskPath);
-  const maskMeta = await maskImage.metadata();
-  const width = maskMeta.width ?? 512;
-  const height = maskMeta.height ?? 512;
-
-  // ปูลายผ้าให้ครอบทรงเต็ม (cover) แล้ว clip ด้วย alpha ของ mask (dest-in)
-  const fabricResized = await sharp(fabricBuffer)
-    .resize(width, height, { fit: "cover" })
-    .ensureAlpha()
-    .toBuffer();
-
-  const clipped = await sharp(fabricResized)
-    .composite([{ input: maskPath, blend: "dest-in" }])
-    .png()
-    .toBuffer();
-
-  // วางลงพื้นขาว (FASHN ต้องการรูปทึบ ไม่ใช่พื้นหลังโปร่งใส)
-  const finalBuffer = await sharp({
-    create: { width, height, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 1 } },
-  })
-    .composite([{ input: clipped }])
-    .png()
-    .toBuffer();
-
-  return finalBuffer;
+export async function getTemplateArtworkUrl(templateId: string, perspective: "front" | "back"): Promise<string> {
+  const key = `${templateId}-${perspective}`;
+  if (!_templateArtworkUrlCache.has(key)) {
+    const p = (async () => {
+      const filePath = path.join(TEMPLATES_DIR, `${templateId}-${perspective}.png`);
+      const buffer = await fs.readFile(filePath);
+      const upload = await uploadImageAsWebP(buffer, BUCKETS.tryonUploads, "template-artwork");
+      return upload.url;
+    })();
+    // ถ้าล้มเหลว (เช่น Supabase timeout ชั่วคราว) ต้องเอาออกจาก cache ไม่งั้น promise ที่ reject แล้วจะค้าง
+    // อยู่ตลอดไป ทำให้ทุก request หลังจากนี้ fail ทันทีซ้ำๆ แม้ Supabase จะกลับมาใช้งานได้ปกติแล้วก็ตาม
+    p.catch(() => _templateArtworkUrlCache.delete(key));
+    _templateArtworkUrlCache.set(key, p);
+  }
+  return _templateArtworkUrlCache.get(key)!;
 }
 
 // ── Bucket bootstrap (idempotent) ────────────────────────────────────────────
@@ -207,16 +214,19 @@ const _bucketReady = new Map<string, Promise<void>>();
 async function ensureBucket(bucket: BucketName): Promise<void> {
   if (!_bucketReady.has(bucket)) {
     const p = (async () => {
-      const { data } = await supabaseAdmin.storage.getBucket(bucket);
+      const { data } = await withTimeout(supabaseAdmin.storage.getBucket(bucket), 15_000, "Supabase getBucket");
       if (!data) {
-        const { error } = await supabaseAdmin.storage.createBucket(bucket, {
-          public: true,
-          fileSizeLimit: "20MB",
-        });
+        const { error } = await withTimeout(
+          supabaseAdmin.storage.createBucket(bucket, { public: true, fileSizeLimit: "20MB" }),
+          15_000,
+          "Supabase createBucket"
+        );
         // ถ้า race condition สร้างซ้ำพร้อมกัน — ignore "already exists"
         if (error && !/already exists/i.test(error.message)) throw error;
       }
     })();
+    // เอาออกจาก cache ถ้าล้มเหลว กัน promise ที่ reject ค้างอยู่ตลอดไป (เหตุผลเดียวกับ _templateArtworkUrlCache)
+    p.catch(() => _bucketReady.delete(bucket));
     _bucketReady.set(bucket, p);
   }
   return _bucketReady.get(bucket)!;

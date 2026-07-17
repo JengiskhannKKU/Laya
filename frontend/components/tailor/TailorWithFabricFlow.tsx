@@ -8,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 
 // Import all step components
 import UploadFabricStep from "./steps/UploadFabricStep";
+import CustomizeDetailsStep from "./steps/CustomizeDetailsStep";
 import AIAnalysisStep from "./steps/AIAnalysisStep";
 import ChooseShapeStep from "./steps/ChooseShapeStep";
 import SelectOccasionStep from "./steps/SelectOccasionStep";
@@ -25,13 +26,15 @@ const IVORY = "#FAF6F0";
 
 // ลำดับ: เลือกร้าน → เลือกทรงที่ชอบ (ย้ายมาก่อนอัปโหลดผ้า เพราะทรงขึ้นกับร้านที่เลือกไว้ ไม่ขึ้นกับผ้า
 // เลือกทรงไว้ก่อนได้เลยแม้ยังไม่มีรูปผ้า — ตอน preview จะขึ้น placeholder สีจนกว่าจะอัปโหลดผ้าจริง) →
-// อัปโหลดรูปผ้า → AI วิเคราะห์ผ้า → บรีฟการใช้งาน/สไตล์/ความพอดี → สัดส่วนร่างกาย (ถ่ายรูป/กรอกสัดส่วน) →
-// ลองใส่เสมือนจริง → สรุปออเดอร์ → สำเร็จ
+// อัปโหลดรูปผ้า (เห็น Preview การออกแบบ) → ปรับรายละเอียดเพิ่มเติม (คอ/แขน/กระเป๋า/กระดุม/ความยาว/ทรง/ซับใน —
+// ตามสเปค services.jpg ข้อ 4-5 "Preview Engine") → AI วิเคราะห์ผ้า → บรีฟการใช้งาน/สไตล์/ความพอดี →
+// สัดส่วนร่างกาย (ถ่ายรูป/กรอกสัดส่วน) → ลองใส่เสมือนจริง → สรุปออเดอร์ → สำเร็จ
 
 export type TailorStep =
   | "select_shop"
   | "choose_shape"
   | "upload"
+  | "customize_details"
   | "ai_analysis"
   | "select_occasion"
   | "measurements"
@@ -48,6 +51,18 @@ export interface TailorOrderState {
   occasion?: string;
   // บรีฟการใช้งาน/สไตล์/ความพอดี — เพิ่มตามสเปค custom_design_flow.jpg (เดิมมีแค่ occasion)
   designBrief?: { style?: string; fit?: string; notes?: string };
+  // รายละเอียดเสื้อผ้าเพิ่มเติม — ตามสเปค services.jpg ข้อ 4 "ปรับรายละเอียดเพิ่มเติม"
+  // (คอเสื้อ/แขนเสื้อ/กระเป๋า/กระดุม/ความยาว/ทรง/ซับใน) ทุกฟิลด์ไม่บังคับกรอก
+  garmentDetails?: {
+    collar?: string;
+    sleeve?: string;
+    pocket?: string;
+    button?: string;
+    length?: string;
+    silhouette?: string;
+    lining?: string;
+    otherNotes?: string;
+  };
   // เลือกวิธีลองใส่เสมือนจริง: ใช้รูปตัวเองจริง (photo) หรือกรอกสัดส่วนให้ AI สร้างแบบจำลองแทน (measurements)
   bodyInputMode?: "photo" | "measurements";
   bodyPhotos?: { front?: string; back?: string; side?: string };
@@ -78,7 +93,8 @@ export default function TailorWithFabricFlow() {
     switch (currentStep) {
       case "choose_shape": goNext("select_shop"); break;
       case "upload": goNext("choose_shape"); break;
-      case "ai_analysis": goNext("upload"); break;
+      case "customize_details": goNext("upload"); break;
+      case "ai_analysis": goNext("customize_details"); break;
       case "select_occasion": goNext("ai_analysis"); break;
       case "measurements": goNext("select_occasion"); break;
       case "virtual_try_on": goNext("measurements"); break;
@@ -91,6 +107,7 @@ export default function TailorWithFabricFlow() {
     switch (currentStep) {
       case "select_shop": return t("tailorFlow.headerTitles.selectShop");
       case "upload": return t("tailorFlow.headerTitles.upload");
+      case "customize_details": return t("tailorFlow.headerTitles.customizeDetails");
       case "ai_analysis": return t("tailorFlow.headerTitles.aiAnalysis");
       case "choose_shape": return t("tailorFlow.headerTitles.chooseShape");
       case "select_occasion": return t("tailorFlow.headerTitles.selectOccasion");
@@ -131,7 +148,9 @@ export default function TailorWithFabricFlow() {
 
       {/* เนื้อหา — จำกัดความกว้างสูงสุด กึ่งกลางจอ พร้อม stepper บอกความคืบหน้า */}
       <Box sx={{ maxWidth: 640, width: "100%", mx: "auto", px: { xs: 2, md: 3 }, pt: { xs: 1, md: 2 }, pb: { xs: 8, md: 6 } }}>
-        {currentStep !== "success" && <TailorStepper currentStep={currentStep} />}
+        {currentStep !== "success" && (
+          <TailorStepper currentStep={currentStep} onStepClick={(step) => goNext(step as TailorStep)} />
+        )}
 
         <AnimatePresence mode="wait">
           {currentStep === "select_shop" && (
@@ -141,7 +160,10 @@ export default function TailorWithFabricFlow() {
             <ChooseShapeStep key="choose_shape" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("upload")} />
           )}
           {currentStep === "upload" && (
-            <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
+            <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("customize_details")} />
+          )}
+          {currentStep === "customize_details" && (
+            <CustomizeDetailsStep key="customize_details" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
           )}
           {currentStep === "ai_analysis" && (
             <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />

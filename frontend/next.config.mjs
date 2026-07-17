@@ -37,6 +37,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "placehold.co",
       },
+      // FASHN AI virtual try-on — รูปผลลัพธ์ที่ generate เสร็จแล้วอยู่บน cdn.fashn.ai
+      {
+        protocol: "https",
+        hostname: "cdn.fashn.ai",
+      },
     ],
   },
   async rewrites() {

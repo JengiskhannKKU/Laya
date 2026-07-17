@@ -90,7 +90,8 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
         console.log("All templates:", all, "Shop-available templates:", available);
 
         const allTemplates = Array.isArray(all) ? all : [];
-        const availableList = Array.isArray(available) ? available : [];
+        // ถ้าข้ามขั้นเลือกร้าน (ไม่มี shopId) ไม่ควร disable ทุกทรงเพราะไม่มีร้านให้เทียบ — ถือว่าทุกทรงเลือกได้หมด
+        const availableList = shopId ? (Array.isArray(available) ? available : []) : allTemplates;
 
         const mockCatalog: Catalog = {
           ...EMPTY_CATALOG,
@@ -149,6 +150,20 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
       shape: {
         id: selected.id, name: selected.name, category: selected.category,
         front: selected.front, back: selected.back, price: selected.basePrice,
+      },
+    });
+    onNext();
+  };
+
+  // ข้ามขั้นตอนนี้ — เลือกทรงแรกที่ร้านรับตัด (หรือทรงแรกสุดถ้าไม่มีข้อจำกัดร้าน) ให้อัตโนมัติแทนการเลือกเอง
+  const handleSkip = () => {
+    const fallback = allTemplates.find((t) => availableIds.has(t.id)) ?? allTemplates[0];
+    if (!fallback) { onNext(); return; }
+    setOrderState({
+      ...orderState,
+      shape: {
+        id: fallback.id, name: fallback.name, category: fallback.category,
+        front: fallback.front, back: fallback.back, price: fallback.basePrice,
       },
     });
     onNext();
@@ -249,6 +264,13 @@ export default function ChooseShapeStep({ orderState, setOrderState, onNext }: a
               })}
             </Box>
           )}
+
+          <Box
+            onClick={handleSkip}
+            sx={{ textAlign: "center", cursor: "pointer", color: "#9B958A", fontFamily: FONT, fontSize: "0.8rem", fontWeight: 600, mt: 0.5 }}
+          >
+            {t("tailorFlow.common.skipStep")}
+          </Box>
         </>
       ) : (
         <>
