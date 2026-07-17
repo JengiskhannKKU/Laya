@@ -22,6 +22,24 @@ export const BUCKETS = {
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];
 
+/**
+ * supabase-js เรียก fetch ภายในโดยไม่มี timeout ใดๆ เลย — ถ้า Supabase Storage ค้าง/ตอบช้าผิดปกติ
+ * request จะแขวนตลอดไปไม่มีวัน resolve/reject (เจอจริง: kie.ai generate เสร็จแล้ว แต่ frontend ค้าง
+ * loading ตลอดเพราะขั้น re-upload ผลลัพธ์ขึ้น Supabase หลังจากนั้นค้างอยู่แบบไม่มี error ให้เห็นเลย)
+ * ต้อง race กับ timeout เองแทน เหมือนที่ทำกับ fetch ไปยัง kie.ai/FASHN ไว้แล้ว
+ */
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`)), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
 /** ขนาด output สูงสุด (px) แต่ละ bucket */
 const BUCKET_MAX_SIZE: Record<BucketName, number> = {
   "avatars":         800,
@@ -80,12 +98,14 @@ export async function uploadImageAsWebP(
   const filename = `${randomUUID()}.webp`;
   const path = folder ? `${folder.replace(/\/$/, "")}/${filename}` : filename;
 
-  const { error: uploadError } = await supabaseAdmin.storage
-    .from(bucket)
-    .upload(path, outputBuffer, {
+  const { error: uploadError } = await withTimeout(
+    supabaseAdmin.storage.from(bucket).upload(path, outputBuffer, {
       contentType: "image/webp",
       upsert: false,
-    });
+    }),
+    30_000,
+    "Supabase Storage upload"
+  );
 
   if (uploadError) throw uploadError;
 
@@ -139,9 +159,11 @@ export async function uploadRawFile(
   const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   const path = folder ? `${folder.replace(/\/$/, "")}/${randomUUID()}-${safeName}` : `${randomUUID()}-${safeName}`;
 
-  const { error: uploadError } = await supabaseAdmin.storage
-    .from(bucket)
-    .upload(path, inputBuffer, { contentType, upsert: false });
+  const { error: uploadError } = await withTimeout(
+    supabaseAdmin.storage.from(bucket).upload(path, inputBuffer, { contentType, upsert: false }),
+    30_000,
+    "Supabase Storage upload"
+  );
 
   if (uploadError) throw uploadError;
 
@@ -177,6 +199,9 @@ export async function getTemplateArtworkUrl(templateId: string, perspective: "fr
       const upload = await uploadImageAsWebP(buffer, BUCKETS.tryonUploads, "template-artwork");
       return upload.url;
     })();
+    // ถ้าล้มเหลว (เช่น Supabase timeout ชั่วคราว) ต้องเอาออกจาก cache ไม่งั้น promise ที่ reject แล้วจะค้าง
+    // อยู่ตลอดไป ทำให้ทุก request หลังจากนี้ fail ทันทีซ้ำๆ แม้ Supabase จะกลับมาใช้งานได้ปกติแล้วก็ตาม
+    p.catch(() => _templateArtworkUrlCache.delete(key));
     _templateArtworkUrlCache.set(key, p);
   }
   return _templateArtworkUrlCache.get(key)!;
@@ -189,16 +214,19 @@ const _bucketReady = new Map<string, Promise<void>>();
 async function ensureBucket(bucket: BucketName): Promise<void> {
   if (!_bucketReady.has(bucket)) {
     const p = (async () => {
-      const { data } = await supabaseAdmin.storage.getBucket(bucket);
+      const { data } = await withTimeout(supabaseAdmin.storage.getBucket(bucket), 15_000, "Supabase getBucket");
       if (!data) {
-        const { error } = await supabaseAdmin.storage.createBucket(bucket, {
-          public: true,
-          fileSizeLimit: "20MB",
-        });
+        const { error } = await withTimeout(
+          supabaseAdmin.storage.createBucket(bucket, { public: true, fileSizeLimit: "20MB" }),
+          15_000,
+          "Supabase createBucket"
+        );
         // ถ้า race condition สร้างซ้ำพร้อมกัน — ignore "already exists"
         if (error && !/already exists/i.test(error.message)) throw error;
       }
     })();
+    // เอาออกจาก cache ถ้าล้มเหลว กัน promise ที่ reject ค้างอยู่ตลอดไป (เหตุผลเดียวกับ _templateArtworkUrlCache)
+    p.catch(() => _bucketReady.delete(bucket));
     _bucketReady.set(bucket, p);
   }
   return _bucketReady.get(bucket)!;
