@@ -148,7 +148,9 @@ export default function TailorWithFabricFlow() {
 
       {/* เนื้อหา — จำกัดความกว้างสูงสุด กึ่งกลางจอ พร้อม stepper บอกความคืบหน้า */}
       <Box sx={{ maxWidth: 640, width: "100%", mx: "auto", px: { xs: 2, md: 3 }, pt: { xs: 1, md: 2 }, pb: { xs: 8, md: 6 } }}>
-        {currentStep !== "success" && <TailorStepper currentStep={currentStep} />}
+        {currentStep !== "success" && (
+          <TailorStepper currentStep={currentStep} onStepClick={(step) => goNext(step as TailorStep)} />
+        )}
 
         <AnimatePresence mode="wait">
           {currentStep === "select_shop" && (

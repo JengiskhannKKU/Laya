@@ -30,7 +30,14 @@ const STEP_INDEX: Record<string, number> = {
   order_summary: 8,
 };
 
-export default function TailorStepper({ currentStep }: { currentStep: string }) {
+// เรียงลำดับ key เดียวกับ STEP_INDEX/tailorFlow.stepLabels เป๊ะ — ใช้แปล index ที่คลิกกลับเป็นชื่อ step
+// ให้ TailorWithFabricFlow.tsx เรียก goNext ตรงๆ ได้ (คลิกจุดไหนในสเต็ปเปอร์ ไปหน้านั้นได้ทันที ไม่ต้องกด "ถัดไป" ไล่ทีละขั้น)
+const STEP_ORDER = [
+  "select_shop", "choose_shape", "upload", "customize_details", "ai_analysis",
+  "select_occasion", "measurements", "virtual_try_on", "order_summary",
+] as const;
+
+export default function TailorStepper({ currentStep, onStepClick }: { currentStep: string; onStepClick?: (step: string) => void }) {
   const { t } = useLanguage();
   const TAILOR_STEPS = t<string[]>("tailorFlow.stepLabels");
   const activeIdx = STEP_INDEX[currentStep] ?? 0;
@@ -41,9 +48,10 @@ export default function TailorStepper({ currentStep }: { currentStep: string }) 
         {TAILOR_STEPS.map((label, idx) => {
           const done = activeIdx > idx;
           const active = activeIdx === idx;
+          const handleClick = () => onStepClick?.(STEP_ORDER[idx]);
           return (
             <Box key={label} sx={{ display: "flex", alignItems: "center", flex: idx < TAILOR_STEPS.length - 1 ? { xs: 1, md: "0 0 auto" } : "0 0 auto" }}>
-              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5, minWidth: { xs: "auto", md: 64 } }}>
+              <Box onClick={handleClick} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5, minWidth: { xs: "auto", md: 64 }, cursor: onStepClick ? "pointer" : "default" }}>
                 <Box sx={{
                   width: { xs: 24, md: 36 }, height: { xs: 24, md: 36 }, borderRadius: "50%", flexShrink: 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -53,6 +61,7 @@ export default function TailorStepper({ currentStep }: { currentStep: string }) 
                   fontWeight: 700, fontSize: { xs: "0.6rem", md: "0.8rem" }, fontFamily: FONT,
                   boxShadow: active ? "0 3px 10px rgba(27,42,74,0.28)" : done ? "0 3px 10px rgba(197,165,90,0.3)" : "none",
                   transition: "all 0.3s",
+                  "&:hover": onStepClick ? { boxShadow: "0 3px 10px rgba(27,42,74,0.35)", transform: "scale(1.08)" } : undefined,
                 }}>
                   {done ? <CheckRoundedIcon sx={{ fontSize: { xs: 12, md: 17 } }} /> : idx + 1}
                 </Box>
