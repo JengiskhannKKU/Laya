@@ -78,6 +78,12 @@ export default function MerchantSettingsPage() {
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
 
+  const [lineLinked, setLineLinked] = useState(false);
+  const [lineLinkedAt, setLineLinkedAt] = useState<string | null>(null);
+  const [lineLoading, setLineLoading] = useState(true);
+  const [lineCode, setLineCode] = useState<{ code: string; expiresAt: string; addFriendUrl: string | null } | null>(null);
+  const [lineBusy, setLineBusy] = useState(false);
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -130,6 +136,50 @@ export default function MerchantSettingsPage() {
       .catch((e) => setError(e instanceof Error ? e.message : "โหลดข้อมูลร้านค้าไม่สำเร็จ"))
       .finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    authFetch(`${API_BASE}/api/shops/mine/line-status`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error();
+        setLineLinked(Boolean(data.linked));
+        setLineLinkedAt(data.linkedAt ?? null);
+      })
+      .catch(() => {})
+      .finally(() => setLineLoading(false));
+  }, [user]);
+
+  const generateLineCode = async () => {
+    setLineBusy(true);
+    setError("");
+    try {
+      const res = await authFetch(`${API_BASE}/api/shops/mine/line-link-code`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "สร้างรหัสเชื่อมต่อไม่สำเร็จ");
+      setLineCode({ code: data.code, expiresAt: data.expiresAt, addFriendUrl: data.addFriendUrl });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "สร้างรหัสเชื่อมต่อไม่สำเร็จ");
+    } finally {
+      setLineBusy(false);
+    }
+  };
+
+  const unlinkLine = async () => {
+    setLineBusy(true);
+    setError("");
+    try {
+      const res = await authFetch(`${API_BASE}/api/shops/mine/line-link`, { method: "DELETE" });
+      if (!res.ok) throw new Error("ยกเลิกการเชื่อมต่อไม่สำเร็จ");
+      setLineLinked(false);
+      setLineLinkedAt(null);
+      setLineCode(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "ยกเลิกการเชื่อมต่อไม่สำเร็จ");
+    } finally {
+      setLineBusy(false);
+    }
+  };
 
   const set = (k: keyof ShopForm, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -330,6 +380,65 @@ export default function MerchantSettingsPage() {
             onChange={(e) => set("minOrderQty", e.target.value)} sx={sx.field}
           />
         </Box>
+      </Box>
+
+      <Divider sx={{ borderColor: "#E5DFD6", mb: 2.5 }} />
+      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", mb: 1 }}>
+        แจ้งเตือนออเดอร์ผ่าน LINE
+      </Typography>
+      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.78rem", color: "#6B7280", mb: 1.5 }}>
+        เชื่อมบัญชี LINE ของร้าน เพื่อรับแจ้งเตือนออเดอร์ใหม่และกดยืนยันได้ทันทีในแชท
+      </Typography>
+      <Box sx={{ mb: 3 }}>
+        {lineLoading ? (
+          <CircularProgress size={20} sx={{ color: "#C5A55A" }} />
+        ) : lineLinked ? (
+          <Box sx={{
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2,
+            p: 2, borderRadius: "12px", bgcolor: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)",
+          }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#065F46", fontWeight: 600 }}>
+              เชื่อมต่อแล้ว ✓{lineLinkedAt ? ` (${new Date(lineLinkedAt).toLocaleDateString("th-TH")})` : ""}
+            </Typography>
+            <Button
+              onClick={unlinkLine} disabled={lineBusy} size="small"
+              sx={{ fontFamily: '"Kanit", sans-serif', color: "#B91C1C", textTransform: "none", fontWeight: 600 }}
+            >
+              ยกเลิกการเชื่อมต่อ
+            </Button>
+          </Box>
+        ) : lineCode ? (
+          <Box sx={{ p: 2, borderRadius: "12px", bgcolor: "#F0EBE3", border: "1px solid #E5DFD6" }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#1B2A4A", mb: 1 }}>
+              1. เพิ่มเพื่อน LINE OA ของ LAYA{lineCode.addFriendUrl && (
+                <> — <a href={lineCode.addFriendUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#C5A55A", fontWeight: 600 }}>คลิกที่นี่</a></>
+              )}
+            </Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#1B2A4A", mb: 1.5 }}>
+              2. พิมพ์รหัสนี้ส่งในแชท LINE OA:
+            </Typography>
+            <Typography sx={{
+              fontFamily: '"Kanit", sans-serif', fontSize: "1.6rem", fontWeight: 700, letterSpacing: "0.2em",
+              color: "#1B2A4A", textAlign: "center", py: 1, mb: 1, bgcolor: "#FFFFFF", borderRadius: "8px",
+            }}>
+              {lineCode.code}
+            </Typography>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF", textAlign: "center" }}>
+              หมดอายุ {new Date(lineCode.expiresAt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}
+            </Typography>
+          </Box>
+        ) : (
+          <Button
+            onClick={generateLineCode} disabled={lineBusy} variant="outlined"
+            sx={{
+              fontFamily: '"Kanit", sans-serif', textTransform: "none", fontWeight: 600,
+              color: "#1B2A4A", borderColor: "#D9CDBA", borderRadius: "10px",
+              "&:hover": { borderColor: "#1B2A4A", bgcolor: "transparent" },
+            }}
+          >
+            {lineBusy ? <CircularProgress size={18} sx={{ color: "#1B2A4A" }} /> : "สร้างรหัสเชื่อมต่อ"}
+          </Button>
+        )}
       </Box>
 
       <Divider sx={{ borderColor: "#E5DFD6", mb: 2.5 }} />

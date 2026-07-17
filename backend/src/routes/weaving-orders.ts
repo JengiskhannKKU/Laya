@@ -382,6 +382,11 @@ async function changeStatus(req: Request, res: Response) {
           note ?? "ออเดอร์ถูกยกเลิกก่อนการยืนยัน",
           { weavingOrderId: req.params.id, status }
         );
+        await notifyShopInfo(order.shop_id, {
+          title: "ลูกค้ายกเลิกออเดอร์ทอผ้า",
+          body: note ?? "ออเดอร์ถูกยกเลิกก่อนการยืนยัน",
+          detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+        });
       }
     }
 

@@ -1,3 +1,4 @@
+import { randomInt } from "crypto";
 import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth, requireRole } from "../middleware/auth";
@@ -253,6 +254,65 @@ router.patch("/mine/open", requireAuth, requireRole("merchant", "admin"), async 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update shop open state" });
+  }
+});
+
+/**
+ * POST /api/shops/mine/line-link-code — สร้างรหัส 6 หลักอายุ 10 นาที ให้ร้านพิมพ์ส่งใน LINE OA เพื่อผูกบัญชี
+ * แทนที่รหัสเดิมที่ยังไม่หมดอายุ (ขอใหม่ = ยกเลิกรหัสเก่า กันสับสนว่ารหัสไหนใช้ได้จริง)
+ */
+router.post("/mine/line-link-code", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
+  try {
+    const shopRows = await query<{ id: string }>("SELECT id FROM shops WHERE user_id = $1", [req.user!.userId]);
+    if (!shopRows.length) { res.status(404).json({ error: "ไม่พบร้านค้า" }); return; }
+    const shopId = shopRows[0].id;
+
+    const code = String(randomInt(100000, 1000000));
+    await query("DELETE FROM shop_line_link_codes WHERE shop_id = $1", [shopId]);
+    const rows = await query<{ expires_at: string }>(
+      `INSERT INTO shop_line_link_codes (shop_id, code, expires_at)
+       VALUES ($1, $2, NOW() + INTERVAL '10 minutes')
+       RETURNING expires_at`,
+      [shopId, code]
+    );
+
+    res.status(201).json({
+      code,
+      expiresAt: rows[0].expires_at,
+      addFriendUrl: process.env.LINE_OA_ADD_FRIEND_URL ?? null,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "สร้างรหัสเชื่อมต่อไม่สำเร็จ" });
+  }
+});
+
+/** GET /api/shops/mine/line-status — สถานะการผูกบัญชี LINE ของร้าน */
+router.get("/mine/line-status", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
+  try {
+    const rows = await query<{ line_user_id: string | null; line_linked_at: string | null }>(
+      "SELECT line_user_id, line_linked_at FROM shops WHERE user_id = $1",
+      [req.user!.userId]
+    );
+    if (!rows.length) { res.status(404).json({ error: "ไม่พบร้านค้า" }); return; }
+    res.json({ linked: Boolean(rows[0].line_user_id), linkedAt: rows[0].line_linked_at });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch LINE status" });
+  }
+});
+
+/** DELETE /api/shops/mine/line-link — ยกเลิกการผูกบัญชี LINE */
+router.delete("/mine/line-link", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
+  try {
+    await query(
+      "UPDATE shops SET line_user_id = NULL, line_linked_at = NULL WHERE user_id = $1",
+      [req.user!.userId]
+    );
+    res.json({ linked: false });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ยกเลิกการเชื่อมต่อไม่สำเร็จ" });
   }
 });
 

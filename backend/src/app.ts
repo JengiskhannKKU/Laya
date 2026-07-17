@@ -32,6 +32,7 @@ import reviewsRouter from "./routes/reviews";
 import chatRouter from "./routes/chat";
 import adminRouter from "./routes/admin";
 import templatesRouter from "./routes/templates";
+import lineWebhookRouter from "./routes/line-webhook";
 
 const app = express();
 
@@ -61,7 +62,14 @@ app.use(
 );
 
 // ── Body parsing ──────────────────────────────────────────────────────────────
-app.use(express.json({ limit: "50mb" }));
+// เก็บ raw body ไว้ที่ req.rawBody ด้วย — LINE webhook ต้อง verify ลายเซ็น HMAC จาก byte ดิบ
+// ของ body ไม่ใช่จาก JSON ที่ parse แล้ว (parse ใหม่อาจทำให้ byte เพี้ยนจาก ordering/whitespace)
+app.use(express.json({
+  limit: "50mb",
+  verify: (req: Request, _res: Response, buf: Buffer) => {
+    (req as Request & { rawBody?: Buffer }).rawBody = buf;
+  },
+}));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // ── Swagger UI ────────────────────────────────────────────────────────────────
@@ -98,6 +106,7 @@ app.use("/api/reviews", reviewsRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/templates", templatesRouter);
+app.use("/api/line", lineWebhookRouter);
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

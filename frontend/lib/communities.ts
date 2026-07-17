@@ -20,7 +20,7 @@ const BASE_URL =
     : "";
 
 /** ค่าจริงจาก shops.merchant_type ตอนร้านสมัคร — ใช้แยก "ชุมชนช่างทอ" กับ "ร้านค้า/นักออกแบบ" บนหน้า /community */
-export type MerchantType = "weaving_community" | "designer";
+export type MerchantType = "weaving_community" | "designer" | "retailer";
 
 export interface LiveCommunity {
   id: string;
