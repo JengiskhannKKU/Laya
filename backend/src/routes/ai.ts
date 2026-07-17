@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { AIGenerateRequest, AIGenerateResponse, Product } from "../types";
+import { getPatternFallback } from "../utils/patternFallback";
 
 const router = Router();
 
@@ -100,15 +101,9 @@ router.post("/analyze-fabric", async (req: Request, res: Response) => {
 
     const apiKey = process.env.GEN_AI_KKU_API_KEY || process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      // Mock response if no API key is configured
-      await new Promise(r => setTimeout(r, 2000));
-      res.json({
-        type: "ผ้าไหม (Mock)",
-        technique: "มัดหมี่",
-        pattern: "ลายดอกแก้ว",
-        tone: "ม่วง, ชมพู",
-        thickness: "ปานกลาง"
-      });
+      // ยังไม่ได้ตั้งค่า AI vision key — ตอบด้วยลายผ้าจริงจาก weave_patterns แทนค่า mock ตายตัว
+      await new Promise(r => setTimeout(r, 500));
+      res.json(await getPatternFallback());
       return;
     }
 
@@ -150,14 +145,7 @@ router.post("/analyze-fabric", async (req: Request, res: Response) => {
     if (!response.ok) {
       const err = await response.text();
       console.error("LLM API Error:", err);
-      // Fallback to mock if API fails
-      res.json({
-        type: "ผ้าไหม (API Error)",
-        technique: "มัดหมี่",
-        pattern: "ลายดอกแก้ว",
-        tone: "ม่วง, ชมพู",
-        thickness: "ปานกลาง"
-      });
+      res.json(await getPatternFallback());
       return;
     }
 
@@ -167,13 +155,7 @@ router.post("/analyze-fabric", async (req: Request, res: Response) => {
     // ต้องเช็ค shape ของ body เองด้วย ไม่งั้น data.choices[0] จะ throw แล้วเสีย mock fallback ที่ตั้งใจไว้
     if (!data.choices?.[0]) {
       console.error("LLM API returned unexpected shape:", data.error?.message ?? JSON.stringify(data));
-      res.json({
-        type: "ผ้าไหม (API Error)",
-        technique: "มัดหมี่",
-        pattern: "ลายดอกแก้ว",
-        tone: "ม่วง, ชมพู",
-        thickness: "ปานกลาง"
-      });
+      res.json(await getPatternFallback());
       return;
     }
 
@@ -187,7 +169,12 @@ router.post("/analyze-fabric", async (req: Request, res: Response) => {
     res.json(parsed);
   } catch (err) {
     console.error("Fabric analysis error:", err);
-    res.status(500).json({ error: "Analysis failed" });
+    try {
+      res.json(await getPatternFallback());
+    } catch (dbErr) {
+      console.error("Pattern fallback also failed:", dbErr);
+      res.status(500).json({ error: "Analysis failed" });
+    }
   }
 });
 

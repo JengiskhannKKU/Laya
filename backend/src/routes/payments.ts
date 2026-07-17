@@ -4,11 +4,22 @@ import { requireAuth } from "../middleware/auth";
 import { generatePromptPayPayload } from "../utils/promptpay";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, drawTable, formatDocNumber, streamPdf } from "../utils/pdf";
 import { verifySlip, easySlipConfigured } from "../utils/easyslip";
+import { notifyShopNewOrder, notifyShopInfo } from "../utils/line";
 
 const router = Router();
 
 const PROMPTPAY_ID = process.env.PROMPTPAY_ID ?? "0812345678";
 const PLATFORM_FEE_PERCENT = Number(process.env.PLATFORM_FEE_PERCENT ?? 5);
+const MERCHANT_APP_URL = process.env.MERCHANT_APP_URL ?? "http://localhost:3000";
+
+/** ชื่อลูกค้าไว้แสดงในการ์ด LINE — fallback เป็นอีเมลถ้ายังไม่ตั้ง display_name */
+async function resolveCustomerName(userId: string): Promise<string> {
+  const rows = await query<{ display_name: string | null; email: string }>(
+    "SELECT display_name, email FROM users WHERE id = $1",
+    [userId]
+  );
+  return rows[0]?.display_name || rows[0]?.email || "ลูกค้า";
+}
 
 /** คิดค่าธรรมเนียมแพลตฟอร์ม (US-605): ปัดเป็นทศนิยม 2 ตำแหน่ง */
 function calcFee(amount: number): { platformFee: number; shopPayout: number } {
@@ -256,6 +267,8 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
       [txRef, slipUrl, slipVerified, req.params.id]
     );
 
+    const customerName = await resolveCustomerName(userId as string);
+
     // อัปเดตออเดอร์ตัด: draft → pending_confirm (รอร้านคอนเฟิร์ม, US-212)
     if (payment.order_id) {
       const orderRows = await query<{ status: string; shop_id: string; customer_id: string }>(
@@ -285,6 +298,15 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             `ลูกค้าชำระเงิน ฿${Number(payment.amount).toLocaleString()} แล้ว กรุณายืนยันออเดอร์`,
             { orderId: payment.order_id, paymentId: payment.id }
           );
+          await notifyShopNewOrder(orderRows[0].shop_id, {
+            domainLabel: "ออเดอร์ตัดเย็บใหม่",
+            orderId: payment.order_id as string,
+            customerName,
+            total: Number(payment.amount),
+            itemsSummary: "ดูรายละเอียดในแอป",
+            confirmPostbackData: `action=confirm&domain=orders&id=${payment.order_id}`,
+            detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+          });
         }
       }
     }
@@ -315,6 +337,15 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             `ลูกค้าชำระเงิน ฿${Number(payment.amount).toLocaleString()} แล้ว กรุณายืนยันออเดอร์`,
             { productOrderId: poRows[0].id, paymentId: payment.id }
           );
+          await notifyShopNewOrder(poRows[0].shop_id, {
+            domainLabel: "ออเดอร์สินค้าใหม่",
+            orderId: poRows[0].id,
+            customerName,
+            total: Number(payment.amount),
+            itemsSummary: "ดูรายละเอียดในแอป",
+            confirmPostbackData: `action=confirm&domain=product_orders&id=${poRows[0].id}`,
+            detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+          });
         }
       }
     } else if (payment.product_order_group_id) {
@@ -343,6 +374,15 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             `ลูกค้าชำระเงินแล้ว กรุณายืนยันออเดอร์`,
             { productOrderId: po.id, paymentId: payment.id }
           );
+          await notifyShopNewOrder(po.shop_id, {
+            domainLabel: "ออเดอร์สินค้าใหม่",
+            orderId: po.id,
+            customerName,
+            total: Number(payment.amount),
+            itemsSummary: "ดูรายละเอียดในแอป",
+            confirmPostbackData: `action=confirm&domain=product_orders&id=${po.id}`,
+            detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+          });
         }
       }
     }
@@ -365,6 +405,11 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             `ลูกค้าชำระเงิน ฿${Number(payment.amount).toLocaleString()} แล้ว กรุณายืนยันออเดอร์ทอผ้า`,
             { weavingOrderId: payment.weaving_order_id, paymentId: payment.id }
           );
+          await notifyShopInfo(wo[0].shop_id, {
+            title: "ลูกค้าชำระเงินออเดอร์ทอผ้าแล้ว",
+            body: `ยอด ฿${Number(payment.amount).toLocaleString()} — ${customerName}`,
+            detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+          });
         }
       }
     }

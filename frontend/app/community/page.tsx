@@ -218,7 +218,9 @@ export default function CommunityDirectoryPage() {
 
   // แยกตาม merchantType จริง (shops.merchant_type) — undefined (ยังไม่มี field จาก backend เก่า) ถือเป็นชุมชนช่างทอไปก่อน
   const weavingCommunities = communities.filter((c) => (c.merchantType ?? "weaving_community") === "weaving_community").sort(byCompletenessThenRating);
-  const shopCommunities = communities.filter((c) => c.merchantType === "designer").sort(byCompletenessThenRating);
+  // "designer" และ "retailer" (ร้านค้าผลิตภัณฑ์ผ้าไทย) ทั้งคู่จัดเป็นกลุ่ม "ร้านค้าและนักออกแบบ" — เดิมกรองแค่ designer
+  // ทำให้ร้าน retailer ไม่ตกอยู่ในกลุ่มไหนเลย หายไปจากหน้านี้ทั้งที่มีข้อมูลจริง
+  const shopCommunities = communities.filter((c) => c.merchantType === "designer" || c.merchantType === "retailer").sort(byCompletenessThenRating);
 
   return (
     <MobileLayout>

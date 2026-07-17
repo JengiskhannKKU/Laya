@@ -68,17 +68,12 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
         setOrderState((prev: any) => ({ ...prev, analysisResult: data }));
       } catch (err) {
         console.error("Fabric analysis error:", err);
-        // Fallback mockup
-        setOrderState((prev: any) => ({
-          ...prev,
-          analysisResult: {
-            type: "ผ้าไหม (Fallback)",
-            technique: "มัดหมี่",
-            pattern: "ลายดอกแก้ว",
-            tone: "ม่วง, ชมพู",
-            thickness: "ปานกลาง"
-          }
-        }));
+        // เชื่อมต่อ backend ไม่ได้จริงๆ (ไม่ใช่แค่ยังไม่ได้ตั้งค่า AI key — เคสนั้น backend ตอบข้อมูลลายผ้าจริงมาแล้ว)
+        // ไม่ยัดค่าปลอมให้ผู้ใช้เข้าใจผิด — เปิดโหมดแก้ไขให้กรอกเองแทน
+        setOrderState((prev: any) => ({ ...prev, analysisResult: null }));
+        setIsEditing(true);
+        setDraft({ type: "", technique: "", pattern: "", tone: "", thickness: "" });
+        setCustomType(true);
       } finally {
         setAnalyzing(false);
       }

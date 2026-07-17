@@ -2,8 +2,10 @@ import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, formatDocNumber, streamPdf } from "../utils/pdf";
+import { notifyShopNewOrder, notifyShopInfo } from "../utils/line";
 
 const router = Router();
+const MERCHANT_APP_URL = process.env.MERCHANT_APP_URL ?? "http://localhost:3000";
 
 /** สถานะที่เปลี่ยนต่อได้ (US-406: pending_confirm → confirmed → weaving → ready → ...) */
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -219,6 +221,19 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
         `ออเดอร์ทอผ้า ${metersRequested} เมตร รอการยืนยันจากร้าน`,
         { weavingOrderId: rows[0].id }
       );
+      const customerRows = await query<{ display_name: string | null; email: string }>(
+        "SELECT display_name, email FROM users WHERE id = $1",
+        [userId]
+      );
+      await notifyShopNewOrder(shopId, {
+        domainLabel: "ออเดอร์ทอผ้าใหม่",
+        orderId: rows[0].id as string,
+        customerName: customerRows[0]?.display_name || customerRows[0]?.email || "ลูกค้า",
+        total: Number(estimatedPrice ?? 0),
+        itemsSummary: `${metersRequested} เมตร`,
+        confirmPostbackData: `action=confirm&domain=weaving_orders&id=${rows[0].id}`,
+        detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+      });
     }
 
     res.status(201).json(mapWeavingOrder(rows[0]));
@@ -228,10 +243,60 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * ยืนยันออเดอร์ pending_confirm → confirmed — logic ล้วนๆ ไม่ผูกกับ req/res
+ * ใช้ร่วมกันทั้ง HTTP route (POST /:id/confirm) และ LINE webhook (postback "ยืนยันออเดอร์")
+ */
+export async function confirmOrder(
+  orderId: string,
+  actingUserId: string,
+  note: string | null = null
+): Promise<{ ok: boolean; error?: string; customerId?: string }> {
+  const current = await query<{ id: string; status: string; shop_id: string; customer_id: string }>(
+    "SELECT id, status, shop_id, customer_id FROM weaving_orders WHERE id = $1",
+    [orderId]
+  );
+  if (!current.length) return { ok: false, error: "ไม่พบออเดอร์ทอผ้า" };
+  const order = current[0];
+
+  if (!(ALLOWED_TRANSITIONS[order.status] ?? []).includes("confirmed")) {
+    return { ok: false, error: `เปลี่ยนสถานะจาก ${order.status} เป็น confirmed ไม่ได้` };
+  }
+
+  await query(
+    `UPDATE weaving_orders SET status = 'confirmed', confirmed_at = NOW(), updated_at = NOW() WHERE id = $1`,
+    [orderId]
+  );
+  await query(
+    `INSERT INTO weaving_order_status_logs (order_id, old_status, new_status, changed_by, note)
+     VALUES ($1, $2, 'confirmed', $3, $4)`,
+    [orderId, order.status, actingUserId, note]
+  );
+  await notify(
+    order.customer_id, "order_update", "ร้านยืนยันออเดอร์แล้ว",
+    "ออเดอร์ทอผ้าของคุณอัปเดตเป็นสถานะ ร้านยืนยันออเดอร์แล้ว",
+    { weavingOrderId: orderId, status: "confirmed" }
+  );
+
+  return { ok: true, customerId: order.customer_id };
+}
+
 /** POST /api/weaving-orders/:id/confirm — ร้านยืนยันรับงาน (US-406) */
 router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => {
-  req.body = { ...req.body, status: "confirmed" };
-  await changeStatus(req, res);
+  try {
+    const { role, shopId, userId } = req.user!;
+    const current = await query<{ shop_id: string }>("SELECT shop_id FROM weaving_orders WHERE id = $1", [req.params.id]);
+    if (!current.length) { res.status(404).json({ error: "ไม่พบออเดอร์ทอผ้า" }); return; }
+    if (role === "customer") { res.status(403).json({ error: "Forbidden" }); return; }
+    if (role === "merchant" && current[0].shop_id !== shopId) { res.status(403).json({ error: "Forbidden" }); return; }
+
+    const result = await confirmOrder(req.params.id, userId);
+    if (!result.ok) { res.status(400).json({ error: result.error }); return; }
+    res.json({ id: req.params.id, status: "confirmed" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to confirm order" });
+  }
 });
 
 /** PATCH /api/weaving-orders/:id/status — เปลี่ยนสถานะตามลำดับที่กำหนด + log + แจ้งเตือน */

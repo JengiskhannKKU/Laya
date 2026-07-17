@@ -2,8 +2,10 @@ import { Router, Request, Response } from "express";
 import { query, getClient } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, drawTable, formatDocNumber, streamPdf } from "../utils/pdf";
+import { notifyShopInfo } from "../utils/line";
 
 const router = Router();
+const MERCHANT_APP_URL = process.env.MERCHANT_APP_URL ?? "http://localhost:3000";
 
 /** ดึงข้อมูลออเดอร์ + ร้าน + ที่อยู่จัดส่ง + รายการสินค้า สำหรับใช้สร้างเอกสาร PDF (ตรวจสิทธิ์ก่อนเรียก) */
 async function loadOrderForDocument(orderId: string) {
@@ -576,6 +578,43 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
 });
 
 /** PATCH /api/product-orders/:id/status — ร้าน/แอดมินอัปเดตสถานะจัดส่ง */
+/**
+ * ยืนยันออเดอร์ pending_confirm → confirmed — logic ล้วนๆ ไม่ผูกกับ req/res
+ * ใช้จาก LINE webhook (postback "ยืนยันออเดอร์") — PATCH /:id/status ด้านล่างยังใช้เส้นทางเดิมสำหรับ HTTP ปกติ
+ */
+export async function confirmOrder(
+  orderId: string,
+  actingUserId: string,
+  note: string | null = null
+): Promise<{ ok: boolean; error?: string; customerId?: string }> {
+  const current = await query<{ id: string; status: string; shop_id: string; customer_id: string }>(
+    "SELECT id, status, shop_id, customer_id FROM product_orders WHERE id = $1",
+    [orderId]
+  );
+  if (!current.length) return { ok: false, error: "ไม่พบออเดอร์" };
+  const order = current[0];
+
+  if (!(ALLOWED_TRANSITIONS[order.status] ?? []).includes("confirmed")) {
+    return { ok: false, error: `เปลี่ยนสถานะจาก ${order.status} เป็น confirmed ไม่ได้` };
+  }
+
+  await query(
+    `UPDATE product_orders SET status = 'confirmed', confirmed_at = NOW(), updated_at = NOW() WHERE id = $1`,
+    [orderId]
+  );
+  await query(
+    `INSERT INTO product_order_status_logs (product_order_id, old_status, new_status, changed_by, note)
+     VALUES ($1, $2, 'confirmed', $3, $4)`,
+    [orderId, order.status, actingUserId, note]
+  );
+  await notify(order.customer_id, STATUS_LABELS.confirmed, `ออเดอร์ของคุณอัปเดตเป็น ${STATUS_LABELS.confirmed}`, {
+    productOrderId: orderId,
+    status: "confirmed",
+  });
+
+  return { ok: true, customerId: order.customer_id };
+}
+
 router.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {
     const { role, userId, shopId } = req.user!;
@@ -627,6 +666,11 @@ router.patch("/:id/status", requireAuth, async (req: Request, res: Response) => 
       const shopOwner = await query<{ user_id: string }>("SELECT user_id FROM shops WHERE id = $1", [order.shop_id]);
       if (shopOwner.length) {
         await notify(shopOwner[0].user_id, "ลูกค้ายกเลิกออเดอร์", note ?? `ออเดอร์ ${req.params.id.slice(0, 8)} ถูกยกเลิก`, { productOrderId: req.params.id, status });
+        await notifyShopInfo(order.shop_id, {
+          title: "ลูกค้ายกเลิกออเดอร์",
+          body: note ?? `ออเดอร์ ${req.params.id.slice(0, 8)} ถูกยกเลิก`,
+          detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+        });
       }
     } else {
       await notify(order.customer_id, STATUS_LABELS[status] ?? status, note ?? `ออเดอร์ของคุณอัปเดตเป็น ${STATUS_LABELS[status] ?? status}`, { productOrderId: req.params.id, status });
