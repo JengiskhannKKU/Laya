@@ -173,10 +173,21 @@ export async function compositeFabricOntoTemplate(
   const maskFile = perspective === "back" ? `${templateId}-back-mask.png` : `${templateId}-mask.png`;
   const maskPath = path.join(TEMPLATES_DIR, maskFile);
 
-  const maskImage = sharp(maskPath);
-  const maskMeta = await maskImage.metadata();
-  const width = maskMeta.width ?? 512;
-  const height = maskMeta.height ?? 512;
+  const maskMeta = await sharp(maskPath).metadata();
+  const rawWidth = maskMeta.width ?? 512;
+  const rawHeight = maskMeta.height ?? 512;
+
+  // มาสก์ต้นฉบับที่ slice ไว้มีขนาดเล็กมาก (~100-250px) — FASHN ต้องการรูปอย่างน้อย 128px ต่อด้าน
+  // (เจอจริงตอนทดสอบ: "Product image dimensions must be at least 128px on each side") ต้อง upscale
+  // ก่อนเสมอให้ด้านสั้นสุดอย่างน้อย ~1024px เพื่อความคมชัดของลายผ้าด้วย ไม่ใช่แค่ผ่านเกณฑ์ขั้นต่ำ
+  const MIN_SIDE = 1024;
+  const scale = MIN_SIDE / Math.min(rawWidth, rawHeight);
+  const width = Math.round(rawWidth * scale);
+  const height = Math.round(rawHeight * scale);
+
+  const maskResizedBuffer = await sharp(maskPath)
+    .resize(width, height, { fit: "fill" })
+    .toBuffer();
 
   // ปูลายผ้าให้ครอบทรงเต็ม (cover) แล้ว clip ด้วย alpha ของ mask (dest-in)
   const fabricResized = await sharp(fabricBuffer)
@@ -185,7 +196,7 @@ export async function compositeFabricOntoTemplate(
     .toBuffer();
 
   const clipped = await sharp(fabricResized)
-    .composite([{ input: maskPath, blend: "dest-in" }])
+    .composite([{ input: maskResizedBuffer, blend: "dest-in" }])
     .png()
     .toBuffer();
 

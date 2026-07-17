@@ -131,7 +131,7 @@ router.post("/generate", async (req: Request, res: Response) => {
     // ไม่ใช่ line art เปล่าๆ — ถ้าไม่มีเงื่อนไขครบ (เช่น โหมด measurements หรือยังไม่เลือกทรง/ผ้า) fallback ไป kie.ai เดิม
     if (bodyPhotoUrl && shape?.id && fabricImageUrl) {
       try {
-        const fabricRes = await fetch(fabricImageUrl);
+        const fabricRes = await fetch(fabricImageUrl, { signal: AbortSignal.timeout(20_000) });
         if (!fabricRes.ok) throw new Error(`โหลดรูปผ้าไม่สำเร็จ: ${fabricRes.status}`);
         const fabricBuffer = Buffer.from(await fabricRes.arrayBuffer());
 
