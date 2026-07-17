@@ -31,7 +31,7 @@ export default function ServicesPage() {
       desc: t("services.tailor.desc"),
     },
     {
-      href: "/gen-silk",
+      href: "/weaving-order",
       icon: AutoAwesomeMosaicRoundedIcon,
       title: t("services.weave.title"),
       desc: t("services.weave.desc"),

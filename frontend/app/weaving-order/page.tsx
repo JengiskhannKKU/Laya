@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/lib/auth-context";
@@ -20,30 +20,23 @@ import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Divider from "@mui/material/Divider";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
-import { useRouter } from "next/navigation";
+import AutoAwesomeMosaicRoundedIcon from "@mui/icons-material/AutoAwesomeMosaicRounded";
+import Diversity3RoundedIcon from "@mui/icons-material/Diversity3Rounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ── Data ───────────────────────────────────────────────────────────────────────
-const WEAVE_PATTERNS = [
-  { id: "mudmee",     label: "ผ้ามัดหมี่",      region: "อีสาน",      preview: "#8B4513" },
-  { id: "pha_sin",    label: "ผ้าซิ่น",          region: "ภาคเหนือ",  preview: "#4B0082" },
-  { id: "pha_khao",   label: "ผ้าขาวม้า",        region: "ทั่วไป",    preview: "#DC143C" },
-  { id: "pha_thai",   label: "ผ้าไหมไทย",        region: "ภาคกลาง",  preview: "#DAA520" },
-  { id: "pha_yok",    label: "ผ้ายกดอก",         region: "ภาคใต้",   preview: "#2E8B57" },
-  { id: "pha_cotton", label: "ผ้าฝ้ายทอมือ",     region: "เชียงใหม่", preview: "#8FBC8F" },
-];
-
 const COLOR_TONES = [
   { id: "natural",   label: "โทนธรรมชาติ",   colors: ["#8B6914", "#C4A35A", "#D4B896"] },
   { id: "earth",     label: "โทนดิน",        colors: ["#6B4423", "#8B5A2B", "#A0785A"] },
@@ -51,13 +44,6 @@ const COLOR_TONES = [
   { id: "jewel",     label: "โทนอัญมณี",     colors: ["#4B0082", "#006400", "#8B0000"] },
   { id: "pastel",    label: "โทนพาสเทล",     colors: ["#FFB3BA", "#FFDAB9", "#B5EAD7"] },
   { id: "monochrome",label: "โทนขาวดำ",       colors: ["#2D2D2D", "#6B6B6B", "#D4D4D4"] },
-];
-
-const COMMUNITIES = [
-  { id: "c1", name: "ชุมชนทอผ้าบ้านนาข่า", province: "อุดรธานี",  rating: 4.9, specialty: "มัดหมี่", leadTime: "3-4 สัปดาห์" },
-  { id: "c2", name: "กลุ่มทอผ้าไหมบ้านเขว้า", province: "ชัยภูมิ", rating: 4.8, specialty: "ผ้าไหมไทย", leadTime: "4-6 สัปดาห์" },
-  { id: "c3", name: "วิสาหกิจชุมชนผ้าฝ้ายเชียงใหม่", province: "เชียงใหม่", rating: 4.7, specialty: "ผ้าฝ้ายทอมือ", leadTime: "2-3 สัปดาห์" },
-  { id: "c4", name: "ชุมชนทอผ้าซิ่นลำพูน", province: "ลำพูน",   rating: 4.8, specialty: "ผ้าซิ่น", leadTime: "3-5 สัปดาห์" },
 ];
 
 const STEPS = ["เลือกลาย", "เลือกสี", "เลือกชุมชน", "สรุปออเดอร์"];
@@ -72,65 +58,157 @@ interface PaymentInfo {
   promptpayId: string;
 }
 
+interface PatternCard {
+  id: string;
+  label: string;
+  region: string;
+  preview: string;
+  image: string | null;
+}
+
+interface CommunityCard {
+  id: string;
+  name: string;
+  province: string;
+  rating: number;
+  specialty: string;
+  leadTime: string;
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
-export default function WeavingOrderPage() {
+function WeavingOrderContent() {
   const router = useRouter();
   const { session } = useAuth();
+  const searchParams = useSearchParams();
 
-  const [step, setStep]         = useState(0);
+  const initialPatternId = searchParams.get("patternId") ?? "";
+  const initialShopId = searchParams.get("shopId") ?? "";
+
+  // เริ่มด้วยหน้าเลือกเส้นทาง (ลายก่อน/ชุมชนก่อน) เฉพาะตอนที่ไม่มี deep-link มาก่อน
+  const [pathChosen, setPathChosen] = useState(!!(initialPatternId || initialShopId));
+  const [step, setStep]         = useState(initialPatternId ? 1 : 0);
   const [loading, setLoading]   = useState(false);
   const [success, setSuccess]   = useState(false);
   const [error, setError]       = useState("");
-  const [colorWarning, setColorWarning] = useState(false);
   const [acceptedWarning, setAcceptedWarning] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
 
-  const [pattern, setPattern]   = useState("");
+  const [pattern, setPattern]   = useState(initialPatternId);
   const [colorTone, setColorTone] = useState("");
   const [meters, setMeters]     = useState(3);
-  const [community, setCommunity] = useState("");
+  const [community, setCommunity] = useState(initialShopId);
   const [notes, setNotes]       = useState("");
 
-  // ข้อมูลจริงจาก API (fallback เป็นแคตตาล็อกพื้นฐานถ้า backend ยังไม่พร้อม)
-  const [patterns, setPatterns] = useState(WEAVE_PATTERNS);
-  const [communities, setCommunities] = useState(COMMUNITIES);
+  // ข้อมูลจริงจาก API เท่านั้น — ไม่มี fallback เป็นข้อมูลปลอมอีกต่อไป (id ปลอมเช่น "mudmee"/"c1"
+  // จะทำให้กด next ผ่านได้ทั้ง 4 ขั้น แล้วไปพังตอนสร้างออเดอร์จริงเพราะ FK ไม่ตรง)
+  const [patterns, setPatterns] = useState<PatternCard[]>([]);
+  const [communities, setCommunities] = useState<CommunityCard[]>([]);
+  const [patternsLoading, setPatternsLoading] = useState(true);
+  const [communitiesLoading, setCommunitiesLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadTick, setReloadTick] = useState(0);
 
   // ขั้นตอนชำระเงิน PromptPay (US-604)
   const [payment, setPayment] = useState<PaymentInfo | null>(null);
   const [slipUrl, setSlipUrl] = useState("");
   const [paying, setPaying] = useState(false);
 
+  // โหลดลายผ้า — ถ้ามาจาก deep-link ?shopId= จะกรองเฉพาะลายของชุมชนนั้น (ของตัวเอง + ลายระบบที่ทอได้)
   useEffect(() => {
+    let cancelled = false;
     (async () => {
+      setPatternsLoading(true);
       try {
-        const [patRes, shopRes] = await Promise.all([
-          fetch(`${API_BASE}/api/weave-patterns`),
-          fetch(`${API_BASE}/api/shops/match?service=weave`),
-        ]);
-        if (!patRes.ok || !shopRes.ok) return;
-        const pats = (await patRes.json()) as { id: string; name: string; originProvince?: string }[];
-        const shops = (await shopRes.json()) as { id: string; name: string; province: string; rating: number; specialties: string[] }[];
-        if (!pats.length || !shops.length) return;
+        const qs = initialShopId ? `?shopId=${initialShopId}` : "";
+        const res = await fetch(`${API_BASE}/api/weave-patterns${qs}`);
+        if (!res.ok) throw new Error();
+        const pats = (await res.json()) as { id: string; name: string; originProvince?: string; thumbnailUrl?: string | null }[];
 
-        setPatterns(pats.map((p, i) => ({
+        // กันเคส deep-link มาด้วยลายที่ query ข้างบนกรองไม่เจอ (เช่น shopId filter ยังไม่รองรับที่ backend)
+        let list = pats;
+        if (initialPatternId && !pats.some((p) => p.id === initialPatternId)) {
+          const single = await fetch(`${API_BASE}/api/weave-patterns/${initialPatternId}`);
+          if (single.ok) list = [...pats, await single.json()];
+        }
+
+        if (cancelled) return;
+        setPatterns(list.map((p, i) => ({
           id: p.id,
           label: p.name,
           region: p.originProvince ?? "-",
           preview: PATTERN_PREVIEW_COLORS[i % PATTERN_PREVIEW_COLORS.length],
+          image: p.thumbnailUrl ?? null,
         })));
-        setCommunities(shops.map((s) => ({
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setPatternsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadTick]);
+
+  // มาจาก deep-link ?shopId= (เลือกชุมชนก่อน) — โหลดข้อมูลชุมชนนั้นเข้า `communities` ให้ครบ
+  // (บั๊กเดิม: ถ้าไม่ทำตรงนี้ communities จะว่างเปล่าไปตลอด เพราะ effect ด้านล่างข้าม fetch เมื่อมี
+  // initialShopId ทำให้หน้าสรุปออเดอร์หา selectedCommunity ไม่เจอ ไม่ขึ้นชื่อชุมชนเลย)
+  useEffect(() => {
+    if (!initialShopId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/shops/${initialShopId}`);
+        if (!res.ok) throw new Error();
+        const s = await res.json();
+        if (cancelled) return;
+        setCommunities([{
+          id: s.id,
+          name: s.name,
+          province: s.province,
+          rating: Number(s.rating ?? 0),
+          specialty: Array.isArray(s.specialties) && s.specialties.length ? s.specialties[0] : "ทอผ้า",
+          leadTime: s.lead_time_days ? `${s.lead_time_days} วัน` : "3-5 สัปดาห์",
+        }]);
+      } catch {
+        if (!cancelled) setLoadError(true);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialShopId]);
+
+  // โหลดชุมชนที่ทอ "ลายที่เลือกไว้" ได้จริง (GET /:id/producers) — กรองตามลายเสมอ ไม่ใช่รายชื่อ
+  // ร้านทอผ้าทั่วไปแบบเดิมอีกต่อไป ถ้ามาจาก deep-link ?shopId= ระบุชุมชนไว้แล้ว ไม่ต้องโหลดซ้ำ (ใช้ effect ด้านบนแทน)
+  useEffect(() => {
+    if (initialShopId) { setCommunitiesLoading(false); return; }
+    if (!pattern) { setCommunities([]); setCommunitiesLoading(false); return; }
+    let cancelled = false;
+    (async () => {
+      setCommunitiesLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/weave-patterns/${pattern}/producers`);
+        if (!res.ok) throw new Error();
+        const data = (await res.json()) as {
+          producers: { id: string; name: string; province: string; rating: number; reviewCount: number; leadTimeDays: number | null }[];
+        };
+        if (cancelled) return;
+        const patternLabel = patterns.find((p) => p.id === pattern)?.label ?? "ทอผ้า";
+        setCommunities(data.producers.map((s) => ({
           id: s.id,
           name: s.name,
           province: s.province,
           rating: s.rating,
-          specialty: s.specialties?.[0] ?? "ทอผ้า",
-          leadTime: "3-5 สัปดาห์",
+          specialty: patternLabel,
+          leadTime: s.leadTimeDays ? `${s.leadTimeDays} วัน` : "3-5 สัปดาห์",
         })));
       } catch {
-        // backend ไม่พร้อม — ใช้แคตตาล็อกพื้นฐานต่อไป
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setCommunitiesLoading(false);
       }
     })();
-  }, []);
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pattern, initialShopId, reloadTick]);
 
   const selectedCommunity = communities.find((c) => c.id === community);
 
@@ -142,6 +220,19 @@ export default function WeavingOrderPage() {
     !!community,
     acceptedWarning,
   ][step] ?? true;
+
+  const goNext = () => {
+    let next = step + 1;
+    // ถ้ามาจาก deep-link แล้วเลือกชุมชนไว้แล้ว ข้ามขั้น "เลือกชุมชน" ไปเลย
+    if (next === 2 && community) next = 3;
+    setStep(next);
+  };
+
+  const goBack = () => {
+    let prev = step - 1;
+    if (prev === 2 && community && initialShopId) prev = 1;
+    setStep(Math.max(prev, 0));
+  };
 
   const handleSubmit = async () => {
     if (!session) { router.push("/auth/login"); return; }
@@ -299,6 +390,75 @@ export default function WeavingOrderPage() {
         </Typography>
       </Box>
 
+      {!pathChosen ? (
+        // ── หน้าเลือกเส้นทาง: เลือกลายก่อน หรือ เลือกชุมชนก่อน ──
+        <Box sx={{ px: 3, pt: 1 }}>
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.9rem", color: "#6B7280", mb: 3 }}>
+            จะเริ่มต้นอย่างไรดี? ไม่ว่าจะเลือกทางไหน สุดท้ายคุณจะได้ทั้งลายผ้าและชุมชนผู้ทอ
+          </Typography>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box
+              component={motion.div} whileHover={{ y: -3 }} whileTap={{ scale: 0.99 }}
+              onClick={() => setPathChosen(true)}
+              sx={{
+                p: 3, borderRadius: "20px", bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
+                boxShadow: "0 4px 20px rgba(27,42,74,0.06)", display: "flex", alignItems: "center", gap: 2.5,
+                cursor: "pointer", transition: "box-shadow 0.25s, border-color 0.25s",
+                "&:hover": { boxShadow: "0 12px 32px rgba(27,42,74,0.12)", borderColor: "#C5A55A" },
+              }}
+            >
+              <Box sx={{ width: 56, height: 56, borderRadius: "16px", flexShrink: 0, bgcolor: "#1B2A4A0D", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <AutoAwesomeMosaicRoundedIcon sx={{ fontSize: 26, color: "#C5A55A" }} />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+                  เลือกลายผ้าก่อน
+                </Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.3 }}>
+                  ดูลายผ้าที่มีในระบบ แล้วให้เราแนะนำชุมชนที่ทอลายนี้ได้
+                </Typography>
+              </Box>
+              <ArrowForwardRoundedIcon sx={{ color: "#C9C2B4", fontSize: 20, flexShrink: 0 }} />
+            </Box>
+
+            <Box
+              component={motion.div} whileHover={{ y: -3 }} whileTap={{ scale: 0.99 }}
+              onClick={() => router.push("/community")}
+              sx={{
+                p: 3, borderRadius: "20px", bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
+                boxShadow: "0 4px 20px rgba(27,42,74,0.06)", display: "flex", alignItems: "center", gap: 2.5,
+                cursor: "pointer", transition: "box-shadow 0.25s, border-color 0.25s",
+                "&:hover": { boxShadow: "0 12px 32px rgba(27,42,74,0.12)", borderColor: "#C5A55A" },
+              }}
+            >
+              <Box sx={{ width: 56, height: 56, borderRadius: "16px", flexShrink: 0, bgcolor: "#1B2A4A0D", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Diversity3RoundedIcon sx={{ fontSize: 26, color: "#C5A55A" }} />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
+                  เลือกชุมชนก่อน
+                </Typography>
+                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.3 }}>
+                  ดูผลงาน เรื่องราว และเอกลักษณ์ของแต่ละชุมชน แล้วเลือกลายที่ชุมชนนั้นทอได้
+                </Typography>
+              </Box>
+              <ArrowForwardRoundedIcon sx={{ color: "#C9C2B4", fontSize: 20, flexShrink: 0 }} />
+            </Box>
+          </Box>
+
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <Button
+              onClick={() => router.push("/custom")}
+              startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 17 }} />}
+              sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#8A7B5C", textTransform: "none" }}
+            >
+              หรือออกแบบลายผ้าใหม่ด้วย AI
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+      <>
       {/* Stepper */}
       <Box sx={{ px: 2, mb: 3 }}>
         <Stepper activeStep={step} alternativeLabel>
@@ -322,6 +482,21 @@ export default function WeavingOrderPage() {
         </Box>
       )}
 
+      {loadError && (
+        <Box sx={{ px: 3, mb: 2 }}>
+          <Alert
+            severity="warning" sx={{ borderRadius: "10px", fontFamily: '"Kanit", sans-serif' }}
+            action={
+              <Button size="small" startIcon={<RefreshRoundedIcon sx={{ fontSize: 16 }} />} onClick={() => { setLoadError(false); setReloadTick((t) => t + 1); }} sx={{ fontFamily: '"Kanit", sans-serif', textTransform: "none" }}>
+                ลองใหม่
+              </Button>
+            }
+          >
+            โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่
+          </Alert>
+        </Box>
+      )}
+
       <Box sx={{ px: 3 }}>
         <AnimatePresence mode="wait">
           {/* ── Step 0: เลือกลาย ── */}
@@ -330,32 +505,50 @@ export default function WeavingOrderPage() {
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 2 }}>
                 เลือกลายผ้าพื้นฐาน
               </Typography>
-              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
-                {patterns.map((p) => (
-                  <Box
-                    key={p.id}
-                    onClick={() => setPattern(p.id)}
-                    sx={{
-                      borderRadius: "14px", overflow: "hidden", cursor: "pointer",
-                      border: "2px solid", borderColor: pattern === p.id ? "#C5A55A" : "#E5DFD6",
-                      bgcolor: "#FFFFFF", transition: "all 0.15s",
-                    }}
-                  >
-                    <Box sx={{ height: 80, bgcolor: p.preview, opacity: 0.85 }} />
-                    <Box sx={{ p: 1.5 }}>
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A" }}>
-                        {p.label}
-                      </Typography>
-                      <Chip label={p.region} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.65rem", height: 18, bgcolor: "#F3F4F6", color: "#6B7280", mt: 0.5 }} />
-                    </Box>
-                    {pattern === p.id && (
-                      <Box sx={{ px: 1.5, pb: 1 }}>
-                        <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 18 }} />
+              {patternsLoading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                  <CircularProgress sx={{ color: "#C5A55A" }} />
+                </Box>
+              ) : patterns.length === 0 ? (
+                !loadError && (
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", textAlign: "center", py: 4 }}>
+                    ยังไม่มีลายผ้าให้เลือกในขณะนี้
+                  </Typography>
+                )
+              ) : (
+                <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
+                  {patterns.map((p) => (
+                    <Box
+                      key={p.id}
+                      onClick={() => setPattern(p.id)}
+                      sx={{
+                        borderRadius: "14px", overflow: "hidden", cursor: "pointer",
+                        border: "2px solid", borderColor: pattern === p.id ? "#C5A55A" : "#E5DFD6",
+                        bgcolor: "#FFFFFF", transition: "all 0.15s",
+                      }}
+                    >
+                      {p.image ? (
+                        <Box sx={{ position: "relative", width: "100%", height: 80 }}>
+                          <Image src={p.image} alt={p.label} fill style={{ objectFit: "cover" }} sizes="200px" />
+                        </Box>
+                      ) : (
+                        <Box sx={{ height: 80, bgcolor: p.preview, opacity: 0.85 }} />
+                      )}
+                      <Box sx={{ p: 1.5 }}>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A" }}>
+                          {p.label}
+                        </Typography>
+                        <Chip label={p.region} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.65rem", height: 18, bgcolor: "#F3F4F6", color: "#6B7280", mt: 0.5 }} />
                       </Box>
-                    )}
-                  </Box>
-                ))}
-              </Box>
+                      {pattern === p.id && (
+                        <Box sx={{ px: 1.5, pb: 1 }}>
+                          <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 18 }} />
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              )}
             </motion.div>
           )}
 
@@ -419,48 +612,60 @@ export default function WeavingOrderPage() {
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 2 }}>
                 เลือกชุมชนทอผ้า
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {communities.map((c) => (
-                  <Box
-                    key={c.id}
-                    onClick={() => setCommunity(c.id)}
-                    sx={{
-                      p: 2, borderRadius: "14px", cursor: "pointer",
-                      border: "2px solid", borderColor: community === c.id ? "#C5A55A" : "#E5DFD6",
-                      bgcolor: "#FFFFFF", transition: "all 0.15s",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", fontSize: "0.9rem" }}>
-                          {c.name}
-                        </Typography>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.3 }}>
-                          <LocationOnRoundedIcon sx={{ fontSize: 13, color: "#9CA3AF" }} />
-                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#9CA3AF" }}>
-                            {c.province}
+              {communitiesLoading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                  <CircularProgress sx={{ color: "#C5A55A" }} />
+                </Box>
+              ) : communities.length === 0 ? (
+                !loadError && (
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", textAlign: "center", py: 4 }}>
+                    ยังไม่มีชุมชนที่ทอลายนี้ได้ในขณะนี้
+                  </Typography>
+                )
+              ) : (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {communities.map((c) => (
+                    <Box
+                      key={c.id}
+                      onClick={() => setCommunity(c.id)}
+                      sx={{
+                        p: 2, borderRadius: "14px", cursor: "pointer",
+                        border: "2px solid", borderColor: community === c.id ? "#C5A55A" : "#E5DFD6",
+                        bgcolor: "#FFFFFF", transition: "all 0.15s",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", fontSize: "0.9rem" }}>
+                            {c.name}
                           </Typography>
-                        </Box>
-                      </Box>
-                      {community === c.id && <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 20 }} />}
-                    </Box>
-                    <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
-                      <Chip
-                        label={
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-                            <StarRoundedIcon sx={{ fontSize: 12 }} />
-                            {c.rating}
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.3 }}>
+                            <LocationOnRoundedIcon sx={{ fontSize: 13, color: "#9CA3AF" }} />
+                            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#9CA3AF" }}>
+                              {c.province}
+                            </Typography>
                           </Box>
-                        }
-                        size="small"
-                        sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#FDF8EE", color: "#92652A", fontWeight: 700 }}
-                      />
-                      <Chip label={c.specialty} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#EEF3FF", color: "#1B2A4A" }} />
-                      <Chip label={`ใช้เวลา ${c.leadTime}`} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#F3F4F6", color: "#6B7280" }} />
+                        </Box>
+                        {community === c.id && <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 20 }} />}
+                      </Box>
+                      <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Chip
+                          label={
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
+                              <StarRoundedIcon sx={{ fontSize: 12 }} />
+                              {c.rating}
+                            </Box>
+                          }
+                          size="small"
+                          sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#FDF8EE", color: "#92652A", fontWeight: 700 }}
+                        />
+                        <Chip label={c.specialty} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#EEF3FF", color: "#1B2A4A" }} />
+                        <Chip label={`ใช้เวลา ${c.leadTime}`} size="small" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", bgcolor: "#F3F4F6", color: "#6B7280" }} />
+                      </Box>
                     </Box>
-                  </Box>
-                ))}
-              </Box>
+                  ))}
+                </Box>
+              )}
 
               <TextField
                 fullWidth multiline rows={2} label="หมายเหตุเพิ่มเติม (ถ้ามี)"
@@ -549,7 +754,7 @@ export default function WeavingOrderPage() {
           {step > 0 && (
             <Button
               variant="outlined"
-              onClick={() => setStep((s) => s - 1)}
+              onClick={goBack}
               sx={{ flex: 1, py: 1.4, borderColor: "#E5DFD6", color: "#1B2A4A", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 600, textTransform: "none" }}
             >
               ย้อนกลับ
@@ -560,7 +765,7 @@ export default function WeavingOrderPage() {
             <Button
               variant="contained"
               disabled={!canNext}
-              onClick={() => setStep((s) => s + 1)}
+              onClick={goNext}
               sx={{ flex: 2, py: 1.4, bgcolor: "#C5A55A", color: "#FFFFFF", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none" }}
             >
               ถัดไป
@@ -568,7 +773,7 @@ export default function WeavingOrderPage() {
           ) : (
             <Button
               variant="contained"
-              disabled={!acceptedWarning || loading}
+              disabled={!acceptedWarning || loading || !pattern || !community}
               onClick={handleSubmit}
               startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
               sx={{ flex: 2, py: 1.4, bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none" }}
@@ -578,6 +783,26 @@ export default function WeavingOrderPage() {
           )}
         </Box>
       </Box>
+      </>
+      )}
     </Box></MobileLayout>
+  );
+}
+
+function WeavingOrderFallback() {
+  return (
+    <MobileLayout>
+      <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+        <CircularProgress sx={{ color: "#C5A55A" }} />
+      </Box>
+    </MobileLayout>
+  );
+}
+
+export default function WeavingOrderPage() {
+  return (
+    <Suspense fallback={<WeavingOrderFallback />}>
+      <WeavingOrderContent />
+    </Suspense>
   );
 }

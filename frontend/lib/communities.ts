@@ -19,6 +19,9 @@ const BASE_URL =
     ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "")
     : "";
 
+/** ค่าจริงจาก shops.merchant_type ตอนร้านสมัคร — ใช้แยก "ชุมชนช่างทอ" กับ "ร้านค้า/นักออกแบบ" บนหน้า /community */
+export type MerchantType = "weaving_community" | "designer";
+
 export interface LiveCommunity {
   id: string;
   name: string;
@@ -27,6 +30,7 @@ export interface LiveCommunity {
   rating: number;
   reviewCount: number;
   productCount: number;
+  merchantType?: MerchantType;
 }
 
 export interface LiveCommunityDetail extends LiveCommunity {
