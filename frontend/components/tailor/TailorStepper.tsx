@@ -22,11 +22,12 @@ const STEP_INDEX: Record<string, number> = {
   select_shop: 0,
   choose_shape: 1,
   upload: 2,
-  ai_analysis: 3,
-  select_occasion: 4,
-  measurements: 5,
-  virtual_try_on: 6,
-  order_summary: 7,
+  customize_details: 3,
+  ai_analysis: 4,
+  select_occasion: 5,
+  measurements: 6,
+  virtual_try_on: 7,
+  order_summary: 8,
 };
 
 export default function TailorStepper({ currentStep }: { currentStep: string }) {
