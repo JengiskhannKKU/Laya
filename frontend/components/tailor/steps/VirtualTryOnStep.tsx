@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -30,6 +31,40 @@ type SlotState = { status: "idle" | "loading" | "done" | "error"; url?: string; 
  */
 export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: any) {
   const { t } = useLanguage();
+
+  // โหมด ar3d ลองใส่แบบสดผ่านกล้อง (DeepAR) ไปแล้วตอนขั้นสัดส่วนร่างกาย (ARTryOnView) — ไม่มี bodyPhotos
+  // หรือ bodyMeasurements ให้ AI ใช้สร้างรูปต่อ ข้ามการ generate ทั้งหมด แสดงแค่หน้ายืนยันแล้วไปต่อ
+  if (orderState.bodyInputMode === "ar3d") {
+    return (
+      <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', pt: 6, pb: 4 }}>
+        <Box sx={{
+          width: 88, height: 88, borderRadius: '50%', bgcolor: `${GOLD}1A`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CheckCircleRoundedIcon sx={{ fontSize: 48, color: GOLD }} />
+        </Box>
+        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '1.05rem', color: NAVY, textAlign: 'center' }}>
+          {t("tailorFlow.virtualTryOn.ar3dDoneTitle")}
+        </Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: '0.85rem', color: '#6B7280', textAlign: 'center', px: 2 }}>
+          {t("tailorFlow.virtualTryOn.ar3dDoneDesc")}
+        </Typography>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={onNext}
+          sx={{
+            bgcolor: NAVY, color: 'white', py: 1.7, borderRadius: '14px', fontFamily: FONT, fontWeight: 600,
+            fontSize: '0.95rem', mt: 1, boxShadow: '0 4px 14px rgba(27,42,74,0.25)', '&:hover': { bgcolor: '#0F1A30' },
+          }}
+        >
+          {t("tailorFlow.virtualTryOn.nextDone")}
+        </Button>
+      </Box>
+    );
+  }
+
   const PERSPECTIVES: { key: Perspective; label: string }[] = [
     { key: "front", label: t("tailorFlow.virtualTryOn.front") },
     { key: "back", label: t("tailorFlow.virtualTryOn.back") },
