@@ -6,7 +6,6 @@ import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import StraightenRoundedIcon from "@mui/icons-material/StraightenRounded";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
-import ViewInArRoundedIcon from "@mui/icons-material/ViewInArRounded";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import ARTryOnView from "./ARTryOnView";
@@ -163,39 +162,10 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
           </Box>
         </Box>
 
-        {/* ตัวเลือกที่ 3: AR ลองใส่เสมือนจริง 3D ผ่าน DeepAR Web SDK — เป็น shell integration จริง (camera +
-            body tracking ทำงานได้) แต่เอฟเฟกต์ที่โหลดยังเป็น demo ของ DeepAR ไม่ใช่ชุดจาก template ที่เลือกไว้
-            (ต้องสร้าง custom effect ต่อ template ด้วย DeepAR Studio ก่อน — งาน 3D content แยกจากโค้ด) จึงติดป้าย
-            "ทดลอง" (Beta) แทน "เร็วๆ นี้" */}
-        <Box
-          component={motion.div}
-          whileHover={{ y: -3 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setMode("ar3d")}
-          sx={{
-            display: 'flex', alignItems: 'center', gap: 2, p: 2.4, bgcolor: '#FFFFFF', borderRadius: '18px',
-            border: '1px solid #EFE9DD', cursor: 'pointer', position: 'relative', boxShadow: '0 4px 16px rgba(27,42,74,0.06)',
-            '&:hover': { borderColor: GOLD },
-          }}
-        >
-          <Box sx={{
-            position: 'absolute', top: 10, right: 10, bgcolor: `${GOLD}20`, color: '#8A6D3B',
-            px: 1, py: 0.25, borderRadius: '999px', fontFamily: FONT, fontSize: '0.65rem', fontWeight: 700,
-          }}>
-            {t("tailorFlow.measurements.betaBadge")}
-          </Box>
-          <Box sx={{ width: 52, height: 52, borderRadius: '14px', bgcolor: `${NAVY}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <ViewInArRoundedIcon sx={{ fontSize: 26, color: GOLD }} />
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.9rem' }}>
-              {t("tailorFlow.measurements.modeAR3DTitle")}
-            </Typography>
-            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.76rem', mt: 0.3 }}>
-              {t("tailorFlow.measurements.modeAR3DDesc")}
-            </Typography>
-          </Box>
-        </Box>
+        {/* ตัวเลือกที่ 3 (AR ลองใส่เสมือนจริง 3D ผ่าน DeepAR) ถูกปิดใช้งานไว้ชั่วคราว — ยังไม่มี custom effect
+            ต่อ template จริง (ต้องสร้างด้วย DeepAR Studio แยกเป็นงาน 3D content ต่างหาก ไม่ใช่โค้ด) เอฟเฟกต์ demo
+            ที่มีตอนนี้ไม่ได้สื่อสารชุดจริงให้ลูกค้าเห็น จึงซ่อนตัวเลือกนี้ออกจาก UI ไปก่อน (โค้ด ARTryOnView.tsx
+            และ branch mode === "ar3d" ด้านล่างยังอยู่ครบ พร้อมเปิดกลับมาได้ทันทีเมื่อมี custom effect จริงแล้ว) */}
 
         <Box
           onClick={skipWithDefaults}
