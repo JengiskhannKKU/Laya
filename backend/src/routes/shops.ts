@@ -147,24 +147,33 @@ router.get("/:id", async (req: Request, res: Response) => {
 /** POST /api/shops/apply — customer applies to become merchant */
 router.post("/apply", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { userId } = req.user!;
+    const { userId, email } = req.user!;
     const {
       name, description, province, address, phone, lineId, specialties, services,
-      promptpayId, bankName, bankAccountNo, bankAccountName, merchantType,
+      promptpayId, bankName, bankAccountNo, bankAccountName, merchantType, productLanguage,
     } = req.body as {
       name: string; description?: string; province: string; address?: string;
       phone?: string; lineId?: string; specialties?: string[]; services?: string[];
       promptpayId?: string; bankName?: string; bankAccountNo?: string; bankAccountName?: string;
-      merchantType?: string;
+      merchantType?: string; productLanguage?: string;
     };
 
     if (!name || !province) {
       res.status(400).json({ error: "name และ province จำเป็นต้องกรอก" });
       return;
     }
-    // ประเภทร้านค้า: ชุมชนทอผ้า (default) หรือ ดีไซเนอร์
-    const MERCHANT_TYPES = ["weaving_community", "designer"];
+    // ประเภทร้านค้า: ชุมชนทอผ้า | ดีไซเนอร์ | ร้านค้าผลิตภัณฑ์ผ้าไทย (retailer)
+    const MERCHANT_TYPES = ["weaving_community", "designer", "retailer"];
     const shopType = MERCHANT_TYPES.includes(merchantType ?? "") ? merchantType! : "weaving_community";
+    const langPref = productLanguage === "en" ? "en" : "th";
+
+    // Ensure the user exists in users table (foreign key constraint guard)
+    await query(
+      `INSERT INTO users (id, email, role, is_active)
+       VALUES ($1, $2, 'customer', true)
+       ON CONFLICT (id) DO NOTHING`,
+      [userId, email]
+    );
 
     const existing = await query<{ id: string }>("SELECT id FROM shops WHERE user_id = $1", [userId]);
     if (existing.length) {
@@ -174,12 +183,12 @@ router.post("/apply", requireAuth, async (req: Request, res: Response) => {
 
     const rows = await query<{ id: string }>(
       `INSERT INTO shops (user_id, name, description, province, address, phone, line_id, status,
-                           promptpay_id, bank_name, bank_account_no, bank_account_name, merchant_type)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9, $10, $11, $12)
+                           promptpay_id, bank_name, bank_account_no, bank_account_name, merchant_type, product_language)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9, $10, $11, $12, $13)
        RETURNING id`,
       [
         userId, name, description ?? null, province, address ?? null, phone ?? null, lineId ?? null,
-        promptpayId ?? null, bankName ?? null, bankAccountNo ?? null, bankAccountName ?? null, shopType,
+        promptpayId ?? null, bankName ?? null, bankAccountNo ?? null, bankAccountName ?? null, shopType, langPref,
       ]
     );
 

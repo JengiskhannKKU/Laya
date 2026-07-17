@@ -14,6 +14,7 @@ export default function CreateProductPage() {
       method: "POST",
       body: JSON.stringify({
         name: values.name,
+        nameEn: values.nameEn || undefined,
         category: values.category,
         fabricType: values.fabricType || undefined,
         price: Number(values.price),
@@ -21,6 +22,7 @@ export default function CreateProductPage() {
         stock: Number(values.stock),
         lowStockThreshold: values.lowStockThreshold ? Number(values.lowStockThreshold) : undefined,
         description: values.description || undefined,
+        descriptionEn: values.descriptionEn || undefined,
         images: values.images,
         hasGI: values.hasGI,
         hasVariants: values.hasVariants,
@@ -30,15 +32,15 @@ export default function CreateProductPage() {
       throw err;
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? "เพิ่มสินค้าไม่สำเร็จ");
+    if (!res.ok) throw new Error(data.error ?? "Failed to add product");
     router.push(values.hasVariants ? `/merchant/products/${data.id}/variants` : "/merchant/products");
   };
 
   return (
     <ProductForm
-      title="เพิ่มสินค้าใหม่"
+      title="Add New Product"
       initial={emptyProductForm}
-      submitLabel="บันทึกสินค้า"
+      submitLabel="Save Product"
       onSubmit={handleSubmit}
     />
   );

@@ -136,13 +136,13 @@ export default function AppTopNav() {
               justifyContent: "center",
             }}
           >
-            <LayaLogo variant={light ? "navy" : "white"} height={28} priority />
+            <LayaLogo variant={light ? "navy" : "white"} height={32} priority />
             <Typography
               sx={{
                 fontFamily: '"Cormorant Garamond", "Georgia", serif',
                 fontStyle: "italic",
-                fontSize: "8.5px",
-                color: "#C5A55A",
+                fontSize: "10.5px",
+                color: "#be8e1d",
                 letterSpacing: "0.13em",
                 lineHeight: 1.2,
               }}

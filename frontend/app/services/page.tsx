@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
 import AutoAwesomeMosaicRoundedIcon from "@mui/icons-material/AutoAwesomeMosaicRounded";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
 import MobileLayout from "@/components/layout/MobileLayout";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -61,7 +60,10 @@ export default function ServicesPage() {
             {t("services.chooseSubtitle")}
           </Typography>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+          {/* กล่องสี่เหลี่ยมเรียงแนวนอน (เดิมเป็นแถวยาวเต็มความกว้างเรียงซ้อนกัน) */}
+          {/* จำนวนคอลัมน์ = จำนวนตัวเลือกจริงเสมอ (ตอนนี้ 2) — กันช่องว่างเปล่าตอนตัวเลือกไม่ครบ 3
+              ถ้าเพิ่มตัวเลือกที่ 3 ในอนาคต จะกลายเป็น 3 คอลัมน์ให้เองโดยไม่ต้องแก้โค้ดจุดนี้ */}
+          <Box sx={{ display: "grid", gridTemplateColumns: `repeat(${SERVICES.length}, 1fr)`, gap: { xs: 1.5, md: 2.5 } }}>
             {SERVICES.map(({ href, icon: Icon, title, desc }, i) => (
               <motion.div key={href} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, duration: 0.3 }}>
                 <Link href={href} style={{ textDecoration: "none" }}>
@@ -70,34 +72,38 @@ export default function ServicesPage() {
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.99 }}
                     sx={{
-                      p: { xs: 3, md: 4 },
+                      aspectRatio: "1 / 1",
+                      p: { xs: 2, md: 3.5 },
                       borderRadius: "20px",
                       bgcolor: "#FFFFFF",
                       border: "1px solid #EFE9DD",
                       boxShadow: "0 4px 20px rgba(27,42,74,0.06)",
                       display: "flex",
+                      flexDirection: "column",
                       alignItems: "center",
-                      gap: 2.5,
+                      justifyContent: "center",
+                      textAlign: "center",
+                      gap: { xs: 1, md: 1.5 },
                       cursor: "pointer",
                       transition: "box-shadow 0.25s, border-color 0.25s",
                       "&:hover": { boxShadow: "0 12px 32px rgba(27,42,74,0.12)", borderColor: GOLD },
                     }}
                   >
                     <Box sx={{
-                      width: 64, height: 64, borderRadius: "18px", flexShrink: 0,
+                      width: { xs: 52, md: 64 }, height: { xs: 52, md: 64 }, borderRadius: "18px", flexShrink: 0,
                       bgcolor: `${NAVY}0D`, display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
-                      <Icon sx={{ fontSize: 30, color: GOLD }} />
+                      <Icon sx={{ fontSize: { xs: 24, md: 30 }, color: GOLD }} />
                     </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: "1.15rem", color: NAVY }}>
-                        {title}
-                      </Typography>
-                      <Typography sx={{ fontFamily: FONT, fontSize: "0.82rem", color: "#6B7280", mt: 0.5, lineHeight: 1.5 }}>
-                        {desc}
-                      </Typography>
-                    </Box>
-                    <ArrowForwardRoundedIcon sx={{ color: "#C9C2B4", fontSize: 22, flexShrink: 0 }} />
+                    <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: { xs: "0.92rem", md: "1.15rem" }, color: NAVY }}>
+                      {title}
+                    </Typography>
+                    <Typography sx={{
+                      fontFamily: FONT, fontSize: { xs: "0.72rem", md: "0.82rem" }, color: "#6B7280", lineHeight: 1.5,
+                      display: "-webkit-box", WebkitLineClamp: { xs: 3, md: 4 }, WebkitBoxOrient: "vertical", overflow: "hidden",
+                    }}>
+                      {desc}
+                    </Typography>
                   </Box>
                 </Link>
               </motion.div>

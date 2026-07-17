@@ -135,6 +135,32 @@ export default function ProfilePage() {
             </Link>
           )}
 
+          {/* Become a Merchant shortcut */}
+          {user?.role !== "merchant" && user?.role !== "admin" && (
+            <Link href="/auth/register/merchant" style={{ textDecoration: "none" }}>
+              <Box component={motion.div} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                sx={{
+                  bgcolor: "#FFFFFF", borderRadius: "14px", p: 2, mb: 2,
+                  display: "flex", alignItems: "center", gap: 1.5,
+                  border: "1.5px dashed #C5A55A",
+                  cursor: "pointer",
+                  "&:hover": { bgcolor: "rgba(197,165,90,0.05)" }
+                }}
+              >
+                <StoreRoundedIcon sx={{ color: "#C5A55A" }} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#1B2A4A", fontSize: "0.9rem" }}>
+                    สมัครเป็นร้านค้า LAYA
+                  </Typography>
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#6B7280" }}>
+                    เปิดร้านค้าของคุณและเริ่มจำหน่ายผลิตภัณฑ์ผ้าไทยวันนี้
+                  </Typography>
+                </Box>
+                <ChevronRightRoundedIcon sx={{ color: "#C5A55A" }} />
+              </Box>
+            </Link>
+          )}
+
           {/* Menu */}
           <Box
             component={motion.div}

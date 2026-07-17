@@ -48,7 +48,7 @@ export default function HeroSearch() {
       fill
       style={{ objectFit: "cover" }}
       priority
-      sizes="(max-width: 900px) 100vw, 55vw"
+      sizes="(max-width: 3000px) 100vw, 55vw"
     />
   );
 
@@ -184,20 +184,25 @@ export default function HeroSearch() {
         </Box>
       </Box>
 
-      {/* ═════ Desktop: split 45/55 — ข้อความซ้าย ภาพชนขอบขวาจอ ═════ */}
+      {/* ═════ Desktop: ข้อความซ้าย ภาพชนขอบขวาจอ ═════
+          gridTemplateColumns เดิมใช้ "0.9fr 1.1fr" ตายตัว — บนจอกว้าง (เช่น 1920px) คอลัมน์ซ้าย
+          กลายเป็นกว้างเกินเนื้อหาจริงมาก (ข้อความสั้นแต่คอลัมน์กิน 0.9fr ของทั้งจอ) ทำให้ช่องว่าง
+          ก่อนถึงรูปดูห่างมาก — เปลี่ยนคอลัมน์ซ้ายเป็น auto (แคบพอดีเนื้อหา) ให้รูปขยับมาชิดข้อความ
+          มากขึ้นเสมอ ไม่ว่าจอจะกว้างแค่ไหน */}
       <Box
         sx={{
           display: { xs: "none", md: "grid" },
-          gridTemplateColumns: "0.9fr 1.1fr",
+          gridTemplateColumns: "auto 1fr",
           alignItems: "center",
-          gap: 6,
+          gap: 0.5,
         }}
       >
-        {/* Left: copy + CTA + dots */}
+        {/* Left: copy + CTA + dots — pl เพิ่มจาก 40px เป็น 100px ให้บล็อกข้อความขยับเข้ามาจากขอบซ้าย
+            มากขึ้น (แต่ก่อนชิดขอบซ้ายเกินไปบนจอ desktop) */}
         <Box
           sx={{
             textAlign: "left",
-            pl: "max(calc((100vw - 1440px) / 2 + 40px), 40px)",
+            pl: "max(calc((100vw - 1440px) / 2 + 100px), 100px)",
             pt: 6,
             pb: 6,
           }}

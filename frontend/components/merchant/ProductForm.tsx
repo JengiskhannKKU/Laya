@@ -26,19 +26,20 @@ import { useRouter } from "next/navigation";
 import { useImageUpload } from "@/hooks/useImageUpload";
 
 export const PRODUCT_CATEGORIES: { value: string; label: string }[] = [
-  { value: "fabric", label: "ผ้าผืน" },
-  { value: "clothing", label: "เสื้อผ้า" },
-  { value: "scarf", label: "ผ้าพันคอ" },
-  { value: "bag", label: "กระเป๋า" },
-  { value: "premium", label: "พรีเมียม" },
-  { value: "decor", label: "ของตกแต่ง" },
-  { value: "others", label: "อื่นๆ" },
+  { value: "fabric", label: "Fabric" },
+  { value: "clothing", label: "Clothing" },
+  { value: "scarf", label: "Scarf" },
+  { value: "bag", label: "Bag" },
+  { value: "premium", label: "Premium" },
+  { value: "decor", label: "Decoration" },
+  { value: "others", label: "Others" },
 ];
 
-const FABRIC_TYPES = ["ผ้าไหม", "ผ้าฝ้าย", "ผ้าทอมือ", "ผ้าลินิน", "ผสม"];
+const FABRIC_TYPES = ["Silk", "Cotton", "Handwoven", "Linen", "Blended"];
 
 export interface ProductFormValues {
   name: string;
+  nameEn: string;
   category: string;
   fabricType: string;
   price: string;
@@ -46,14 +47,15 @@ export interface ProductFormValues {
   stock: string;
   lowStockThreshold: string;
   description: string;
+  descriptionEn: string;
   images: string[];
   hasGI: boolean;
   hasVariants: boolean;
 }
 
 export const emptyProductForm: ProductFormValues = {
-  name: "", category: "fabric", fabricType: "", price: "", priceUnit: "เมตร",
-  stock: "", lowStockThreshold: "5", description: "", images: [], hasGI: false, hasVariants: false,
+  name: "", nameEn: "", category: "fabric", fabricType: "", price: "", priceUnit: "Meter",
+  stock: "", lowStockThreshold: "5", description: "", descriptionEn: "", images: [], hasGI: false, hasVariants: false,
 };
 
 const sx = {
@@ -109,7 +111,7 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
     try {
       await onSubmit(form);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่");
+      setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -128,10 +130,10 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
 
       {error && <Alert severity="error" sx={{ mb: 2, borderRadius: "12px", fontFamily: '"Kanit", sans-serif' }}>{error}</Alert>}
 
-      {/* รูปสินค้า — อัปโหลดไฟล์จริงขึ้น Supabase Storage (bucket: product-images) */}
+      {/* Product Images — uploaded to Supabase Storage (bucket: product-images) */}
       <Box sx={{ mb: 3 }}>
         <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 1 }}>
-          รูปภาพสินค้า (สูงสุด 6 รูป)
+          Product Images (max 6)
         </Typography>
         {form.images.length > 0 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1.5 }}>
@@ -176,7 +178,7 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
               <AddPhotoAlternateRoundedIcon sx={{ color: "#9CA3AF", fontSize: 26 }} />
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem", color: "#6B7280" }}>
-                {form.images.length >= 6 ? "ครบ 6 รูปแล้ว" : "ลากรูปมาวาง หรือคลิกเพื่อเลือกไฟล์"}
+                {form.images.length >= 6 ? "Maximum 6 images reached" : "Drag & drop or click to select images"}
               </Typography>
             </Box>
           )}
@@ -184,58 +186,60 @@ export default function ProductForm({ title, initial, submitLabel, onSubmit }: P
       </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-        <TextField fullWidth required label="ชื่อสินค้า" value={form.name} onChange={(e) => set("name", e.target.value)} sx={sx.field} />
+        <TextField required fullWidth label="ชื่อสินค้า (ภาษาไทย)" placeholder="กรอกชื่อสินค้าภาษาไทย" value={form.name} onChange={(e) => set("name", e.target.value)} sx={sx.field} />
+        <TextField fullWidth label="Product Name (English)" placeholder="optional" value={form.nameEn} onChange={(e) => set("nameEn", e.target.value)} sx={sx.field} />
 
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
           <FormControl fullWidth sx={sx.field}>
-            <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>หมวดหมู่สินค้า *</InputLabel>
-            <Select value={form.category} onChange={(e) => set("category", e.target.value)} label="หมวดหมู่สินค้า *">
+            <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>Category *</InputLabel>
+            <Select value={form.category} onChange={(e) => set("category", e.target.value)} label="Category *">
               {PRODUCT_CATEGORIES.map((c) => <MenuItem key={c.value} value={c.value} sx={{ fontFamily: '"Kanit", sans-serif' }}>{c.label}</MenuItem>)}
             </Select>
           </FormControl>
           <FormControl fullWidth sx={sx.field}>
-            <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>ประเภทผ้า</InputLabel>
-            <Select value={form.fabricType} onChange={(e) => set("fabricType", e.target.value)} label="ประเภทผ้า">
-              <MenuItem value="" sx={{ fontFamily: '"Kanit", sans-serif' }}>ไม่ระบุ</MenuItem>
+            <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>Fabric Type</InputLabel>
+            <Select value={form.fabricType} onChange={(e) => set("fabricType", e.target.value)} label="Fabric Type">
+              <MenuItem value="" sx={{ fontFamily: '"Kanit", sans-serif' }}>Not specified</MenuItem>
               {FABRIC_TYPES.map((t) => <MenuItem key={t} value={t} sx={{ fontFamily: '"Kanit", sans-serif' }}>{t}</MenuItem>)}
             </Select>
           </FormControl>
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 2 }}>
-          <TextField required label="ราคา (บาท)" type="number" inputProps={{ min: 0, step: "0.01" }}
+          <TextField required label="Price (THB)" type="number" inputProps={{ min: 0, step: "0.01" }}
             value={form.price} onChange={(e) => set("price", e.target.value)} sx={sx.field} />
           <FormControl sx={sx.field}>
-            <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>หน่วย</InputLabel>
-            <Select value={form.priceUnit} onChange={(e) => set("priceUnit", e.target.value)} label="หน่วย">
-              {["เมตร", "ชิ้น", "ผืน", "คู่"].map((u) => <MenuItem key={u} value={u} sx={{ fontFamily: '"Kanit", sans-serif' }}>{u}</MenuItem>)}
+            <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>Unit</InputLabel>
+            <Select value={form.priceUnit} onChange={(e) => set("priceUnit", e.target.value)} label="Unit">
+              {["Meter", "Piece", "Yard", "Pair"].map((u) => <MenuItem key={u} value={u} sx={{ fontFamily: '"Kanit", sans-serif' }}>{u}</MenuItem>)}
             </Select>
           </FormControl>
-          <TextField required label="สต็อก" type="number" inputProps={{ min: 0 }}
+          <TextField required label="Stock" type="number" inputProps={{ min: 0 }}
             value={form.stock} onChange={(e) => set("stock", e.target.value)} sx={sx.field} />
         </Box>
 
-        <TextField label="แจ้งเตือนเมื่อสต็อกเหลือ (ชิ้น)" type="number" inputProps={{ min: 0 }}
+        <TextField label="Low Stock Alert (units)" type="number" inputProps={{ min: 0 }}
           value={form.lowStockThreshold} onChange={(e) => set("lowStockThreshold", e.target.value)}
           sx={{ ...sx.field, maxWidth: { sm: "50%" } }}
         />
 
-        <TextField fullWidth multiline rows={4} label="รายละเอียดสินค้า" value={form.description} onChange={(e) => set("description", e.target.value)} sx={sx.field} />
+        <TextField fullWidth multiline rows={4} label="รายละเอียดสินค้า (ภาษาไทย)" placeholder="กรอกรายละเอียดสินค้าภาษาไทย" value={form.description} onChange={(e) => set("description", e.target.value)} sx={sx.field} />
+        <TextField fullWidth multiline rows={4} label="Product Description (English)" placeholder="optional" value={form.descriptionEn} onChange={(e) => set("descriptionEn", e.target.value)} sx={sx.field} />
 
         <FormControlLabel
           control={<Switch checked={form.hasGI} onChange={(e) => set("hasGI", e.target.checked)}
             sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "#C5A55A" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#C5A55A" } }} />}
-          label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.88rem", color: "#1B2A4A" }}>สินค้าได้รับรอง GI (สิ่งบ่งชี้ทางภูมิศาสตร์)</Typography>}
+          label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.88rem", color: "#1B2A4A" }}>GI Certified product (Geographical Indication)</Typography>}
         />
 
         <FormControlLabel
           control={<Switch checked={form.hasVariants} onChange={(e) => set("hasVariants", e.target.checked)}
             sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "#C5A55A" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#C5A55A" } }} />}
-          label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.88rem", color: "#1B2A4A" }}>สินค้านี้มีหลายตัวเลือก (สี/ไซส์/ลาย) — Multi-SKU</Typography>}
+          label={<Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.88rem", color: "#1B2A4A" }}>This product has multiple options (Color / Size / Pattern) — Multi-SKU</Typography>}
         />
         {form.hasVariants && (
           <Alert severity="info" sx={{ borderRadius: "10px", fontFamily: '"Kanit", sans-serif', fontSize: "0.82rem" }}>
-            ราคา/สต็อกด้านบนจะใช้เป็นค่าเริ่มต้น — ไปที่หน้า “จัดการ SKU” หลังบันทึกเพื่อกำหนดราคาและสต็อกแต่ละตัวเลือก
+            The price/stock above will be used as defaults — go to the &ldquo;Manage SKU&rdquo; page after saving to set prices and stock per variant.
           </Alert>
         )}
 

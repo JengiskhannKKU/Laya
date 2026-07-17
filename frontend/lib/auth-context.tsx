@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode } fro
 import { useRouter } from "next/navigation";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { getFreshToken } from "./api-auth";
 
 export type UserRole = "customer" | "merchant" | "admin";
 
@@ -29,8 +30,10 @@ export interface MerchantApplication {
   bankName: string;
   bankAccountName?: string;
   promptpayId?: string;
-  /** ประเภทร้านค้า: ชุมชนทอผ้า | ดีไซเนอร์ */
-  merchantType: "weaving_community" | "designer";
+  /** ประเภทร้านค้า: ชุมชนทอผ้า | ดีไซเนอร์ | ร้านค้าผลิตภัณฑ์ผ้าไทย */
+  merchantType: "weaving_community" | "designer" | "retailer";
+  /** ภาษาสำหรับกรอกข้อมูลสินค้า: th = ภาษาไทย, en = English */
+  productLanguage: "th" | "en";
 }
 
 interface AuthContextType {
@@ -227,7 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const closeAuthModal = () => {};
 
   const registerMerchant = async (data: MerchantApplication) => {
-    const token = session?.access_token ?? null;
+    const token = await getFreshToken();
     await apiFetch("/api/shops/apply", token, {
       method: "POST",
       body: JSON.stringify({
@@ -242,6 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         bankAccountName: data.bankAccountName,
         promptpayId: data.promptpayId,
         merchantType: data.merchantType,
+        productLanguage: data.productLanguage,
       }),
     });
   };

@@ -46,9 +46,21 @@ export default function AuthCallbackPage() {
         });
         const me = await meRes.json();
         const role = me?.role as string | undefined;
-        router.replace(role === "merchant" ? "/merchant" : role === "admin" ? "/admin" : "/");
+        const savedRedirect = localStorage.getItem("oauth_redirect");
+        if (savedRedirect) {
+          localStorage.removeItem("oauth_redirect");
+          router.replace(savedRedirect);
+        } else {
+          router.replace(role === "merchant" ? "/merchant" : role === "admin" ? "/admin" : "/");
+        }
       } catch {
-        router.replace("/");
+        const savedRedirect = localStorage.getItem("oauth_redirect");
+        if (savedRedirect) {
+          localStorage.removeItem("oauth_redirect");
+          router.replace(savedRedirect);
+        } else {
+          router.replace("/");
+        }
       }
     });
   }, [router]);

@@ -16,7 +16,7 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -46,6 +46,8 @@ const fieldSx = {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams ? searchParams.get("redirect") : null;
   const { t } = useLanguage();
   const { login, loginWithGoogle } = useAuth();
 
@@ -64,7 +66,11 @@ export default function LoginPage() {
     setError("");
     try {
       const { role } = await login(email, password);
-      router.push(role === "merchant" ? "/merchant" : role === "admin" ? "/admin" : "/");
+      if (redirectPath) {
+        router.push(redirectPath);
+      } else {
+        router.push(role === "merchant" ? "/merchant" : role === "admin" ? "/admin" : "/");
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t("auth.login.genericError");
       if (msg === "EMAIL_NOT_CONFIRMED") {
@@ -82,6 +88,9 @@ export default function LoginPage() {
     setGoogleLoading(true);
     setError("");
     try {
+      if (redirectPath) {
+        localStorage.setItem("oauth_redirect", redirectPath);
+      }
       await loginWithGoogle();
       // Redirect handled by Supabase → /auth/callback
     } catch (err: unknown) {

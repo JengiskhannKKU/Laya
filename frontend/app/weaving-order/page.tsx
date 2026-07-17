@@ -23,7 +23,6 @@ import Divider from "@mui/material/Divider";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
@@ -397,53 +396,57 @@ function WeavingOrderContent() {
             จะเริ่มต้นอย่างไรดี? ไม่ว่าจะเลือกทางไหน สุดท้ายคุณจะได้ทั้งลายผ้าและชุมชนผู้ทอ
           </Typography>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {/* กล่องสี่เหลี่ยมเรียงแนวนอน — จำนวนคอลัมน์ = จำนวนตัวเลือกจริง (2 ทาง: เลือกลาย/เลือกชุมชน)
+              กันช่องว่างเปล่าจาก grid 3 คอลัมน์ตายตัวตอนมีแค่ 2 กล่อง */}
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: { xs: 1.5, md: 2 } }}>
             <Box
               component={motion.div} whileHover={{ y: -3 }} whileTap={{ scale: 0.99 }}
               onClick={() => setPathChosen(true)}
               sx={{
-                p: 3, borderRadius: "20px", bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
-                boxShadow: "0 4px 20px rgba(27,42,74,0.06)", display: "flex", alignItems: "center", gap: 2.5,
+                aspectRatio: "1 / 1", p: { xs: 2, md: 3 }, borderRadius: "20px", bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
+                boxShadow: "0 4px 20px rgba(27,42,74,0.06)", display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center", textAlign: "center", gap: { xs: 1, md: 1.5 },
                 cursor: "pointer", transition: "box-shadow 0.25s, border-color 0.25s",
                 "&:hover": { boxShadow: "0 12px 32px rgba(27,42,74,0.12)", borderColor: "#C5A55A" },
               }}
             >
-              <Box sx={{ width: 56, height: 56, borderRadius: "16px", flexShrink: 0, bgcolor: "#1B2A4A0D", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <AutoAwesomeMosaicRoundedIcon sx={{ fontSize: 26, color: "#C5A55A" }} />
+              <Box sx={{ width: { xs: 44, md: 56 }, height: { xs: 44, md: 56 }, borderRadius: "16px", flexShrink: 0, bgcolor: "#1B2A4A0D", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <AutoAwesomeMosaicRoundedIcon sx={{ fontSize: { xs: 22, md: 26 }, color: "#C5A55A" }} />
               </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-                  เลือกลายผ้าก่อน
-                </Typography>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.3 }}>
-                  ดูลายผ้าที่มีในระบบ แล้วให้เราแนะนำชุมชนที่ทอลายนี้ได้
-                </Typography>
-              </Box>
-              <ArrowForwardRoundedIcon sx={{ color: "#C9C2B4", fontSize: 20, flexShrink: 0 }} />
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: { xs: "0.88rem", md: "1.05rem" }, color: "#1B2A4A" }}>
+                เลือกลายผ้าก่อน
+              </Typography>
+              <Typography sx={{
+                fontFamily: '"Kanit", sans-serif', fontSize: { xs: "0.68rem", md: "0.8rem" }, color: "#6B7280", lineHeight: 1.5,
+                display: "-webkit-box", WebkitLineClamp: { xs: 3, md: 4 }, WebkitBoxOrient: "vertical", overflow: "hidden",
+              }}>
+                ดูลายผ้าที่มีในระบบ แล้วให้เราแนะนำชุมชนที่ทอลายนี้ได้
+              </Typography>
             </Box>
 
             <Box
               component={motion.div} whileHover={{ y: -3 }} whileTap={{ scale: 0.99 }}
               onClick={() => router.push("/community")}
               sx={{
-                p: 3, borderRadius: "20px", bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
-                boxShadow: "0 4px 20px rgba(27,42,74,0.06)", display: "flex", alignItems: "center", gap: 2.5,
+                aspectRatio: "1 / 1", p: { xs: 2, md: 3 }, borderRadius: "20px", bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
+                boxShadow: "0 4px 20px rgba(27,42,74,0.06)", display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center", textAlign: "center", gap: { xs: 1, md: 1.5 },
                 cursor: "pointer", transition: "box-shadow 0.25s, border-color 0.25s",
                 "&:hover": { boxShadow: "0 12px 32px rgba(27,42,74,0.12)", borderColor: "#C5A55A" },
               }}
             >
-              <Box sx={{ width: 56, height: 56, borderRadius: "16px", flexShrink: 0, bgcolor: "#1B2A4A0D", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Diversity3RoundedIcon sx={{ fontSize: 26, color: "#C5A55A" }} />
+              <Box sx={{ width: { xs: 44, md: 56 }, height: { xs: 44, md: 56 }, borderRadius: "16px", flexShrink: 0, bgcolor: "#1B2A4A0D", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Diversity3RoundedIcon sx={{ fontSize: { xs: 22, md: 26 }, color: "#C5A55A" }} />
               </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-                  เลือกชุมชนก่อน
-                </Typography>
-                <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", color: "#6B7280", mt: 0.3 }}>
-                  ดูผลงาน เรื่องราว และเอกลักษณ์ของแต่ละชุมชน แล้วเลือกลายที่ชุมชนนั้นทอได้
-                </Typography>
-              </Box>
-              <ArrowForwardRoundedIcon sx={{ color: "#C9C2B4", fontSize: 20, flexShrink: 0 }} />
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: { xs: "0.88rem", md: "1.05rem" }, color: "#1B2A4A" }}>
+                เลือกชุมชนก่อน
+              </Typography>
+              <Typography sx={{
+                fontFamily: '"Kanit", sans-serif', fontSize: { xs: "0.68rem", md: "0.8rem" }, color: "#6B7280", lineHeight: 1.5,
+                display: "-webkit-box", WebkitLineClamp: { xs: 3, md: 4 }, WebkitBoxOrient: "vertical", overflow: "hidden",
+              }}>
+                ดูผลงาน เรื่องราว และเอกลักษณ์ของแต่ละชุมชน แล้วเลือกลายที่ชุมชนนั้นทอได้
+              </Typography>
             </Box>
           </Box>
 

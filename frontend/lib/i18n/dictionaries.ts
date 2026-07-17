@@ -37,7 +37,7 @@ const th = {
       title: "ผ้าไทยทอมือ",
       accent: "A Curated Heritage Collection",
       subtitle:
-        "ผ้าทอมือคัดสรรจากชุมชนช่างฝีมือทั่วไทย — ที่ซึ่งประเพณี ลวดลายการทอ และเรื่องราวทางวัฒนธรรมมาบรรจบกัน",
+        "ผ้าทอมือคัดสรรจากชุมชนช่างฝีมือทั่วไทย ที่ซึ่งประเพณี ลวดลายการทอ และเรื่องราวทางวัฒนธรรมมาบรรจบกัน",
       searchPlaceholder: "ค้นหาผ้าไหม ชุมชนทอผ้า หรือลวดลาย…",
       searchButton: "ค้นหา",
       popular: "ยอดนิยม",
@@ -706,7 +706,7 @@ const en = {
       title: "Handwoven Thai Fabric",
       accent: "A Curated Heritage Collection",
       subtitle:
-        "Curated handwoven fabric from artisan communities across Thailand — where tradition, color weaving, and cultural stories come together.",
+        "Curated handwoven fabric from artisan communities across Thailand  where tradition, color weaving, and cultural stories come together.",
       searchPlaceholder: "Search Thai silk, weaving communities, or patterns…",
       searchButton: "Search",
       popular: "Popular",

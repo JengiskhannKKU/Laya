@@ -24,22 +24,24 @@ export default function EditProductPage() {
       try {
         const res = await fetch(`${API_BASE}/api/products/${params.id}`);
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "ไม่พบสินค้านี้");
+        if (!res.ok) throw new Error(data.error ?? "Product not found");
         setInitial({
           name: data.name,
+          nameEn: data.nameEn ?? "",
           category: data.category ?? "fabric",
           fabricType: data.fabricType ?? "",
           price: String(data.price),
-          priceUnit: data.priceUnit ?? "ชิ้น",
+          priceUnit: data.priceUnit ?? "Piece",
           stock: String(data.stock),
           lowStockThreshold: data.lowStockThreshold != null ? String(data.lowStockThreshold) : "5",
           description: data.description ?? "",
+          descriptionEn: data.descriptionEn ?? "",
           images: data.images ?? [],
           hasGI: !!data.hasGI,
           hasVariants: !!data.hasVariants,
         });
       } catch (err) {
-        setLoadError(err instanceof Error ? err.message : "โหลดข้อมูลสินค้าไม่สำเร็จ");
+        setLoadError(err instanceof Error ? err.message : "Failed to load product data");
       }
     })();
   }, [params.id]);
@@ -49,6 +51,7 @@ export default function EditProductPage() {
       method: "PUT",
       body: JSON.stringify({
         name: values.name,
+        nameEn: values.nameEn || undefined,
         category: values.category,
         fabricType: values.fabricType || undefined,
         price: Number(values.price),
@@ -56,6 +59,7 @@ export default function EditProductPage() {
         stock: Number(values.stock),
         lowStockThreshold: values.lowStockThreshold ? Number(values.lowStockThreshold) : undefined,
         description: values.description || undefined,
+        descriptionEn: values.descriptionEn || undefined,
         images: values.images,
         hasGI: values.hasGI,
         hasVariants: values.hasVariants,
@@ -65,7 +69,7 @@ export default function EditProductPage() {
       throw err;
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? "แก้ไขสินค้าไม่สำเร็จ");
+    if (!res.ok) throw new Error(data.error ?? "Failed to update product");
     router.push("/merchant/products");
   };
 
@@ -88,13 +92,13 @@ export default function EditProductPage() {
           variant="outlined" startIcon={<TuneRoundedIcon />}
           sx={{ mb: 2, borderColor: "#C5A55A", color: "#1B2A4A", borderRadius: "10px", fontFamily: '"Kanit", sans-serif', fontWeight: 600, textTransform: "none" }}
         >
-          จัดการ SKU สินค้า
+          Manage Product SKU
         </Button>
       )}
       <ProductForm
-        title="แก้ไขสินค้า"
+        title="Edit Product"
         initial={initial}
-        submitLabel="บันทึกการแก้ไข"
+        submitLabel="Save Changes"
         onSubmit={handleSubmit}
       />
     </Box>

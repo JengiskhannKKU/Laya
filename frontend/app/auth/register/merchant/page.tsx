@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -19,6 +19,7 @@ import StepLabel from "@mui/material/StepLabel";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import StoreRoundedIcon from "@mui/icons-material/StoreRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
@@ -47,17 +48,53 @@ const textFieldSx = {
 
 const steps = ["ข้อมูลร้านค้า", "รายละเอียด", "บัญชีธนาคาร"];
 
+type MerchantType = "weaving_community" | "designer" | "retailer";
+type ProductLang = "th" | "en";
+
+const MERCHANT_TYPE_OPTIONS: {
+  value: MerchantType;
+  title: string;
+  titleEn: string;
+  desc: string;
+}[] = [
+  {
+    value: "weaving_community",
+    title: "ชุมชนทอผ้า",
+    titleEn: "Weaving Community",
+    desc: "กลุ่มทอผ้า / ช่างทอ ขายผ้าและงานทอมือ",
+  },
+  {
+    value: "designer",
+    title: "ดีไซเนอร์",
+    titleEn: "Designer",
+    desc: "นักออกแบบ ตัดเย็บ / แปรรูปผ้าไทยเป็นสินค้า",
+  },
+  {
+    value: "retailer",
+    title: "ร้านค้าผ้าไทย",
+    titleEn: "Thai Fabric Retailer",
+    desc: "ร้านค้าที่จำหน่ายผลิตภัณฑ์จากผ้าไทย เช่น เสื้อผ้า กระเป๋า ของตกแต่ง",
+  },
+];
+
 export default function MerchantRegisterPage() {
   const router = useRouter();
-  const { registerMerchant } = useAuth();
+  const { user, loading: authLoading, registerMerchant, refreshProfile } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/auth/login?redirect=/auth/register/merchant");
+    }
+  }, [user, authLoading, router]);
+
   const [form, setForm] = useState({
     shopName: "", province: "", phone: "", lineId: "",
-    merchantType: "weaving_community" as "weaving_community" | "designer",
+    merchantType: "weaving_community" as MerchantType,
+    productLanguage: "th" as ProductLang,
     shopDescription: "", expertise: [] as string[],
     bankName: "", bankAccount: "", bankAccountName: "", promptpayId: "",
   });
@@ -94,7 +131,9 @@ export default function MerchantRegisterPage() {
         bankAccount: form.bankAccount, bankName: form.bankName,
         bankAccountName: form.bankAccountName, promptpayId: form.promptpayId,
         merchantType: form.merchantType,
+        productLanguage: form.productLanguage,
       });
+      await refreshProfile();
       setDone(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด กรุณาลองใหม่");
@@ -102,6 +141,14 @@ export default function MerchantRegisterPage() {
       setLoading(false);
     }
   };
+
+  if (authLoading || (!user && !done)) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", bgcolor: "#FAF6F0" }}>
+        <CircularProgress sx={{ color: "#C5A55A" }} />
+      </Box>
+    );
+  }
 
   if (done) {
     return (
@@ -163,20 +210,17 @@ export default function MerchantRegisterPage() {
         {/* Step 0: ข้อมูลร้านค้า */}
         {activeStep === 0 && (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 1 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.1rem", color: "#1B2A4A", mb: 0.5 }}>
               ข้อมูลร้านค้าของคุณ
             </Typography>
 
-            {/* ประเภทร้านค้า: ชุมชนทอผ้า / ดีไซเนอร์ */}
+            {/* ──── บทบาท / ประเภทร้านค้า ──── */}
             <Box>
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", mb: 1.2 }}>
                 คุณเป็นร้านค้าประเภทไหน? *
               </Typography>
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
-                {([
-                  { value: "weaving_community", title: "ชุมชนทอผ้า", desc: "กลุ่มทอผ้า/ช่างทอ ขายผ้าและงานทอมือ" },
-                  { value: "designer", title: "ดีไซเนอร์", desc: "นักออกแบบ ตัดเย็บ/แปรรูปผ้าไทยเป็นสินค้า" },
-                ] as const).map((opt) => {
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+                {MERCHANT_TYPE_OPTIONS.map((opt) => {
                   const active = form.merchantType === opt.value;
                   return (
                     <Box
@@ -187,19 +231,37 @@ export default function MerchantRegisterPage() {
                         border: active ? "1.5px solid #C5A55A" : "1px solid #E5DFD6",
                         bgcolor: active ? "#FDF8F0" : "#FFFFFF",
                         transition: "all 0.15s",
+                        display: "flex", alignItems: "flex-start", gap: 1.5,
                       }}
                     >
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.9rem", color: active ? "#8E601C" : "#1B2A4A" }}>
-                        {opt.title}
-                      </Typography>
-                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#6B7280", mt: 0.4, lineHeight: 1.5 }}>
-                        {opt.desc}
-                      </Typography>
+                      {/* Radio dot */}
+                      <Box sx={{
+                        mt: "3px", width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+                        border: active ? "5px solid #C5A55A" : "2px solid #D1C9BE",
+                        transition: "all 0.15s",
+                      }} />
+                      <Box>
+                        <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.92rem", color: active ? "#8E601C" : "#1B2A4A" }}>
+                            {opt.title}
+                          </Typography>
+                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF" }}>
+                            {opt.titleEn}
+                          </Typography>
+                        </Box>
+                        <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.76rem", color: "#6B7280", mt: 0.3, lineHeight: 1.6 }}>
+                          {opt.desc}
+                        </Typography>
+                        {/* คำอธิบายพิเศษสำหรับ retailer */}
+                       
+                      </Box>
                     </Box>
                   );
                 })}
               </Box>
             </Box>
+
+
 
             <TextField fullWidth label="ชื่อร้านค้า *" value={form.shopName} onChange={(e) => set("shopName", e.target.value)} sx={textFieldSx} />
             <FormControl fullWidth sx={textFieldSx}>

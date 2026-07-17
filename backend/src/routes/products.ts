@@ -113,8 +113,8 @@ router.post("/", requireAuth, requireRole("merchant", "admin"), async (req: Requ
     const { shopId } = req.user!;
     if (!shopId) { res.status(403).json({ error: "บัญชีนี้ยังไม่มีร้านค้า — สมัครร้านค้าก่อนลงขายสินค้า" }); return; }
 
-    const { name, description, category, price, priceUnit, stock, images, fabricType, hasGI, lowStockThreshold, hasVariants } = req.body as {
-      name?: string; description?: string; category?: string; price?: number; priceUnit?: string;
+    const { name, nameEn, description, descriptionEn, category, price, priceUnit, stock, images, fabricType, hasGI, lowStockThreshold, hasVariants } = req.body as {
+      name?: string; nameEn?: string; description?: string; descriptionEn?: string; category?: string; price?: number; priceUnit?: string;
       stock?: number; images?: string[]; fabricType?: string; hasGI?: boolean; lowStockThreshold?: number; hasVariants?: boolean;
     };
 
@@ -124,11 +124,11 @@ router.post("/", requireAuth, requireRole("merchant", "admin"), async (req: Requ
     const cat = PRODUCT_CATEGORIES.includes(category as (typeof PRODUCT_CATEGORIES)[number]) ? category : "others";
 
     const rows = await query<Record<string, unknown>>(
-      `INSERT INTO products (shop_id, name, description, category, price, price_unit, stock, images, fabric_type, has_gi, low_stock_threshold, has_variants)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      `INSERT INTO products (shop_id, name, name_en, description, description_en, category, price, price_unit, stock, images, fabric_type, has_gi, low_stock_threshold, has_variants)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING *`,
       [
-        shopId, name.trim(), description?.trim() || null, cat, price, priceUnit || "ชิ้น",
+        shopId, name.trim(), nameEn?.trim() || null, description?.trim() || null, descriptionEn?.trim() || null, cat, price, priceUnit || "ชิ้น",
         stock, Array.isArray(images) ? images.filter(Boolean) : [], fabricType || null, !!hasGI,
         Number.isInteger(lowStockThreshold) && Number(lowStockThreshold) >= 0 ? lowStockThreshold : 5,
         !!hasVariants,
@@ -153,7 +153,7 @@ router.post("/bulk", requireAuth, requireRole("merchant", "admin"), async (req: 
 
     const { products } = req.body as {
       products?: {
-        name?: string; description?: string; category?: string; price?: number; priceUnit?: string;
+        name?: string; nameEn?: string; description?: string; descriptionEn?: string; category?: string; price?: number; priceUnit?: string;
         stock?: number; fabricType?: string; hasGI?: boolean; lowStockThreshold?: number;
       }[];
     };
@@ -169,11 +169,11 @@ router.post("/bulk", requireAuth, requireRole("merchant", "admin"), async (req: 
     for (const p of products) {
       const cat = PRODUCT_CATEGORIES.includes(p.category as (typeof PRODUCT_CATEGORIES)[number]) ? p.category : "others";
       const rows = await query<Record<string, unknown>>(
-        `INSERT INTO products (shop_id, name, description, category, price, price_unit, stock, fabric_type, has_gi, low_stock_threshold)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        `INSERT INTO products (shop_id, name, name_en, description, description_en, category, price, price_unit, stock, fabric_type, has_gi, low_stock_threshold)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
          RETURNING *`,
         [
-          shopId, p.name!.trim(), p.description?.trim() || null, cat, p.price, p.priceUnit || "ชิ้น",
+          shopId, p.name!.trim(), p.nameEn?.trim() || null, p.description?.trim() || null, p.descriptionEn?.trim() || null, cat, p.price, p.priceUnit || "ชิ้น",
           p.stock, p.fabricType || null, !!p.hasGI,
           Number.isInteger(p.lowStockThreshold) && Number(p.lowStockThreshold) >= 0 ? p.lowStockThreshold : 5,
         ]
@@ -238,8 +238,8 @@ router.put("/:id", requireAuth, requireRole("merchant", "admin"), async (req: Re
     const { shopId } = req.user!;
     if (!(await assertOwnership(req.params.id, shopId, res))) return;
 
-    const { name, description, category, price, priceUnit, stock, images, fabricType, hasGI, lowStockThreshold, hasVariants } = req.body as {
-      name?: string; description?: string; category?: string; price?: number; priceUnit?: string;
+    const { name, nameEn, description, descriptionEn, category, price, priceUnit, stock, images, fabricType, hasGI, lowStockThreshold, hasVariants } = req.body as {
+      name?: string; nameEn?: string; description?: string; descriptionEn?: string; category?: string; price?: number; priceUnit?: string;
       stock?: number; images?: string[]; fabricType?: string; hasGI?: boolean; lowStockThreshold?: number; hasVariants?: boolean;
     };
 
@@ -250,13 +250,13 @@ router.put("/:id", requireAuth, requireRole("merchant", "admin"), async (req: Re
 
     const rows = await query<Record<string, unknown>>(
       `UPDATE products SET
-         name = $1, description = $2, category = $3, price = $4, price_unit = $5,
-         stock = $6, images = $7, fabric_type = $8, has_gi = $9,
-         low_stock_threshold = $10, has_variants = $11, updated_at = NOW()
-       WHERE id = $12
+         name = $1, name_en = $2, description = $3, description_en = $4, category = $5, price = $6, price_unit = $7,
+         stock = $8, images = $9, fabric_type = $10, has_gi = $11,
+         low_stock_threshold = $12, has_variants = $13, updated_at = NOW()
+       WHERE id = $14
        RETURNING *`,
       [
-        name.trim(), description?.trim() || null, cat, price, priceUnit || "ชิ้น",
+        name.trim(), nameEn?.trim() || null, description?.trim() || null, descriptionEn?.trim() || null, cat, price, priceUnit || "ชิ้น",
         stock, Array.isArray(images) ? images.filter(Boolean) : [], fabricType || null, !!hasGI,
         Number.isInteger(lowStockThreshold) && Number(lowStockThreshold) >= 0 ? lowStockThreshold : 5,
         !!hasVariants,
@@ -506,7 +506,9 @@ function mapProduct(row: Record<string, unknown>) {
   return {
     id: row.id,
     name: row.name,
+    nameEn: row.name_en ?? null,
     description: row.description ?? null,
+    descriptionEn: row.description_en ?? null,
     category: row.category,
     price: Number(row.price),
     priceUnit: row.price_unit,

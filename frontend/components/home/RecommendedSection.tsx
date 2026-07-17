@@ -39,7 +39,7 @@ export default function RecommendedSection() {
         eyebrow={t("home.recommended.eyebrow")}
         title={t("home.recommended.title")}
         subtitle={t("home.recommended.subtitle")}
-        href="/search"
+        href="/category"
       />
 
       {/* กริดเดียวใช้ทั้งสองขนาดจอ — มือถือ 2 คอลัมน์ / desktop 4 คอลัมน์ × 2 แถว */}
