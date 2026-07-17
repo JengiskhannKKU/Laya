@@ -33,6 +33,40 @@ router.post("/upload", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/tryon/composite-preview — body: { fabricImageBase64, shape: { id }, perspective? } → { previewImage }
+ * ผสมลายผ้าที่เพิ่งอัปโหลด (ยังไม่ทันอัปโหลดขึ้น Storage) ลงบนทรงเทมเพลตที่เลือกไว้แล้ว (ChooseShapeStep มาก่อน
+ * UploadFabricStep เสมอ) แล้วส่งรูปตัวอย่างกลับเป็น base64 ทันที — ให้ลูกค้าเห็นภาพผ้าที่ปูบนทรงจริงๆ
+ * หลังอัปโหลดเสร็จ ก่อนจะไปขั้นถ่ายรูปตัวเอง/สัดส่วน (ไม่ upload ขึ้น Supabase เพราะเป็นแค่ preview ชั่วคราว)
+ */
+router.post("/composite-preview", async (req: Request, res: Response) => {
+  try {
+    const { fabricImageBase64, shape, perspective } = req.body as {
+      fabricImageBase64?: string;
+      shape?: { id?: string };
+      perspective?: "front" | "back";
+    };
+    if (!fabricImageBase64) {
+      res.status(400).json({ error: "fabricImageBase64 is required" });
+      return;
+    }
+    if (!shape?.id) {
+      res.status(400).json({ error: "shape.id is required" });
+      return;
+    }
+
+    const match = fabricImageBase64.match(/^data:image\/[a-zA-Z0-9.+-]+;base64,(.+)$/);
+    const base64Data = match ? match[1] : fabricImageBase64;
+    const fabricBuffer = Buffer.from(base64Data, "base64");
+
+    const productBuffer = await compositeFabricOntoTemplate(fabricBuffer, shape.id, perspective ?? "front");
+    res.json({ success: true, previewImage: `data:image/png;base64,${productBuffer.toString("base64")}` });
+  } catch (err: any) {
+    console.error("[tryon/composite-preview] error:", err.message);
+    res.status(500).json({ error: err.message ?? "ผสมลายผ้าลงทรงเสื้อไม่สำเร็จ" });
+  }
+});
+
 type Perspective = "front" | "back" | "side";
 
 const PERSPECTIVE_DESC: Record<Perspective, string> = {
