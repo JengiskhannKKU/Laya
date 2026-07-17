@@ -6,15 +6,17 @@ import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import StraightenRoundedIcon from "@mui/icons-material/StraightenRounded";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
+import ViewInArRoundedIcon from "@mui/icons-material/ViewInArRounded";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import ARTryOnView from "./ARTryOnView";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
 export type Perspective = "front" | "back" | "side";
-export type BodyInputMode = "photo" | "measurements";
+export type BodyInputMode = "photo" | "measurements" | "ar3d";
 
 // สเกลสีผิว 6 โทน (แนวเดียวกับ emoji skin tone modifier / Fitzpatrick scale) — ใช้บอก AI ตอนสร้างแบบจำลอง
 // ในโหมดกรอกสัดส่วน (ไม่มีรูปตัวเองจริงให้อ้างอิงสีผิว) ต้องมีให้เลือกเสมอ ไม่ปล่อยให้ AI สุ่มเอง
@@ -26,6 +28,17 @@ const SKIN_TONES: { id: string; hex: string; checkColor: string }[] = [
   { id: "tone5", hex: "#8D5524", checkColor: "#FFFFFF" },
   { id: "tone6", hex: "#5C3836", checkColor: "#FFFFFF" },
 ];
+
+// ค่าเริ่มต้นสำหรับ "ข้ามขั้นตอนนี้" — สัดส่วนโดยประมาณของคนไทยทั่วไป ใช้เมื่อผู้ใช้ไม่อยากถ่ายรูป/กรอกสัดส่วนเอง
+const DEFAULT_MEASUREMENTS: BodyMeasurements = {
+  gender: "female",
+  height: 165,
+  weight: 55,
+  chest: 86,
+  waist: 66,
+  hip: 90,
+  skinTone: "tone3",
+};
 
 export interface BodyMeasurements {
   gender: "male" | "female";
@@ -75,6 +88,16 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
 
   const backToModePicker = () => {
     setOrderState({ ...orderState, bodyInputMode: undefined });
+  };
+
+  // ข้ามขั้นตอนนี้ — ใช้สัดส่วนเริ่มต้นแทนการถ่ายรูป/กรอกเอง (คงค่าที่กรอกไว้แล้วถ้ามี)
+  const skipWithDefaults = () => {
+    setOrderState({
+      ...orderState,
+      bodyInputMode: "measurements",
+      bodyMeasurements: orderState.bodyMeasurements ?? DEFAULT_MEASUREMENTS,
+    });
+    onNext();
   };
 
   // ---- โหมดยังไม่ได้เลือก: การ์ดเลือกวิธี ----
@@ -139,6 +162,47 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
             </Typography>
           </Box>
         </Box>
+
+        {/* ตัวเลือกที่ 3: AR ลองใส่เสมือนจริง 3D ผ่าน DeepAR Web SDK — เป็น shell integration จริง (camera +
+            body tracking ทำงานได้) แต่เอฟเฟกต์ที่โหลดยังเป็น demo ของ DeepAR ไม่ใช่ชุดจาก template ที่เลือกไว้
+            (ต้องสร้าง custom effect ต่อ template ด้วย DeepAR Studio ก่อน — งาน 3D content แยกจากโค้ด) จึงติดป้าย
+            "ทดลอง" (Beta) แทน "เร็วๆ นี้" */}
+        <Box
+          component={motion.div}
+          whileHover={{ y: -3 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setMode("ar3d")}
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 2, p: 2.4, bgcolor: '#FFFFFF', borderRadius: '18px',
+            border: '1px solid #EFE9DD', cursor: 'pointer', position: 'relative', boxShadow: '0 4px 16px rgba(27,42,74,0.06)',
+            '&:hover': { borderColor: GOLD },
+          }}
+        >
+          <Box sx={{
+            position: 'absolute', top: 10, right: 10, bgcolor: `${GOLD}20`, color: '#8A6D3B',
+            px: 1, py: 0.25, borderRadius: '999px', fontFamily: FONT, fontSize: '0.65rem', fontWeight: 700,
+          }}>
+            {t("tailorFlow.measurements.betaBadge")}
+          </Box>
+          <Box sx={{ width: 52, height: 52, borderRadius: '14px', bgcolor: `${NAVY}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ViewInArRoundedIcon sx={{ fontSize: 26, color: GOLD }} />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.9rem' }}>
+              {t("tailorFlow.measurements.modeAR3DTitle")}
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.76rem', mt: 0.3 }}>
+              {t("tailorFlow.measurements.modeAR3DDesc")}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box
+          onClick={skipWithDefaults}
+          sx={{ textAlign: 'center', cursor: 'pointer', color: '#9B958A', fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600, mt: 0.5 }}
+        >
+          {t("tailorFlow.common.skipStep")}
+        </Box>
       </Box>
     );
   }
@@ -181,8 +245,20 @@ export default function MeasurementsStep({ orderState, setOrderState, onNext }: 
           {allPhotosDone ? t("tailorFlow.measurements.nextReady") : t("tailorFlow.measurements.nextProgress").replace("{n}", String(doneCount))}
         </Button>
 
+        <Button
+          onClick={skipWithDefaults}
+          sx={{ color: '#9B958A', fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600, textTransform: 'none' }}
+        >
+          {t("tailorFlow.common.skipStep")}
+        </Button>
+
       </Box>
     );
+  }
+
+  // ---- โหมด AR ลองใส่เสมือนจริง 3D ----
+  if (mode === "ar3d") {
+    return <ARTryOnView onNext={onNext} onBack={backToModePicker} />;
   }
 
   // ---- โหมดกรอกสัดส่วนร่างกาย ----
@@ -238,6 +314,27 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
         waist: Number(waist),
         hip: Number(hip),
         skinTone,
+        ...(shoulderWidth ? { shoulderWidth: Number(shoulderWidth) } : {}),
+        ...(armLength ? { armLength: Number(armLength) } : {}),
+        ...(garmentLength ? { garmentLength: Number(garmentLength) } : {}),
+        ...(notes ? { notes } : {}),
+      },
+    });
+    onNext();
+  };
+
+  // ข้ามขั้นตอนนี้ — ใช้ค่าที่กรอกไว้แล้ว เติมค่าเริ่มต้นเฉพาะช่องที่ยังว่าง/ไม่ถูกต้อง
+  const handleSkip = () => {
+    setOrderState({
+      ...orderState,
+      bodyMeasurements: {
+        gender: gender ?? DEFAULT_MEASUREMENTS.gender,
+        height: Number(height) > 0 ? Number(height) : DEFAULT_MEASUREMENTS.height,
+        weight: Number(weight) > 0 ? Number(weight) : DEFAULT_MEASUREMENTS.weight,
+        chest: Number(chest) > 0 ? Number(chest) : DEFAULT_MEASUREMENTS.chest,
+        waist: Number(waist) > 0 ? Number(waist) : DEFAULT_MEASUREMENTS.waist,
+        hip: Number(hip) > 0 ? Number(hip) : DEFAULT_MEASUREMENTS.hip,
+        skinTone: skinTone ?? DEFAULT_MEASUREMENTS.skinTone,
         ...(shoulderWidth ? { shoulderWidth: Number(shoulderWidth) } : {}),
         ...(armLength ? { armLength: Number(armLength) } : {}),
         ...(garmentLength ? { garmentLength: Number(garmentLength) } : {}),
@@ -451,6 +548,13 @@ function MeasurementsForm({ orderState, setOrderState, onBack, onNext }: any) {
         }}
       >
         {t("tailorFlow.measurements.nextReady")}
+      </Button>
+
+      <Button
+        onClick={handleSkip}
+        sx={{ color: '#9B958A', fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600, textTransform: 'none' }}
+      >
+        {t("tailorFlow.common.skipStep")}
       </Button>
 
     </Box>

@@ -315,11 +315,12 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
           sx={{
             color: '#9B958A',
             fontFamily: FONT,
-            fontSize: '0.75rem',
+            fontSize: '0.8rem',
+            fontWeight: 600,
             textTransform: 'none',
           }}
         >
-          {t("tailorFlow.upload.skip")}
+          {t("tailorFlow.common.skipStep")}
         </Button>
       )}
 

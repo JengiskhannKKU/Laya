@@ -496,11 +496,13 @@ const th = {
     },
     stepLabels: ["เลือกร้าน", "เลือกทรง", "อัปโหลดผ้า", "วิเคราะห์ผ้า", "ข้อมูลการใช้งาน", "สัดส่วนร่างกาย", "ลองใส่เสมือนจริง", "สรุปออเดอร์"],
     stepOfN: "ขั้นตอนที่ {n} จาก {total} — {label}",
+    common: {
+      skipStep: "ข้ามขั้นตอนนี้",
+    },
     upload: {
       instruction: "ถ่ายภาพผ้าของคุณให้เห็นลายและสีชัดเจน — AI จะวิเคราะห์ประเภท ลาย และเทคนิคการทอให้อัตโนมัติ",
       tapToPhoto: "แตะเพื่อถ่ายรูปผ้า",
       uploadCta: "ถ่ายหรือเลือกจากแกลเลอรี่",
-      skip: "ข้ามขั้นตอนนี้ (สำหรับทดสอบ)",
       previewGenerating: "กำลังปูลายผ้าลงบนทรง{shape}...",
       previewTitle: "ตัวอย่าง{shape}จากผ้าของคุณ",
       previewFailed: "สร้างตัวอย่างไม่สำเร็จ แต่ไปต่อได้ปกติ",
@@ -1182,11 +1184,13 @@ const en = {
     },
     stepLabels: ["Choose Shop", "Choose Style", "Upload Fabric", "Analyze Fabric", "Usage Brief", "Body Measurements", "Virtual Try-On", "Order Summary"],
     stepOfN: "Step {n} of {total} — {label}",
+    common: {
+      skipStep: "Skip this step",
+    },
     upload: {
       instruction: "Photograph your fabric clearly showing the pattern and color — AI will automatically analyze the type, pattern, and weaving technique",
       tapToPhoto: "Tap to photograph fabric",
       uploadCta: "Take or choose from gallery",
-      skip: "Skip this step (for testing)",
       previewGenerating: "Applying your fabric onto the {shape}...",
       previewTitle: "Preview: {shape} in your fabric",
       previewFailed: "Couldn't generate a preview, but you can still continue",

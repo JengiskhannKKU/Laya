@@ -49,6 +49,16 @@ export default function SelectOccasionStep({ orderState, setOrderState, onNext }
     onNext();
   };
 
+  // ข้ามขั้นตอนนี้ — ใช้โอกาสใช้งาน/สไตล์/ความพอดีที่เลือกไว้แล้ว (หรือค่าเริ่มต้น ถ้ายังไม่ได้เลือกโอกาสเลย)
+  const handleSkip = () => {
+    setOrderState({
+      ...orderState,
+      occasion: occasion ?? occasions[0].id,
+      designBrief: { style, fit, notes },
+    });
+    onNext();
+  };
+
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
@@ -167,6 +177,13 @@ export default function SelectOccasionStep({ orderState, setOrderState, onNext }
         }}
       >
         {t("tailorFlow.selectOccasion.nextButton")}
+      </Button>
+
+      <Button
+        onClick={handleSkip}
+        sx={{ color: '#9B958A', fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600, textTransform: 'none' }}
+      >
+        {t("tailorFlow.common.skipStep")}
       </Button>
 
     </Box>

@@ -116,6 +116,17 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
     setDraft((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
+  // ข้ามขั้นตอนนี้ — ไม่ต้องรอ AI วิเคราะห์เสร็จ ใช้ค่า fallback ทั่วไปแทนถ้ายังไม่มีผลวิเคราะห์
+  const handleSkip = () => {
+    setOrderState((prev: any) => ({
+      ...prev,
+      analysisResult: prev.analysisResult ?? {
+        type: "ผ้าไหม", technique: "ทอมือ", pattern: "ลายทั่วไป", tone: "หลากสี", thickness: "ปานกลาง",
+      },
+    }));
+    onNext();
+  };
+
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, alignItems: 'center', pt: 1 }}>
@@ -133,6 +144,9 @@ export default function AIAnalysisStep({ orderState, setOrderState, onNext }: an
               <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
             ))}
           </Typography>
+          <Button onClick={handleSkip} sx={{ color: '#9B958A', fontFamily: FONT, fontSize: '0.8rem', fontWeight: 600, textTransform: 'none' }}>
+            {t("tailorFlow.common.skipStep")}
+          </Button>
         </Box>
       ) : (
         <Box sx={{ width: '100%' }}>
