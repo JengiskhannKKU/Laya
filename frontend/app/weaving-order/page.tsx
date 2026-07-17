@@ -148,8 +148,36 @@ function WeavingOrderContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadTick]);
 
+  // มาจาก deep-link ?shopId= (เลือกชุมชนก่อน) — โหลดข้อมูลชุมชนนั้นเข้า `communities` ให้ครบ
+  // (บั๊กเดิม: ถ้าไม่ทำตรงนี้ communities จะว่างเปล่าไปตลอด เพราะ effect ด้านล่างข้าม fetch เมื่อมี
+  // initialShopId ทำให้หน้าสรุปออเดอร์หา selectedCommunity ไม่เจอ ไม่ขึ้นชื่อชุมชนเลย)
+  useEffect(() => {
+    if (!initialShopId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/shops/${initialShopId}`);
+        if (!res.ok) throw new Error();
+        const s = await res.json();
+        if (cancelled) return;
+        setCommunities([{
+          id: s.id,
+          name: s.name,
+          province: s.province,
+          rating: Number(s.rating ?? 0),
+          specialty: Array.isArray(s.specialties) && s.specialties.length ? s.specialties[0] : "ทอผ้า",
+          leadTime: s.lead_time_days ? `${s.lead_time_days} วัน` : "3-5 สัปดาห์",
+        }]);
+      } catch {
+        if (!cancelled) setLoadError(true);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialShopId]);
+
   // โหลดชุมชนที่ทอ "ลายที่เลือกไว้" ได้จริง (GET /:id/producers) — กรองตามลายเสมอ ไม่ใช่รายชื่อ
-  // ร้านทอผ้าทั่วไปแบบเดิมอีกต่อไป ถ้ามาจาก deep-link ?shopId= ระบุชุมชนไว้แล้ว ไม่ต้องโหลด
+  // ร้านทอผ้าทั่วไปแบบเดิมอีกต่อไป ถ้ามาจาก deep-link ?shopId= ระบุชุมชนไว้แล้ว ไม่ต้องโหลดซ้ำ (ใช้ effect ด้านบนแทน)
   useEffect(() => {
     if (initialShopId) { setCommunitiesLoading(false); return; }
     if (!pattern) { setCommunities([]); setCommunitiesLoading(false); return; }

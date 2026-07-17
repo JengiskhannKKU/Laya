@@ -127,6 +127,17 @@ export default function MomentDetailPage() {
                 {moment.body}
               </Typography>
 
+              {/* รูปทั้งหมดของโพสต์ (โพสต์แบบหลายรูป/หลายลุค) */}
+              {moment.images && moment.images.length > 1 && (
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(3, 1fr)" }, gap: 1.25, mt: 3 }}>
+                  {moment.images.map((img, i) => (
+                    <Box key={img + i} sx={{ position: "relative", width: "100%", aspectRatio: "3 / 4", borderRadius: "12px", overflow: "hidden", bgcolor: "#F0EBE3" }}>
+                      <Image src={img} alt={`${moment.title} — ${i + 1}`} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 45vw, 240px" />
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
               {/* แท็กสินค้า */}
               {moment.taggedProduct && (
                 <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.6, mt: 3, bgcolor: "#F0EBE3", px: 1.75, py: 0.9, borderRadius: "999px" }}>

@@ -25,7 +25,7 @@ function buildFooterLinks(f: Dictionary["footer"]) {
         { label: f.shop.allProducts, href: "/search" },
         { label: f.shop.categories, href: "/category" },
         { label: f.shop.tailorWeave, href: "/services" },
-        { label: f.shop.designClothes, href: "/design-clothes" },
+        { label: f.shop.designClothes, href: "/tailor/with-fabric" },
         { label: f.shop.aiPattern, href: "/custom" },
       ],
     },

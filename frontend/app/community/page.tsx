@@ -209,9 +209,16 @@ export default function CommunityDirectoryPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // เรียงร้านที่ "ข้อมูลครบ" (มีรูป + มีรีวิว + มีสินค้า) ก่อน แล้วตามด้วยคะแนนรีวิว — ให้ร้านที่พร้อมขายจริง
+  // ขึ้นก่อนร้านที่เพิ่งสมัครยังไม่กรอกอะไรเลย ใช้เฉพาะข้อมูลจริงที่มี ไม่ปั้นคะแนนใหม่
+  const completeness = (c: LiveCommunity) =>
+    (c.image ? 1 : 0) + (c.rating > 0 ? 1 : 0) + (c.productCount > 0 ? 1 : 0);
+  const byCompletenessThenRating = (a: LiveCommunity, b: LiveCommunity) =>
+    completeness(b) - completeness(a) || b.rating - a.rating || b.reviewCount - a.reviewCount;
+
   // แยกตาม merchantType จริง (shops.merchant_type) — undefined (ยังไม่มี field จาก backend เก่า) ถือเป็นชุมชนช่างทอไปก่อน
-  const weavingCommunities = communities.filter((c) => (c.merchantType ?? "weaving_community") === "weaving_community");
-  const shopCommunities = communities.filter((c) => c.merchantType === "designer");
+  const weavingCommunities = communities.filter((c) => (c.merchantType ?? "weaving_community") === "weaving_community").sort(byCompletenessThenRating);
+  const shopCommunities = communities.filter((c) => c.merchantType === "designer").sort(byCompletenessThenRating);
 
   return (
     <MobileLayout>
