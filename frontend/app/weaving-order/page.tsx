@@ -378,7 +378,7 @@ function WeavingOrderContent() {
   }
 
   return (
-    <MobileLayout><Box sx={{ pb: 8 }}>
+    <MobileLayout><Box sx={{ pb: 14 }}>
       {/* Header */}
       <Box sx={{ px: 2, pt: 4, pb: 2, display: "flex", alignItems: "center", gap: 1 }}>
         <IconButton onClick={() => router.back()} sx={{ color: "#1B2A4A" }}>
@@ -751,40 +751,45 @@ function WeavingOrderContent() {
             </motion.div>
           )}
         </AnimatePresence>
+      </Box>
 
-        {/* Navigation */}
-        <Box sx={{ mt: 4, display: "flex", gap: 1.5 }}>
-          {step > 0 && (
-            <Button
-              variant="outlined"
-              onClick={goBack}
-              sx={{ flex: 1, py: 1.4, borderColor: "#E5DFD6", color: "#1B2A4A", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 600, textTransform: "none" }}
-            >
-              ย้อนกลับ
-            </Button>
-          )}
+      {/* Navigation — ปุ่มติดขอบล่างเสมอ ไม่ต้องเลื่อนหาหลังเลือกลาย/ตัวเลือกในแต่ละขั้น (เหมือนแพทเทิร์นใน checkout) */}
+      <Box sx={{
+        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+        width: "100%", maxWidth: 430, zIndex: 1300, bgcolor: "#FFFFFF",
+        display: "flex", gap: 1.5, px: 2, pt: 1.5, pb: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+        borderTop: "1px solid #EFE9DD", boxShadow: "0 -4px 16px rgba(27,42,74,0.06)",
+      }}>
+        {step > 0 && (
+          <Button
+            variant="outlined"
+            onClick={goBack}
+            sx={{ flex: 1, py: 1.4, borderColor: "#E5DFD6", color: "#1B2A4A", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 600, textTransform: "none" }}
+          >
+            ย้อนกลับ
+          </Button>
+        )}
 
-          {step < 3 ? (
-            <Button
-              variant="contained"
-              disabled={!canNext}
-              onClick={goNext}
-              sx={{ flex: 2, py: 1.4, bgcolor: "#C5A55A", color: "#FFFFFF", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none" }}
-            >
-              ถัดไป
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              disabled={!acceptedWarning || loading || !pattern || !community}
-              onClick={handleSubmit}
-              startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
-              sx={{ flex: 2, py: 1.4, bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none" }}
-            >
-              {loading ? "กำลังส่งออเดอร์..." : "ยืนยันการสั่งทอผ้า"}
-            </Button>
-          )}
-        </Box>
+        {step < 3 ? (
+          <Button
+            variant="contained"
+            disabled={!canNext}
+            onClick={goNext}
+            sx={{ flex: 2, py: 1.4, bgcolor: "#C5A55A", color: "#FFFFFF", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none" }}
+          >
+            ถัดไป
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            disabled={!acceptedWarning || loading || !pattern || !community}
+            onClick={handleSubmit}
+            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
+            sx={{ flex: 2, py: 1.4, bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "12px", fontFamily: '"Kanit", sans-serif', fontWeight: 700, textTransform: "none" }}
+          >
+            {loading ? "กำลังส่งออเดอร์..." : "ยืนยันการสั่งทอผ้า"}
+          </Button>
+        )}
       </Box>
       </>
       )}
