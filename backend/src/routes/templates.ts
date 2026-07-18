@@ -33,7 +33,8 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/shop/:shopId", async (req: Request, res: Response) => {
   try {
     const rows = await query<Record<string, unknown>>(
-      `SELECT t.id, t.name, t.category, t.base_price, t.front_asset_url, t.back_asset_url, t.description
+      `SELECT t.id, t.name, t.category, t.base_price, t.front_asset_url, t.back_asset_url, t.description,
+              st.custom_price
        FROM templates t
        JOIN shop_templates st ON st.template_id = t.id
        WHERE st.shop_id = $1 AND st.is_available = true AND t.is_active = true
@@ -44,7 +45,8 @@ router.get("/shop/:shopId", async (req: Request, res: Response) => {
       id: r.id,
       name: r.name,
       category: r.category,
-      basePrice: Number(r.base_price),
+      // ราคาที่ลูกค้าเห็น = ราคาที่ร้านตั้งเอง ถ้ามี ไม่งั้นใช้ราคากลางของระบบ
+      basePrice: r.custom_price != null ? Number(r.custom_price) : Number(r.base_price),
       frontAssetUrl: r.front_asset_url,
       backAssetUrl: r.back_asset_url,
       description: r.description,

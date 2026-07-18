@@ -435,7 +435,7 @@ router.get("/mine/templates", requireAuth, requireRole("merchant", "admin"), asy
 
     const rows = await query<Record<string, unknown>>(
       `SELECT t.id, t.name, t.category, t.base_price, t.front_asset_url, t.back_asset_url,
-              COALESCE(st.is_available, false) AS is_enabled
+              COALESCE(st.is_available, false) AS is_enabled, st.custom_price
        FROM templates t
        LEFT JOIN shop_templates st ON (st.template_id = t.id AND st.shop_id = $1)
        WHERE t.is_active = true
@@ -448,6 +448,8 @@ router.get("/mine/templates", requireAuth, requireRole("merchant", "admin"), asy
       name: r.name,
       category: r.category,
       basePrice: Number(r.base_price),
+      // ราคาที่ร้านตั้งเอง (null = ยังไม่ตั้ง ใช้ราคากลาง)
+      customPrice: r.custom_price != null ? Number(r.custom_price) : null,
       frontAssetUrl: r.front_asset_url,
       backAssetUrl: r.back_asset_url,
       isEnabled: r.is_enabled === true,
@@ -511,6 +513,34 @@ router.delete("/mine/templates/:templateId", requireAuth, requireRole("merchant"
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to remove template from shop" });
+  }
+});
+
+/** PATCH /api/shops/mine/templates/:templateId/price — ร้านตั้งราคาเริ่มต้นเองสำหรับทรงนี้ (null = ใช้ราคากลาง) */
+router.patch("/mine/templates/:templateId/price", requireAuth, requireRole("merchant", "admin"), async (req: Request, res: Response) => {
+  try {
+    const { price } = req.body as { price?: number | null };
+    if (price != null && (typeof price !== "number" || !Number.isFinite(price) || price < 0)) {
+      res.status(400).json({ error: "ราคาต้องเป็นตัวเลขที่ไม่ติดลบ" });
+      return;
+    }
+
+    const shopRows = await query<{ id: string }>("SELECT id FROM shops WHERE user_id = $1", [req.user!.userId]);
+    if (!shopRows.length) { res.status(404).json({ error: "ยังไม่มีร้านค้า" }); return; }
+    const shopId = shopRows[0].id;
+
+    // ตั้งราคาได้เฉพาะทรงที่ร้านเปิดใช้อยู่ — upsert row เผื่อยังไม่มี (เปิดใช้พร้อมตั้งราคาในทีเดียว)
+    await query(
+      `INSERT INTO shop_templates (shop_id, template_id, is_available, custom_price)
+       VALUES ($1, $2, true, $3)
+       ON CONFLICT (shop_id, template_id) DO UPDATE SET custom_price = $3`,
+      [shopId, req.params.templateId, price ?? null]
+    );
+
+    res.json({ success: true, customPrice: price ?? null });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ตั้งราคาไม่สำเร็จ" });
   }
 });
 

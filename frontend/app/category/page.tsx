@@ -24,7 +24,7 @@ import {
 
 import MobileLayout from "@/components/layout/MobileLayout";
 import { fetchCategories, type Category } from "@/lib/categories";
-import { fetchLiveProducts, type Product } from "@/lib/live-products";
+import { fetchLiveProducts, productDisplayName, type Product } from "@/lib/live-products";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const getCategoryIcon = (id: string, color: string) => {
@@ -44,7 +44,7 @@ const getCategoryIcon = (id: string, color: string) => {
 function CategoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const initialCategory = searchParams.get("c") || "";
 
   const [selected, setSelected] = useState(initialCategory);
@@ -178,7 +178,7 @@ function CategoryContent() {
                     }}
                   >
                     <Box sx={{ position: "relative", aspectRatio: "1 / 1" }}>
-                      <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw" />
+                      <Image src={product.images[0]} alt={productDisplayName(product, locale)} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw" />
                       {product.hasGI && (
                         <Box sx={{
                           position: "absolute", top: 8, left: 8, bgcolor: "rgba(197,165,90,0.9)",
@@ -191,7 +191,7 @@ function CategoryContent() {
                     </Box>
                     <Box sx={{ p: 1.5 }}>
                       <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.8rem", color: "#1B2A4A", lineHeight: 1.3 }}>
-                        {product.name}
+                        {productDisplayName(product, locale)}
                       </Typography>
                       <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.7rem", color: "#6B7280", mt: 0.3 }}>
                         {product.community}

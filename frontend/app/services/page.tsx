@@ -3,7 +3,6 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
@@ -12,6 +11,7 @@ import AutoAwesomeMosaicRoundedIcon from "@mui/icons-material/AutoAwesomeMosaicR
 
 import MobileLayout from "@/components/layout/MobileLayout";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useAuth } from "@/lib/auth-context";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
@@ -21,6 +21,16 @@ const IVORY = "#FAF6F0";
 export default function ServicesPage() {
   const router = useRouter();
   const { t } = useLanguage();
+  const { user } = useAuth();
+
+  // สั่งตัด/สั่งทอ ต้องล็อกอินก่อน — ถ้ายังไม่ได้เข้าสู่ระบบ ส่งไปหน้า login พร้อม redirect กลับมาที่บริการที่เลือก
+  const goToService = (href: string) => {
+    if (!user) {
+      router.push(`/auth/login?redirect=${encodeURIComponent(href)}`);
+      return;
+    }
+    router.push(href);
+  };
 
   const SERVICES = [
     {
@@ -66,7 +76,7 @@ export default function ServicesPage() {
           <Box sx={{ display: "grid", gridTemplateColumns: `repeat(${SERVICES.length}, 1fr)`, gap: { xs: 1.5, md: 2.5 } }}>
             {SERVICES.map(({ href, icon: Icon, title, desc }, i) => (
               <motion.div key={href} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06, duration: 0.3 }}>
-                <Link href={href} style={{ textDecoration: "none" }}>
+                <Box onClick={() => goToService(href)} sx={{ textDecoration: "none" }}>
                   <Box
                     component={motion.div}
                     whileHover={{ y: -3 }}
@@ -105,7 +115,7 @@ export default function ServicesPage() {
                       {desc}
                     </Typography>
                   </Box>
-                </Link>
+                </Box>
               </motion.div>
             ))}
           </Box>

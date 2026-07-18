@@ -64,6 +64,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem);
   const { showConfirm, showToast } = useAppModal();
   const [currentImage, setCurrentImage] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(AVAILABLE_COLORS[0]);
   // สินค้าพร้อมขายเริ่มที่ 1 ชิ้น — งานสั่งทอ/ตัดเริ่มที่ 5 เมตรตามเดิม
   const [quantity, setQuantity] = useState(product.isCustomizable === false ? 1 : 5);
@@ -218,12 +219,13 @@ export default function ProductDetailView({ product }: { product: Product }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               style={{ position: "absolute", inset: 0 }}
+              onClick={() => setZoomOpen(true)}
             >
               <Image
                 src={product.images[currentImage] || "/placeholder.webp"}
                 alt={displayName}
                 fill
-                style={{ objectFit: "cover" }}
+                style={{ objectFit: "cover", cursor: "zoom-in" }}
                 priority
               />
               <Box
@@ -253,16 +255,25 @@ export default function ProductDetailView({ product }: { product: Product }) {
                 <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF", mr: -0.5 }} />
               </IconButton>
             </Link>
-            <IconButton
-              onClick={() => { if (!user) { openAuthModal(); return; } toggleWishlist(product.id); }}
-              sx={{ bgcolor: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}
-            >
-              {isWishlisted(product.id) ? (
-                <FavoriteRoundedIcon sx={{ fontSize: 20, color: "#C5A55A" }} />
-              ) : (
-                <FavoriteBorderRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />
-              )}
-            </IconButton>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <IconButton
+                onClick={() => setZoomOpen(true)}
+                aria-label="ดูภาพเต็ม"
+                sx={{ bgcolor: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}
+              >
+                <SearchRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />
+              </IconButton>
+              <IconButton
+                onClick={() => { if (!user) { openAuthModal(); return; } toggleWishlist(product.id); }}
+                sx={{ bgcolor: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}
+              >
+                {isWishlisted(product.id) ? (
+                  <FavoriteRoundedIcon sx={{ fontSize: 20, color: "#C5A55A" }} />
+                ) : (
+                  <FavoriteBorderRoundedIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />
+                )}
+              </IconButton>
+            </Box>
           </Box>
 
           {/* GI Pill Overlay */}
@@ -842,6 +853,55 @@ export default function ProductDetailView({ product }: { product: Product }) {
           </Button>
         </Box>
       </Box>
+
+      {/* ดูภาพเต็ม — modal พื้นหลังมืด กดที่ภาพหลักหรือปุ่มแว่นขยายเพื่อเปิด */}
+      <Dialog
+        open={zoomOpen}
+        onClose={() => setZoomOpen(false)}
+        maxWidth={false}
+        fullScreen
+        PaperProps={{ sx: { bgcolor: "rgba(0,0,0,0.92)", boxShadow: "none" } }}
+      >
+        <Box
+          onClick={() => setZoomOpen(false)}
+          sx={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", p: 2 }}
+        >
+          <IconButton
+            onClick={(e) => { e.stopPropagation(); setZoomOpen(false); }}
+            aria-label="ปิด"
+            sx={{ position: "absolute", top: "calc(env(safe-area-inset-top, 0px) + 12px)", right: 12, zIndex: 10, color: "#FFFFFF", bgcolor: "rgba(255,255,255,0.12)", "&:hover": { bgcolor: "rgba(255,255,255,0.25)" } }}
+          >
+            <ArrowBackIosNewRoundedIcon sx={{ fontSize: 20, transform: "rotate(45deg)" }} />
+          </IconButton>
+
+          <Box sx={{ position: "relative", width: "100%", maxWidth: 900, height: "82vh" }} onClick={(e) => e.stopPropagation()}>
+            <Image
+              src={product.images[currentImage] || "/placeholder.webp"}
+              alt={displayName}
+              fill
+              style={{ objectFit: "contain" }}
+              sizes="100vw"
+            />
+          </Box>
+
+          {product.images.length > 1 && (
+            <Box
+              onClick={(e) => e.stopPropagation()}
+              sx={{ position: "absolute", bottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)", left: "50%", transform: "translateX(-50%)", display: "flex", gap: 1.5, px: 2, overflowX: "auto", maxWidth: "100%", "&::-webkit-scrollbar": { display: "none" } }}
+            >
+              {product.images.map((img, i) => (
+                <Box
+                  key={i}
+                  onClick={() => setCurrentImage(i)}
+                  sx={{ width: 48, height: 48, borderRadius: "8px", overflow: "hidden", position: "relative", flexShrink: 0, border: i === currentImage ? "2px solid #D8BC82" : "2px solid transparent", cursor: "pointer", opacity: i === currentImage ? 1 : 0.55 }}
+                >
+                  <Image src={img} alt={`${displayName} — รูปที่ ${i + 1}`} fill style={{ objectFit: "cover" }} />
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
+      </Dialog>
 
       {/* ระบุจำนวนตอนกดเพิ่มลงตะกร้า — ไม่โชว์ตัวเลขสต็อกจริงให้ลูกค้าเห็น */}
       <Dialog open={qtyDialogOpen} onClose={closeQtyDialog} maxWidth="xs" fullWidth

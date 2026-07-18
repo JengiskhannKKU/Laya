@@ -14,7 +14,7 @@ import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { fetchCommunities, type LiveCommunity } from "@/lib/communities";
-import { fetchLiveProducts, type Product } from "@/lib/live-products";
+import { fetchLiveProducts, productDisplayName, type Product } from "@/lib/live-products";
 import { useAuth } from "@/lib/auth-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -26,8 +26,10 @@ const CONTENT_PX = { xs: 2.5, sm: 3, md: 5 };
 function SpotlightProductCard({ product }: { product: Product }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { locale } = useLanguage();
   const { isWishlisted, toggle } = useWishlist();
   const fav = isWishlisted(product.id);
+  const displayName = productDisplayName(product, locale);
 
   return (
     <Box component={Link} href={`/product/${product.id}`} sx={{ textDecoration: "none", display: "block" }}>
@@ -39,7 +41,7 @@ function SpotlightProductCard({ product }: { product: Product }) {
         }}
       >
         <Box className="laya-spot-img" sx={{ position: "absolute", inset: 0, transition: "transform 0.5s cubic-bezier(0.22,0.61,0.36,1)" }}>
-          <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 900px) 40vw, 22vw" />
+          <Image src={product.images[0]} alt={displayName} fill style={{ objectFit: "cover" }} sizes="(max-width: 900px) 40vw, 22vw" />
         </Box>
         <IconButton
           onClick={(e) => {
@@ -61,7 +63,7 @@ function SpotlightProductCard({ product }: { product: Product }) {
           </Typography>
         )}
         <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 500, fontSize: "0.82rem", color: "#13284B" }}>
-          {product.name}
+          {displayName}
         </Typography>
         <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.8rem", color: "#5A6472", mt: 0.3 }}>
           ฿{product.price.toLocaleString()}

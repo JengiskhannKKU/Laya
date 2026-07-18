@@ -85,8 +85,8 @@ const th = {
       cta: "อ่านเรื่องราว",
     },
     communities: {
-      eyebrow: "Community",
-      title: "ชุมชนทอผ้า",
+      eyebrow: "Communities & Shops",
+      title: "ชุมชนและร้านค้า",
       subtitle: "Discover authentic weaving villages across Thailand",
       products: "ผลิตภัณฑ์",
       viewCommunity: "เยี่ยมชมชุมชน",

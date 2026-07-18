@@ -16,6 +16,7 @@ import Slider from "@mui/material/Slider";
 import Chip from "@mui/material/Chip";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import Pagination from "@mui/material/Pagination";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -100,6 +101,8 @@ function WeavingOrderContent() {
   // ข้อมูลจริงจาก API เท่านั้น — ไม่มี fallback เป็นข้อมูลปลอมอีกต่อไป (id ปลอมเช่น "mudmee"/"c1"
   // จะทำให้กด next ผ่านได้ทั้ง 4 ขั้น แล้วไปพังตอนสร้างออเดอร์จริงเพราะ FK ไม่ตรง)
   const [patterns, setPatterns] = useState<PatternCard[]>([]);
+  const [patternPage, setPatternPage] = useState(1);
+  const PATTERNS_PER_PAGE = 8;
   const [communities, setCommunities] = useState<CommunityCard[]>([]);
   const [patternsLoading, setPatternsLoading] = useState(true);
   const [communitiesLoading, setCommunitiesLoading] = useState(true);
@@ -520,7 +523,7 @@ function WeavingOrderContent() {
                 )
               ) : (
                 <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" }, gap: 2 }}>
-                  {patterns.map((p) => (
+                  {patterns.slice((patternPage - 1) * PATTERNS_PER_PAGE, patternPage * PATTERNS_PER_PAGE).map((p) => (
                     <Box
                       key={p.id}
                       onClick={() => setPattern(p.id)}
@@ -550,6 +553,17 @@ function WeavingOrderContent() {
                       )}
                     </Box>
                   ))}
+                </Box>
+              )}
+              {!patternsLoading && patterns.length > PATTERNS_PER_PAGE && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+                  <Pagination
+                    count={Math.ceil(patterns.length / PATTERNS_PER_PAGE)}
+                    page={patternPage}
+                    onChange={(_, v) => setPatternPage(v)}
+                    size="small"
+                    sx={{ "& .MuiPaginationItem-root": { fontFamily: '"Kanit", sans-serif' }, "& .Mui-selected": { bgcolor: "#1B2A4A !important", color: "#FFFFFF" } }}
+                  />
                 </Box>
               )}
             </motion.div>

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useAuth } from "@/lib/auth-context";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
@@ -41,6 +42,13 @@ function Row({ label, value }: { label: string; value: string }) {
 
 export default function OrderSummaryStep({ orderState, onNext }: any) {
   const { t } = useLanguage();
+  const { user, openAuthModal } = useAuth();
+
+  // สั่งตัดต้องล็อกอินก่อน — ถ้ายังไม่ได้เข้าสู่ระบบ เปิด modal ล็อกอินแทนการยืนยันออเดอร์
+  const handleConfirmOrder = () => {
+    if (!user) { openAuthModal(); return; }
+    onNext();
+  };
   const shape = orderState.shape;
   const total = shape?.price ?? 990;
   const unspecified = t("tailorFlow.orderSummary.unspecified");
@@ -174,7 +182,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
       <Button
         variant="contained"
         fullWidth
-        onClick={onNext}
+        onClick={handleConfirmOrder}
         sx={{
           bgcolor: NAVY,
           color: 'white',

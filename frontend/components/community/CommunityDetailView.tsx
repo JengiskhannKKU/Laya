@@ -7,6 +7,7 @@ import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Rating from "@mui/material/Rating";
 import CircularProgress from "@mui/material/CircularProgress";
+import Pagination from "@mui/material/Pagination";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
@@ -17,8 +18,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { LiveCommunityDetail } from "@/lib/communities";
-import { fetchLiveProducts, type Product } from "@/lib/live-products";
+import { fetchLiveProducts, productDisplayName, type Product } from "@/lib/live-products";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -59,6 +61,8 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 function ProductCard({ p }: { p: Product }) {
+  const { locale } = useLanguage();
+  const displayName = productDisplayName(p, locale);
   return (
     <Link href={`/product/${p.id}`} style={{ textDecoration: "none" }}>
       <Box
@@ -71,12 +75,12 @@ function ProductCard({ p }: { p: Product }) {
       >
         <Box sx={{ position: "relative", width: "100%", aspectRatio: "1 / 1", overflow: "hidden", bgcolor: "#F0EBE3" }}>
           <Box className="laya-cp-img" sx={{ position: "absolute", inset: 0, transition: "transform 0.5s cubic-bezier(0.22,0.61,0.36,1)" }}>
-            <Image src={p.images[0]} alt={p.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 900px) 45vw, 25vw" />
+            <Image src={p.images[0]} alt={displayName} fill style={{ objectFit: "cover" }} sizes="(max-width: 900px) 45vw, 25vw" />
           </Box>
         </Box>
         <Box sx={{ p: 1.5 }}>
           <Typography noWrap sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.82rem", color: "#1B2A4A" }}>
-            {p.name}
+            {displayName}
           </Typography>
           <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mt: 0.5 }}>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#CBA258" }}>
@@ -147,6 +151,10 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
   const [showAll, setShowAll] = useState(false);
   const [patterns, setPatterns] = useState<WeavePattern[]>([]);
   const [loadingPatterns, setLoadingPatterns] = useState(true);
+  const [patternPage, setPatternPage] = useState(1);
+  const PATTERNS_PER_PAGE = 6;
+  // แถบสลับมุมมองในคอลัมน์ขวา — สินค้าจากชุมชนนี้ / ผลงาน & ลายผ้าที่ทอได้
+  const [showcaseTab, setShowcaseTab] = useState<"products" | "patterns">("products");
 
   const startChat = async () => {
     if (!user) { router.push("/auth/login"); return; }
@@ -189,6 +197,10 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
   // โชว์ตัวอย่าง 4 ชิ้น (2 แถว) — กด "ดูทั้งหมด" ค่อยขยายในหน้า
   const visibleProducts = showAll ? products : products.slice(0, 4);
   const hasMore = products.length > 4;
+
+  // แบ่งหน้าลายผ้าในพอร์ตโฟลิโอ — 6 ลายต่อหน้า (3 แถว)
+  const patternPageCount = Math.ceil(patterns.length / PATTERNS_PER_PAGE);
+  const visiblePatterns = patterns.slice((patternPage - 1) * PATTERNS_PER_PAGE, patternPage * PATTERNS_PER_PAGE);
 
   const stats = [
     { label: "ผลิตภัณฑ์", value: String(community.productCount) },
@@ -278,26 +290,6 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
             </Box>
           </Box>
 
-          {/* ผลงาน & ลายผ้าที่ทอได้ — ของตัวเอง + ลายระบบที่ประกาศว่าทอได้ */}
-          <Box sx={{ mb: 4 }}>
-            <SectionTitle>ผลงาน & ลายผ้าที่ทอได้</SectionTitle>
-            {loadingPatterns ? (
-              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
-                <CircularProgress size={22} sx={{ color: "#C5A55A" }} />
-              </Box>
-            ) : patterns.length === 0 ? (
-              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic" }}>
-                ชุมชนนี้ยังไม่ได้เพิ่มลายผ้าในพอร์ตโฟลิโอ
-              </Typography>
-            ) : (
-              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}>
-                {patterns.map((p) => (
-                  <PatternPortfolioCard key={p.id} pattern={p} shopId={community.id} />
-                ))}
-              </Box>
-            )}
-          </Box>
-
           {/* กระบวนการผลิตทั่วไป */}
           <Box sx={{ mb: 4 }}>
             <SectionTitle>กระบวนการผลิตโดยทั่วไป</SectionTitle>
@@ -354,48 +346,95 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
           </Box>
         </Box>
 
-        {/* ── คอลัมน์ขวา: สินค้าของชุมชนนี้ ── */}
+        {/* ── คอลัมน์ขวา: สลับดูระหว่างสินค้า / ผลงานลายผ้า ── */}
         <Box id="community-products" sx={{ scrollMarginTop: "80px" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}>
-            <SectionTitle>สินค้าจากชุมชนนี้</SectionTitle>
-            {hasMore && !showAll && (
-              <Box
-                onClick={() => setShowAll(true)}
-                sx={{ cursor: "pointer", flexShrink: 0, "&:hover .laya-seeall": { color: "#C5A55A" } }}
-              >
-                <Typography className="laya-seeall" sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", fontWeight: 500, color: "#1B2A4A", transition: "color 0.2s", mb: 2 }}>
-                  ดูทั้งหมด ({products.length}) ›
-                </Typography>
-              </Box>
-            )}
+          {/* แถบสลับมุมมอง */}
+          <Box sx={{ display: "flex", gap: 0.5, p: 0.5, mb: 2.5, bgcolor: "#F0EBE3", borderRadius: "999px" }}>
+            {([
+              { key: "products", label: `สินค้าจากชุมชนนี้${products.length ? ` (${products.length})` : ""}` },
+              { key: "patterns", label: `ผลงาน & ลายผ้าที่ทอได้${patterns.length ? ` (${patterns.length})` : ""}` },
+            ] as const).map((tab) => {
+              const active = showcaseTab === tab.key;
+              return (
+                <Box
+                  key={tab.key}
+                  onClick={() => setShowcaseTab(tab.key)}
+                  sx={{
+                    flex: 1, textAlign: "center", cursor: "pointer", borderRadius: "999px",
+                    py: 1, px: 1, transition: "all 0.2s",
+                    bgcolor: active ? "#FFFFFF" : "transparent",
+                    boxShadow: active ? "0 2px 8px rgba(27,42,74,0.1)" : "none",
+                  }}
+                >
+                  <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", fontWeight: active ? 700 : 500, color: active ? "#1B2A4A" : "#7A7468", lineHeight: 1.3 }}>
+                    {tab.label}
+                  </Typography>
+                </Box>
+              );
+            })}
           </Box>
 
-          {loadingProducts ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-              <CircularProgress size={22} sx={{ color: "#C5A55A" }} />
-            </Box>
-          ) : products.length === 0 ? (
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic", textAlign: "center", py: 4 }}>
-              ยังไม่มีสินค้าวางขายจากร้านนี้
-            </Typography>
-          ) : (
-            <>
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: { xs: 1.5, md: 2 } }}>
-                {visibleProducts.map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
+          {/* มุมมองสินค้า */}
+          {showcaseTab === "products" && (
+            loadingProducts ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                <CircularProgress size={22} sx={{ color: "#C5A55A" }} />
               </Box>
-              {hasMore && (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5 }}>
-                  <Button
-                    onClick={() => setShowAll((s) => !s)}
-                    sx={{ borderRadius: "999px", border: "1px solid #D8CFC0", color: "#13284B", px: 3, py: 1, fontFamily: '"Kanit", sans-serif', fontWeight: 500, fontSize: "0.82rem", textTransform: "none", "&:hover": { bgcolor: "#13284B", color: "#FFFFFF", borderColor: "#13284B" } }}
-                  >
-                    {showAll ? "ย่อ" : `ดูสินค้าทั้งหมด (${products.length})`}
-                  </Button>
+            ) : products.length === 0 ? (
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic", textAlign: "center", py: 4 }}>
+                ยังไม่มีสินค้าวางขายจากร้านนี้
+              </Typography>
+            ) : (
+              <>
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: { xs: 1.5, md: 2 } }}>
+                  {visibleProducts.map((p) => (
+                    <ProductCard key={p.id} p={p} />
+                  ))}
                 </Box>
-              )}
-            </>
+                {hasMore && (
+                  <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5 }}>
+                    <Button
+                      onClick={() => setShowAll((s) => !s)}
+                      sx={{ borderRadius: "999px", border: "1px solid #D8CFC0", color: "#13284B", px: 3, py: 1, fontFamily: '"Kanit", sans-serif', fontWeight: 500, fontSize: "0.82rem", textTransform: "none", "&:hover": { bgcolor: "#13284B", color: "#FFFFFF", borderColor: "#13284B" } }}
+                    >
+                      {showAll ? "ย่อ" : `ดูสินค้าทั้งหมด (${products.length})`}
+                    </Button>
+                  </Box>
+                )}
+              </>
+            )
+          )}
+
+          {/* มุมมองผลงาน & ลายผ้าที่ทอได้ */}
+          {showcaseTab === "patterns" && (
+            loadingPatterns ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+                <CircularProgress size={22} sx={{ color: "#C5A55A" }} />
+              </Box>
+            ) : patterns.length === 0 ? (
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#9CA3AF", fontStyle: "italic", textAlign: "center", py: 4 }}>
+                ชุมชนนี้ยังไม่ได้เพิ่มลายผ้าในพอร์ตโฟลิโอ
+              </Typography>
+            ) : (
+              <>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}>
+                  {visiblePatterns.map((p) => (
+                    <PatternPortfolioCard key={p.id} pattern={p} shopId={community.id} />
+                  ))}
+                </Box>
+                {patternPageCount > 1 && (
+                  <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5 }}>
+                    <Pagination
+                      count={patternPageCount}
+                      page={patternPage}
+                      onChange={(_, v) => setPatternPage(v)}
+                      size="small"
+                      sx={{ "& .MuiPaginationItem-root": { fontFamily: '"Kanit", sans-serif' }, "& .Mui-selected": { bgcolor: "#1B2A4A !important", color: "#FFFFFF" } }}
+                    />
+                  </Box>
+                )}
+              </>
+            )
           )}
         </Box>
       </Box>
@@ -417,6 +456,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
           </Button>
           <Button
             onClick={() => {
+              setShowcaseTab("products");
               setShowAll(true);
               document.getElementById("community-products")?.scrollIntoView({ behavior: "smooth" });
             }}

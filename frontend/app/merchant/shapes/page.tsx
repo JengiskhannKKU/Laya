@@ -6,6 +6,8 @@ import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
 import Switch from "@mui/material/Switch";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
@@ -25,6 +27,7 @@ interface ShopTemplate {
   name: string;
   category: string;
   basePrice: number;
+  customPrice: number | null;
   frontAssetUrl: string | null;
   backAssetUrl: string | null;
   isEnabled: boolean;
@@ -75,6 +78,24 @@ export default function MerchantShapesPage() {
     }
   };
 
+  // แก้ราคาใน state ทันที (controlled) — ยังไม่ส่ง backend จนกว่าจะ blur
+  const setPriceLocal = (id: string, raw: string) => {
+    const cleaned = raw.replace(/[^0-9.]/g, "");
+    setTemplates((prev) => prev.map((t) => (t.id === id ? { ...t, customPrice: cleaned === "" ? null : Number(cleaned) } : t)));
+  };
+
+  const savePrice = async (tpl: ShopTemplate) => {
+    try {
+      const res = await authFetch(`${API_BASE}/api/shops/mine/templates/${tpl.id}/price`, {
+        method: "PATCH",
+        body: JSON.stringify({ price: tpl.customPrice }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setError("ตั้งราคาไม่สำเร็จ");
+    }
+  };
+
   return (
     <Box>
       <Typography sx={{ fontFamily: FONT, fontSize: "1.3rem", fontWeight: 700, color: "#1B2A4A", mb: 1 }}>
@@ -120,6 +141,18 @@ export default function MerchantShapesPage() {
                     </Typography>
                   </Box>
                 </Box>
+                {tpl.isEnabled && (
+                  <TextField
+                    size="small"
+                    placeholder={String(tpl.basePrice)}
+                    value={tpl.customPrice ?? ""}
+                    onChange={(e) => setPriceLocal(tpl.id, e.target.value)}
+                    onBlur={() => savePrice(tpl)}
+                    inputProps={{ inputMode: "decimal", style: { textAlign: "right" } }}
+                    InputProps={{ startAdornment: <InputAdornment position="start">฿</InputAdornment> }}
+                    sx={{ width: 110, "& .MuiOutlinedInput-root": { borderRadius: "10px", fontFamily: FONT, fontSize: "0.85rem" } }}
+                  />
+                )}
                 <Switch
                   checked={tpl.isEnabled} onChange={() => toggleEnabled(tpl)}
                   sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "#C5A55A" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { bgcolor: "#C5A55A" } }}
