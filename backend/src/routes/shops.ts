@@ -483,7 +483,7 @@ router.post("/mine/templates", requireAuth, requireRole("merchant", "admin"), as
       await query(
         `INSERT INTO shop_templates (shop_id, template_id, is_available)
          VALUES ($1, $2, true)
-         ON CONFLICT (shop_id, template_id) DO UPDATE SET is_available = true, updated_at = NOW()`,
+         ON CONFLICT (shop_id, template_id) DO UPDATE SET is_available = true`,
         [shopId, tId]
       );
     }
