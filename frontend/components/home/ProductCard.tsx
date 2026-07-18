@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import type { Product } from "@/lib/live-products";
+import { type Product, productDisplayName } from "@/lib/live-products";
 import { useAuth } from "@/lib/auth-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -29,8 +29,9 @@ export default function ProductCard({
   const router = useRouter();
   const { user } = useAuth();
   const { isWishlisted, toggle } = useWishlist();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const fav = isWishlisted(product.id);
+  const displayName = productDisplayName(product, locale);
 
   const isCarousel = variant === "carousel";
 
@@ -95,7 +96,7 @@ export default function ProductCard({
           >
             <Image
               src={product.images[0]}
-              alt={product.name}
+              alt={displayName}
               fill
               style={{ objectFit: "cover" }}
               sizes="(max-width: 900px) 50vw, 25vw"
@@ -232,7 +233,7 @@ export default function ProductCard({
               whiteSpace: "nowrap",
             }}
           >
-            {product.name}
+            {displayName}
           </Typography>
 
           <Box

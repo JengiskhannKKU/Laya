@@ -51,7 +51,7 @@ router.get("/", async (req: Request, res: Response) => {
     const where = `WHERE ${conditions.join(" AND ")}`;
     const rows = await query<Record<string, unknown>>(
       `SELECT
-         p.id, p.name, p.description, p.category, p.price, p.price_unit, p.stock,
+         p.id, p.name, p.name_en, p.description, p.description_en, p.category, p.price, p.price_unit, p.stock,
          p.images, p.fabric_type, p.has_gi, p.low_stock_threshold, p.has_variants, p.shop_id, p.created_at,
          s.name AS shop_name, s.province, s.rating, s.review_count,
          v.variant_count, v.price_min, v.price_max, v.stock_total
@@ -84,7 +84,7 @@ router.get("/mine", requireAuth, requireRole("merchant", "admin"), async (req: R
     if (!shopId) { res.status(403).json({ error: "บัญชีนี้ยังไม่มีร้านค้า" }); return; }
 
     const rows = await query<Record<string, unknown>>(
-      `SELECT p.id, p.name, p.description, p.category, p.price, p.price_unit, p.stock,
+      `SELECT p.id, p.name, p.name_en, p.description, p.description_en, p.category, p.price, p.price_unit, p.stock,
               p.images, p.fabric_type, p.has_gi, p.is_active, p.shop_id, p.created_at,
               p.low_stock_threshold, p.has_variants,
               v.variant_count, v.price_min, v.price_max, v.stock_total
@@ -193,7 +193,7 @@ router.get("/:id", async (req: Request, res: Response) => {
   try {
     const rows = await query<Record<string, unknown>>(
       `SELECT
-         p.id, p.name, p.description, p.category, p.price, p.price_unit, p.stock,
+         p.id, p.name, p.name_en, p.description, p.description_en, p.category, p.price, p.price_unit, p.stock,
          p.images, p.fabric_type, p.has_gi, p.low_stock_threshold, p.has_variants, p.shop_id, p.created_at,
          s.name AS shop_name, s.province, s.rating, s.review_count
        FROM products p

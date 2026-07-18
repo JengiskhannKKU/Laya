@@ -59,6 +59,7 @@ import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { productDisplayName } from "@/lib/live-products";
 
 // Leaflet ต้องรันฝั่ง client เท่านั้น (ใช้ window) — โหลดแบบ dynamic ปิด SSR
 const LocationPickerMap = dynamic(() => import("@/components/checkout/LocationPickerMap"), {
@@ -127,7 +128,7 @@ interface SavedAddress {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, session, loading: authLoading } = useAuth();
 
   const STEPS = [t("checkout.steps.address"), t("checkout.steps.review"), t("checkout.steps.payment")];
@@ -790,7 +791,7 @@ export default function CheckoutPage() {
                               {line.product.image && <Image src={line.product.image} alt="" fill style={{ objectFit: "cover" }} />}
                             </Box>
                             <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                              <Typography noWrap sx={{ fontFamily: FONT, fontSize: "0.9rem", fontWeight: 600, color: NAVY }}>{line.product.name}</Typography>
+                              <Typography noWrap sx={{ fontFamily: FONT, fontSize: "0.9rem", fontWeight: 600, color: NAVY }}>{productDisplayName(line.product, locale)}</Typography>
                               {line.variantLabel && (
                                 <Typography sx={{ fontFamily: FONT, fontSize: "0.74rem", color: "#8E601C", mt: 0.2 }}>
                                   {t("cart.optionLabel")}: {line.variantLabel}

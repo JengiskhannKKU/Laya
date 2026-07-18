@@ -28,6 +28,7 @@ import Image from "next/image";
 import Link from "next/link";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { productDisplayName } from "@/lib/live-products";
 
 const SHIPPING_ESTIMATE = 50;
 const FONT = '"Kanit", sans-serif';
@@ -45,7 +46,7 @@ const cardSx = {
 
 export default function CartPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, loading: authLoading } = useAuth();
 
   const items = useCartStore((s) => s.items);
@@ -205,12 +206,12 @@ export default function CartPage() {
                     <Box sx={{ display: "flex", gap: 1.8 }}>
                       <Box sx={{ width: { xs: 80, md: 96 }, height: { xs: 80, md: 96 }, borderRadius: "14px", overflow: "hidden", position: "relative", bgcolor: "#F0F0F0", flexShrink: 0 }}>
                         {line.product.image && (
-                          <Image src={line.product.image} alt={line.product.name} fill style={{ objectFit: "cover" }} />
+                          <Image src={line.product.image} alt={productDisplayName(line.product, locale)} fill style={{ objectFit: "cover" }} />
                         )}
                       </Box>
                       <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
                         <Typography sx={{ fontFamily: FONT, fontWeight: 600, fontSize: "0.95rem", color: NAVY, lineHeight: 1.3 }}>
-                          {line.product.name}
+                          {productDisplayName(line.product, locale)}
                         </Typography>
                         <Typography sx={{ fontFamily: FONT, fontSize: "0.78rem", color: "#9CA3AF", mt: 0.3 }}>
                           {t("cart.shopLabel")}: {line.product.shopName}

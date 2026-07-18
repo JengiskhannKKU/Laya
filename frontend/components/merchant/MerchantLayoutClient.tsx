@@ -18,6 +18,7 @@ import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
+import CheckroomRoundedIcon from "@mui/icons-material/CheckroomRounded";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
@@ -41,6 +42,7 @@ const NAV_ITEMS = [
   { label: "ข้อความ", icon: <ChatBubbleOutlineRoundedIcon />, href: "/merchant/messages" },
   { label: "สินค้า / ผ้า", icon: <InventoryRoundedIcon />, href: "/merchant/products" },
   { label: "ลายผ้า", icon: <AutoStoriesRoundedIcon />, href: "/merchant/patterns" },
+  { label: "ทรงที่ตัดได้", icon: <CheckroomRoundedIcon />, href: "/merchant/shapes" },
   { label: "รายได้", icon: <AccountBalanceWalletRoundedIcon />, href: "/merchant/payouts" },
   { label: "รีวิว", icon: <StarRoundedIcon />, href: "/merchant/reviews" },
   { label: "ตั้งค่าร้าน", icon: <SettingsRoundedIcon />, href: "/merchant/settings" },

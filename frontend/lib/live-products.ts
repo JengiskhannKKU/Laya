@@ -52,6 +52,8 @@ export interface PassportData {
 export interface Product {
   id: string;
   name: string;
+  /** ชื่อสินค้าภาษาอังกฤษ — มีเฉพาะร้านที่กรอกไว้ (shops.product_language) ใช้กับ productDisplayName() */
+  nameEn?: string | null;
   community: string;
   province: string;
   price: number;
@@ -104,9 +106,15 @@ export function variantLabel(v: ProductVariant): string {
   return [v.color, v.size, v.pattern, v.length, v.material].filter(Boolean).join(" · ") || v.sku || "ตัวเลือก";
 }
 
+/** ชื่อสินค้าที่จะแสดง — ใช้ name_en เมื่อสลับเป็นอังกฤษและร้านกรอกไว้ ไม่งั้น fallback เป็นชื่อไทยเดิม */
+export function productDisplayName(product: { name: string; nameEn?: string | null }, locale: string): string {
+  return locale === "en" && product.nameEn ? product.nameEn : product.name;
+}
+
 export interface LiveProduct {
   id: string;
   name: string;
+  nameEn?: string | null;
   description: string | null;
   category: string;
   price: number;
@@ -133,6 +141,7 @@ export function mapLiveProduct(p: LiveProduct): Product {
   return {
     id: p.id,
     name: p.name,
+    nameEn: p.nameEn,
     community: p.shopName,
     province: p.province,
     // สินค้า multi-SKU: ราคาเริ่มต้น = ราคาต่ำสุดของ SKU, สต็อก = ผลรวมทุก SKU

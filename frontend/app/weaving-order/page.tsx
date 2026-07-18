@@ -519,7 +519,7 @@ function WeavingOrderContent() {
                   </Typography>
                 )
               ) : (
-                <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" }, gap: 2 }}>
                   {patterns.map((p) => (
                     <Box
                       key={p.id}
@@ -531,11 +531,11 @@ function WeavingOrderContent() {
                       }}
                     >
                       {p.image ? (
-                        <Box sx={{ position: "relative", width: "100%", height: 80 }}>
-                          <Image src={p.image} alt={p.label} fill style={{ objectFit: "cover" }} sizes="200px" />
+                        <Box sx={{ position: "relative", width: "100%", aspectRatio: "1 / 1" }}>
+                          <Image src={p.image} alt={p.label} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 50vw, 25vw" />
                         </Box>
                       ) : (
-                        <Box sx={{ height: 80, bgcolor: p.preview, opacity: 0.85 }} />
+                        <Box sx={{ aspectRatio: "1 / 1", bgcolor: p.preview, opacity: 0.85 }} />
                       )}
                       <Box sx={{ p: 1.5 }}>
                         <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A" }}>

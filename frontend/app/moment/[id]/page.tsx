@@ -79,7 +79,7 @@ export default function MomentDetailPage() {
     <MobileLayout>
       <Box component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
         {/* Cover hero — ชนขอบ viewport (mx trick) สไตล์ Lemon8 */}
-        <Box sx={{ mx: "calc(50% - 50vw)", position: "relative", width: "100vw", aspectRatio: { xs: "3 / 4", sm: "16 / 9", md: "21 / 9" }, maxHeight: { xs: 560, md: 620 }, overflow: "hidden", bgcolor: "#F0EBE3" }}>
+        <Box sx={{ mx: "calc(50% - 50vw)", position: "relative", width: "100vw", aspectRatio: { xs: "4 / 3", sm: "16 / 9", md: "21 / 9" }, maxHeight: { xs: 340, md: 620 }, overflow: "hidden", bgcolor: "#F0EBE3" }}>
           {moment && <Image src={moment.cover} alt={moment.title} fill priority style={{ objectFit: "cover" }} sizes="100vw" />}
           {/* ไล่เฉดบน-ล่างให้ปุ่มย้อนกลับ/ขอบภาพนุ่ม */}
           <Box aria-hidden sx={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(15,26,48,0.35) 0%, transparent 22%, transparent 78%, rgba(15,26,48,0.15) 100%)" }} />

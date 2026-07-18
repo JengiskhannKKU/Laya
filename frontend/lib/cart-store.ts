@@ -9,6 +9,7 @@ import { persist } from "zustand/middleware";
 export interface CartProductSnapshot {
   id: string;
   name: string;
+  nameEn?: string | null;
   image: string | null;
   price: number;
   priceUnit: string;

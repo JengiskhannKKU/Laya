@@ -28,8 +28,9 @@ import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineR
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchLiveProducts, variantLabel, type Product, type ProductVariant } from "@/lib/live-products";
+import { fetchLiveProducts, variantLabel, productDisplayName, type Product, type ProductVariant } from "@/lib/live-products";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCartStore } from "@/lib/cart-store";
 import { useAppModal } from "@/components/providers/AppModalProvider";
@@ -57,6 +58,8 @@ const EDGE_FINISHES = ["ไม่เย็บริม", "เย็บริม�
 export default function ProductDetailView({ product }: { product: Product }) {
   const { user, openAuthModal } = useAuth();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
+  const { locale } = useLanguage();
+  const displayName = productDisplayName(product, locale);
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const { showConfirm, showToast } = useAppModal();
@@ -103,6 +106,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
       {
         id: product.id,
         name: product.name,
+        nameEn: product.nameEn,
         image: product.images[0] ?? null,
         price: effectivePrice,
         priceUnit: product.priceUnit,
@@ -217,7 +221,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
             >
               <Image
                 src={product.images[currentImage] || "/placeholder.webp"}
-                alt={product.name}
+                alt={displayName}
                 fill
                 style={{ objectFit: "cover" }}
                 priority
@@ -341,7 +345,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
                 transition: "all 0.2s"
               }}
             >
-              <Image src={img} alt={`${product.name} — รูปที่ ${i + 1}`} fill style={{ objectFit: "cover" }} />
+              <Image src={img} alt={`${displayName} — รูปที่ ${i + 1}`} fill style={{ objectFit: "cover" }} />
             </Box>
           ))}
         </Box>
@@ -355,7 +359,7 @@ export default function ProductDetailView({ product }: { product: Product }) {
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <Box>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A" }}>
-              {product.name}
+              {displayName}
             </Typography>
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#8E601C", mt: 0.5, display: "flex", alignItems: "center" }}>
               • {product.community} - {product.province}
@@ -656,10 +660,10 @@ export default function ProductDetailView({ product }: { product: Product }) {
                 <Link key={item.id} href={`/product/${item.id}`} style={{ textDecoration: "none" }}>
                   <Box sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: "12px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
                     <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", border: "1px solid #F0F0F0" }}>
-                      <Image src={item.images[0]} alt={item.name} fill style={{ objectFit: "cover" }} />
+                      <Image src={item.images[0]} alt={productDisplayName(item, locale)} fill style={{ objectFit: "cover" }} />
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{item.name}</Typography>
+                      <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{productDisplayName(item, locale)}</Typography>
                       <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{item.fabricType}</Typography>
                     </Box>
                     <Box sx={{ textAlign: "right" }}>
