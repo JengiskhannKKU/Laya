@@ -42,6 +42,12 @@ const nextConfig = {
         protocol: "https",
         hostname: "cdn.fashn.ai",
       },
+      // kie.ai (gpt4o-image / nanobanana) virtual try-on & garment generate — รูปผลลัพธ์อยู่บน tempfile.aiquickdraw.com
+      // (โฮสต์ไฟล์ชั่วคราวของ kie.ai — ใช้ wildcard เผื่อ subdomain เปลี่ยน)
+      {
+        protocol: "https",
+        hostname: "**.aiquickdraw.com",
+      },
     ],
   },
   async rewrites() {
