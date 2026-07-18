@@ -10,7 +10,7 @@
 
 import { Router, Request, Response } from "express";
 import { query } from "../db";
-import { verifySignature, replyMessage } from "../utils/line";
+import { verifySignature, replyMessage, lineConfigured } from "../utils/line";
 import { confirmOrder as confirmTailorOrder } from "./orders";
 import { confirmOrder as confirmProductOrder } from "./product-orders";
 import { confirmOrder as confirmWeavingOrder } from "./weaving-orders";
@@ -47,7 +47,17 @@ const ORDER_TABLES: Record<string, string> = {
 
 router.post("/webhook", async (req: Request, res: Response) => {
   const signature = req.headers["x-line-signature"] as string | undefined;
+
+  // log ช่วย debug: เห็นว่า event มาถึงจริงไหม และตกตรงไหน (ปิดเสียงไม่ได้เพราะเป็น path เดียวที่ LINE ยิงเข้ามา)
+  console.log(`[line webhook] hit — hasRawBody=${!!req.rawBody} hasSignature=${!!signature} lineConfigured=${lineConfigured} events=${req.body?.events?.length ?? 0}`);
+
+  if (!lineConfigured) {
+    // secret/token ว่าง (ปกติเพราะ backend ยังไม่ได้ restart หลังใส่ .env) — verify ไม่ได้แน่นอน
+    console.warn("[line webhook] LINE not configured — LINE_CHANNEL_SECRET/ACCESS_TOKEN ว่าง (restart backend หลังใส่ .env)");
+  }
+
   if (!req.rawBody || !verifySignature(req.rawBody, signature)) {
+    console.warn("[line webhook] signature verify FAILED → 401 (เช็ค LINE_CHANNEL_SECRET ให้ตรงกับ channel และ restart backend)");
     res.status(401).json({ error: "Invalid signature" });
     return;
   }

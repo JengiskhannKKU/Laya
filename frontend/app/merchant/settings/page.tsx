@@ -150,6 +150,26 @@ export default function MerchantSettingsPage() {
       .finally(() => setLineLoading(false));
   }, [user]);
 
+  // ระหว่างโชว์รหัสเชื่อมต่อ — polling เช็คสถานะทุก 4 วิ พอร้านผูกบัญชีสำเร็จใน LINE OA
+  // หน้าจะสลับเป็น "เชื่อมต่อแล้ว" เองทันทีโดยไม่ต้องรีเฟรช (ปิด polling เมื่อรหัสหมดอายุ)
+  useEffect(() => {
+    if (!lineCode || lineLinked) return;
+    const iv = setInterval(async () => {
+      try {
+        const res = await authFetch(`${API_BASE}/api/shops/mine/line-status`);
+        const data = await res.json();
+        if (res.ok && data.linked) {
+          setLineLinked(true);
+          setLineLinkedAt(data.linkedAt ?? null);
+          setLineCode(null);
+        }
+      } catch { /* เงียบไว้ — polling รอบหน้าลองใหม่ */ }
+    }, 4000);
+    const expiryMs = new Date(lineCode.expiresAt).getTime() - Date.now();
+    const stopAt = setTimeout(() => clearInterval(iv), Math.max(0, expiryMs));
+    return () => { clearInterval(iv); clearTimeout(stopAt); };
+  }, [lineCode, lineLinked]);
+
   const generateLineCode = async () => {
     setLineBusy(true);
     setError("");
@@ -426,6 +446,18 @@ export default function MerchantSettingsPage() {
             <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF", textAlign: "center" }}>
               หมดอายุ {new Date(lineCode.expiresAt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}
             </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mt: 1.5 }}>
+              <CircularProgress size={13} sx={{ color: "#9CA3AF" }} />
+              <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF" }}>
+                กำลังรอการเชื่อมต่อจาก LINE...
+              </Typography>
+            </Box>
+            <Button
+              onClick={generateLineCode} disabled={lineBusy} size="small"
+              sx={{ display: "block", mx: "auto", mt: 1, fontFamily: '"Kanit", sans-serif', textTransform: "none", fontWeight: 600, color: "#C5A55A" }}
+            >
+              สร้างรหัสใหม่
+            </Button>
           </Box>
         ) : (
           <Button
