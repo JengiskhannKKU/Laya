@@ -78,9 +78,30 @@ export interface OrderFlexInput {
   detailUrl: string;
 }
 
+/** LINE Flex ปุ่ม action type "uri" รับเฉพาะ https/tel/line — http (เช่น localhost) ทำให้ทั้งการ์ดโดน 400 */
+function isHttps(url: string | undefined): url is string {
+  return typeof url === "string" && url.startsWith("https://");
+}
+
 /** การ์ดออเดอร์ใหม่ พร้อมปุ่ม "ยืนยันออเดอร์" (postback) และ "ดูรายละเอียด" (เปิดแอป) */
 export function buildOrderFlex(input: OrderFlexInput) {
   const shortId = input.orderId.slice(0, 8);
+  // ใส่ปุ่ม "ดูรายละเอียด" เฉพาะเมื่อ detailUrl เป็น https จริง (กัน localhost/http ทำให้การ์ดส่งไม่ออก)
+  const footerButtons: object[] = [
+    {
+      type: "button",
+      style: "primary",
+      color: "#C5A55A",
+      action: { type: "postback", label: "ยืนยันออเดอร์", data: input.confirmPostbackData },
+    },
+  ];
+  if (isHttps(input.detailUrl)) {
+    footerButtons.push({
+      type: "button",
+      style: "link",
+      action: { type: "uri", label: "ดูรายละเอียด", uri: input.detailUrl },
+    });
+  }
   return {
     type: "flex",
     altText: `มีออเดอร์ใหม่รอยืนยัน #${shortId}`,
@@ -114,19 +135,7 @@ export function buildOrderFlex(input: OrderFlexInput) {
         layout: "vertical",
         spacing: "sm",
         paddingAll: "12px",
-        contents: [
-          {
-            type: "button",
-            style: "primary",
-            color: "#C5A55A",
-            action: { type: "postback", label: "ยืนยันออเดอร์", data: input.confirmPostbackData },
-          },
-          {
-            type: "button",
-            style: "link",
-            action: { type: "uri", label: "ดูรายละเอียด", uri: input.detailUrl },
-          },
-        ],
+        contents: footerButtons,
       },
     },
   };
@@ -140,31 +149,31 @@ export interface InfoFlexInput {
 
 /** การ์ดแจ้งเตือนทั่วไป (เช่น ลูกค้ายกเลิกออเดอร์) — ไม่มีปุ่ม action */
 export function buildInfoFlex(input: InfoFlexInput) {
-  return {
-    type: "flex",
-    altText: input.title,
-    contents: {
-      type: "bubble",
-      body: {
-        type: "box",
-        layout: "vertical",
-        spacing: "sm",
-        paddingAll: "16px",
-        contents: [
-          { type: "text", text: input.title, size: "md", weight: "bold", color: "#1B2A4A", wrap: true },
-          { type: "text", text: input.body, size: "sm", color: "#6B7280", wrap: true, margin: "md" },
-        ],
-      },
-      footer: {
-        type: "box",
-        layout: "vertical",
-        paddingAll: "12px",
-        contents: [
-          { type: "button", style: "link", action: { type: "uri", label: "ดูรายละเอียด", uri: input.detailUrl } },
-        ],
-      },
+  const bubble: Record<string, unknown> = {
+    type: "bubble",
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "16px",
+      contents: [
+        { type: "text", text: input.title, size: "md", weight: "bold", color: "#1B2A4A", wrap: true },
+        { type: "text", text: input.body, size: "sm", color: "#6B7280", wrap: true, margin: "md" },
+      ],
     },
   };
+  // ใส่ footer ปุ่ม "ดูรายละเอียด" เฉพาะเมื่อ URL เป็น https (ไม่งั้น footer จะว่าง = การ์ด invalid)
+  if (isHttps(input.detailUrl)) {
+    bubble.footer = {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "12px",
+      contents: [
+        { type: "button", style: "link", action: { type: "uri", label: "ดูรายละเอียด", uri: input.detailUrl } },
+      ],
+    };
+  }
+  return { type: "flex", altText: input.title, contents: bubble };
 }
 
 /** ข้อความทักทายเมื่อมีคนเพิ่มเพื่อน OA (follow event) — บอกวิธีเชื่อมบัญชีร้าน */
