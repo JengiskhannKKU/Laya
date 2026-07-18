@@ -586,7 +586,7 @@ export async function confirmOrder(
   orderId: string,
   actingUserId: string,
   note: string | null = null
-): Promise<{ ok: boolean; error?: string; customerId?: string }> {
+): Promise<{ ok: boolean; error?: string; customerId?: string; alreadyConfirmed?: boolean }> {
   const current = await query<{ id: string; status: string; shop_id: string; customer_id: string }>(
     "SELECT id, status, shop_id, customer_id FROM product_orders WHERE id = $1",
     [orderId]
@@ -594,6 +594,10 @@ export async function confirmOrder(
   if (!current.length) return { ok: false, error: "ไม่พบออเดอร์" };
   const order = current[0];
 
+  // กดยืนยันซ้ำหลังยืนยันไปแล้ว — ตอบแบบสุภาพว่ายืนยันไปแล้ว
+  if (order.status === "confirmed") {
+    return { ok: false, alreadyConfirmed: true, error: "ออเดอร์นี้ได้รับการยืนยันไปแล้ว", customerId: order.customer_id };
+  }
   if (!(ALLOWED_TRANSITIONS[order.status] ?? []).includes("confirmed")) {
     return { ok: false, error: `เปลี่ยนสถานะจาก ${order.status} เป็น confirmed ไม่ได้` };
   }

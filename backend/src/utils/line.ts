@@ -203,6 +203,67 @@ export function linkHelpMessages(): object[] {
   }];
 }
 
+/**
+ * สรุปรายละเอียดออเดอร์ต่อ domain เพื่อใส่ในการ์ด LINE (คืน fallback ถ้า query พลาด)
+ * - product_orders: รายการสินค้า + ตัวเลือก + จำนวน
+ * - weaving_orders: ลาย/สี/เมตร/ความกว้าง/หมายเหตุ
+ * - orders (ตัดเย็บ): แหล่งผ้า/เมตร/หมายเหตุ
+ */
+export async function buildOrderItemsSummary(domain: string, orderId: string): Promise<string> {
+  try {
+    if (domain === "product_orders") {
+      const items = await query<{ product_name: string; variant_label: string | null; quantity: number }>(
+        "SELECT product_name, variant_label, quantity FROM product_order_items WHERE product_order_id = $1",
+        [orderId]
+      );
+      if (!items.length) return "สินค้าพร้อมขาย";
+      return items.map((i) => `• ${i.product_name}${i.variant_label ? ` (${i.variant_label})` : ""} ×${i.quantity}`).join("\n");
+    }
+    if (domain === "weaving_orders") {
+      const rows = await query<{ pattern_name: string | null; color_name: string | null; custom_color_note: string | null; meters_requested: string | null; width_cm: string | null; special_instructions: string | null }>(
+        `SELECT p.name AS pattern_name, cv.color_name, w.custom_color_note, w.meters_requested, w.width_cm, w.special_instructions
+         FROM weaving_orders w
+         LEFT JOIN weave_patterns p ON p.id = w.pattern_id
+         LEFT JOIN weave_color_variants cv ON cv.id = w.color_variant_id
+         WHERE w.id = $1`,
+        [orderId]
+      );
+      const r = rows[0];
+      if (!r) return "งานทอผ้า";
+      const parts: string[] = [];
+      if (r.pattern_name) parts.push(`ลาย: ${r.pattern_name}`);
+      const color = r.color_name ?? r.custom_color_note;
+      if (color) parts.push(`สี: ${color}`);
+      if (r.meters_requested) parts.push(`${Number(r.meters_requested)} เมตร`);
+      if (r.width_cm) parts.push(`กว้าง ${Number(r.width_cm)} ซม.`);
+      if (r.special_instructions) parts.push(`หมายเหตุ: ${r.special_instructions}`);
+      return parts.join("\n") || "งานทอผ้า";
+    }
+    if (domain === "orders") {
+      const rows = await query<{ fabric_source: string | null; fabric_meters_used: string | null; special_instructions: string | null; shop_fabric_name: string | null }>(
+        `SELECT o.fabric_source, o.fabric_meters_used, o.special_instructions, sf.name AS shop_fabric_name
+         FROM orders o
+         LEFT JOIN shop_fabrics sf ON sf.id = o.shop_fabric_id
+         WHERE o.id = $1`,
+        [orderId]
+      );
+      const r = rows[0];
+      if (!r) return "งานตัดเย็บ";
+      const parts: string[] = ["งานตัดเย็บ"];
+      if (r.fabric_source === "own") parts.push("ผ้า: ลูกค้านำมาเอง");
+      else if (r.shop_fabric_name) parts.push(`ผ้า: ${r.shop_fabric_name}`);
+      else if (r.fabric_source === "shop") parts.push("ผ้า: ของร้าน");
+      if (r.fabric_meters_used) parts.push(`${Number(r.fabric_meters_used)} เมตร`);
+      if (r.special_instructions) parts.push(`หมายเหตุ: ${r.special_instructions}`);
+      return parts.join("\n");
+    }
+    return "ดูรายละเอียดในแอป";
+  } catch (err) {
+    console.error("[line] buildOrderItemsSummary failed:", err);
+    return "ดูรายละเอียดในแอป";
+  }
+}
+
 async function logMessage(shopId: string, eventType: string, status: "sent" | "skipped" | "failed", error?: string) {
   try {
     await query(

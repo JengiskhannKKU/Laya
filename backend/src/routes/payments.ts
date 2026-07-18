@@ -4,7 +4,7 @@ import { requireAuth } from "../middleware/auth";
 import { generatePromptPayPayload } from "../utils/promptpay";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, drawTable, formatDocNumber, streamPdf } from "../utils/pdf";
 import { verifySlip, easySlipConfigured } from "../utils/easyslip";
-import { notifyShopNewOrder, notifyShopInfo } from "../utils/line";
+import { notifyShopNewOrder, notifyShopInfo, buildOrderItemsSummary } from "../utils/line";
 
 const router = Router();
 
@@ -303,7 +303,7 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             orderId: payment.order_id as string,
             customerName,
             total: Number(payment.amount),
-            itemsSummary: "ดูรายละเอียดในแอป",
+            itemsSummary: await buildOrderItemsSummary("orders", payment.order_id as string),
             confirmPostbackData: `action=confirm&domain=orders&id=${payment.order_id}`,
             detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
           });
@@ -342,7 +342,7 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             orderId: poRows[0].id,
             customerName,
             total: Number(payment.amount),
-            itemsSummary: "ดูรายละเอียดในแอป",
+            itemsSummary: await buildOrderItemsSummary("product_orders", poRows[0].id),
             confirmPostbackData: `action=confirm&domain=product_orders&id=${poRows[0].id}`,
             detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
           });
@@ -379,7 +379,7 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             orderId: po.id,
             customerName,
             total: Number(payment.amount),
-            itemsSummary: "ดูรายละเอียดในแอป",
+            itemsSummary: await buildOrderItemsSummary("product_orders", po.id),
             confirmPostbackData: `action=confirm&domain=product_orders&id=${po.id}`,
             detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
           });

@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, formatDocNumber, streamPdf } from "../utils/pdf";
-import { notifyShopNewOrder, notifyShopInfo } from "../utils/line";
+import { notifyShopNewOrder, notifyShopInfo, buildOrderItemsSummary } from "../utils/line";
 
 const router = Router();
 const MERCHANT_APP_URL = process.env.MERCHANT_APP_URL ?? "http://localhost:3000";
@@ -230,7 +230,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
         orderId: rows[0].id as string,
         customerName: customerRows[0]?.display_name || customerRows[0]?.email || "ลูกค้า",
         total: Number(estimatedPrice ?? 0),
-        itemsSummary: `${metersRequested} เมตร`,
+        itemsSummary: await buildOrderItemsSummary("weaving_orders", rows[0].id as string),
         confirmPostbackData: `action=confirm&domain=weaving_orders&id=${rows[0].id}`,
         detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
       });
@@ -251,7 +251,7 @@ export async function confirmOrder(
   orderId: string,
   actingUserId: string,
   note: string | null = null
-): Promise<{ ok: boolean; error?: string; customerId?: string }> {
+): Promise<{ ok: boolean; error?: string; customerId?: string; alreadyConfirmed?: boolean }> {
   const current = await query<{ id: string; status: string; shop_id: string; customer_id: string }>(
     "SELECT id, status, shop_id, customer_id FROM weaving_orders WHERE id = $1",
     [orderId]
@@ -259,6 +259,10 @@ export async function confirmOrder(
   if (!current.length) return { ok: false, error: "ไม่พบออเดอร์ทอผ้า" };
   const order = current[0];
 
+  // กดยืนยันซ้ำหลังยืนยันไปแล้ว — ตอบแบบสุภาพว่ายืนยันไปแล้ว
+  if (order.status === "confirmed") {
+    return { ok: false, alreadyConfirmed: true, error: "ออเดอร์นี้ได้รับการยืนยันไปแล้ว", customerId: order.customer_id };
+  }
   if (!(ALLOWED_TRANSITIONS[order.status] ?? []).includes("confirmed")) {
     return { ok: false, error: `เปลี่ยนสถานะจาก ${order.status} เป็น confirmed ไม่ได้` };
   }

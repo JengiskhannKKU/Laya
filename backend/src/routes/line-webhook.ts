@@ -163,10 +163,12 @@ async function handlePostback(lineUserId: string, data: string, replyToken?: str
   const result = await CONFIRMERS[domain](id, shopRows[0].user_id, "ยืนยันผ่าน LINE");
 
   if (replyToken) {
-    await replyMessage(replyToken, [{
-      type: "text",
-      text: result.ok ? "ยืนยันออเดอร์สำเร็จ ✅" : `ยืนยันไม่สำเร็จ: ${result.error}`,
-    }]);
+    const text = result.ok
+      ? "ยืนยันออเดอร์สำเร็จ ✅"
+      : result.alreadyConfirmed
+        ? "ออเดอร์นี้ท่านได้ยืนยันไปแล้ว ✅"
+        : `ยืนยันไม่สำเร็จ: ${result.error}`;
+    await replyMessage(replyToken, [{ type: "text", text }]);
   }
 }
 
