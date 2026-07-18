@@ -25,10 +25,15 @@ export function verifySignature(rawBody: Buffer, signature: string | undefined):
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-async function callLineApi(path: string, body: unknown): Promise<boolean> {
+export interface LineApiResult {
+  ok: boolean;
+  error?: string;
+}
+
+async function callLineApi(path: string, body: unknown): Promise<LineApiResult> {
   if (!lineConfigured) {
     console.warn("[line] not configured — skipping", path);
-    return false;
+    return { ok: false, error: "LINE not configured" };
   }
   try {
     const res = await fetch(`https://api.line.me/v2/bot${path}`, {
@@ -41,21 +46,24 @@ async function callLineApi(path: string, body: unknown): Promise<boolean> {
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      console.error(`[line] ${path} failed:`, res.status, text.slice(0, 500));
-      return false;
+      const detail = `${res.status} ${text.slice(0, 300)}`;
+      // 401 = access token ผิด/หมดอายุ (คนละตัวกับ channel secret ที่ใช้ verify webhook)
+      console.error(`[line] ${path} failed:`, detail);
+      return { ok: false, error: detail };
     }
-    return true;
+    return { ok: true };
   } catch (err) {
-    console.error(`[line] ${path} error:`, (err as Error).message);
-    return false;
+    const msg = (err as Error).message;
+    console.error(`[line] ${path} error:`, msg);
+    return { ok: false, error: msg };
   }
 }
 
-export function pushMessage(lineUserId: string, messages: object[]): Promise<boolean> {
+export function pushMessage(lineUserId: string, messages: object[]): Promise<LineApiResult> {
   return callLineApi("/message/push", { to: lineUserId, messages });
 }
 
-export function replyMessage(replyToken: string, messages: object[]): Promise<boolean> {
+export function replyMessage(replyToken: string, messages: object[]): Promise<LineApiResult> {
   return callLineApi("/message/reply", { replyToken, messages });
 }
 
@@ -159,6 +167,33 @@ export function buildInfoFlex(input: InfoFlexInput) {
   };
 }
 
+/** ข้อความทักทายเมื่อมีคนเพิ่มเพื่อน OA (follow event) — บอกวิธีเชื่อมบัญชีร้าน */
+export function welcomeMessages(alreadyLinkedShopName?: string | null): object[] {
+  if (alreadyLinkedShopName) {
+    return [{ type: "text", text: `ยินดีต้อนรับกลับ! 🧵\nบัญชีนี้เชื่อมกับร้าน "${alreadyLinkedShopName}" อยู่แล้ว ระบบจะส่งแจ้งเตือนออเดอร์ใหม่มาที่แชทนี้` }];
+  }
+  return [{
+    type: "text",
+    text:
+      "ยินดีต้อนรับสู่ LAYA! 🧵\n\n" +
+      "ถ้าคุณเป็นร้านค้า/ชุมชนทอผ้าบน LAYA เชื่อมบัญชีเพื่อรับแจ้งเตือนออเดอร์ใหม่และกดยืนยันออเดอร์ได้ในแชทนี้:\n\n" +
+      "1) เข้าเว็บ LAYA → ตั้งค่าร้านค้า → หัวข้อ \"แจ้งเตือนออเดอร์ผ่าน LINE\"\n" +
+      "2) กด \"สร้างรหัสเชื่อมต่อ\" (ได้รหัส 6 หลัก)\n" +
+      "3) พิมพ์รหัส 6 หลักนั้นส่งมาที่แชทนี้\n\n" +
+      "เสร็จแล้วระบบจะแจ้งเตือนออเดอร์ให้อัตโนมัติ",
+  }];
+}
+
+/** ข้อความช่วยเหลือ เมื่อผู้ใช้พิมพ์อะไรที่ไม่ใช่รหัส 6 หลัก และยังไม่ได้เชื่อมบัญชี */
+export function linkHelpMessages(): object[] {
+  return [{
+    type: "text",
+    text:
+      "นี่ไม่ใช่รหัสเชื่อมต่อ 6 หลักครับ\n\n" +
+      "ถ้าต้องการเชื่อมบัญชีร้าน: เข้าเว็บ LAYA → ตั้งค่าร้านค้า → \"แจ้งเตือนออเดอร์ผ่าน LINE\" → สร้างรหัส 6 หลัก แล้วพิมพ์ส่งมาที่นี่",
+  }];
+}
+
 async function logMessage(shopId: string, eventType: string, status: "sent" | "skipped" | "failed", error?: string) {
   try {
     await query(
@@ -181,11 +216,11 @@ export async function notifyShopNewOrder(shopId: string, input: Omit<OrderFlexIn
       [shopId]
     );
     const shop = rows[0];
-    if (!shop?.line_user_id) return;
+    if (!shop?.line_user_id) { await logMessage(shopId, "new_order", "skipped", "ร้านยังไม่ได้เชื่อมบัญชี LINE"); return; }
     if (!lineConfigured) { await logMessage(shopId, "new_order", "skipped", "LINE not configured"); return; }
 
-    const ok = await pushMessage(shop.line_user_id, [buildOrderFlex({ ...input, shopName: shop.name })]);
-    await logMessage(shopId, "new_order", ok ? "sent" : "failed");
+    const result = await pushMessage(shop.line_user_id, [buildOrderFlex({ ...input, shopName: shop.name })]);
+    await logMessage(shopId, "new_order", result.ok ? "sent" : "failed", result.error);
   } catch (err) {
     console.error("[line] notifyShopNewOrder failed:", err);
   }
@@ -199,11 +234,11 @@ export async function notifyShopInfo(shopId: string, input: InfoFlexInput) {
       [shopId]
     );
     const shop = rows[0];
-    if (!shop?.line_user_id) return;
+    if (!shop?.line_user_id) { await logMessage(shopId, "info", "skipped", "ร้านยังไม่ได้เชื่อมบัญชี LINE"); return; }
     if (!lineConfigured) { await logMessage(shopId, "info", "skipped", "LINE not configured"); return; }
 
-    const ok = await pushMessage(shop.line_user_id, [buildInfoFlex(input)]);
-    await logMessage(shopId, "info", ok ? "sent" : "failed");
+    const result = await pushMessage(shop.line_user_id, [buildInfoFlex(input)]);
+    await logMessage(shopId, "info", result.ok ? "sent" : "failed", result.error);
   } catch (err) {
     console.error("[line] notifyShopInfo failed:", err);
   }

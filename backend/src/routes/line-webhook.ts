@@ -10,7 +10,7 @@
 
 import { Router, Request, Response } from "express";
 import { query } from "../db";
-import { verifySignature, replyMessage, lineConfigured } from "../utils/line";
+import { verifySignature, replyMessage, lineConfigured, welcomeMessages, linkHelpMessages } from "../utils/line";
 import { confirmOrder as confirmTailorOrder } from "./orders";
 import { confirmOrder as confirmProductOrder } from "./product-orders";
 import { confirmOrder as confirmWeavingOrder } from "./weaving-orders";
@@ -31,6 +31,12 @@ interface LineEvent {
   source?: { userId?: string; type?: string };
   message?: { type: string; text?: string };
   postback?: { data: string };
+}
+
+/** ชื่อร้านที่ผูกกับ LINE userId นี้ (ถ้ามี) — ใช้ปรับข้อความทักทาย/ช่วยเหลือ */
+async function linkedShopName(lineUserId: string): Promise<string | null> {
+  const rows = await query<{ name: string }>("SELECT name FROM shops WHERE line_user_id = $1", [lineUserId]);
+  return rows[0]?.name ?? null;
 }
 
 const CONFIRMERS: Record<string, typeof confirmTailorOrder> = {
@@ -79,7 +85,13 @@ async function handleEvent(event: LineEvent) {
   const lineUserId = event.source?.userId;
   if (!lineUserId) return;
 
-  if (event.type === "message" && event.message?.type === "text") {
+  if (event.type === "follow") {
+    // มีคนเพิ่มเพื่อน OA — ทักทายพร้อมบอกวิธีเชื่อมบัญชี (ถ้าเชื่อมอยู่แล้วทักแบบรู้จัก)
+    if (event.replyToken) {
+      const name = await linkedShopName(lineUserId);
+      await replyMessage(event.replyToken, welcomeMessages(name));
+    }
+  } else if (event.type === "message" && event.message?.type === "text") {
     await handleLinkingMessage(lineUserId, event.message.text ?? "", event.replyToken);
   } else if (event.type === "postback") {
     await handlePostback(lineUserId, event.postback?.data ?? "", event.replyToken);
@@ -89,7 +101,13 @@ async function handleEvent(event: LineEvent) {
 /** ร้านพิมพ์รหัส 6 หลักส่งมาที่ OA เพื่อผูกบัญชี LINE ของตัวเองกับร้าน */
 async function handleLinkingMessage(lineUserId: string, text: string, replyToken?: string) {
   const code = text.trim();
-  if (!/^\d{6}$/.test(code)) return;
+  if (!/^\d{6}$/.test(code)) {
+    // ไม่ใช่รหัส 6 หลัก — ถ้ายังไม่ได้เชื่อมบัญชี ตอบวิธีเชื่อมให้ (ถ้าเชื่อมแล้วเงียบไว้ ไม่กวนแชท)
+    if (replyToken && !(await linkedShopName(lineUserId))) {
+      await replyMessage(replyToken, linkHelpMessages());
+    }
+    return;
+  }
 
   const rows = await query<{ shop_id: string; name: string }>(
     `SELECT c.shop_id, s.name FROM shop_line_link_codes c
