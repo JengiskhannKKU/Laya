@@ -8,9 +8,9 @@ import Skeleton from "@mui/material/Skeleton";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useAppModal } from "@/components/providers/AppModalProvider";
-import { fetchTailorOrderDetail, cancelOrder } from "@/lib/orders";
+import { fetchTailorOrderDetail, cancelOrder, requestCancelOrder } from "@/lib/orders";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { OrderDetailHeader, OrderStatusCard, OrderTimeline, CancelOrderButton } from "@/components/orders/OrderDetailChrome";
+import { OrderDetailHeader, OrderStatusCard, OrderTimeline, CancelOrderButton, CancelRequestedBadge } from "@/components/orders/OrderDetailChrome";
 
 const FONT = '"Kanit", sans-serif';
 
@@ -42,6 +42,20 @@ export default function TailorOrderDetailPage({ params }: { params: Promise<{ id
     });
     if (!ok) return;
     await cancelOrder("tailor", id).catch(() => {});
+    fetchTailorOrderDetail(id).then(setOrder);
+  };
+
+  const handleRequestCancel = async () => {
+    const ok = await showConfirm({
+      title: "ขอยกเลิกคำสั่งซื้อ",
+      message: "ออเดอร์นี้ชำระเงินแล้ว การยกเลิกต้องรอร้านกดยินยอมก่อน คุณต้องการส่งคำขอยกเลิกหรือไม่?",
+      confirmLabel: "ส่งคำขอยกเลิก",
+      cancelLabel: "เก็บไว้ก่อน",
+      tone: "warning",
+      danger: true,
+    });
+    if (!ok) return;
+    await requestCancelOrder("tailor", id).catch(() => {});
     fetchTailorOrderDetail(id).then(setOrder);
   };
 
@@ -106,6 +120,8 @@ export default function TailorOrderDetailPage({ params }: { params: Promise<{ id
           </Box>
 
           {order.cancellable && <CancelOrderButton onCancel={handleCancel} />}
+          {order.cancelRequestable && <CancelOrderButton onCancel={handleRequestCancel} label="ขอยกเลิกออเดอร์" />}
+          {order.cancelRequestedAt && <CancelRequestedBadge />}
         </Box>
       </Box>
     </MobileLayout>

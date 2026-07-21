@@ -27,7 +27,11 @@ export interface OrderSummary {
   statusLabel: string;
   total: number;
   createdAt: string;
+  /** ยกเลิกได้ทันที (ยังไม่ชำระเงิน) */
   cancellable: boolean;
+  /** ชำระเงินแล้ว — ยกเลิกได้แค่ "ขอยกเลิก" แล้วรอร้านกดยินยอม */
+  cancelRequestable: boolean;
+  cancelRequestedAt: string | null;
 }
 
 const TAILOR_STATUS_LABELS: Record<string, string> = {
@@ -62,7 +66,16 @@ const WEAVING_STATUS_LABELS: Record<string, string> = {
   cancelled: "ยกเลิกแล้ว",
 };
 
-interface TailorOrderRow {
+/** flags คำนวณจาก backend แล้ว (ดู isPaid/cancellable/cancelRequestable ใน mapOrder ฝั่ง backend) — ไม่คำนวณซ้ำฝั่ง client */
+interface CancelFlags {
+  isPaid: boolean;
+  cancellable: boolean;
+  cancelRequestable: boolean;
+  cancelRequestedAt: string | null;
+  cancelRequestNote: string | null;
+}
+
+interface TailorOrderRow extends CancelFlags {
   id: string;
   shopId: string;
   shopName: string | null;
@@ -73,7 +86,7 @@ interface TailorOrderRow {
   createdAt: string;
 }
 
-interface ProductOrderRow {
+interface ProductOrderRow extends CancelFlags {
   id: string;
   shopId: string;
   shopName: string | null;
@@ -83,7 +96,7 @@ interface ProductOrderRow {
   items: { productName: string; quantity: number }[];
 }
 
-interface WeavingOrderRow {
+interface WeavingOrderRow extends CancelFlags {
   id: string;
   shopId: string;
   shopName: string | null;
@@ -108,7 +121,9 @@ export async function fetchTailorOrders(): Promise<OrderSummary[]> {
     statusLabel: TAILOR_STATUS_LABELS[o.status] ?? o.status,
     total: o.finalPrice ?? o.estimatedPrice ?? 0,
     createdAt: o.createdAt,
-    cancellable: ["draft", "pending_confirm"].includes(o.status),
+    cancellable: o.cancellable,
+    cancelRequestable: o.cancelRequestable,
+    cancelRequestedAt: o.cancelRequestedAt,
   }));
 }
 
@@ -127,7 +142,9 @@ export async function fetchProductOrders(): Promise<OrderSummary[]> {
     statusLabel: PRODUCT_STATUS_LABELS[o.status] ?? o.status,
     total: o.total,
     createdAt: o.createdAt,
-    cancellable: ["draft", "pending_confirm"].includes(o.status),
+    cancellable: o.cancellable,
+    cancelRequestable: o.cancelRequestable,
+    cancelRequestedAt: o.cancelRequestedAt,
   }));
 }
 
@@ -144,7 +161,9 @@ export async function fetchWeavingOrders(): Promise<OrderSummary[]> {
     statusLabel: WEAVING_STATUS_LABELS[o.status] ?? o.status,
     total: o.finalPrice ?? o.estimatedPrice ?? 0,
     createdAt: o.createdAt,
-    cancellable: o.status === "pending_confirm",
+    cancellable: o.cancellable,
+    cancelRequestable: o.cancelRequestable,
+    cancelRequestedAt: o.cancelRequestedAt,
   }));
 }
 
@@ -215,7 +234,6 @@ export async function fetchTailorOrderDetail(id: string) {
     ...o,
     statusLabel: TAILOR_STATUS_LABELS[o.status] ?? o.status,
     statusLogs: mapLogs(o.statusLogs ?? []),
-    cancellable: ["draft", "pending_confirm"].includes(o.status),
   };
 }
 
@@ -228,7 +246,6 @@ export async function fetchProductOrderDetail(id: string) {
     statusLabel: PRODUCT_STATUS_LABELS[o.status] ?? o.status,
     statusLogs: mapLogs(o.statusLogs ?? []),
     shippingLogs: mapLogs(o.shippingLogs ?? []),
-    cancellable: ["draft", "pending_confirm"].includes(o.status),
   };
 }
 
@@ -240,7 +257,6 @@ export async function fetchWeavingOrderDetail(id: string) {
     ...o,
     statusLabel: WEAVING_STATUS_LABELS[o.status] ?? o.status,
     statusLogs: mapLogs(o.statusLogs ?? []),
-    cancellable: o.status === "pending_confirm",
   };
 }
 
@@ -253,5 +269,18 @@ export async function cancelOrder(type: OrderType, id: string): Promise<void> {
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.error ?? "ยกเลิกคำสั่งซื้อไม่สำเร็จ");
+  }
+}
+
+/** ขอยกเลิกออเดอร์ที่ชำระเงินแล้ว — ไม่ยกเลิกทันที ต้องรอร้านกดยินยอมผ่าน LINE ก่อน */
+export async function requestCancelOrder(type: OrderType, id: string, note?: string): Promise<void> {
+  const path = type === "tailor" ? "orders" : type === "product" ? "product-orders" : "weaving-orders";
+  const res = await authFetch(`${API_BASE}/api/${path}/${id}/request-cancel`, {
+    method: "POST",
+    body: JSON.stringify({ note }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error ?? "ส่งคำขอยกเลิกไม่สำเร็จ");
   }
 }

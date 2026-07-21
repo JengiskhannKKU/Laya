@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, formatDocNumber, streamPdf } from "../utils/pdf";
-import { notifyShopNewOrder, notifyShopInfo, buildOrderItemsSummary } from "../utils/line";
+import { notifyShopNewOrder, notifyShopInfo, notifyShopCancelRequest, buildOrderItemsSummary } from "../utils/line";
 
 const router = Router();
 const MERCHANT_APP_URL = process.env.MERCHANT_APP_URL ?? "http://localhost:3000";
@@ -15,6 +15,18 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   ready: ["shipped"],
   shipped: ["delivered"],
 };
+
+/** ออเดอร์ที่ยังยกเลิกได้ในหลักการ (ยังไม่ส่งของ/จบงาน/ถูกยกเลิกไปแล้ว) */
+const CANCEL_REQUESTABLE_STATUSES = new Set(["pending_confirm", "confirmed", "weaving", "ready"]);
+
+/** ออเดอร์ทอไม่มีสถานะ draft — payment ไม่เปลี่ยนสถานะออเดอร์ (แจ้งเตือนอย่างเดียว) จึงต้องเช็คว่าจ่ายแล้วหรือยังจาก payments โดยตรง */
+async function isWeavingOrderPaid(weavingOrderId: string): Promise<boolean> {
+  const rows = await query<{ exists: boolean }>(
+    "SELECT EXISTS(SELECT 1 FROM payments WHERE weaving_order_id = $1 AND status = 'paid') AS exists",
+    [weavingOrderId]
+  );
+  return rows[0]?.exists ?? false;
+}
 
 async function notify(userId: string, type: string, title: string, body: string, data: unknown) {
   try {
@@ -54,7 +66,8 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const rows = await query<Record<string, unknown>>(
       `SELECT w.*, u.display_name AS customer_name, u.email AS customer_email, u.phone AS customer_phone,
-              s.name AS shop_name, p.name AS pattern_name, cv.color_name
+              s.name AS shop_name, p.name AS pattern_name, cv.color_name,
+              EXISTS(SELECT 1 FROM payments pay WHERE pay.weaving_order_id = w.id AND pay.status = 'paid') AS is_paid
        FROM weaving_orders w
        JOIN users u ON u.id = w.customer_id
        JOIN shops s ON s.id = w.shop_id
@@ -78,7 +91,8 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
     const { userId, role, shopId } = req.user!;
     const rows = await query<Record<string, unknown>>(
       `SELECT w.*, u.display_name AS customer_name, u.email AS customer_email, u.phone AS customer_phone,
-              s.name AS shop_name, p.name AS pattern_name, cv.color_name
+              s.name AS shop_name, p.name AS pattern_name, cv.color_name,
+              EXISTS(SELECT 1 FROM payments pay WHERE pay.weaving_order_id = w.id AND pay.status = 'paid') AS is_paid
        FROM weaving_orders w
        JOIN users u ON u.id = w.customer_id
        JOIN shops s ON s.id = w.shop_id
@@ -233,6 +247,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
         itemsSummary: await buildOrderItemsSummary("weaving_orders", rows[0].id as string),
         confirmPostbackData: `action=confirm&domain=weaving_orders&id=${rows[0].id}`,
         detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+        paymentStatusLabel: "ยังไม่ชำระเงิน",
       });
     }
 
@@ -285,6 +300,110 @@ export async function confirmOrder(
   return { ok: true, customerId: order.customer_id };
 }
 
+/**
+ * POST /api/weaving-orders/:id/request-cancel
+ * ลูกค้าขอยกเลิกออเดอร์ที่จ่ายเงินแล้ว — ต้องรอร้านกดยินยอมผ่าน LINE ก่อนจึงจะยกเลิกจริง
+ */
+router.post("/:id/request-cancel", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.user!;
+    const { note } = req.body as { note?: string };
+
+    const current = await query<{ id: string; status: string; shop_id: string; customer_id: string; cancel_requested_at: string | null }>(
+      "SELECT id, status, shop_id, customer_id, cancel_requested_at FROM weaving_orders WHERE id = $1",
+      [req.params.id]
+    );
+    if (!current.length) { res.status(404).json({ error: "ไม่พบออเดอร์ทอผ้า" }); return; }
+    const order = current[0];
+    if (order.customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
+
+    if (order.cancel_requested_at) {
+      res.status(200).json({ id: order.id, alreadyRequested: true, message: "ท่านได้ส่งคำขอยกเลิกไปแล้ว รอร้านตอบกลับ" });
+      return;
+    }
+    const paid = await isWeavingOrderPaid(order.id);
+    if (!paid) {
+      res.status(400).json({ error: "ออเดอร์นี้ยังไม่ชำระเงิน ยกเลิกได้ทันทีโดยไม่ต้องรอร้านยินยอม" });
+      return;
+    }
+    if (!CANCEL_REQUESTABLE_STATUSES.has(order.status)) {
+      res.status(400).json({ error: `ออเดอร์สถานะ ${order.status} ไม่สามารถขอยกเลิกได้` });
+      return;
+    }
+
+    await query(
+      "UPDATE weaving_orders SET cancel_requested_at = NOW(), cancel_request_note = $1, updated_at = NOW() WHERE id = $2",
+      [note ?? null, order.id]
+    );
+
+    const shopOwner = await query<{ user_id: string }>("SELECT user_id FROM shops WHERE id = $1", [order.shop_id]);
+    if (shopOwner.length) {
+      await notify(shopOwner[0].user_id, "order_update", "ลูกค้าขอยกเลิกออเดอร์ทอผ้า", note ?? `ออเดอร์ ${order.id.slice(0, 8)} ขอยกเลิก — รอการยินยอมจากร้าน`, { weavingOrderId: order.id });
+    }
+    const customerRows = await query<{ display_name: string | null; email: string }>("SELECT display_name, email FROM users WHERE id = $1", [userId]);
+    await notifyShopCancelRequest(order.shop_id, {
+      domainLabel: "ขอยกเลิกออเดอร์ทอผ้า",
+      orderId: order.id,
+      customerName: customerRows[0]?.display_name || customerRows[0]?.email || "ลูกค้า",
+      note: note ?? null,
+      approvePostbackData: `action=cancel_approve&domain=weaving_orders&id=${order.id}`,
+      rejectPostbackData: `action=cancel_reject&domain=weaving_orders&id=${order.id}`,
+      detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+    });
+
+    res.json({ id: order.id, cancelRequestedAt: new Date().toISOString() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ส่งคำขอยกเลิกไม่สำเร็จ" });
+  }
+});
+
+/**
+ * ร้านตอบรับ/ปฏิเสธคำขอยกเลิก — ใช้จาก LINE postback (ไม่ต้องคืนสต็อก เพราะ weaving_orders ไม่ตัดสต็อกสินค้า)
+ */
+export async function respondCancelRequest(
+  orderId: string,
+  approve: boolean,
+  actingUserId: string
+): Promise<{ ok: boolean; error?: string; customerId?: string; alreadyResolved?: boolean }> {
+  const current = await query<{ id: string; status: string; shop_id: string; customer_id: string; cancel_requested_at: string | null }>(
+    "SELECT id, status, shop_id, customer_id, cancel_requested_at FROM weaving_orders WHERE id = $1",
+    [orderId]
+  );
+  if (!current.length) return { ok: false, error: "ไม่พบออเดอร์ทอผ้า" };
+  const order = current[0];
+
+  if (!order.cancel_requested_at) {
+    return { ok: false, alreadyResolved: true, error: "คำขอนี้ถูกดำเนินการไปแล้ว", customerId: order.customer_id };
+  }
+
+  if (approve) {
+    await query(
+      "UPDATE weaving_orders SET status = 'cancelled', cancel_requested_at = NULL, cancel_request_note = NULL, updated_at = NOW() WHERE id = $1",
+      [orderId]
+    );
+    await query(
+      `INSERT INTO weaving_order_status_logs (order_id, old_status, new_status, changed_by, note)
+       VALUES ($1, $2, 'cancelled', $3, 'ร้านยินยอมยกเลิกออเดอร์')`,
+      [orderId, order.status, actingUserId]
+    );
+  } else {
+    await query(
+      "UPDATE weaving_orders SET cancel_requested_at = NULL, cancel_request_note = NULL, updated_at = NOW() WHERE id = $1",
+      [orderId]
+    );
+  }
+
+  await notify(
+    order.customer_id, "order_update",
+    approve ? "ร้านยินยอมยกเลิกออเดอร์แล้ว" : "ร้านไม่ยินยอมยกเลิกออเดอร์",
+    approve ? "ออเดอร์ทอผ้าของคุณถูกยกเลิกแล้ว" : "คำขอยกเลิกถูกปฏิเสธ ออเดอร์จะดำเนินการต่อตามปกติ",
+    { weavingOrderId: orderId, status: approve ? "cancelled" : order.status }
+  );
+
+  return { ok: true, customerId: order.customer_id };
+}
+
 /** POST /api/weaving-orders/:id/confirm — ร้านยืนยันรับงาน (US-406) */
 router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => {
   try {
@@ -327,8 +446,11 @@ async function changeStatus(req: Request, res: Response) {
     if (role === "merchant" && order.shop_id !== shopId) { res.status(403).json({ error: "Forbidden" }); return; }
     if (role === "customer") {
       if (order.customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
-      if (!(status === "cancelled" && order.status === "pending_confirm")) {
-        res.status(403).json({ error: "ลูกค้ายกเลิกได้เฉพาะออเดอร์ที่ร้านยังไม่ยืนยัน" });
+      // ออเดอร์ทอไม่มีสถานะ draft — จ่ายเงินแล้วหรือยังต้องเช็คจาก payments โดยตรง (ต่างจาก orders/product_orders)
+      // ลูกค้ายกเลิกเองทันทีได้เฉพาะตอนยังไม่จ่าย — ออเดอร์ที่จ่ายแล้วต้องขอผ่าน /request-cancel ให้ร้านยินยอม
+      const paid = await isWeavingOrderPaid(order.id);
+      if (!(status === "cancelled" && order.status === "pending_confirm" && !paid)) {
+        res.status(403).json({ error: paid ? "ออเดอร์นี้ชำระเงินแล้ว — ต้องขอให้ร้านยินยอมยกเลิก" : "ลูกค้ายกเลิกได้เฉพาะออเดอร์ที่ร้านยังไม่ยืนยัน" });
         return;
       }
     }
@@ -402,6 +524,9 @@ async function changeStatus(req: Request, res: Response) {
 }
 
 function mapWeavingOrder(row: Record<string, unknown>) {
+  const status = row.status as string;
+  const isPaid = Boolean(row.is_paid);
+  const cancelRequestedAt = row.cancel_requested_at ?? null;
   return {
     id: row.id,
     customerId: row.customer_id,
@@ -412,6 +537,11 @@ function mapWeavingOrder(row: Record<string, unknown>) {
     metersRequested: Number(row.meters_requested),
     widthCm: row.width_cm ? Number(row.width_cm) : null,
     status: row.status,
+    isPaid,
+    cancellable: status === "pending_confirm" && !isPaid,
+    cancelRequestable: isPaid && !cancelRequestedAt && CANCEL_REQUESTABLE_STATUSES.has(status),
+    cancelRequestedAt,
+    cancelRequestNote: row.cancel_request_note ?? null,
     colorDisclaimerAccepted: row.color_disclaimer_accepted,
     estimatedPrice: row.estimated_price ? Number(row.estimated_price) : null,
     finalPrice: row.final_price ? Number(row.final_price) : null,

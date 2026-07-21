@@ -306,6 +306,7 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             itemsSummary: await buildOrderItemsSummary("orders", payment.order_id as string),
             confirmPostbackData: `action=confirm&domain=orders&id=${payment.order_id}`,
             detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+            paymentStatusLabel: "ชำระเงินแล้ว ✅",
           });
         }
       }
@@ -345,6 +346,7 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             itemsSummary: await buildOrderItemsSummary("product_orders", poRows[0].id),
             confirmPostbackData: `action=confirm&domain=product_orders&id=${poRows[0].id}`,
             detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+            paymentStatusLabel: "ชำระเงินแล้ว ✅",
           });
         }
       }
@@ -382,6 +384,7 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
             itemsSummary: await buildOrderItemsSummary("product_orders", po.id),
             confirmPostbackData: `action=confirm&domain=product_orders&id=${po.id}`,
             detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+            paymentStatusLabel: "ชำระเงินแล้ว ✅",
           });
         }
       }

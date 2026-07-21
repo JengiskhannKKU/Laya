@@ -10,9 +10,9 @@ import { useRouter } from "next/navigation";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import { useAuth } from "@/lib/auth-context";
 import { useAppModal } from "@/components/providers/AppModalProvider";
-import { fetchProductOrderDetail, cancelOrder } from "@/lib/orders";
+import { fetchProductOrderDetail, cancelOrder, requestCancelOrder } from "@/lib/orders";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { OrderDetailHeader, OrderStatusCard, OrderTimeline, CancelOrderButton } from "@/components/orders/OrderDetailChrome";
+import { OrderDetailHeader, OrderStatusCard, OrderTimeline, CancelOrderButton, CancelRequestedBadge } from "@/components/orders/OrderDetailChrome";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -76,6 +76,20 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
     });
     if (!ok) return;
     await cancelOrder("product", id).catch(() => {});
+    fetchProductOrderDetail(id).then(setOrder);
+  };
+
+  const handleRequestCancel = async () => {
+    const ok = await showConfirm({
+      title: "ขอยกเลิกคำสั่งซื้อ",
+      message: "ออเดอร์นี้ชำระเงินแล้ว การยกเลิกต้องรอร้านกดยินยอมก่อน คุณต้องการส่งคำขอยกเลิกหรือไม่?",
+      confirmLabel: "ส่งคำขอยกเลิก",
+      cancelLabel: "เก็บไว้ก่อน",
+      tone: "warning",
+      danger: true,
+    });
+    if (!ok) return;
+    await requestCancelOrder("product", id).catch(() => {});
     fetchProductOrderDetail(id).then(setOrder);
   };
 
@@ -204,6 +218,8 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
           </Box>
 
           {order.cancellable && <CancelOrderButton onCancel={handleCancel} />}
+          {order.cancelRequestable && <CancelOrderButton onCancel={handleRequestCancel} label="ขอยกเลิกออเดอร์" />}
+          {order.cancelRequestedAt && <CancelRequestedBadge />}
         </Box>
       </Box>
     </MobileLayout>

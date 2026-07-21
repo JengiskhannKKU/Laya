@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, formatDocNumber, streamPdf } from "../utils/pdf";
-import { notifyShopInfo } from "../utils/line";
+import { notifyShopInfo, notifyShopCancelRequest } from "../utils/line";
 
 const MERCHANT_APP_URL = process.env.MERCHANT_APP_URL ?? "http://localhost:3000";
 
@@ -27,6 +27,9 @@ const STATUS_LABELS: Record<string, string> = {
   delivered: "จัดส่งสำเร็จ",
   cancelled: "ออเดอร์ถูกยกเลิก",
 };
+
+/** ออเดอร์ที่ยังยกเลิกได้ในหลักการ (ยังไม่ส่งของ/จบงาน/ถูกยกเลิกไปแล้ว) */
+const CANCEL_REQUESTABLE_STATUSES = new Set(["pending_confirm", "confirmed", "in_progress", "ready"]);
 
 async function notify(userId: string, title: string, body: string, data: unknown) {
   try {
@@ -80,6 +83,7 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
          o.special_instructions,
          o.tracking_no, o.courier,
          o.confirmed_at, o.completed_at,
+         o.cancel_requested_at, o.cancel_request_note,
          o.created_at, o.updated_at,
          u.display_name  AS customer_name,
          u.email         AS customer_email,
@@ -116,6 +120,7 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
          o.special_instructions,
          o.tracking_no, o.courier,
          o.confirmed_at, o.completed_at,
+         o.cancel_requested_at, o.cancel_request_note,
          o.created_at, o.updated_at,
          u.display_name  AS customer_name,
          u.email         AS customer_email,
@@ -322,6 +327,109 @@ export async function confirmOrder(
 }
 
 /**
+ * POST /api/orders/:id/request-cancel
+ * ลูกค้าขอยกเลิกออเดอร์ที่จ่ายเงินแล้ว — ต้องรอร้านกดยินยอมผ่าน LINE ก่อนจึงจะยกเลิกจริง
+ */
+router.post("/:id/request-cancel", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.user!;
+    const { note } = req.body as { note?: string };
+
+    const current = await query<{ id: string; status: string; shop_id: string; customer_id: string; cancel_requested_at: string | null }>(
+      "SELECT id, status, shop_id, customer_id, cancel_requested_at FROM orders WHERE id = $1",
+      [req.params.id]
+    );
+    if (!current.length) { res.status(404).json({ error: "Order not found" }); return; }
+    const order = current[0];
+    if (order.customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
+
+    if (order.cancel_requested_at) {
+      res.status(200).json({ id: order.id, alreadyRequested: true, message: "ท่านได้ส่งคำขอยกเลิกไปแล้ว รอร้านตอบกลับ" });
+      return;
+    }
+    if (order.status === "draft") {
+      res.status(400).json({ error: "ออเดอร์นี้ยังไม่ชำระเงิน ยกเลิกได้ทันทีโดยไม่ต้องรอร้านยินยอม" });
+      return;
+    }
+    if (!CANCEL_REQUESTABLE_STATUSES.has(order.status)) {
+      res.status(400).json({ error: `ออเดอร์สถานะ ${order.status} ไม่สามารถขอยกเลิกได้` });
+      return;
+    }
+
+    await query(
+      "UPDATE orders SET cancel_requested_at = NOW(), cancel_request_note = $1, updated_at = NOW() WHERE id = $2",
+      [note ?? null, order.id]
+    );
+
+    const shopOwner = await query<{ user_id: string }>("SELECT user_id FROM shops WHERE id = $1", [order.shop_id]);
+    if (shopOwner.length) {
+      await notify(shopOwner[0].user_id, "ลูกค้าขอยกเลิกออเดอร์", note ?? `ออเดอร์ ${order.id.slice(0, 8)} ขอยกเลิก — รอการยินยอมจากร้าน`, { orderId: order.id });
+    }
+    const customerRows = await query<{ display_name: string | null; email: string }>("SELECT display_name, email FROM users WHERE id = $1", [userId]);
+    await notifyShopCancelRequest(order.shop_id, {
+      domainLabel: "ขอยกเลิกออเดอร์ตัดเย็บ",
+      orderId: order.id,
+      customerName: customerRows[0]?.display_name || customerRows[0]?.email || "ลูกค้า",
+      note: note ?? null,
+      approvePostbackData: `action=cancel_approve&domain=orders&id=${order.id}`,
+      rejectPostbackData: `action=cancel_reject&domain=orders&id=${order.id}`,
+      detailUrl: `${MERCHANT_APP_URL}/merchant/orders`,
+    });
+
+    res.json({ id: order.id, cancelRequestedAt: new Date().toISOString() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ส่งคำขอยกเลิกไม่สำเร็จ" });
+  }
+});
+
+/**
+ * ร้านตอบรับ/ปฏิเสธคำขอยกเลิก — ใช้จาก LINE postback (ไม่ต้องคืนสต็อก เพราะ orders ไม่ตัดสต็อกสินค้า)
+ */
+export async function respondCancelRequest(
+  orderId: string,
+  approve: boolean,
+  actingUserId: string
+): Promise<{ ok: boolean; error?: string; customerId?: string; alreadyResolved?: boolean }> {
+  const current = await query<{ id: string; status: string; shop_id: string; customer_id: string; cancel_requested_at: string | null }>(
+    "SELECT id, status, shop_id, customer_id, cancel_requested_at FROM orders WHERE id = $1",
+    [orderId]
+  );
+  if (!current.length) return { ok: false, error: "ไม่พบออเดอร์" };
+  const order = current[0];
+
+  if (!order.cancel_requested_at) {
+    return { ok: false, alreadyResolved: true, error: "คำขอนี้ถูกดำเนินการไปแล้ว", customerId: order.customer_id };
+  }
+
+  if (approve) {
+    await query(
+      "UPDATE orders SET status = 'cancelled', cancel_requested_at = NULL, cancel_request_note = NULL, updated_at = NOW() WHERE id = $1",
+      [orderId]
+    );
+    await query(
+      `INSERT INTO order_status_logs (order_id, old_status, new_status, changed_by, note)
+       VALUES ($1, $2, 'cancelled', $3, 'ร้านยินยอมยกเลิกออเดอร์')`,
+      [orderId, order.status, actingUserId]
+    );
+  } else {
+    await query(
+      "UPDATE orders SET cancel_requested_at = NULL, cancel_request_note = NULL, updated_at = NOW() WHERE id = $1",
+      [orderId]
+    );
+  }
+
+  await notify(
+    order.customer_id,
+    approve ? "ร้านยินยอมยกเลิกออเดอร์แล้ว" : "ร้านไม่ยินยอมยกเลิกออเดอร์",
+    approve ? "ออเดอร์ของคุณถูกยกเลิกแล้ว" : "คำขอยกเลิกถูกปฏิเสธ ออเดอร์จะดำเนินการต่อตามปกติ",
+    { orderId, status: approve ? "cancelled" : order.status }
+  );
+
+  return { ok: true, customerId: order.customer_id };
+}
+
+/**
  * POST /api/orders/:id/confirm
  * ร้านยืนยันรับออเดอร์ (US-212: pending_confirm → confirmed)
  */
@@ -381,11 +489,13 @@ async function changeStatus(req: Request, res: Response) {
         res.status(403).json({ error: "Forbidden" });
         return;
       }
+      // pending_confirm ของ orders (งานตัดเย็บ) หมายถึง "จ่ายเงินแล้ว" เสมอ (draft → pending_confirm เกิดตอน payment confirm เท่านั้น)
+      // ลูกค้ายกเลิกเองทันทีได้เฉพาะตอนยังไม่จ่าย — ออเดอร์ที่จ่ายแล้วต้องขอผ่าน /request-cancel ให้ร้านยินยอม
       const customerAllowed =
-        (status === "cancelled" && ["draft", "pending_confirm"].includes(order.status)) ||
+        (status === "cancelled" && order.status === "draft") ||
         (status === "pending_confirm" && order.status === "draft");
       if (!customerAllowed) {
-        res.status(403).json({ error: "ลูกค้ายกเลิกได้เฉพาะออเดอร์ที่ร้านยังไม่ยืนยัน" });
+        res.status(403).json({ error: "ลูกค้ายกเลิกได้เฉพาะออเดอร์ที่ยังไม่ชำระเงิน — ออเดอร์ที่จ่ายแล้วต้องขอให้ร้านยินยอมยกเลิก" });
         return;
       }
     }
@@ -449,11 +559,20 @@ async function changeStatus(req: Request, res: Response) {
 }
 
 function mapOrder(row: Record<string, unknown>) {
+  const status = row.status as string;
+  // pending_confirm ขึ้นไปหมายถึงจ่ายเงินแล้วเสมอ (draft → pending_confirm เกิดตอน payment confirm เท่านั้น)
+  const isPaid = status !== "draft";
+  const cancelRequestedAt = row.cancel_requested_at ?? null;
   return {
     id: row.id,
     customerId: row.customer_id,
     shopId: row.shop_id,
     status: row.status,
+    isPaid,
+    cancellable: status === "draft",
+    cancelRequestable: isPaid && !cancelRequestedAt && CANCEL_REQUESTABLE_STATUSES.has(status),
+    cancelRequestedAt,
+    cancelRequestNote: row.cancel_request_note ?? null,
     fabricSource: row.fabric_source,
     fabricMetersUsed: row.fabric_meters_used ? Number(row.fabric_meters_used) : null,
     estimatedPrice: row.estimated_price ? Number(row.estimated_price) : null,

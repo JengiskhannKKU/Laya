@@ -73,14 +73,28 @@ export function OrderTimeline({ logs }: { logs: StatusLog[] }) {
   );
 }
 
-export function CancelOrderButton({ onCancel }: { onCancel: () => void }) {
+export function CancelOrderButton({ onCancel, label = "ยกเลิกคำสั่งซื้อ" }: { onCancel: () => void; label?: string }) {
   return (
     <Button
       onClick={onCancel}
       fullWidth
       sx={{ py: 1.2, borderRadius: "12px", color: "#D32F2F", fontFamily: FONT, fontWeight: 600, border: "1px solid #FFCDD2" }}
     >
-      ยกเลิกคำสั่งซื้อ
+      {label}
     </Button>
+  );
+}
+
+/** แสดงตอนลูกค้าส่งคำขอยกเลิกออเดอร์ที่จ่ายเงินแล้ว — รอร้านกดยินยอม/ไม่ยินยอมผ่าน LINE */
+export function CancelRequestedBadge() {
+  return (
+    <Box sx={{
+      py: 1.2, px: 1.5, borderRadius: "12px", bgcolor: "#FDF8F0", border: "1px solid #F0E4C8",
+      textAlign: "center",
+    }}>
+      <Typography sx={{ fontFamily: FONT, fontSize: "0.85rem", fontWeight: 600, color: "#8E601C" }}>
+        ส่งคำขอยกเลิกแล้ว — รอร้านตอบกลับ
+      </Typography>
+    </Box>
   );
 }

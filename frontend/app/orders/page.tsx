@@ -16,7 +16,7 @@ import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRound
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useAppModal } from "@/components/providers/AppModalProvider";
-import { fetchAllOrders, cancelOrder, detailHref, type OrderSummary } from "@/lib/orders";
+import { fetchAllOrders, cancelOrder, requestCancelOrder, detailHref, type OrderSummary } from "@/lib/orders";
 import MobileLayout from "@/components/layout/MobileLayout";
 
 const IN_PROGRESS_STATUSES = ["confirmed", "in_progress", "weaving", "ready", "shipped"];
@@ -83,6 +83,25 @@ function OrderListContent() {
       setToastMsg("ยกเลิกคำสั่งซื้อสำเร็จ");
     } catch (err) {
       setToastMsg(err instanceof Error ? err.message : "ยกเลิกคำสั่งซื้อไม่สำเร็จ");
+    }
+  };
+
+  const handleRequestCancel = async (order: OrderSummary) => {
+    const ok = await showConfirm({
+      title: "ขอยกเลิกคำสั่งซื้อ",
+      message: "ออเดอร์นี้ชำระเงินแล้ว การยกเลิกต้องรอร้านกดยินยอมก่อน คุณต้องการส่งคำขอยกเลิกหรือไม่?",
+      confirmLabel: "ส่งคำขอยกเลิก",
+      cancelLabel: "เก็บไว้ก่อน",
+      tone: "warning",
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await requestCancelOrder(order.type, order.id);
+      setOrders((prev) => prev.map((o) => (o.id === order.id && o.type === order.type ? { ...o, cancelRequestedAt: new Date().toISOString() } : o)));
+      setToastMsg("ส่งคำขอยกเลิกแล้ว รอร้านตอบกลับ");
+    } catch (err) {
+      setToastMsg(err instanceof Error ? err.message : "ส่งคำขอยกเลิกไม่สำเร็จ");
     }
   };
 
@@ -194,6 +213,16 @@ function OrderListContent() {
                     <Button size="small" variant="outlined" color="error" onClick={() => handleCancel(order)} sx={{ borderRadius: "8px", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", minWidth: 80 }}>
                       ยกเลิกคำสั่งซื้อ
                     </Button>
+                  )}
+                  {order.cancelRequestable && (
+                    <Button size="small" variant="outlined" color="error" onClick={() => handleRequestCancel(order)} sx={{ borderRadius: "8px", fontFamily: '"Kanit", sans-serif', fontSize: "0.8rem", minWidth: 80 }}>
+                      ขอยกเลิกออเดอร์
+                    </Button>
+                  )}
+                  {order.cancelRequestedAt && (
+                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.75rem", color: "#8E601C", fontWeight: 600 }}>
+                      รอร้านตอบกลับคำขอยกเลิก
+                    </Typography>
                   )}
                 </Box>
               </Box>

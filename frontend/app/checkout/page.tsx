@@ -101,6 +101,45 @@ const cardSx = {
   boxShadow: "0 2px 14px rgba(27,42,74,0.05)",
 };
 
+// ── Resume checkout session ──
+// เก็บ orderGroupId ไว้ตอนสร้างออเดอร์สำเร็จ — ถ้าลูกค้าออกจากแอปไปจ่ายเงินแล้วกลับมา (ปิดแท็บ/รีโหลด)
+// จะได้ resume ไปหน้าจ่ายเดิมแทนที่จะสร้างออเดอร์ใหม่ซ้ำ (ซึ่งจะตัดสต็อกซ้ำ)
+const CHECKOUT_SESSION_KEY = "laya-checkout-session-v1";
+const CHECKOUT_SESSION_MAX_AGE_MS = 15 * 60 * 1000; // ตรงกับ timeLeft เริ่มต้น 900 วินาที
+
+interface CheckoutSession {
+  orderGroupId: string;
+  createdAt: number;
+}
+
+function saveCheckoutSession(orderGroupId: string) {
+  try {
+    localStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify({ orderGroupId, createdAt: Date.now() }));
+  } catch {
+    // localStorage ไม่พร้อมใช้งาน (private mode ฯลฯ) — ไม่กระทบการสั่งซื้อปกติ แค่ resume ไม่ได้
+  }
+}
+
+function loadCheckoutSession(): CheckoutSession | null {
+  try {
+    const raw = localStorage.getItem(CHECKOUT_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.orderGroupId || !parsed?.createdAt) return null;
+    return parsed as CheckoutSession;
+  } catch {
+    return null;
+  }
+}
+
+function clearCheckoutSession() {
+  try {
+    localStorage.removeItem(CHECKOUT_SESSION_KEY);
+  } catch {
+    // เพิกเฉย
+  }
+}
+
 interface PaymentInfo {
   id: string;
   shopName: string;
@@ -172,6 +211,8 @@ export default function CheckoutPage() {
   const [paying, setPaying] = useState(false);
   const [orderGroupId, setOrderGroupId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(900);
+  // กำลังตรวจสอบ session checkout ค้างอยู่ไหม — กันหน้าเด้งกลับ /cart ก่อนเช็คเสร็จ (ตะกร้ายังไม่ว่าง แต่ payments ยังไม่ทันโหลด)
+  const [resumingSession, setResumingSession] = useState(true);
 
   // ── คูปอง (UI เตรียมไว้ — ยังไม่มี backend รองรับจริง) ──
   const [showCoupon, setShowCoupon] = useState(false);
@@ -182,8 +223,77 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!hydrated || authLoading) return; // รอ auth โหลดเสร็จก่อน — กัน redirect ทั้งที่ล็อกอินอยู่
     if (!user) { router.push("/auth/login"); return; }
+    if (resumingSession) return; // รอเช็ค session ค้างก่อน กันเด้งกลับ /cart ทั้งที่กำลังจะ resume หน้าจ่ายเงิน
     if (items.length === 0 && payments.length === 0) router.push("/cart");
-  }, [hydrated, authLoading, user, items.length, payments.length, router]);
+  }, [hydrated, authLoading, user, resumingSession, items.length, payments.length, router]);
+
+  /**
+   * Resume checkout ค้าง — ลูกค้าออกจากแอปไปจ่ายเงิน (สแกน QR ในแอปธนาคาร) แล้วกลับมา ไม่ควรต้องกดสั่งซื้อใหม่
+   * (ซึ่งจะสร้างออเดอร์ซ้ำ + ตัดสต็อกซ้ำ) — เช็ค session ที่ค้างไว้ครั้งเดียวตอนโหลดหน้า
+   */
+  useEffect(() => {
+    if (!hydrated || authLoading) return; // ยังโหลดไม่เสร็จ — รอ (resumingSession ยังเป็น true อยู่)
+    if (!user || !session?.access_token) { setResumingSession(false); return; } // ไม่ได้ล็อกอิน — ไม่มีอะไรให้ resume
+
+    const pending = loadCheckoutSession();
+    if (!pending) { setResumingSession(false); return; }
+
+    (async () => {
+      try {
+        const age = Date.now() - pending.createdAt;
+        const groupRes = await authFetch(`${API_BASE}/api/product-orders/group/${pending.orderGroupId}`);
+        if (!groupRes.ok) { clearCheckoutSession(); return; }
+        const group = await groupRes.json();
+        const childOrders: { id: string; status: string }[] = group.orders ?? [];
+
+        if (age > CHECKOUT_SESSION_MAX_AGE_MS) {
+          // หมดเวลา — ยกเลิกออเดอร์ย่อยที่ยังไม่จ่าย (draft) คืนสต็อกให้ ที่จ่ายไปแล้วปล่อยไว้ตามสถานะจริง
+          await Promise.all(
+            childOrders
+              .filter((o) => o.status === "draft")
+              .map((o) =>
+                authFetch(`${API_BASE}/api/product-orders/${o.id}/status`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ status: "cancelled", note: "หมดเวลาชำระเงิน — ยกเลิกอัตโนมัติ" }),
+                }).catch(() => {})
+              )
+          );
+          clearCheckoutSession();
+          return;
+        }
+
+        const stillDraft = childOrders.some((o) => o.status === "draft");
+        if (!stillDraft) {
+          // จ่ายเงินสำเร็จไปแล้วตอนที่ลูกค้าไม่อยู่หน้านี้ — ไปหน้าสำเร็จเลย
+          clearCheckoutSession();
+          clearCart();
+          router.push(`/orders/product/${pending.orderGroupId}/success`);
+          return;
+        }
+
+        // ยังไม่จ่าย และยังไม่หมดเวลา — resume หน้าสแกนจ่ายด้วย QR เดิม (payments.ts รียูส payment row เดิมให้)
+        const payRes = await authFetch(`${API_BASE}/api/payments`, {
+          method: "POST",
+          body: JSON.stringify({ productOrderGroupId: pending.orderGroupId }),
+        });
+        const pay = await payRes.json();
+        if (!payRes.ok || !(pay.payments ?? []).length) { clearCheckoutSession(); return; }
+
+        const list: PaymentInfo[] = (pay.payments as { id: string; shopName: string; amount: number; qrPayload: string; promptpayId: string }[]).map((p) => ({
+          id: p.id, shopName: p.shopName, amount: p.amount, qrPayload: p.qrPayload, promptpayId: p.promptpayId, confirmed: false,
+        }));
+        setOrderGroupId(pending.orderGroupId);
+        setPayments(list);
+        setTimeLeft(Math.max(0, 900 - Math.floor(age / 1000)));
+        setStep(2);
+      } catch {
+        clearCheckoutSession();
+      } finally {
+        setResumingSession(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, authLoading, user, session?.access_token]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -332,6 +442,7 @@ export default function CheckoutPage() {
       const order = await orderRes.json();
       if (!orderRes.ok) throw new Error(order.error ?? t("checkout.errors.orderFailed"));
       setOrderGroupId(order.id);
+      saveCheckoutSession(order.id);
 
       const payRes = await authFetch(`${API_BASE}/api/payments`, {
         method: "POST",
@@ -374,6 +485,7 @@ export default function CheckoutPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? t("checkout.errors.confirmShopFailed").replace("{shop}", p.shopName));
       }
+      clearCheckoutSession();
       clearCart();
       router.push(`/orders/product/${orderGroupId}/success`);
     } catch (err) {
@@ -413,7 +525,7 @@ export default function CheckoutPage() {
   // ต้องแนบสลิปครบทุกร้านที่ยังไม่ยืนยันก่อนกดยืนยันได้
   const allSlipsAttached = payments.filter((p) => !p.confirmed).every((p) => !!p.slipUrl);
 
-  if (!hydrated || authLoading) {
+  if (!hydrated || authLoading || resumingSession) {
     return (
       <Box sx={{ minHeight: "100vh", bgcolor: IVORY, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <CircularProgress size={30} sx={{ color: GOLD }} />

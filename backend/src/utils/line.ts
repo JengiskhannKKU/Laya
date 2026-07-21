@@ -76,6 +76,8 @@ export interface OrderFlexInput {
   itemsSummary: string;
   confirmPostbackData: string;
   detailUrl: string;
+  /** ระบุชัดเจนว่าลูกค้าจ่ายเงินแล้วหรือยัง ณ ตอนที่ส่งการ์ดนี้ (เช่น "ชำระเงินแล้ว ✅" / "ยังไม่ชำระเงิน") */
+  paymentStatusLabel: string;
 }
 
 /** LINE Flex ปุ่ม action type "uri" รับเฉพาะ https/tel/line — http (เช่น localhost) ทำให้ทั้งการ์ดโดน 400 */
@@ -128,6 +130,87 @@ export function buildOrderFlex(input: OrderFlexInput) {
           { type: "text", text: `ลูกค้า: ${input.customerName}`, size: "sm", wrap: true, margin: "md" },
           { type: "text", text: input.itemsSummary, size: "sm", wrap: true, color: "#6B7280" },
           { type: "text", text: `ยอดรวม ฿${input.total.toLocaleString()}`, size: "md", weight: "bold", color: "#1B2A4A", margin: "md" },
+          {
+            type: "text",
+            text: input.paymentStatusLabel,
+            size: "sm",
+            weight: "bold",
+            color: input.paymentStatusLabel.includes("ยังไม่") ? "#B23B3B" : "#1B7A3D",
+            margin: "sm",
+          },
+        ],
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        spacing: "sm",
+        paddingAll: "12px",
+        contents: footerButtons,
+      },
+    },
+  };
+}
+
+export interface CancelRequestFlexInput {
+  shopName: string;
+  domainLabel: string;
+  orderId: string;
+  customerName: string;
+  note: string | null;
+  approvePostbackData: string;
+  rejectPostbackData: string;
+  detailUrl: string;
+}
+
+/** การ์ดขอยกเลิกออเดอร์ที่จ่ายเงินแล้ว — ร้านต้องกด "ยินยอมยกเลิก" หรือ "ไม่ยินยอม" ก่อนออเดอร์จะถูกยกเลิกจริง */
+export function buildCancelRequestFlex(input: CancelRequestFlexInput) {
+  const shortId = input.orderId.slice(0, 8);
+  const footerButtons: object[] = [
+    {
+      type: "button",
+      style: "primary",
+      color: "#B23B3B",
+      action: { type: "postback", label: "ยินยอมยกเลิก", data: input.approvePostbackData },
+    },
+    {
+      type: "button",
+      style: "secondary",
+      action: { type: "postback", label: "ไม่ยินยอม", data: input.rejectPostbackData },
+    },
+  ];
+  if (isHttps(input.detailUrl)) {
+    footerButtons.push({
+      type: "button",
+      style: "link",
+      action: { type: "uri", label: "ดูรายละเอียด", uri: input.detailUrl },
+    });
+  }
+  return {
+    type: "flex",
+    altText: `ลูกค้าขอยกเลิกออเดอร์ #${shortId}`,
+    contents: {
+      type: "bubble",
+      header: {
+        type: "box",
+        layout: "vertical",
+        backgroundColor: "#B23B3B",
+        paddingAll: "16px",
+        contents: [
+          { type: "text", text: input.domainLabel, color: "#FDE7E7", size: "sm", weight: "bold" },
+          { type: "text", text: `ขอยกเลิกออเดอร์ #${shortId}`, color: "#FFFFFF", size: "lg", weight: "bold", margin: "sm" },
+        ],
+      },
+      body: {
+        type: "box",
+        layout: "vertical",
+        spacing: "sm",
+        paddingAll: "16px",
+        contents: [
+          { type: "text", text: input.shopName, size: "sm", color: "#6B7280" },
+          { type: "separator", margin: "md" },
+          { type: "text", text: `ลูกค้า: ${input.customerName}`, size: "sm", wrap: true, margin: "md" },
+          { type: "text", text: `เหตุผล: ${input.note ?? "-"}`, size: "sm", wrap: true, color: "#6B7280" },
+          { type: "text", text: "ออเดอร์นี้ชำระเงินแล้ว — ต้องได้รับความยินยอมจากร้านก่อนจึงจะยกเลิกได้", size: "xs", wrap: true, color: "#9CA3AF", margin: "md" },
         ],
       },
       footer: {
@@ -293,6 +376,24 @@ export async function notifyShopNewOrder(shopId: string, input: Omit<OrderFlexIn
     await logMessage(shopId, "new_order", result.ok ? "sent" : "failed", result.error);
   } catch (err) {
     console.error("[line] notifyShopNewOrder failed:", err);
+  }
+}
+
+/** ส่งการ์ดขอยกเลิกออเดอร์ (มีปุ่มยินยอม/ไม่ยินยอม) หาร้าน — ใช้เมื่อลูกค้าขอยกเลิกออเดอร์ที่จ่ายเงินแล้ว */
+export async function notifyShopCancelRequest(shopId: string, input: Omit<CancelRequestFlexInput, "shopName">) {
+  try {
+    const rows = await query<{ line_user_id: string | null; name: string }>(
+      "SELECT line_user_id, name FROM shops WHERE id = $1",
+      [shopId]
+    );
+    const shop = rows[0];
+    if (!shop?.line_user_id) { await logMessage(shopId, "cancel_request", "skipped", "ร้านยังไม่ได้เชื่อมบัญชี LINE"); return; }
+    if (!lineConfigured) { await logMessage(shopId, "cancel_request", "skipped", "LINE not configured"); return; }
+
+    const result = await pushMessage(shop.line_user_id, [buildCancelRequestFlex({ ...input, shopName: shop.name })]);
+    await logMessage(shopId, "cancel_request", result.ok ? "sent" : "failed", result.error);
+  } catch (err) {
+    console.error("[line] notifyShopCancelRequest failed:", err);
   }
 }
 

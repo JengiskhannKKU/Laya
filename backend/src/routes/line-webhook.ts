@@ -11,9 +11,9 @@
 import { Router, Request, Response } from "express";
 import { query } from "../db";
 import { verifySignature, replyMessage, lineConfigured, welcomeMessages, linkHelpMessages } from "../utils/line";
-import { confirmOrder as confirmTailorOrder } from "./orders";
-import { confirmOrder as confirmProductOrder } from "./product-orders";
-import { confirmOrder as confirmWeavingOrder } from "./weaving-orders";
+import { confirmOrder as confirmTailorOrder, respondCancelRequest as respondTailorCancel } from "./orders";
+import { confirmOrder as confirmProductOrder, respondCancelRequest as respondProductCancel } from "./product-orders";
+import { confirmOrder as confirmWeavingOrder, respondCancelRequest as respondWeavingCancel } from "./weaving-orders";
 
 declare global {
   namespace Express {
@@ -43,6 +43,12 @@ const CONFIRMERS: Record<string, typeof confirmTailorOrder> = {
   orders: confirmTailorOrder,
   product_orders: confirmProductOrder,
   weaving_orders: confirmWeavingOrder,
+};
+
+const CANCEL_RESPONDERS: Record<string, typeof respondTailorCancel> = {
+  orders: respondTailorCancel,
+  product_orders: respondProductCancel,
+  weaving_orders: respondWeavingCancel,
 };
 
 const ORDER_TABLES: Record<string, string> = {
@@ -133,13 +139,14 @@ async function handleLinkingMessage(lineUserId: string, text: string, replyToken
   }
 }
 
-/** ร้านกดปุ่ม "ยืนยันออเดอร์" ใน Flex Message */
+/** ร้านกดปุ่ม "ยืนยันออเดอร์" / "ยินยอมยกเลิก" / "ไม่ยินยอม" ใน Flex Message */
 async function handlePostback(lineUserId: string, data: string, replyToken?: string) {
   const params = new URLSearchParams(data);
   const action = params.get("action");
   const domain = params.get("domain");
   const id = params.get("id");
-  if (action !== "confirm" || !domain || !id || !CONFIRMERS[domain]) return;
+  const isCancelAction = action === "cancel_approve" || action === "cancel_reject";
+  if ((action !== "confirm" && !isCancelAction) || !domain || !id || !CONFIRMERS[domain]) return;
 
   const orderRows = await query<{ shop_id: string }>(
     `SELECT shop_id FROM ${ORDER_TABLES[domain]} WHERE id = $1`,
@@ -150,13 +157,27 @@ async function handlePostback(lineUserId: string, data: string, replyToken?: str
     return;
   }
 
-  // ต้องเป็นร้านที่ผูก LINE userId นี้ไว้ และเป็นเจ้าของออเดอร์จริง — กันคนอื่นยืนยันออเดอร์แทนร้าน
+  // ต้องเป็นร้านที่ผูก LINE userId นี้ไว้ และเป็นเจ้าของออเดอร์จริง — กันคนอื่นยืนยัน/ตอบรับคำขอแทนร้าน
   const shopRows = await query<{ id: string; user_id: string }>(
     "SELECT id, user_id FROM shops WHERE line_user_id = $1",
     [lineUserId]
   );
   if (!shopRows.length || shopRows[0].id !== orderRows[0].shop_id) {
-    if (replyToken) await replyMessage(replyToken, [{ type: "text", text: "คุณไม่มีสิทธิ์ยืนยันออเดอร์นี้" }]);
+    if (replyToken) await replyMessage(replyToken, [{ type: "text", text: "คุณไม่มีสิทธิ์ดำเนินการกับออเดอร์นี้" }]);
+    return;
+  }
+
+  if (isCancelAction) {
+    const approve = action === "cancel_approve";
+    const result = await CANCEL_RESPONDERS[domain](id, approve, shopRows[0].user_id);
+    if (replyToken) {
+      const text = result.ok
+        ? approve ? "ยินยอมยกเลิกออเดอร์แล้ว ✅" : "บันทึกว่าไม่ยินยอมยกเลิกแล้ว ออเดอร์จะดำเนินการต่อ"
+        : result.alreadyResolved
+          ? "คำขอยกเลิกนี้ถูกดำเนินการไปแล้ว"
+          : `ดำเนินการไม่สำเร็จ: ${result.error}`;
+      await replyMessage(replyToken, [{ type: "text", text }]);
+    }
     return;
   }
 
