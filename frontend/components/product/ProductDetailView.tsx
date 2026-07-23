@@ -13,9 +13,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
+import Drawer from "@mui/material/Drawer";
+import { useTheme, useMediaQuery } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
@@ -34,6 +33,8 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCartStore } from "@/lib/cart-store";
 import { useAppModal } from "@/components/providers/AppModalProvider";
+import ProductCard from "@/components/home/ProductCard";
+import SectionHeader from "@/components/home/SectionHeader";
 import { useRouter } from "next/navigation";
 import AddShoppingCartRoundedIcon from "@mui/icons-material/AddShoppingCartRounded";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
@@ -82,7 +83,15 @@ export default function ProductDetailView({ product }: { product: Product }) {
     requiresVariant ? (variants.find((v) => v.stock > 0) ?? null) : null
   );
   const [variantError, setVariantError] = useState(false);
-  const [qtyDialogOpen, setQtyDialogOpen] = useState(false);
+  const [cartSheetOpen, setCartSheetOpen] = useState(false);
+  const [sheetIntent, setSheetIntent] = useState<"cart" | "buy">("cart");
+
+  // มือถือ → เปิด bottom sheet ให้เลือกตัวเลือก/จำนวนก่อนยืนยัน, เดสก์ท็อป → เลือกอินไลน์บนหน้าเลย ไม่ต้องมี overlay
+  const theme = useTheme();
+  const isMobileMQ = useMediaQuery(theme.breakpoints.down("md"));
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const isMobile = !mounted || isMobileMQ;
 
   /** ราคา/สต็อกที่ใช้จริง — จาก SKU ที่เลือก (ถ้ามี) ไม่งั้นจากสินค้าหลัก */
   const effectivePrice = requiresVariant ? (selectedVariant?.price ?? product.price) : product.price;
@@ -131,32 +140,54 @@ export default function ProductDetailView({ product }: { product: Product }) {
     if (ok) router.push("/design-clothes");
   };
 
-  /** กดเพิ่มลงตะกร้า → เปิด dialog ให้ระบุจำนวนตอนนั้น (ไม่โชว์ตัวเลือกจำนวน/สต็อกค้างไว้บนหน้า) */
+  /**
+   * กดเพิ่มลงตะกร้า:
+   * - มือถือ: เปิด bottom sheet ให้เลือกสี/ไซซ์/จำนวนแล้วกดยืนยันในนั้น (ตัวเลือกบนหน้าไม่โชว์บนมือถือ)
+   * - เดสก์ท็อป: สี/ไซซ์/จำนวนเลือกอินไลน์บนหน้าอยู่แล้ว กดแล้วเพิ่มลงตะกร้าได้เลย ไม่ต้องมี overlay
+   */
   const handleAddToCart = () => {
     if (!isReadyMade) { goToCustomFlow(); return; }
+    if (isMobile) {
+      setVariantError(false);
+      setQuantity(1);
+      setSheetIntent("cart");
+      setCartSheetOpen(true);
+      return;
+    }
     if (requiresVariant && !selectedVariant) { setVariantError(true); return; }
-    setQuantity(1);
-    setQtyDialogOpen(true);
+    if (!addSnapshotToCart()) return;
+    showToast("เพิ่มลงตะกร้าแล้ว", "cart");
   };
 
-  /** ยืนยันจำนวนใน dialog แล้วเพิ่มลงตะกร้าจริง (ไม่ต้องล็อกอิน — ตะกร้าเก็บในเครื่อง) */
-  const confirmAddToCart = () => {
+  /** ยืนยันตัวเลือกใน bottom sheet (มือถือ) แล้วเพิ่มลงตะกร้าจริง — ปลายทางต่างกันตาม sheetIntent */
+  const confirmCartSheet = () => {
+    if (requiresVariant && !selectedVariant) { setVariantError(true); return; }
     if (!addSnapshotToCart()) return;
-    setQtyDialogOpen(false);
+    setCartSheetOpen(false);
+    if (sheetIntent === "buy") {
+      router.push("/cart");
+      return;
+    }
     setQuantity(1);
     showToast("เพิ่มลงตะกร้าแล้ว", "cart");
   };
 
-  /** ปิด dialog โดยไม่ยืนยัน — คืนจำนวนกลับเป็น 1 กันปุ่ม "สั่งซื้อเลย" ไปหยิบค่าที่แก้ค้างไว้ */
-  const closeQtyDialog = () => {
-    setQtyDialogOpen(false);
+  /** ปิด sheet โดยไม่ยืนยัน — คืนจำนวนกลับเป็น 1 กันปุ่มถัดไปไปหยิบค่าที่แก้ค้างไว้ */
+  const closeCartSheet = () => {
+    setCartSheetOpen(false);
     setQuantity(1);
   };
 
-  /** สั่งซื้อเลย → เพิ่มลงตะกร้าแล้วไปหน้าตะกร้า (ต้องล็อกอิน) */
+  /** สั่งซื้อเลย → เพิ่มลงตะกร้าแล้วไปหน้าตะกร้า (ต้องล็อกอิน) — มือถือเปิด sheet ให้เลือกตัวเลือกก่อน (ตัวเลือกบนหน้าไม่โชว์บนมือถือ) */
   const handleBuyNow = () => {
     if (!isReadyMade) { goToCustomFlow(); return; }
     if (!user) { openAuthModal(); return; }
+    if (isMobile) {
+      setVariantError(false);
+      setSheetIntent("buy");
+      setCartSheetOpen(true);
+      return;
+    }
     if (!addSnapshotToCart()) return;
     router.push("/cart");
   };
@@ -184,6 +215,84 @@ export default function ProductDetailView({ product }: { product: Product }) {
   };
 
   const totalPrice = effectivePrice * quantity;
+
+  /** ชิปเลือกสี/ไซซ์ (multi-SKU) — ใช้ทั้งบนหน้า (เดสก์ท็อป) และใน bottom sheet (มือถือ) */
+  const renderVariantChips = () => (
+    <Box>
+      <Typography sx={{ fontSize: "0.85rem", color: variantError ? "#D32F2F" : "#6B7280", mb: 1.5, fontWeight: variantError ? 600 : 400 }}>
+        เลือกตัวเลือกสินค้า {variantError ? "— กรุณาเลือกก่อนสั่งซื้อ" : ""}
+      </Typography>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+        {variants.map((v) => {
+          const active = selectedVariant?.id === v.id;
+          const out = v.stock <= 0;
+          return (
+            <Button
+              key={v.id}
+              variant="outlined"
+              disabled={out}
+              onClick={() => {
+                setSelectedVariant(v);
+                setVariantError(false);
+                setQuantity((q) => Math.max(1, Math.min(q, v.stock)));
+              }}
+              sx={{
+                borderRadius: "20px",
+                textTransform: "none",
+                fontFamily: '"Kanit", sans-serif',
+                borderColor: active ? "#1B2A4A" : "#E5DFD6",
+                color: out ? "#C4BFB4" : active ? "#FFFFFF" : "#1B2A4A",
+                bgcolor: active ? "#1B2A4A" : "transparent",
+                textDecoration: out ? "line-through" : "none",
+                "&:hover": { bgcolor: active ? "#1B2A4A" : "rgba(0,0,0,0.04)" },
+              }}
+            >
+              {variantLabel(v)}
+            </Button>
+          );
+        })}
+      </Box>
+      {selectedVariant && (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 1.5 }}>
+          <Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}>
+            {variantLabel(selectedVariant)} · ฿{selectedVariant.price.toLocaleString()}
+          </Typography>
+          {selectedVariant.stock <= 0 && (
+            <Typography sx={{ fontSize: "0.78rem", color: "#B4552D" }}>สินค้าหมด</Typography>
+          )}
+        </Box>
+      )}
+    </Box>
+  );
+
+  /** ตัวเลือกจำนวน (+/-) สำหรับสินค้าพร้อมขาย — ใช้ทั้งบนหน้า (เดสก์ท็อป) และใน bottom sheet (มือถือ) */
+  const renderQuantityStepper = () => (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+      <Typography sx={{ fontSize: "0.85rem", color: "#6B7280" }}>จำนวน</Typography>
+      <Box sx={{ display: "flex", alignItems: "center", border: "1px solid #E5DFD6", borderRadius: "30px", bgcolor: "#FFFFFF" }}>
+        <IconButton onClick={() => setQuantity((q) => Math.max(1, q - 1))} size="small" sx={{ p: 1 }}>
+          <RemoveRoundedIcon fontSize="small" />
+        </IconButton>
+        <Typography sx={{ px: 2, fontWeight: 600, color: "#1B2A4A", minWidth: 24, textAlign: "center" }}>
+          {quantity}
+        </Typography>
+        <IconButton
+          onClick={() => setQuantity((q) => Math.min(Math.max(1, effectiveStock || 99), q + 1))}
+          disabled={effectiveStock > 0 && quantity >= effectiveStock}
+          size="small"
+          sx={{ p: 1 }}
+        >
+          <AddRoundedIcon fontSize="small" />
+        </IconButton>
+      </Box>
+      {effectiveStock > 0 && (
+        <Typography sx={{ fontSize: "0.75rem", color: "#9CA3AF" }}>คงเหลือ {effectiveStock} ชิ้น</Typography>
+      )}
+      {effectiveStock <= 0 && (
+        <Typography sx={{ fontSize: "0.78rem", color: "#B4552D" }}>สินค้าหมดชั่วคราว</Typography>
+      )}
+    </Box>
+  );
 
   return (
     <Box
@@ -369,11 +478,19 @@ export default function ProductDetailView({ product }: { product: Product }) {
         {/* Title Block */}
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <Box>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.3rem", color: "#1B2A4A" }}>
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif',
+                fontWeight: 700,
+                fontSize: { xs: "1.6rem", md: "1.9rem" },
+                color: "#13284B",
+                lineHeight: 1.2,
+              }}
+            >
               {displayName}
             </Typography>
-            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#8E601C", mt: 0.5, display: "flex", alignItems: "center" }}>
-              • {product.community} - {product.province}
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 300, fontSize: "0.8rem", letterSpacing: "0.02em", color: "#A89F94", mt: 0.6, display: "flex", alignItems: "center" }}>
+              {product.community} · {product.province}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
               <Rating value={product.rating} precision={0.1} readOnly size="small" sx={{ "& .MuiRating-iconFilled": { color: "#C5A55A" } }} />
@@ -429,52 +546,11 @@ export default function ProductDetailView({ product }: { product: Product }) {
 
         <Divider sx={{ my: 3, borderColor: "rgba(0,0,0,0.06)" }} />
 
-        {/* ── ตัวเลือกสินค้า (Multi-SKU): เลือกสี/ไซซ์ก่อนซื้อ ── */}
-        {isReadyMade && requiresVariant && (
-          <Box sx={{ mb: 3 }}>
-            <Typography sx={{ fontSize: "0.85rem", color: variantError ? "#D32F2F" : "#6B7280", mb: 1.5, fontWeight: variantError ? 600 : 400 }}>
-              เลือกตัวเลือกสินค้า {variantError ? "— กรุณาเลือกก่อนสั่งซื้อ" : ""}
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {variants.map((v) => {
-                const active = selectedVariant?.id === v.id;
-                const out = v.stock <= 0;
-                return (
-                  <Button
-                    key={v.id}
-                    variant="outlined"
-                    disabled={out}
-                    onClick={() => {
-                      setSelectedVariant(v);
-                      setVariantError(false);
-                      setQuantity((q) => Math.max(1, Math.min(q, v.stock)));
-                    }}
-                    sx={{
-                      borderRadius: "20px",
-                      textTransform: "none",
-                      fontFamily: '"Kanit", sans-serif',
-                      borderColor: active ? "#1B2A4A" : "#E5DFD6",
-                      color: out ? "#C4BFB4" : active ? "#FFFFFF" : "#1B2A4A",
-                      bgcolor: active ? "#1B2A4A" : "transparent",
-                      textDecoration: out ? "line-through" : "none",
-                      "&:hover": { bgcolor: active ? "#1B2A4A" : "rgba(0,0,0,0.04)" },
-                    }}
-                  >
-                    {variantLabel(v)}
-                  </Button>
-                );
-              })}
-            </Box>
-            {selectedVariant && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 1.5 }}>
-                <Typography sx={{ fontSize: "0.8rem", color: "#1B2A4A", fontWeight: 600 }}>
-                  {variantLabel(selectedVariant)} · ฿{selectedVariant.price.toLocaleString()}
-                </Typography>
-                {selectedVariant.stock <= 0 && (
-                  <Typography sx={{ fontSize: "0.78rem", color: "#B4552D" }}>สินค้าหมด</Typography>
-                )}
-              </Box>
-            )}
+        {/* ── ตัวเลือกสินค้า (Multi-SKU) + จำนวน: เลือกอินไลน์บนหน้า — เฉพาะเดสก์ท็อป (มือถือเลือกใน bottom sheet ตอนกดเพิ่มลงตะกร้า/สั่งซื้อ) ── */}
+        {isReadyMade && (
+          <Box sx={{ display: { xs: "none", md: "block" }, mb: 3 }}>
+            {requiresVariant && renderVariantChips()}
+            <Box sx={{ mt: requiresVariant ? 2.5 : 0 }}>{renderQuantityStepper()}</Box>
           </Box>
         )}
 
@@ -638,52 +714,75 @@ export default function ProductDetailView({ product }: { product: Product }) {
         )}
 
         {/* Weaver Box */}
-        <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 2, bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6" }}>
-          <Box sx={{ width: 44, height: 44, borderRadius: "50%", bgcolor: "#4B7355", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontWeight: 700 }}>
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.5 }}
+          sx={{ mt: 3, display: "flex", alignItems: "center", gap: 2, bgcolor: "#FFFFFF", p: 2, borderRadius: "12px", border: "1px solid #E5DFD6", boxShadow: "0 4px 18px rgba(27,42,74,0.06)" }}
+        >
+          <Box sx={{ width: 44, height: 44, borderRadius: "50%", bgcolor: "#4B7355", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontWeight: 700, flexShrink: 0 }}>
             {product.weaverName?.[0] ?? "?"}
           </Box>
-          <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#1B2A4A" }}>{product.weaverName}</Typography>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.62rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#C5A55A" }}>
+              ช่างทอ
+            </Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: "0.92rem", color: "#1B2A4A", mt: 0.2 }}>{product.weaverName}</Typography>
             <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{product.province}</Typography>
           </Box>
-          <ChevronRightRoundedIcon sx={{ color: "#CBA258" }} />
+          <ChevronRightRoundedIcon sx={{ color: "#CBA258", flexShrink: 0 }} />
         </Box>
 
         {/* Story Section */}
-        <Box sx={{ mt: 4 }}>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A", mb: 1 }}>
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.5 }}
+          sx={{ mt: 4 }}
+        >
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, fontSize: "0.66rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C5A55A", mb: 0.6 }}>
+            เรื่องราว
+          </Typography>
+          <Typography sx={{ fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif', fontWeight: 700, fontSize: "1.35rem", color: "#13284B", mb: 1.25 }}>
             เรื่องราวของ{product.typeLabel || "ผ้า"}{product.typeLabel === "กระเป๋า" ? "ใบ" : "ผืน"}นี้
           </Typography>
-          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.85rem", color: "#6B7280", lineHeight: 1.7 }}>
+          <Typography
+            sx={{
+              fontFamily: 'var(--font-cormorant), "Cormorant Garamond", "Kanit", serif',
+              fontStyle: "italic",
+              fontSize: "1.05rem",
+              color: "#6B7280",
+              lineHeight: 1.75,
+            }}
+          >
             {product.story || "ยังไม่มีเรื่องราวสำหรับสินค้านี้"}
           </Typography>
         </Box>
 
-        {/* Recommended Add-ons */}
+        {/* Recommended Add-ons — การ์ดเดียวกับหน้าแรก (ProductCard) ไม่ทำ list แยกเอง */}
         {relatedProducts.length > 0 && (
-          <Box sx={{ mt: 5, mb: 4 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#1B2A4A", mb: 2 }}>
-              สินค้าใกล้เคียง
-            </Typography>
-
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box
+            component={motion.div}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5 }}
+            sx={{ mt: 5, mb: 4 }}
+          >
+            <SectionHeader
+              eyebrow="แนะนำสำหรับคุณ"
+              title="สินค้าใกล้เคียง"
+              variant="editorial"
+              href={product.category ? `/search?category=${product.category}` : undefined}
+              actionLabel="ดูทั้งหมด"
+            />
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: { xs: 1.5, md: 2 } }}>
               {relatedProducts.map((item) => (
-                <Link key={item.id} href={`/product/${item.id}`} style={{ textDecoration: "none" }}>
-                  <Box sx={{ bgcolor: "#FFFFFF", border: "1px solid #E5DFD6", borderRadius: "12px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Box sx={{ width: 64, height: 64, borderRadius: "8px", overflow: "hidden", position: "relative", border: "1px solid #F0F0F0" }}>
-                      <Image src={item.images[0]} alt={productDisplayName(item, locale)} fill style={{ objectFit: "cover" }} />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: "0.85rem", color: "#1B2A4A" }}>{productDisplayName(item, locale)}</Typography>
-                      <Typography sx={{ fontSize: "0.75rem", color: "#6B7280" }}>{item.fabricType}</Typography>
-                    </Box>
-                    <Box sx={{ textAlign: "right" }}>
-                      <Typography sx={{ fontWeight: 700, fontSize: "0.85rem", color: "#1B2A4A" }}>
-                        {item.price.toLocaleString()} ฿ THB
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Link>
+                <ProductCard key={item.id} product={item} variant="grid" />
               ))}
             </Box>
           </Box>
@@ -691,19 +790,19 @@ export default function ProductDetailView({ product }: { product: Product }) {
 
         {/* Reviews Section */}
         {product.reviews && product.reviews.length > 0 && (
-          <Box sx={{ mt: 5, mb: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-              <Typography sx={{ fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A" }}>
-                รีวิวจากผู้สั่งซื้อ ({product.reviewCount})
-              </Typography>
-              <Typography sx={{ fontSize: "0.8rem", color: "#CBA258", fontWeight: 600, cursor: "pointer" }}>
-                ดูทั้งหมด ›
-              </Typography>
-            </Box>
+          <Box
+            component={motion.div}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5 }}
+            sx={{ mt: 5, mb: 2 }}
+          >
+            <SectionHeader eyebrow="เสียงจากลูกค้า" title={`รีวิวจากผู้สั่งซื้อ (${product.reviewCount})`} variant="editorial" />
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {product.reviews.map((review) => (
-                <Box key={review.id} sx={{ bgcolor: "#FDF8F0", p: 2, borderRadius: "12px", border: "1px solid #EBE3D5" }}>
+                <Box key={review.id} sx={{ bgcolor: "#FDF8F0", p: 2, borderRadius: "12px", border: "1px solid #EBE3D5", boxShadow: "0 4px 18px rgba(27,42,74,0.05)" }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                       <Avatar src={review.avatar} alt={review.userName} sx={{ width: 32, height: 32 }} />
@@ -723,12 +822,19 @@ export default function ProductDetailView({ product }: { product: Product }) {
           </Box>
         )}
 
-        <Box sx={{ mt: 4, mb: 1, display: "flex", flexDirection: "column", gap: 1.5 }}>
-          {/* Moved to the top for prominence */}
-        </Box>
-
         {/* Trust Checklist Tags */}
-        <Box sx={{ mt: 4, mb: 4, display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.5 }}
+          sx={{
+            mt: 4, mb: 4, p: 2.25, display: "flex", flexDirection: "column", gap: 1.5,
+            bgcolor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5DFD6",
+            boxShadow: "0 4px 18px rgba(27,42,74,0.05)",
+          }}
+        >
           {[
             "ฟรีค่าจัดส่ง เมื่อยอดสั่งซื้อครบ 3000 บาท* ขึ้นไป",
             "รับประกันสินค้า 1 ปี",
@@ -903,53 +1009,55 @@ export default function ProductDetailView({ product }: { product: Product }) {
         </Box>
       </Dialog>
 
-      {/* ระบุจำนวนตอนกดเพิ่มลงตะกร้า — ไม่โชว์ตัวเลขสต็อกจริงให้ลูกค้าเห็น */}
-      <Dialog open={qtyDialogOpen} onClose={closeQtyDialog} maxWidth="xs" fullWidth
-        PaperProps={{ sx: { borderRadius: "20px" } }}>
-        <DialogTitle sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A" }}>
-          ระบุจำนวน
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, py: 2 }}>
-            <IconButton onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              sx={{ border: "1px solid #E5DFD6", borderRadius: "50%" }}>
-              <RemoveRoundedIcon />
-            </IconButton>
-            <Typography sx={{ fontSize: "1.5rem", fontWeight: 700, color: "#1B2A4A", minWidth: 40, textAlign: "center" }}>
-              {quantity}
-            </Typography>
-            <IconButton
-              onClick={() => setQuantity((q) => Math.min(Math.max(1, effectiveStock || 99), q + 1))}
-              disabled={effectiveStock > 0 && quantity >= effectiveStock}
-              sx={{ border: "1px solid #E5DFD6", borderRadius: "50%" }}
-            >
-              <AddRoundedIcon />
-            </IconButton>
-          </Box>
-          {effectiveStock <= 0 && (
-            <Typography sx={{ textAlign: "center", fontSize: "0.8rem", color: "#B4552D" }}>
-              สินค้าหมดชั่วคราว
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={closeQtyDialog} sx={{ color: "#6B7280", textTransform: "none", fontFamily: '"Kanit", sans-serif' }}>
-            ยกเลิก
-          </Button>
+      {/* มือถือ: bottom sheet เลือกสี/ไซซ์ (ถ้ามี) + จำนวน แล้วยืนยันด้วยปุ่มที่ติดขอบล่างสุดของ sheet เสมอ */}
+      <Drawer
+        anchor="bottom"
+        open={cartSheetOpen}
+        onClose={closeCartSheet}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: "24px",
+            borderTopRightRadius: "24px",
+            maxHeight: "92vh",
+            maxWidth: 620,
+            mx: "auto",
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+          },
+        }}
+      >
+        <Box sx={{ overflowY: "auto", p: 3, pb: 2 }}>
+          <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: "#E5DFD6", mx: "auto", mb: 2.5 }} />
+          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.05rem", color: "#1B2A4A", mb: 2.5 }}>
+            เลือกตัวเลือกสินค้า
+          </Typography>
+          {requiresVariant && renderVariantChips()}
+          <Box sx={{ mt: requiresVariant ? 3 : 0 }}>{renderQuantityStepper()}</Box>
+        </Box>
+        <Box sx={{ borderTop: "1px solid #EFE9DD", p: 2.5, pb: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}>
           <Button
-            onClick={confirmAddToCart}
+            onClick={confirmCartSheet}
             disabled={effectiveStock <= 0}
+            fullWidth
             variant="contained"
             sx={{
-              bgcolor: "#1B2A4A", color: "#FFFFFF", borderRadius: "12px", px: 3, textTransform: "none",
-              fontFamily: '"Kanit", sans-serif', fontWeight: 600,
-              "&:hover": { bgcolor: "#0F1A30" },
+              bgcolor: sheetIntent === "buy" ? "#D3A14A" : "#1B2A4A",
+              color: "#FFFFFF",
+              borderRadius: "16px",
+              py: 1.6,
+              fontWeight: 700,
+              fontSize: "1rem",
+              textTransform: "none",
+              boxShadow: "none",
+              fontFamily: '"Kanit", sans-serif',
+              "&:hover": { bgcolor: sheetIntent === "buy" ? "#C19036" : "#0F1A30", boxShadow: "none" },
             }}
           >
-            เพิ่มลงตะกร้า
+            {sheetIntent === "buy" ? "สั่งซื้อเลย" : "เพิ่มลงตะกร้า"}
           </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </Drawer>
     </Box>
   );
 }
