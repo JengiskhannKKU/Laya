@@ -79,9 +79,10 @@ export default function ProductDetailView({ product }: { product: Product }) {
   // ── Multi-SKU: สินค้าที่มีหลายตัวเลือกต้องเลือก SKU ก่อนซื้อ ──
   const variants = product.variants ?? [];
   const requiresVariant = Boolean(product.hasVariants && variants.length > 0);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    requiresVariant ? (variants.find((v) => v.stock > 0) ?? null) : null
-  );
+  // เริ่มที่ null เสมอ (ไม่ auto-เลือกตัวแรกให้) — ลูกค้าต้องกดเลือกสี/ไซซ์เองก่อนถึงจะสั่งซื้อได้
+  // (เดิม auto-เลือกตัวที่มีสต็อกตัวแรกให้ ทำให้เช็ค requiresVariant && !selectedVariant ไม่เคยเป็นจริง
+  //  ลูกค้าสั่งซื้อผ่านได้โดยไม่เคยเลือกตัวเลือกสินค้าเองเลย)
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [variantError, setVariantError] = useState(false);
   const [cartSheetOpen, setCartSheetOpen] = useState(false);
   const [sheetIntent, setSheetIntent] = useState<"cart" | "buy">("cart");
@@ -278,17 +279,18 @@ export default function ProductDetailView({ product }: { product: Product }) {
         </Typography>
         <IconButton
           onClick={() => setQuantity((q) => Math.min(Math.max(1, effectiveStock || 99), q + 1))}
-          disabled={effectiveStock > 0 && quantity >= effectiveStock}
+          disabled={(requiresVariant && !selectedVariant) || (effectiveStock > 0 && quantity >= effectiveStock)}
           size="small"
           sx={{ p: 1 }}
         >
           <AddRoundedIcon fontSize="small" />
         </IconButton>
       </Box>
-      {effectiveStock > 0 && (
+      {requiresVariant && !selectedVariant ? (
+        <Typography sx={{ fontSize: "0.78rem", color: "#B4552D" }}>เลือกตัวเลือกสินค้าก่อน</Typography>
+      ) : effectiveStock > 0 ? (
         <Typography sx={{ fontSize: "0.75rem", color: "#9CA3AF" }}>คงเหลือ {effectiveStock} ชิ้น</Typography>
-      )}
-      {effectiveStock <= 0 && (
+      ) : (
         <Typography sx={{ fontSize: "0.78rem", color: "#B4552D" }}>สินค้าหมดชั่วคราว</Typography>
       )}
     </Box>
