@@ -69,7 +69,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ชุดทำงาน",
     authorName: "LAYA",
     official: true,
-    likeCount: 256,
+    likeCount: 0,
     createdAt: Date.now() - 1 * DAY,
   },
   {
@@ -81,7 +81,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "Mix & Match",
     authorName: "LAYA",
     official: true,
-    likeCount: 189,
+    likeCount: 0,
     createdAt: Date.now() - 2 * DAY,
   },
   {
@@ -93,7 +93,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ผ้าไทย",
     authorName: "LAYA",
     official: true,
-    likeCount: 312,
+    likeCount: 0,
     createdAt: Date.now() - 3 * DAY,
   },
   {
@@ -106,7 +106,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "กระเป๋า",
     authorName: "LAYA",
     official: true,
-    likeCount: 98,
+    likeCount: 0,
     createdAt: Date.now() - 4 * DAY,
   },
   {
@@ -118,7 +118,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "แฟชั่น",
     authorName: "LAYA",
     official: true,
-    likeCount: 204,
+    likeCount: 0,
     createdAt: Date.now() - 5 * DAY,
   },
   {
@@ -130,7 +130,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "OOTD",
     authorName: "LAYA",
     official: true,
-    likeCount: 156,
+    likeCount: 0,
     createdAt: Date.now() - 6 * DAY,
   },
   {
@@ -142,7 +142,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ผ้าไทย",
     authorName: "LAYA",
     official: true,
-    likeCount: 278,
+    likeCount: 0,
     createdAt: Date.now() - 7 * DAY,
   },
   {
@@ -155,7 +155,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "Mix & Match",
     authorName: "LAYA",
     official: true,
-    likeCount: 342,
+    likeCount: 0,
     createdAt: Date.now() - 8 * DAY,
   },
   {
@@ -167,7 +167,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "แฟชั่น",
     authorName: "LAYA",
     official: true,
-    likeCount: 201,
+    likeCount: 0,
     createdAt: Date.now() - 9 * DAY,
   },
   {
@@ -180,7 +180,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ผ้าไทย",
     authorName: "LAYA",
     official: true,
-    likeCount: 123,
+    likeCount: 0,
     createdAt: Date.now() - 10 * DAY,
   },
   {
@@ -192,7 +192,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ชุดพื้นเมือง",
     authorName: "LAYA",
     official: true,
-    likeCount: 128,
+    likeCount: 0,
     createdAt: Date.now() - 11 * DAY,
   },
   {
@@ -205,7 +205,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     rating: 5,
-    likeCount: 96,
+    likeCount: 0,
     createdAt: Date.now() - 12 * DAY,
   },
   {
@@ -217,7 +217,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ดูแลรักษา",
     authorName: "LAYA",
     official: true,
-    likeCount: 74,
+    likeCount: 0,
     createdAt: Date.now() - 13 * DAY,
   },
   {
@@ -230,7 +230,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     rating: 4.8,
-    likeCount: 143,
+    likeCount: 0,
     createdAt: Date.now() - 14 * DAY,
   },
   {
@@ -242,7 +242,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "OOTD",
     authorName: "LAYA",
     official: true,
-    likeCount: 167,
+    likeCount: 0,
     createdAt: Date.now() - 15 * DAY,
   },
 ];

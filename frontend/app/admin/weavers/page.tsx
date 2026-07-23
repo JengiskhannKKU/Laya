@@ -30,7 +30,7 @@ import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 
-import { AdminWeaver } from "@/lib/mock-admin-data";
+import { AdminWeaver } from "@/lib/admin-types";
 import { useEffect } from "react";
 import { authFetch } from "@/lib/api-auth";
 

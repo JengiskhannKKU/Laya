@@ -13,7 +13,7 @@ import { useAdminTheme } from "@/lib/admin-theme-context";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 
-import { AdminProduct } from "@/lib/mock-admin-data";
+import { AdminProduct } from "@/lib/admin-types";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";

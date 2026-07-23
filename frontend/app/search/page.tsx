@@ -463,7 +463,7 @@ function SearchContent() {
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [selectedChip, setSelectedChip] = useState("all");
   const [viewMode, setViewMode] = useState<ViewMode>("forYou");
-  const [sortBy, setSortBy] = useState<"popular" | "newest">("popular");
+  const [sortBy, setSortBy] = useState<"popular" | "newest">("newest");
   const [composeOpen, setComposeOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
