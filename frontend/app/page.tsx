@@ -38,20 +38,19 @@ export default function HomePage() {
     <MobileLayout>
       {/* ป๊อบอัพโฆษณาโปสเตอร์ต้อนรับเมื่อเปิดเว็บครั้งแรก (แสดงครั้งเดียว บันทึกใน localStorage) */}
       <DemoPosterModal />
-      {/* ลำดับตาม mockup: hero (ภาพชนขอบขวา) → ค้นหาลอย → โลโก้พาร์ทเนอร์ (แถวเดียวเลื่อน) → Curated For You → วิดีโอ Advise/video1 →
-          Story + Royal Quote (การ์ดคู่) → ชุมชน → แกลเลอรีผลงาน */}
+      {/* ลำดับตาม mockup: hero (ภาพชนขอบขวา) → ค้นหาลอย → Curated For You → ชุมชนและร้านค้า → Partners → วิดีโอ Advise/video1 → แกลเลอรีผลงาน */}
       <HeroSearch />
       <FloatingSearch />
-      {/* Partners Section — โลโก้พาร์ทเนอร์ 1 แถว เลื่อนสไลด์ต่อเนื่อง */}
-      <PartnersSection />
       {/* Curated For You (คัดสรรสำหรับคุณ 4 ชิ้น) */}
       <RecommendedSection />
-      {/* Communities Section — ชุมชนและร้านค้า (ดีไซน์วงกลมสไตล์ Shopee Mall) ต่อจากคัดสรรสำหรับคุณ */}
+      {/* Communities Section — ชุมชนและร้านค้า (ดีไซน์วงกลมสไตล์ Shopee Mall) */}
       <CommunitiesSection />
+      {/* Partners Section — โลโก้พาร์ทเนอร์ 1 แถว เลื่อนสไลด์ต่อเนื่อง 100vw (ต่อจากชุมชนและร้านค้า) */}
+      <PartnersSection />
       {/* Video Showcase Section — วิดีโอ Advise.mp4 & video1.mp4 */}
       <VideoShowcaseSection />
       <EditorialSection />
-      {/* Product Gallery Section — ต่อจาก ชุมชนและร้านค้า */}
+      {/* Product Gallery Section */}
       <GallerySection />
     </MobileLayout>
   );
