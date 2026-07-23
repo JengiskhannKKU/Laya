@@ -20,9 +20,10 @@ import Snackbar from "@mui/material/Snackbar";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 
-type ModalTone = "info" | "success" | "warning";
+type ModalTone = "info" | "success" | "warning" | "error";
 
 export interface AlertOptions {
   title: string;
@@ -58,12 +59,14 @@ const TONE_ICON: Record<ModalTone, React.ReactNode> = {
   info: <InfoOutlinedIcon sx={{ fontSize: 30, color: "#1B2A4A" }} />,
   success: <CheckCircleRoundedIcon sx={{ fontSize: 30, color: "#05A546" }} />,
   warning: <WarningAmberRoundedIcon sx={{ fontSize: 30, color: "#D97706" }} />,
+  error: <CancelRoundedIcon sx={{ fontSize: 30, color: "#D32F2F" }} />,
 };
 
 const TONE_BG: Record<ModalTone, string> = {
   info: "#EEF3FF",
   success: "#E8F5E9",
   warning: "#FFF7ED",
+  error: "#FDECEC",
 };
 
 export function AppModalProvider({ children }: { children: React.ReactNode }) {

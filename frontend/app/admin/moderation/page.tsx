@@ -7,7 +7,6 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
-import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -16,6 +15,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { motion } from "framer-motion";
 import { useAdminTheme } from "@/lib/admin-theme-context";
 import { authFetch, SessionExpiredError } from "@/lib/api-auth";
+import { useAppModal } from "@/components/providers/AppModalProvider";
 
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
@@ -48,10 +48,11 @@ export default function ModerationPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [visibilityFilter, setVisibilityFilter] = useState("all");
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("success");
+  const { showAlert } = useAppModal();
 
-  const showToast = (msg: string, type: "success" | "error" = "success") => { setToastMsg(msg); setToastType(type); };
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    showAlert({ title: msg, tone: type === "error" ? "error" : "success" });
+  };
 
   const fetchReviews = async () => {
     try {
@@ -214,10 +215,6 @@ export default function ModerationPage() {
           ))}
         </Box>
       )}
-
-      <Snackbar anchorOrigin={{ vertical: "top", horizontal: "right" }} open={!!toastMsg} autoHideDuration={3000} onClose={() => setToastMsg("")}>
-        <Alert severity={toastType} sx={{ borderRadius: "12px", fontWeight: 600 }}>{toastMsg}</Alert>
-      </Snackbar>
     </Box>
   );
 }
