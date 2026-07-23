@@ -19,7 +19,7 @@ export default function RecommendedSection() {
   const { products } = useLiveProducts();
   const { t } = useLanguage();
 
-  const visible = useMemo(() => products.slice(0, 8), [products]);
+  const visible = useMemo(() => products.slice(0, 4), [products]);
 
   return (
     // อยู่ใน container กลางของ MobileLayout (maxWidth 1440) เหมือน Story/Communities —

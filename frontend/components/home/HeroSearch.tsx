@@ -5,11 +5,17 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { fetchBanners, type Banner } from "@/lib/banners";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+
+import InstagramIcon from "@mui/icons-material/Instagram";
+import FacebookIcon from "@mui/icons-material/Facebook";
+
+const INSTAGRAM_URL = "https://www.instagram.com/laya_thailand/";
+const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61590235357496";
 
 /**
  * Hero สองเวอร์ชันตามขนาดจอ (สลับด้วย CSS ล้วน — ไม่มี hydration mismatch):
@@ -40,7 +46,6 @@ export default function HeroSearch() {
 
   const activeBanner = banners[current];
 
-  /** ชั้นภาพ banner — ภาพนิ่งคมๆ ไม่มีอนิเมชันซูม/เฟด สลับสไลด์ทันทีตามจุดที่เลือก */
   const bannerLayers = (
     <Image
       src={activeBanner ? activeBanner.image : "/img_hero.png"}
@@ -83,11 +88,9 @@ export default function HeroSearch() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       sx={{
-        // เต็มความกว้าง viewport ทั้งสองเวอร์ชัน
         mx: "calc(50% - 50vw)",
       }}
     >
-      {/* ═════ Mobile: immersive image hero + overlay text ═════ */}
       <Box
         sx={{
           display: { xs: "block", md: "none" },
@@ -99,7 +102,6 @@ export default function HeroSearch() {
       >
         {bannerLayers}
 
-        {/* Scrim navy — ครอบคลุมทั้งภาพเพื่อให้ตัวอักษรขาวอ่านชัดในทุกตำแหน่ง */}
         <Box
           aria-hidden
           sx={{
@@ -110,7 +112,6 @@ export default function HeroSearch() {
           }}
         />
 
-        {/* Overlay content — ขยับขึ้นไปในพื้นที่ว่างด้านบน จัดวางตรงกลางในแนวตั้ง */}
         <Box
           sx={{
             position: "absolute",
@@ -162,7 +163,6 @@ export default function HeroSearch() {
               mt: 1.25,
               maxWidth: 340,
               lineHeight: 1.7,
-              // จำกัด 2 บรรทัดกัน hero สูงเกินบนจอเล็ก
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
@@ -172,7 +172,7 @@ export default function HeroSearch() {
             {t("home.hero.subtitle")}
           </Typography>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2.25 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 2.25, flexWrap: "wrap" }}>
             <Link href="/search" style={{ textDecoration: "none" }}>
               <Button
                 endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 16 }} />}
@@ -193,16 +193,57 @@ export default function HeroSearch() {
                 {t("home.hero.ctaPrimary")}
               </Button>
             </Link>
+
+            <Button
+              component="a"
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<InstagramIcon sx={{ fontSize: 16, color: "#E1306C" }} />}
+              sx={{
+                bgcolor: "rgba(255,255,255,0.9)",
+                color: "#13284B",
+                fontFamily: '"Kanit", sans-serif',
+                fontWeight: 500,
+                fontSize: "0.78rem",
+                borderRadius: "999px",
+                px: 1.75,
+                py: 0.85,
+                textTransform: "none",
+                backdropFilter: "blur(4px)",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+              }}
+            >
+              Instagram
+            </Button>
+            <Button
+              component="a"
+              href={FACEBOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<FacebookIcon sx={{ fontSize: 16, color: "#1877F2" }} />}
+              sx={{
+                bgcolor: "rgba(255,255,255,0.9)",
+                color: "#13284B",
+                fontFamily: '"Kanit", sans-serif',
+                fontWeight: 500,
+                fontSize: "0.78rem",
+                borderRadius: "999px",
+                px: 1.75,
+                py: 0.85,
+                textTransform: "none",
+                backdropFilter: "blur(4px)",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+              }}
+            >
+              Facebook
+            </Button>
+
             {renderDots(true)}
           </Box>
         </Box>
       </Box>
 
-      {/* ═════ Desktop: ข้อความซ้าย ภาพชนขอบขวาจอ ═════
-          gridTemplateColumns เดิมใช้ "0.9fr 1.1fr" ตายตัว — บนจอกว้าง (เช่น 1920px) คอลัมน์ซ้าย
-          กลายเป็นกว้างเกินเนื้อหาจริงมาก (ข้อความสั้นแต่คอลัมน์กิน 0.9fr ของทั้งจอ) ทำให้ช่องว่าง
-          ก่อนถึงรูปดูห่างมาก — เปลี่ยนคอลัมน์ซ้ายเป็น auto (แคบพอดีเนื้อหา) ให้รูปขยับมาชิดข้อความ
-          มากขึ้นเสมอ ไม่ว่าจอจะกว้างแค่ไหน */}
       <Box
         sx={{
           display: { xs: "none", md: "grid" },
@@ -211,8 +252,6 @@ export default function HeroSearch() {
           gap: 0.5,
         }}
       >
-        {/* Left: copy + CTA + dots — pl เพิ่มจาก 40px เป็น 100px ให้บล็อกข้อความขยับเข้ามาจากขอบซ้าย
-            มากขึ้น (แต่ก่อนชิดขอบซ้ายเกินไปบนจอ desktop) */}
         <Box
           sx={{
             textAlign: "left",
@@ -263,7 +302,7 @@ export default function HeroSearch() {
             {t("home.hero.subtitle")}
           </Typography>
 
-          <Box sx={{ mt: 3.5 }}>
+          <Box sx={{ mt: 3.5, display: "flex", alignItems: "center", gap: 1.75, flexWrap: "wrap" }}>
             <Link href="/search" style={{ textDecoration: "none" }}>
               <Button
                 endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 17 }} />}
@@ -289,6 +328,68 @@ export default function HeroSearch() {
                 {t("home.hero.ctaPrimary")}
               </Button>
             </Link>
+
+            {/* ปุ่ม Social Media: Instagram & Facebook */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+              <Button
+                component="a"
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<InstagramIcon sx={{ fontSize: 18, color: "#E1306C" }} />}
+                sx={{
+                  bgcolor: "#FFFFFF",
+                  color: "#13284B",
+                  border: "1px solid #EFE9DD",
+                  fontFamily: '"Kanit", sans-serif',
+                  fontWeight: 500,
+                  fontSize: "0.84rem",
+                  borderRadius: "999px",
+                  px: 2.25,
+                  py: 1.1,
+                  textTransform: "none",
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                  transition: "all 0.25s ease",
+                  "&:hover": {
+                    bgcolor: "#FFF5F8",
+                    borderColor: "#E1306C",
+                    color: "#E1306C",
+                    transform: "translateY(-1px)",
+                  },
+                }}
+              >
+                Instagram
+              </Button>
+              <Button
+                component="a"
+                href={FACEBOOK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<FacebookIcon sx={{ fontSize: 18, color: "#1877F2" }} />}
+                sx={{
+                  bgcolor: "#FFFFFF",
+                  color: "#13284B",
+                  border: "1px solid #EFE9DD",
+                  fontFamily: '"Kanit", sans-serif',
+                  fontWeight: 500,
+                  fontSize: "0.84rem",
+                  borderRadius: "999px",
+                  px: 2.25,
+                  py: 1.1,
+                  textTransform: "none",
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                  transition: "all 0.25s ease",
+                  "&:hover": {
+                    bgcolor: "#F0F6FF",
+                    borderColor: "#1877F2",
+                    color: "#1877F2",
+                    transform: "translateY(-1px)",
+                  },
+                }}
+              >
+                Facebook
+              </Button>
+            </Box>
           </Box>
 
           <Box sx={{ mt: 5 }}>{renderDots(false)}</Box>

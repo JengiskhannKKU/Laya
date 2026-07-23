@@ -119,9 +119,9 @@ export default function FloatingSearch() {
         <Typography
           sx={{
             fontFamily: '"Kanit", sans-serif',
-            fontSize: "0.75rem",
-            color: "#A89F94",
-            fontWeight: 400,
+            fontSize: { xs: "0.85rem", md: "0.92rem" },
+            color: "#8C8275",
+            fontWeight: 500,
             letterSpacing: "0.04em",
             whiteSpace: "nowrap",
             flexShrink: 0,
@@ -135,23 +135,27 @@ export default function FloatingSearch() {
             label={tag}
             onClick={() => router.push(`/search?q=${encodeURIComponent(tag)}`)}
             variant="outlined"
-            size="small"
+            size="medium"
             sx={{
               fontFamily: '"Kanit", sans-serif',
               fontWeight: 400,
-              fontSize: "0.75rem",
-              height: 30,
+              fontSize: { xs: "0.85rem", md: "0.9rem" },
+              height: { xs: 32, md: 34 },
+              px: 0.5,
               flexShrink: 0,
               bgcolor: "#FFFFFF",
               borderColor: "#E5DFD6",
-              color: "#4A5468",
+              color: "#374151",
               borderRadius: "999px",
               cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
               transition: "all 0.25s ease",
               "&:hover": {
                 bgcolor: "#13284B",
                 color: "#FFFFFF",
                 borderColor: "#13284B",
+                transform: "translateY(-1px)",
+                boxShadow: "0 4px 12px rgba(19,40,75,0.15)",
               },
             }}
           />

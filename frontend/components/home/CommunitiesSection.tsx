@@ -10,9 +10,11 @@ import Link from "next/link";
 import SectionHeader from "./SectionHeader";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-/** การ์ดชุมชนตาม mockup ล่าสุด — ภาพเต็มใบ + scrim navy ด้านล่าง
- * ข้อความซ้อนบนภาพ: ป้ายจังหวัด (จุดทอง) / ชื่อชุมชนขาว / จำนวนผลิตภัณฑ์ */
-function CommunityCard({ community }: { community: LiveCommunity }) {
+/** 
+ * ชุมชนและร้านค้า แบบ Shopee Official Mall Avatar (วงกลมร้านค้ากะทัดรัด)
+ * โลโก้/รูปทรงวงกลมขอบสีทองวิบวับ + ชื่อร้านค้าและจังหวัดด้านล่าง
+ */
+function CommunityCircleCard({ community }: { community: LiveCommunity }) {
   const [imgSrc, setImgSrc] = useState(community.image || "/placeholder.webp");
   const { t } = useLanguage();
 
@@ -20,109 +22,102 @@ function CommunityCard({ community }: { community: LiveCommunity }) {
     <Link href={`/community/${community.id}`} style={{ textDecoration: "none" }}>
       <Box
         sx={{
-          position: "relative",
-          minWidth: { xs: 240, md: "auto" },
-          aspectRatio: "16 / 11",
-          borderRadius: "14px",
-          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: { xs: 90, sm: 104, md: 114 },
           cursor: "pointer",
-          transition:
-            "transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s ease",
+          flexShrink: 0,
+          transition: "transform 0.3s ease",
           "&:hover": {
             transform: "translateY(-4px)",
-            boxShadow: "0 14px 32px rgba(27,42,74,0.18)",
+            "& .shop-avatar-ring": {
+              borderColor: "#1B2A4A",
+              boxShadow: "0 10px 24px rgba(197,165,90,0.35)",
+            },
+            "& .shop-avatar-img": {
+              transform: "scale(1.08)",
+            },
           },
-          "&:hover .laya-comm-img": { transform: "scale(1.05)" },
         }}
       >
+        {/* วงกลมรูปโปรไฟล์ร้านค้า (Shopee Mall / Instagram Story Style) */}
         <Box
-          className="laya-comm-img"
+          className="shop-avatar-ring"
           sx={{
-            position: "absolute",
-            inset: 0,
-            transition: "transform 0.6s cubic-bezier(0.22,0.61,0.36,1)",
+            position: "relative",
+            width: { xs: 80, sm: 92, md: 100 },
+            height: { xs: 80, sm: 92, md: 100 },
+            borderRadius: "50%",
+            p: "3px", // ขอบวงแหวนสีทอง
+            bgcolor: "#FFFFFF",
+            border: "2px solid #C9A86A",
+            boxShadow: "0 6px 18px rgba(27,42,74,0.12)",
+            transition: "all 0.3s ease",
+            overflow: "hidden",
+            mb: 1.25,
           }}
         >
-          <Image
-            src={imgSrc}
-            alt={community.name}
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="(max-width: 900px) 65vw, 33vw"
-            onError={() => setImgSrc("/assets/province-fallback.jpg")}
-          />
-        </Box>
-
-        {/* Scrim navy — ให้ตัวอักษรขาวอ่านชัดบนภาพ */}
-        <Box
-          aria-hidden
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to top, rgba(15,26,48,0.82) 0%, rgba(15,26,48,0.32) 45%, rgba(15,26,48,0.05) 70%, transparent 100%)",
-          }}
-        />
-
-        {/* Overlay text — ชิดล่างซ้าย */}
-        <Box sx={{ position: "absolute", left: 0, right: 0, bottom: 0, px: 1.75, pb: 1.5 }}>
-          {/* ป้ายจังหวัด — จุดทอง + พื้นโปร่งเบลอ */}
           <Box
             sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.5,
-              bgcolor: "rgba(255,255,255,0.16)",
-              backdropFilter: "blur(6px)",
-              px: 1,
-              py: 0.35,
-              borderRadius: "999px",
-              mb: 0.75,
-            }}
-          >
-            <Box sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: "#C9A86A" }} />
-            <Typography
-              sx={{
-                fontFamily: '"Kanit", sans-serif',
-                fontWeight: 400,
-                fontSize: "0.62rem",
-                letterSpacing: "0.04em",
-                color: "#FFFFFF",
-                lineHeight: 1.2,
-              }}
-            >
-              {community.province}
-            </Typography>
-          </Box>
-
-          <Typography
-            sx={{
-              fontFamily: '"Kanit", sans-serif',
-              fontWeight: 600,
-              fontSize: "0.92rem",
-              color: "#FFFFFF",
-              lineHeight: 1.35,
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
               overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              textShadow: "0 1px 8px rgba(0,0,0,0.25)",
+              bgcolor: "#FAF7F2",
             }}
           >
-            {community.name}
-          </Typography>
-
-          <Typography
-            sx={{
-              fontFamily: '"Kanit", sans-serif',
-              fontWeight: 300,
-              fontSize: "0.68rem",
-              color: "rgba(255,255,255,0.78)",
-              mt: 0.2,
-            }}
-          >
-            {community.productCount} {t("home.communities.products")}
-          </Typography>
+            <Image
+              src={imgSrc}
+              alt={community.name}
+              fill
+              className="shop-avatar-img"
+              style={{ objectFit: "cover", transition: "transform 0.4s ease" }}
+              sizes="(max-width: 900px) 100px, 120px"
+              onError={() => setImgSrc("/assets/province-fallback.jpg")}
+            />
+          </Box>
         </Box>
+
+        {/* ชื่อร้านค้า */}
+        <Typography
+          sx={{
+            fontFamily: '"Kanit", sans-serif',
+            fontWeight: 600,
+            fontSize: { xs: "0.8rem", md: "0.86rem" },
+            color: "#1B2A4A",
+            lineHeight: 1.25,
+            textAlign: "center",
+            width: "100%",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minHeight: { xs: 32, md: 34 },
+          }}
+        >
+          {community.name}
+        </Typography>
+
+        {/* จังหวัด */}
+        <Typography
+          sx={{
+            fontFamily: '"Kanit", sans-serif',
+            fontWeight: 400,
+            fontSize: "0.7rem",
+            color: "#C9A86A",
+            textAlign: "center",
+            mt: 0.25,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            maxWidth: "100%",
+          }}
+        >
+          📍 {community.province}
+        </Typography>
       </Box>
     </Link>
   );
@@ -145,11 +140,11 @@ export default function CommunitiesSection() {
   return (
     <Box
       component={motion.div}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, margin: "-80px" }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6 }}
-      sx={{ py: { xs: 4, md: 6 } }}
+      sx={{ py: { xs: 3.5, md: 5 } }}
     >
       <SectionHeader
         variant="editorial"
@@ -159,19 +154,22 @@ export default function CommunitiesSection() {
         href="/community"
       />
 
-      {/* 3 คอลัมน์ × 2 แถว (6 ใบ) บน desktop ตาม mockup — มือถือเลื่อนแนวนอน */}
+      {/* แถบวงกลมร้านค้าชุมชนสไตล์ Shopee Mall — เลื่อนแนวนอนบนมือถือ / จัดกึ่งกลางบน desktop */}
       <Box
         sx={{
-          display: { xs: "flex", md: "grid" },
-          gridTemplateColumns: { md: "repeat(3, 1fr)" },
-          gap: { xs: 2, md: 2.5 },
-          overflowX: { xs: "auto", md: "visible" },
-          pb: 1,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: { xs: "flex-start", md: "center" },
+          gap: { xs: 2.5, sm: 3.5, md: 4.5 },
+          overflowX: "auto",
+          px: { xs: 1, md: 2 },
+          py: 1,
+          scrollbarWidth: "none",
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {communities.slice(0, 6).map((community) => (
-          <CommunityCard key={community.id} community={community} />
+        {communities.map((community) => (
+          <CommunityCircleCard key={community.id} community={community} />
         ))}
       </Box>
     </Box>

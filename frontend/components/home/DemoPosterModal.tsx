@@ -8,6 +8,8 @@ import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import SparklesIcon from "@mui/icons-material/AutoAwesomeRounded";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import FacebookIcon from "@mui/icons-material/Facebook";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const STORAGE_KEY = "laya_demo_poster_seen_v2";
@@ -17,13 +19,15 @@ const GOLD = "#C5A55A";
 const CREAM = "#FAF6F0";
 const FONT = '"Kanit", sans-serif';
 
+const INSTAGRAM_URL = "https://www.instagram.com/laya_thailand/";
+const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61590235357496";
+
 export default function DemoPosterModal() {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     // เช็กว่าผู้ใช้เคยเห็น/ปิดป๊อบอัพนี้แล้วหรือยังใน sessionStorage
-    // (สามารถกด Refresh เพื่อทดสอบป๊อบอัพเด้งขึ้นมาใหม่ได้ตลอด)
     const hasSeen = sessionStorage.getItem(STORAGE_KEY);
     if (!hasSeen) {
       const timer = setTimeout(() => {
@@ -140,7 +144,7 @@ export default function DemoPosterModal() {
         </video>
       </Box>
 
-      {/* ─── 3. ส่วนอธิบายฟีเจอร์ LAYA & ปุ่มเข้าสู่เว็บไซต์ด้านล่าง ─── */}
+      {/* ─── 3. ส่วนอธิบายฟีเจอร์ LAYA, ปุ่มโซเชียล & ปุ่มเข้าสู่เว็บไซต์ด้านล่าง ─── */}
       <Box
         sx={{
           p: 2.25,
@@ -170,7 +174,7 @@ export default function DemoPosterModal() {
             fontWeight: 400,
             fontSize: "0.8rem",
             color: "#6B7280",
-            mb: 1.75,
+            mb: 1.5,
           }}
         >
           สัมผัสอนาคตผ้าไทย เมื่อมรดกทรงคุณค่า เจอ AI ระดับโลก
@@ -182,7 +186,7 @@ export default function DemoPosterModal() {
             display: "flex",
             flexDirection: "column",
             gap: 0.85,
-            mb: 2,
+            mb: 1.75,
             textAlign: "left",
             bgcolor: "#FFFFFF",
             p: 1.5,

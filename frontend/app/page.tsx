@@ -7,6 +7,9 @@ import RecommendedSection from "@/components/home/RecommendedSection";
 import EditorialSection from "@/components/home/EditorialSection";
 import CommunitiesSection from "@/components/home/CommunitiesSection";
 import DemoPosterModal from "@/components/home/DemoPosterModal";
+import GallerySection from "@/components/home/GallerySection";
+import PartnersSection from "@/components/home/PartnersSection";
+import VideoShowcaseSection from "@/components/home/VideoShowcaseSection";
 
 // หมายเหตุ: ตัด NewArrivalsSection + ExploreSection ออกจากหน้าแรก (ธีม declutter)
 // ทั้งสองซ้ำซ้อนกับสิ่งที่มีอยู่แล้ว: NewArrivals โชว์กริดสินค้าเดิมซ้ำกับ Recommended,
@@ -35,14 +38,21 @@ export default function HomePage() {
     <MobileLayout>
       {/* ป๊อบอัพโฆษณาโปสเตอร์ต้อนรับเมื่อเปิดเว็บครั้งแรก (แสดงครั้งเดียว บันทึกใน localStorage) */}
       <DemoPosterModal />
-      {/* ลำดับตาม mockup: hero (ภาพชนขอบขวา) → ค้นหาลอย → Curated For You →
-          Story + Royal Quote (การ์ดคู่) → ชุมชน → แรงบันดาลใจ
-          หมายเหตุ: TrustBar ถอดออกตาม mockup ล่าสุด, คำคมพระราชปณิธานย้ายไปอยู่ใน EditorialSection */}
+      {/* ลำดับตาม mockup: hero (ภาพชนขอบขวา) → ค้นหาลอย → โลโก้พาร์ทเนอร์ (แถวเดียวเลื่อน) → Curated For You → วิดีโอ Advise/video1 →
+          Story + Royal Quote (การ์ดคู่) → ชุมชน → แกลเลอรีผลงาน */}
       <HeroSearch />
       <FloatingSearch />
+      {/* Partners Section — โลโก้พาร์ทเนอร์ 1 แถว เลื่อนสไลด์ต่อเนื่อง */}
+      <PartnersSection />
+      {/* Curated For You (คัดสรรสำหรับคุณ 4 ชิ้น) */}
       <RecommendedSection />
-      <EditorialSection />
+      {/* Communities Section — ชุมชนและร้านค้า (ดีไซน์วงกลมสไตล์ Shopee Mall) ต่อจากคัดสรรสำหรับคุณ */}
       <CommunitiesSection />
+      {/* Video Showcase Section — วิดีโอ Advise.mp4 & video1.mp4 */}
+      <VideoShowcaseSection />
+      <EditorialSection />
+      {/* Product Gallery Section — ต่อจาก ชุมชนและร้านค้า */}
+      <GallerySection />
     </MobileLayout>
   );
 }
