@@ -1009,11 +1009,14 @@ export default function ProductDetailView({ product }: { product: Product }) {
         </Box>
       </Dialog>
 
-      {/* มือถือ: bottom sheet เลือกสี/ไซซ์ (ถ้ามี) + จำนวน แล้วยืนยันด้วยปุ่มที่ติดขอบล่างสุดของ sheet เสมอ */}
+      {/* มือถือ: bottom sheet เลือกสี/ไซซ์ (ถ้ามี) + จำนวน แล้วยืนยันด้วยปุ่มที่ติดขอบล่างสุดของ sheet เสมอ
+          zIndex ต้องสูงกว่าแถบปุ่มล่างสุด (fixed, zIndex 1300) ไม่งั้นแถบปุ่มจะทับปุ่มยืนยันใน sheet
+          จนกดไม่ได้ — ทั้งคู่ position:fixed ชนขอบล่างจอเหมือนกัน ปุ่ม z-index สูงกว่าจะบังของอีกฝั่งเสมอ */}
       <Drawer
         anchor="bottom"
         open={cartSheetOpen}
         onClose={closeCartSheet}
+        sx={{ zIndex: 1400 }}
         PaperProps={{
           sx: {
             borderTopLeftRadius: "24px",
