@@ -14,7 +14,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 /**
  * Hero สองเวอร์ชันตามขนาดจอ (สลับด้วย CSS ล้วน — ไม่มี hydration mismatch):
  * - Desktop (md+): split 45/55 ตาม mockup — ข้อความ serif ซ้ายบนพื้นครีม ภาพชนขอบขวาจอ
- * - Mobile (xs–sm): immersive เต็มความกว้าง ภาพ cinematic สูง ~68vh พร้อม scrim navy
+ * - Mobile (xs–sm): immersive เต็มความกว้าง ภาพ cinematic สูง ~50vh พร้อม scrim navy
  *   ข้อความซ้อนบนภาพด้านล่าง สไตล์แอป luxury — FloatingSearch จะลอยคาบขอบล่างต่อ
  * ภาพหมุนวนจาก backend banners ทั้งสองเวอร์ชัน
  */
@@ -92,8 +92,8 @@ export default function HeroSearch() {
         sx={{
           display: { xs: "block", md: "none" },
           position: "relative",
-          height: "min(68vh, 560px)",
-          minHeight: 430,
+          height: "min(50vh, 460px)",
+          minHeight: 360,
           overflow: "hidden",
         }}
       >
