@@ -11,12 +11,11 @@ import SectionHeader from "./SectionHeader";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 /** 
- * ชุมชนและร้านค้า แบบ Shopee Official Mall Avatar (วงกลมร้านค้ากะทัดรัด)
- * โลโก้/รูปทรงวงกลมขอบสีทองวิบวับ + ชื่อร้านค้าและจังหวัดด้านล่าง
+ * ชุมชนและร้านค้า แบบ Shopee Mall Official Store Avatar (วงกลมร้านค้ากะทัดรัด)
+ * ขนาดกระทัดรัดประหยัดพื้นที่ ขอบวงแหวนสีทอง + ชื่อร้านช่างทอจัดกลาง
  */
 function CommunityCircleCard({ community }: { community: LiveCommunity }) {
   const [imgSrc, setImgSrc] = useState(community.image || "/placeholder.webp");
-  const { t } = useLanguage();
 
   return (
     <Link href={`/community/${community.id}`} style={{ textDecoration: "none" }}>
@@ -25,15 +24,15 @@ function CommunityCircleCard({ community }: { community: LiveCommunity }) {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          width: { xs: 90, sm: 104, md: 114 },
+          width: { xs: 76, sm: 84, md: 92 },
           cursor: "pointer",
           flexShrink: 0,
-          transition: "transform 0.3s ease",
+          transition: "transform 0.25s ease",
           "&:hover": {
-            transform: "translateY(-4px)",
+            transform: "translateY(-3px)",
             "& .shop-avatar-ring": {
               borderColor: "#1B2A4A",
-              boxShadow: "0 10px 24px rgba(197,165,90,0.35)",
+              boxShadow: "0 8px 20px rgba(197,165,90,0.35)",
             },
             "& .shop-avatar-img": {
               transform: "scale(1.08)",
@@ -41,21 +40,21 @@ function CommunityCircleCard({ community }: { community: LiveCommunity }) {
           },
         }}
       >
-        {/* วงกลมรูปโปรไฟล์ร้านค้า (Shopee Mall / Instagram Story Style) */}
+        {/* วงกลมรูปโปรไฟล์ร้านค้า Shopee Mall Style */}
         <Box
           className="shop-avatar-ring"
           sx={{
             position: "relative",
-            width: { xs: 80, sm: 92, md: 100 },
-            height: { xs: 80, sm: 92, md: 100 },
+            width: { xs: 68, sm: 76, md: 84 },
+            height: { xs: 68, sm: 76, md: 84 },
             borderRadius: "50%",
-            p: "3px", // ขอบวงแหวนสีทอง
+            p: "2.5px",
             bgcolor: "#FFFFFF",
             border: "2px solid #C9A86A",
-            boxShadow: "0 6px 18px rgba(27,42,74,0.12)",
-            transition: "all 0.3s ease",
+            boxShadow: "0 4px 14px rgba(27,42,74,0.1)",
+            transition: "all 0.25s ease",
             overflow: "hidden",
-            mb: 1.25,
+            mb: 1,
           }}
         >
           <Box
@@ -73,8 +72,8 @@ function CommunityCircleCard({ community }: { community: LiveCommunity }) {
               alt={community.name}
               fill
               className="shop-avatar-img"
-              style={{ objectFit: "cover", transition: "transform 0.4s ease" }}
-              sizes="(max-width: 900px) 100px, 120px"
+              style={{ objectFit: "cover", transition: "transform 0.35s ease" }}
+              sizes="(max-width: 900px) 80px, 100px"
               onError={() => setImgSrc("/assets/province-fallback.jpg")}
             />
           </Box>
@@ -85,9 +84,9 @@ function CommunityCircleCard({ community }: { community: LiveCommunity }) {
           sx={{
             fontFamily: '"Kanit", sans-serif',
             fontWeight: 600,
-            fontSize: { xs: "0.8rem", md: "0.86rem" },
+            fontSize: { xs: "0.75rem", md: "0.82rem" },
             color: "#1B2A4A",
-            lineHeight: 1.25,
+            lineHeight: 1.2,
             textAlign: "center",
             width: "100%",
             display: "-webkit-box",
@@ -95,21 +94,21 @@ function CommunityCircleCard({ community }: { community: LiveCommunity }) {
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            minHeight: { xs: 32, md: 34 },
+            minHeight: { xs: 28, md: 30 },
           }}
         >
           {community.name}
         </Typography>
 
-        {/* จังหวัด */}
+        {/* หมุดจังหวัด */}
         <Typography
           sx={{
             fontFamily: '"Kanit", sans-serif',
             fontWeight: 400,
-            fontSize: "0.7rem",
+            fontSize: "0.66rem",
             color: "#C9A86A",
             textAlign: "center",
-            mt: 0.25,
+            mt: 0.2,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -140,11 +139,11 @@ export default function CommunitiesSection() {
   return (
     <Box
       component={motion.div}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.6 }}
-      sx={{ py: { xs: 3.5, md: 5 } }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.5 }}
+      sx={{ py: { xs: 2.5, md: 4 } }}
     >
       <SectionHeader
         variant="editorial"
@@ -154,16 +153,16 @@ export default function CommunitiesSection() {
         href="/community"
       />
 
-      {/* แถบวงกลมร้านค้าชุมชนสไตล์ Shopee Mall — เลื่อนแนวนอนบนมือถือ / จัดกึ่งกลางบน desktop */}
+      {/* แถบวงกลมร้านค้าสไตล์ Shopee Mall / Official Stores — เลื่อนแนวนอนกะทัดรัด */}
       <Box
         sx={{
           display: "flex",
           alignItems: "flex-start",
           justifyContent: { xs: "flex-start", md: "center" },
-          gap: { xs: 2.5, sm: 3.5, md: 4.5 },
+          gap: { xs: 2, sm: 3, md: 4 },
           overflowX: "auto",
-          px: { xs: 1, md: 2 },
-          py: 1,
+          px: { xs: 1.5, md: 2 },
+          py: 0.5,
           scrollbarWidth: "none",
           "&::-webkit-scrollbar": { display: "none" },
         }}

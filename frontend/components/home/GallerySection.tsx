@@ -29,6 +29,65 @@ interface GalleryItem {
 }
 
 const GALLERY_IMAGES: GalleryItem[] = [
+  /* ─── ภาพรางวัล HACKATHON, FIELD WORK & LAYA TEAM (แสดงเป็นภาพชุดแรกตามคำขอ) ─── */
+  {
+    id: "27",
+    src: "/images/Gallery/image copy.png",
+    title: "LAYA คว้าตำแหน่ง Finalists 3 ทีมสุดท้าย",
+    tag: "AI Preneur Finalist",
+    story: "ทีม LAYA : AI-driven Marketplace คว้ารางวัลผ่านเข้ารอบ Finalists 3 ทีมสุดท้ายในงาน AI Preneur Day 2026",
+  },
+  {
+    id: "28",
+    src: "/images/Gallery/image copy 2.png",
+    title: "พิธีมอบรางวัลและถ่ายภาพรวมทีมไฟนอลิสต์",
+    tag: "Finalist Celebration",
+    story: "ทีมพัฒนา LAYA ร่วมถ่ายภาพฉลองความสำเร็จบนเวทีกับคณะผู้จัดงาน เมนเทอร์ และพันธมิตรผู้สนับสนุน",
+  },
+  {
+    id: "29",
+    src: "/images/Gallery/image copy 3.png",
+    title: "LAYA — สรุปเซสชัน Pitching เวทีระดับประเทศ",
+    tag: "Startup Event Insight",
+    story: "สรุปบทความ Event Insight นำเสนอแนวคิด Startup AI ผ้าไทย เปลี่ยนโจทย์มรดกวัฒนธรรมสู่ธุรกิจมูลค่าหลายล้าน",
+  },
+  {
+    id: "30",
+    src: "/images/Gallery/image copy 4.png",
+    title: "ภาพเบื้องหลังความทุ่มเทของทีม LAYA",
+    tag: "Team Spirit",
+    story: "บรรยากาศรอยยิ้มและความมุ่งมั่นของทีมผู้ก่อตั้ง LAYA ในการพัฒนาแพลตฟอร์ม Fashion Tech ผ้าไทย",
+  },
+  {
+    id: "26",
+    src: "/images/Gallery/image.png",
+    title: "ทีม LAYA กับเมนเทอร์และคณะกรรมการ Hackathon",
+    tag: "Hackathon Mentor",
+    story: "ภาพบันทึกความประทับใจร่วมกับเมนเทอร์และคณะกรรมการในงานแข่งขัน AI Preneur Hackathon 2026",
+  },
+  {
+    id: "31",
+    src: "/images/Gallery/image copy 5.png",
+    title: "ลงพื้นที่พูดคุยและเรียนรู้จากคุณยายช่างทอผ้าไหม",
+    tag: "Artisan Field Work",
+    story: "ทีมงาน LAYA ลงพื้นที่สัมผัสภูมิปัญญาการทอผ้าไหมมัดหมี่โบราณ ร่วมพูดคุยและเก็บข้อมูลจากกลุ่มคุณยายช่างทอมืออาชีพ",
+  },
+  {
+    id: "32",
+    src: "/images/Gallery/image copy 6.png",
+    title: "ทีม LAYA ร่วมถ่ายภาพกับผู้ว่าฯ ชัชชาติ สิทธิพันธุ์",
+    tag: "Bangkok Governor",
+    story: "โอกาสอันทรงเกียรติของทีม LAYA ได้เข้าพบและถ่ายภาพร่วมกับคุณชัชชาติ สิทธิพันธุ์ ผู้ว่าราชการกรุงเทพมหานคร",
+  },
+  {
+    id: "33",
+    src: "/images/Gallery/image copy 7.png",
+    title: "เครื่องหมุนกวักเส้นไหมพื้นบ้านโบราณ",
+    tag: "Traditional Silk Spinning",
+    story: "อุปกรณ์กวักเส้นไหมไม้ยกโบราณ เครื่องมือพื้นบ้านทรงคุณค่าที่ใช้ในการเตรียมเส้นไหมก่อนเข้าสู่โฮงทอ",
+  },
+
+  /* ─── ภาพแฟชั่นผ้าไหมไทย & นิทรรศการ ─── */
   {
     id: "1",
     src: "/images/Gallery/LINE_ALBUM_14669_260724_1.jpg",
@@ -203,63 +262,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดสูทดับเบิลเบรสต์ผ้ามัดหมี่ทองบรอนซ์",
     tag: "Luxury Silk Suit",
     story: "ชุดสูทผ้าไหมมัดหมี่สีทองบรอนซ์ ลุคทางการสุดหรูที่สะท้อนถึงความประณีตและความพิถีพิถันของช่างทอและช่างตัดเย็บไทย",
-  },
-  /* ─── ภาพเพิ่มใหม่ (NEW HACKATHON & ARTISAN FIELD WORK IMAGES) ─── */
-  {
-    id: "26",
-    src: "/images/Gallery/image.png",
-    title: "ทีม LAYA กับเมนเทอร์และคณะกรรมการ Hackathon",
-    tag: "Hackathon Mentor",
-    story: "ภาพบันทึกความประทับใจร่วมกับเมนเทอร์และคณะกรรมการในงานแข่งขัน AI Preneur Hackathon 2026",
-  },
-  {
-    id: "27",
-    src: "/images/Gallery/image copy.png",
-    title: "LAYA คว้าตำแหน่ง Finalists 3 ทีมสุดท้าย",
-    tag: "AI Preneur Finalist",
-    story: "ทีม LAYA : AI-driven Marketplace คว้ารางวัลผ่านเข้ารอบ Finalists 3 ทีมสุดท้ายในงาน AI Preneur Day 2026",
-  },
-  {
-    id: "28",
-    src: "/images/Gallery/image copy 2.png",
-    title: "พิธีมอบรางวัลและถ่ายภาพรวมทีมไฟนอลิสต์",
-    tag: "Finalist Celebration",
-    story: "ทีมพัฒนา LAYA ร่วมถ่ายภาพฉลองความสำเร็จบนเวทีกับคณะผู้จัดงาน เมนเทอร์ และพันธมิตรผู้สนับสนุน",
-  },
-  {
-    id: "29",
-    src: "/images/Gallery/image copy 3.png",
-    title: "LAYA — สรุปเซสชัน Pitching เวทีระดับประเทศ",
-    tag: "Startup Event Insight",
-    story: "สรุปบทความ Event Insight นำเสนอแนวคิด Startup AI ผ้าไทย เปลี่ยนโจทย์มรดกวัฒนธรรมสู่ธุรกิจมูลค่าหลายล้าน",
-  },
-  {
-    id: "30",
-    src: "/images/Gallery/image copy 4.png",
-    title: "ภาพเบื้องหลังความทุ่มเทของทีม LAYA",
-    tag: "Team Spirit",
-    story: "บรรยากาศรอยยิ้มและความมุ่งมั่นของทีมผู้ก่อตั้ง LAYA ในการพัฒนาแพลตฟอร์ม Fashion Tech ผ้าไทย",
-  },
-  {
-    id: "31",
-    src: "/images/Gallery/image copy 5.png",
-    title: "ลงพื้นที่พูดคุยและเรียนรู้จากคุณยายช่างทอผ้าไหม",
-    tag: "Artisan Field Work",
-    story: "ทีมงาน LAYA ลงพื้นที่สัมผัสภูมิปัญญาการทอผ้าไหมมัดหมี่โบราณ ร่วมพูดคุยและเก็บข้อมูลจากกลุ่มคุณยายช่างทอมืออาชีพ",
-  },
-  {
-    id: "32",
-    src: "/images/Gallery/image copy 6.png",
-    title: "ทีม LAYA ร่วมถ่ายภาพกับผู้ว่าฯ ชัชชาติ สิทธิพันธุ์",
-    tag: "Bangkok Governor",
-    story: "โอกาสอันทรงเกียรติของทีม LAYA ได้เข้าพบและถ่ายภาพร่วมกับคุณชัชชาติ สิทธิพันธุ์ ผู้ว่าราชการกรุงเทพมหานคร",
-  },
-  {
-    id: "33",
-    src: "/images/Gallery/image copy 7.png",
-    title: "เครื่องหมุนกวักเส้นไหมพื้นบ้านโบราณ",
-    tag: "Traditional Silk Spinning",
-    story: "อุปกรณ์กวักเส้นไหมไม้ยกโบราณ เครื่องมือพื้นบ้านทรงคุณค่าที่ใช้ในการเตรียมเส้นไหมก่อนเข้าสู่โฮงทอ",
   },
 ];
 

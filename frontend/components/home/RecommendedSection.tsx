@@ -19,7 +19,14 @@ export default function RecommendedSection() {
   const { products } = useLiveProducts();
   const { t } = useLanguage();
 
-  const visible = useMemo(() => products.slice(0, 4), [products]);
+  const visible = useMemo(() => {
+    // กรองสินค้าเฉพาะกลุ่มคอลเลกชันเสื้อผ้าและผ้าไทย (ไม่เอากระเป๋า)
+    const apparelProducts = products.filter((p) => {
+      const isBag = p.name.includes("กระเป๋า") || p.category === "bag";
+      return !isBag;
+    });
+    return (apparelProducts.length >= 4 ? apparelProducts : products).slice(0, 4);
+  }, [products]);
 
   return (
     // อยู่ใน container กลางของ MobileLayout (maxWidth 1440) เหมือน Story/Communities —
