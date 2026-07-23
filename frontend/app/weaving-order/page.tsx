@@ -58,12 +58,21 @@ interface PaymentInfo {
   promptpayId: string;
 }
 
+interface ColorVariant {
+  id: string;
+  colorName: string;
+  colorHex: string;
+  previewUrl: string | null;
+  isNaturalDye: boolean;
+}
+
 interface PatternCard {
   id: string;
   label: string;
   region: string;
   preview: string;
   image: string | null;
+  colorVariants: ColorVariant[];
 }
 
 interface CommunityCard {
@@ -94,6 +103,7 @@ function WeavingOrderContent() {
 
   const [pattern, setPattern]   = useState(initialPatternId);
   const [colorTone, setColorTone] = useState("");
+  const [colorVariantId, setColorVariantId] = useState("");
   const [meters, setMeters]     = useState(3);
   const [community, setCommunity] = useState(initialShopId);
   const [notes, setNotes]       = useState("");
@@ -123,7 +133,7 @@ function WeavingOrderContent() {
         const qs = initialShopId ? `?shopId=${initialShopId}` : "";
         const res = await fetch(`${API_BASE}/api/weave-patterns${qs}`);
         if (!res.ok) throw new Error();
-        const pats = (await res.json()) as { id: string; name: string; originProvince?: string; thumbnailUrl?: string | null }[];
+        const pats = (await res.json()) as { id: string; name: string; originProvince?: string; thumbnailUrl?: string | null; colorVariants?: ColorVariant[] }[];
 
         // กันเคส deep-link มาด้วยลายที่ query ข้างบนกรองไม่เจอ (เช่น shopId filter ยังไม่รองรับที่ backend)
         let list = pats;
@@ -139,6 +149,7 @@ function WeavingOrderContent() {
           region: p.originProvince ?? "-",
           preview: PATTERN_PREVIEW_COLORS[i % PATTERN_PREVIEW_COLORS.length],
           image: p.thumbnailUrl ?? null,
+          colorVariants: p.colorVariants ?? [],
         })));
       } catch {
         if (!cancelled) setLoadError(true);
@@ -212,13 +223,22 @@ function WeavingOrderContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pattern, initialShopId, reloadTick]);
 
+  // เปลี่ยนลายแล้วล้างสีที่เลือกไว้เสมอ — โทนสี/สีจริงของลายเดิมอาจใช้กับลายใหม่ไม่ได้
+  useEffect(() => {
+    setColorTone("");
+    setColorVariantId("");
+  }, [pattern]);
+
   const selectedCommunity = communities.find((c) => c.id === community);
+  const selectedPattern = patterns.find((p) => p.id === pattern);
+  const patternColorVariants = selectedPattern?.colorVariants ?? [];
+  const selectedColorVariant = patternColorVariants.find((cv) => cv.id === colorVariantId);
 
   const estimatedPrice = meters * 320; // ราคาประเมินเบื้องต้น 320 บาท/เมตร
 
   const canNext = [
     !!pattern,
-    !!colorTone,
+    !!colorTone || !!colorVariantId,
     !!community,
     acceptedWarning,
   ][step] ?? true;
@@ -248,7 +268,8 @@ function WeavingOrderContent() {
           body: JSON.stringify({
             shopId: community,
             patternId: pattern,
-            customColorNote: COLOR_TONES.find((t) => t.id === colorTone)?.label,
+            colorVariantId: colorVariantId || undefined,
+            customColorNote: colorVariantId ? undefined : COLOR_TONES.find((t) => t.id === colorTone)?.label,
             metersRequested: meters,
             estimatedPrice,
             specialInstructions: notes || undefined,
@@ -575,30 +596,59 @@ function WeavingOrderContent() {
               <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 2 }}>
                 เลือกโทนสี
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {COLOR_TONES.map((tone) => (
-                  <Box
-                    key={tone.id}
-                    onClick={() => setColorTone(tone.id)}
-                    sx={{
-                      p: 2, borderRadius: "14px", cursor: "pointer",
-                      border: "2px solid", borderColor: colorTone === tone.id ? "#C5A55A" : "#E5DFD6",
-                      bgcolor: "#FFFFFF", display: "flex", alignItems: "center", gap: 2,
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", gap: 0.5 }}>
-                      {tone.colors.map((c, i) => (
-                        <Box key={i} sx={{ width: 28, height: 28, borderRadius: "50%", bgcolor: c }} />
-                      ))}
+              {patternColorVariants.length > 0 ? (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {patternColorVariants.map((cv) => (
+                    <Box
+                      key={cv.id}
+                      onClick={() => setColorVariantId(cv.id)}
+                      sx={{
+                        p: 2, borderRadius: "14px", cursor: "pointer",
+                        border: "2px solid", borderColor: colorVariantId === cv.id ? "#C5A55A" : "#E5DFD6",
+                        bgcolor: "#FFFFFF", display: "flex", alignItems: "center", gap: 2,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {cv.previewUrl ? (
+                        <Box sx={{ position: "relative", width: 44, height: 44, borderRadius: "10px", overflow: "hidden", flexShrink: 0 }}>
+                          <Image src={cv.previewUrl} alt={cv.colorName} fill style={{ objectFit: "cover" }} sizes="44px" />
+                        </Box>
+                      ) : (
+                        <Box sx={{ width: 28, height: 28, borderRadius: "50%", bgcolor: cv.colorHex, flexShrink: 0 }} />
+                      )}
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#374151", flex: 1 }}>
+                        {cv.colorName}{cv.isNaturalDye ? " · ย้อมธรรมชาติ" : ""}
+                      </Typography>
+                      {colorVariantId === cv.id && <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 20 }} />}
                     </Box>
-                    <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#374151", flex: 1 }}>
-                      {tone.label}
-                    </Typography>
-                    {colorTone === tone.id && <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 20 }} />}
-                  </Box>
-                ))}
-              </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {COLOR_TONES.map((tone) => (
+                    <Box
+                      key={tone.id}
+                      onClick={() => setColorTone(tone.id)}
+                      sx={{
+                        p: 2, borderRadius: "14px", cursor: "pointer",
+                        border: "2px solid", borderColor: colorTone === tone.id ? "#C5A55A" : "#E5DFD6",
+                        bgcolor: "#FFFFFF", display: "flex", alignItems: "center", gap: 2,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", gap: 0.5 }}>
+                        {tone.colors.map((c, i) => (
+                          <Box key={i} sx={{ width: 28, height: 28, borderRadius: "50%", bgcolor: c }} />
+                        ))}
+                      </Box>
+                      <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 600, color: "#374151", flex: 1 }}>
+                        {tone.label}
+                      </Typography>
+                      {colorTone === tone.id && <CheckCircleRoundedIcon sx={{ color: "#C5A55A", fontSize: 20 }} />}
+                    </Box>
+                  ))}
+                </Box>
+              )}
 
               {/* Meters */}
               <Box sx={{ mt: 4 }}>
@@ -734,9 +784,18 @@ function WeavingOrderContent() {
                 <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, color: "#1B2A4A", mb: 2 }}>
                   สรุปออเดอร์ทอผ้า
                 </Typography>
+                {selectedColorVariant?.previewUrl && (
+                  <Box sx={{ position: "relative", width: "100%", aspectRatio: "4 / 3", borderRadius: "12px", overflow: "hidden", mb: 2 }}>
+                    <Image
+                      src={selectedColorVariant.previewUrl}
+                      alt={`${selectedPattern?.label ?? "ลายผ้า"} — ${selectedColorVariant.colorName}`}
+                      fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 90vw, 400px"
+                    />
+                  </Box>
+                )}
                 {[
-                  ["ลายผ้า", patterns.find((p) => p.id === pattern)?.label],
-                  ["โทนสี", COLOR_TONES.find((t) => t.id === colorTone)?.label],
+                  ["ลายผ้า", selectedPattern?.label],
+                  ["โทนสี", selectedColorVariant?.colorName ?? COLOR_TONES.find((t) => t.id === colorTone)?.label],
                   ["จำนวน", `${meters} เมตร`],
                   ["ชุมชน", selectedCommunity?.name],
                   ["จังหวัด", selectedCommunity?.province],
