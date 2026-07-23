@@ -107,10 +107,13 @@ function CommunitySpotlight({ community, index }: { community: LiveCommunity; in
       }}
     >
       {/* ── ซ้าย: ภาพชุมชน/ช่างทอ เต็มความสูง ── */}
-      <Link href={`/community/${community.id}`} style={{ textDecoration: "none" }}>
+      {/* minWidth: 0 กัน grid item ขยายตาม intrinsic size ของรูปจนล้นคอลัมน์ (เจอกับบางร้านที่รูปต้นฉบับสัดส่วนกว้างมาก) */}
+      <Link href={`/community/${community.id}`} style={{ textDecoration: "none", minWidth: 0 }}>
         <Box
           sx={{
-            position: "relative", width: "100%", height: { xs: 320, md: "100%" }, minHeight: { md: 480 },
+            // ความสูงคงที่ (ไม่ใช้ 100%) — แต่ละบล็อกชุมชนเป็น grid ของตัวเอง ถ้าใช้ 100% รูปจะยืด
+            // ตามความสูงคอลัมน์ขวาของ "ตัวเอง" (จำนวนสินค้า/ความยาวข้อความต่างกัน) ทำให้รูปแต่ละร้านสูงไม่เท่ากัน
+            position: "relative", width: "100%", height: { xs: 320, md: 480 },
             borderRadius: "8px", overflow: "hidden", bgcolor: "#F0EBE3", cursor: "pointer",
             "&:hover .laya-spot-hero": { transform: "scale(1.03)" },
           }}
@@ -126,7 +129,7 @@ function CommunitySpotlight({ community, index }: { community: LiveCommunity; in
       </Link>
 
       {/* ── ขวา: สินค้าเด่น 2 ชิ้น (บน) + เรื่องราวชุมชน (ล่าง) ── */}
-      <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between", gap: { xs: 3, md: 4 } }}>
+      <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "space-between", gap: { xs: 3, md: 4 }, minWidth: 0 }}>
         {/* สินค้าเด่น */}
         {loadingProducts ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
