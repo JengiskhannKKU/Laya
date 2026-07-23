@@ -130,6 +130,7 @@ export default function DemoPosterModal() {
         <video
           controls
           autoPlay
+          muted
           playsInline
           style={{
             width: "100%",
@@ -137,9 +138,8 @@ export default function DemoPosterModal() {
             objectFit: "contain",
           }}
         >
-          <source src="/images/demo.mp4" type="video/mp4" />
-          <source src="/demo.mp4" type="video/mp4" />
-          <source src="/video1.mp4" type="video/mp4" />
+          <source src="/images/video/demo.mp4" type="video/mp4" />
+          <source src="/images/video/video1.mp4" type="video/mp4" />
           เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ
         </video>
       </Box>
