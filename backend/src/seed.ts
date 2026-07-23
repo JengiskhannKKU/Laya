@@ -304,6 +304,25 @@ async function seed() {
       );
     }
 
+    const { kotcherProducts } = await import("./seed-kotcher");
+    console.log("🛍️  Seeding Kotcher brand photo products...");
+    for (const p of kotcherProducts) {
+      await client.query(
+        `INSERT INTO products (
+          id, shop_id, name, name_en, description, description_en, category, price, price_unit, stock, fabric_type, has_gi, images, is_active
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, true)
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name, name_en = EXCLUDED.name_en, description = EXCLUDED.description,
+          category = EXCLUDED.category, price = EXCLUDED.price, price_unit = EXCLUDED.price_unit,
+          stock = EXCLUDED.stock, fabric_type = EXCLUDED.fabric_type, has_gi = EXCLUDED.has_gi,
+          images = EXCLUDED.images, is_active = true`,
+        [
+          p.id, p.shop_id, p.name, p.name_en, p.description, p.description_en,
+          p.category, p.price, p.price_unit, p.stock, p.fabric_type, p.has_gi, p.images,
+        ]
+      );
+    }
+
     await client.query("COMMIT");
     console.log("✅ Seed completed successfully!");
   } catch (err) {
