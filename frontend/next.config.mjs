@@ -48,6 +48,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.aiquickdraw.com",
       },
+      // Unsplash — รูปประกอบการ์ดโอกาสใช้งานใน SelectOccasionStep.tsx
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
   async rewrites() {
