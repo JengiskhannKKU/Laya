@@ -26,16 +26,16 @@ const IVORY = "#FAF6F0";
 
 // ลำดับ: เลือกร้าน → เลือกทรงที่ชอบ (ย้ายมาก่อนอัปโหลดผ้า เพราะทรงขึ้นกับร้านที่เลือกไว้ ไม่ขึ้นกับผ้า
 // เลือกทรงไว้ก่อนได้เลยแม้ยังไม่มีรูปผ้า — ตอน preview จะขึ้น placeholder สีจนกว่าจะอัปโหลดผ้าจริง) →
-// อัปโหลดรูปผ้า (เห็น Preview การออกแบบ) → ปรับรายละเอียดเพิ่มเติม (คอ/แขน/กระเป๋า/กระดุม/ความยาว/ทรง/ซับใน —
-// ตามสเปค services.jpg ข้อ 4-5 "Preview Engine") → AI วิเคราะห์ผ้า → บรีฟการใช้งาน/สไตล์/ความพอดี →
+// อัปโหลดรูปผ้า (เห็น Preview การออกแบบ) → AI วิเคราะห์ผ้า → ปรับรายละเอียดเพิ่มเติม (คอ/แขน/กระเป๋า/กระดุม/
+// ความยาว/ทรง/ซับใน — ตามสเปค services.jpg ข้อ 4-5 "Preview Engine") → บรีฟการใช้งาน/สไตล์/ความพอดี →
 // สัดส่วนร่างกาย (ถ่ายรูป/กรอกสัดส่วน) → ลองใส่เสมือนจริง → สรุปออเดอร์ → สำเร็จ
 
 export type TailorStep =
   | "select_shop"
   | "choose_shape"
   | "upload"
-  | "customize_details"
   | "ai_analysis"
+  | "customize_details"
   | "select_occasion"
   | "measurements"
   | "virtual_try_on"
@@ -93,9 +93,9 @@ export default function TailorWithFabricFlow() {
     switch (currentStep) {
       case "choose_shape": goNext("select_shop"); break;
       case "upload": goNext("choose_shape"); break;
-      case "customize_details": goNext("upload"); break;
-      case "ai_analysis": goNext("customize_details"); break;
-      case "select_occasion": goNext("ai_analysis"); break;
+      case "ai_analysis": goNext("upload"); break;
+      case "customize_details": goNext("ai_analysis"); break;
+      case "select_occasion": goNext("customize_details"); break;
       case "measurements": goNext("select_occasion"); break;
       case "virtual_try_on": goNext("measurements"); break;
       case "order_summary": goNext("virtual_try_on"); break;
@@ -160,13 +160,13 @@ export default function TailorWithFabricFlow() {
             <ChooseShapeStep key="choose_shape" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("upload")} />
           )}
           {currentStep === "upload" && (
-            <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("customize_details")} />
-          )}
-          {currentStep === "customize_details" && (
-            <CustomizeDetailsStep key="customize_details" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
+            <UploadFabricStep key="upload" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("ai_analysis")} />
           )}
           {currentStep === "ai_analysis" && (
-            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
+            <AIAnalysisStep key="ai_analysis" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("customize_details")} />
+          )}
+          {currentStep === "customize_details" && (
+            <CustomizeDetailsStep key="customize_details" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("select_occasion")} />
           )}
           {currentStep === "select_occasion" && (
             <SelectOccasionStep key="select_occasion" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("measurements")} />

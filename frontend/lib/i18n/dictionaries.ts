@@ -495,7 +495,7 @@ const th = {
       selectShop: "เลือกร้านตัดเย็บ",
       success: "ร้านคอนเฟิร์มออเดอร์แล้ว!",
     },
-    stepLabels: ["เลือกร้าน", "เลือกทรง", "อัปโหลดผ้า", "รายละเอียดเพิ่มเติม", "วิเคราะห์ผ้า", "ข้อมูลการใช้งาน", "สัดส่วนร่างกาย", "ลองใส่เสมือนจริง", "สรุปออเดอร์"],
+    stepLabels: ["เลือกร้าน", "เลือกทรง", "อัปโหลดผ้า", "วิเคราะห์ผ้า", "รายละเอียดเพิ่มเติม", "ข้อมูลการใช้งาน", "สัดส่วนร่างกาย", "ลองใส่เสมือนจริง", "สรุปออเดอร์"],
     stepOfN: "ขั้นตอนที่ {n} จาก {total} — {label}",
     common: {
       skipStep: "ข้ามขั้นตอนนี้",
@@ -1235,7 +1235,7 @@ const en = {
       selectShop: "Choose Tailor Shop",
       success: "Order Confirmed by Shop!",
     },
-    stepLabels: ["Choose Shop", "Choose Style", "Upload Fabric", "Garment Details", "Analyze Fabric", "Usage Brief", "Body Measurements", "Virtual Try-On", "Order Summary"],
+    stepLabels: ["Choose Shop", "Choose Style", "Upload Fabric", "Analyze Fabric", "Garment Details", "Usage Brief", "Body Measurements", "Virtual Try-On", "Order Summary"],
     stepOfN: "Step {n} of {total} — {label}",
     common: {
       skipStep: "Skip this step",
