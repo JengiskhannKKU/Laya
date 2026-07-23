@@ -22,8 +22,8 @@ const STEP_INDEX: Record<string, number> = {
   select_shop: 0,
   choose_shape: 1,
   upload: 2,
-  customize_details: 3,
-  ai_analysis: 4,
+  ai_analysis: 3,
+  customize_details: 4,
   select_occasion: 5,
   measurements: 6,
   virtual_try_on: 7,
@@ -33,7 +33,7 @@ const STEP_INDEX: Record<string, number> = {
 // เรียงลำดับ key เดียวกับ STEP_INDEX/tailorFlow.stepLabels เป๊ะ — ใช้แปล index ที่คลิกกลับเป็นชื่อ step
 // ให้ TailorWithFabricFlow.tsx เรียก goNext ตรงๆ ได้ (คลิกจุดไหนในสเต็ปเปอร์ ไปหน้านั้นได้ทันที ไม่ต้องกด "ถัดไป" ไล่ทีละขั้น)
 const STEP_ORDER = [
-  "select_shop", "choose_shape", "upload", "customize_details", "ai_analysis",
+  "select_shop", "choose_shape", "upload", "ai_analysis", "customize_details",
   "select_occasion", "measurements", "virtual_try_on", "order_summary",
 ] as const;
 
