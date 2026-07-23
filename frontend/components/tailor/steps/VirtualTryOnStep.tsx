@@ -7,6 +7,7 @@ import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useAsyncJob } from "@/lib/hooks/useAsyncJob";
 
 import type { Perspective } from "./MeasurementsStep";
 
@@ -17,7 +18,7 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
-type SlotState = { status: "idle" | "loading" | "done" | "error"; url?: string; mock?: boolean; error?: string };
+interface TryOnResult { imageUrl: string; mock?: boolean }
 
 /**
  * ลองใส่เสมือนจริงของจริง — AI (kie.ai gpt4o-image ผ่าน backend /api/tryon/*) ใส่ชุดจากผ้าที่อัปโหลดไว้
@@ -28,6 +29,10 @@ type SlotState = { status: "idle" | "loading" | "done" | "error"; url?: string; 
  * ยังคงห้ามยิงพร้อมกันหลายมุม (ทดสอบจริงแล้วพบว่ายิงพร้อมกันทำให้ kie.ai คืน error เพราะแอคเคาท์นี้
  * จำกัด concurrency) — ปุ่ม generate จะถูก disable ระหว่างมุมอื่นกำลังสร้างอยู่
  * ถ้า API หมดเครดิต backend จะ fallback เป็นรูปตัวอย่างเองแบบ graceful (mock:true) — โชว์ label บอกตรงๆ
+ *
+ * แต่ละมุม (front/back/side) ใช้ useAsyncJob แยกกัน คนละ storageKey — ทน tab สลับ/โหลดหน้าใหม่ระหว่างรอ
+ * generate (ใช้เวลาได้ถึง ~5 นาทีต่อมุม) ได้ เพราะ backend ตอบ jobId ทันทีแล้ว hook resume poll เองได้
+ * ถ้าหน้าโหลดใหม่ระหว่างรอ ไม่ต้องเริ่ม generate ซ้ำ
  */
 export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: any) {
   const { t } = useLanguage();
@@ -74,14 +79,20 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
   const bodyMeasurements = orderState.bodyMeasurements;
   const isMeasurementMode = orderState.bodyInputMode === "measurements";
   const [active, setActive] = useState<Perspective>("front");
-  const [slots, setSlots] = useState<Record<Perspective, SlotState>>({
-    front: { status: "idle" }, back: { status: "idle" }, side: { status: "idle" },
-  });
+
+  // ต้องเรียก hook แบบ fixed (ไม่ loop/เงื่อนไข) — PERSPECTIVES มี 3 มุมตายตัวเสมอ
+  const frontJob = useAsyncJob<TryOnResult>("laya-job-tryon-front");
+  const backJob = useAsyncJob<TryOnResult>("laya-job-tryon-back");
+  const sideJob = useAsyncJob<TryOnResult>("laya-job-tryon-side");
+  const jobs: Record<Perspective, ReturnType<typeof useAsyncJob<TryOnResult>>> = {
+    front: frontJob, back: backJob, side: sideJob,
+  };
+
   const uploadedUrls = useRef<{ body: Partial<Record<Perspective, string>>; fabric?: string }>({ body: {} });
   const [elapsedSec, setElapsedSec] = useState(0);
 
-  const anyLoading = PERSPECTIVES.some((p) => slots[p.key].status === "loading");
-  const loadingPerspective = PERSPECTIVES.find((p) => slots[p.key].status === "loading")?.key;
+  const anyLoading = PERSPECTIVES.some((p) => jobs[p.key].status === "loading");
+  const loadingPerspective = PERSPECTIVES.find((p) => jobs[p.key].status === "loading")?.key;
 
   // นับเวลาที่ผ่านไปตอนกำลัง generate — AI ใช้เวลาจริงได้ 2-5 นาทีต่อมุม (บางครั้งนานกว่านั้น) กันคนคิดว่าค้าง
   useEffect(() => {
@@ -103,8 +114,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
   };
 
   const runPerspective = async (p: Perspective) => {
-    setSlots((s) => ({ ...s, [p]: { status: "loading" } }));
-    try {
+    await jobs[p].submit(async () => {
       // โหมด measurements ไม่มีรูปตัวเองจริง — ให้ AI สร้างแบบจำลองจากสัดส่วนแทน ไม่ต้องอัปโหลด/ส่ง bodyPhotoUrl
       let bodyUrl: string | undefined;
       if (!isMeasurementMode) {
@@ -136,20 +146,34 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
       });
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error ?? t("tailorFlow.virtualTryOn.generateFailed"));
-
-      setSlots((s) => ({ ...s, [p]: { status: "done", url: json.imageUrl, mock: json.mock } }));
-      setOrderState((prev: any) => ({
-        ...prev,
-        tryOnResults: { ...prev.tryOnResults, [p]: json.imageUrl },
-      }));
-    } catch (err: any) {
-      setSlots((s) => ({ ...s, [p]: { status: "error", error: err.message ?? t("tailorFlow.virtualTryOn.genericError") } }));
-    }
+      return { jobId: json.jobId as string };
+    });
   };
 
-  const activeSlot = slots[active];
-  const hasAnyMock = PERSPECTIVES.some((p) => slots[p.key].mock);
-  const anyDone = PERSPECTIVES.some((p) => slots[p.key].status === "done");
+  // sync ผลลัพธ์แต่ละมุมเข้า orderState.tryOnResults ทันทีที่ job เสร็จ (รวมถึงกรณี resume poll หลังโหลดหน้าใหม่
+  // ซึ่งไม่ได้ผ่าน runPerspective เลย) — ใช้ effect แยกจาก runPerspective เพราะ poll อาจเสร็จหลัง component
+  // remount ไปแล้ว
+  useEffect(() => {
+    PERSPECTIVES.forEach((p) => {
+      const job = jobs[p.key];
+      if (job.status === "done" && job.result?.imageUrl) {
+        setOrderState((prev: any) => {
+          if (prev.tryOnResults?.[p.key] === job.result!.imageUrl) return prev;
+          return { ...prev, tryOnResults: { ...prev.tryOnResults, [p.key]: job.result!.imageUrl } };
+        });
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frontJob.status, backJob.status, sideJob.status]);
+
+  const activeSlot = {
+    status: jobs[active].status,
+    url: jobs[active].result?.imageUrl,
+    mock: jobs[active].result?.mock,
+    error: jobs[active].error,
+  };
+  const hasAnyMock = PERSPECTIVES.some((p) => jobs[p.key].result?.mock);
+  const anyDone = PERSPECTIVES.some((p) => jobs[p.key].status === "done");
 
   return (
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
@@ -176,7 +200,7 @@ export default function VirtualTryOnStep({ orderState, setOrderState, onNext }: 
       {/* มุมสลับ */}
       <Box sx={{ display: 'flex', gap: 1 }}>
         {PERSPECTIVES.map((p) => {
-          const s = slots[p.key];
+          const s = jobs[p.key];
           return (
             <Box key={p.key} onClick={() => setActive(p.key)}
               sx={{

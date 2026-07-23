@@ -6,6 +6,7 @@ import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useAsyncJob } from "@/lib/hooks/useAsyncJob";
 
 // ตัด trailing slash กัน URL เพี้ยนเป็น // (NEXT_PUBLIC_API_URL ใน .env.local ลงท้ายด้วย /)
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
@@ -14,19 +15,23 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
-type PreviewStatus = "idle" | "loading" | "done" | "error";
-
 /**
  * ขั้นอัปโหลดรูปผ้า — เดิมอัปโหลดเสร็จแล้วเด้งไปขั้นถัดไปทันที (ไม่เห็นว่าผ้าจริงจะออกมาเป็นชุดแบบไหน)
  * ตอนนี้หลังอัปโหลด จะเรียก backend ผสมลายผ้าลงบนทรงเทมเพลตที่เลือกไว้แล้ว (ChooseShapeStep มาก่อนขั้นนี้เสมอ)
  * แล้วโชว์ตัวอย่างจริงให้ลูกค้าดูก่อน ค่อยกดยืนยันไปขั้นถัดไป — ไม่ auto-advance อีกต่อไป
+ *
+ * ใช้ useAsyncJob แทน fetch เดียวค้างรอ — เจอปัญหาจริง: ถ้าผู้ใช้สลับแท็บ/โหลดหน้าใหม่ระหว่างรอ AI generate
+ * (ใช้เวลาได้ถึง ~5 นาที) ผลลัพธ์ที่ backend สร้างเสร็จแล้วหายไปเปล่าๆ เพราะไม่มีที่เก็บ jobId ไว้กลับมาถาม
+ * ตอนนี้ backend ตอบ jobId ทันที แล้ว hook จะ persist ไว้ใน sessionStorage + poll สถานะเอง — โหลดหน้าใหม่/
+ * สลับแท็บกลับมาก็ resume poll งานเดิมต่อได้ ไม่ต้องเริ่ม generate ใหม่
  */
 export default function UploadFabricStep({ orderState, setOrderState, onNext }: any) {
   const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewStatus, setPreviewStatus] = useState<PreviewStatus>("idle");
-  const [previewImage, setPreviewImage] = useState<string | undefined>(undefined);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const job = useAsyncJob<{ previewImage: string; mock?: boolean }>("laya-job-composite-preview");
+  const previewStatus = job.status;
+  const previewImage = job.result?.previewImage;
 
   const shapeName = orderState.shape?.name ?? "";
 
@@ -45,10 +50,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
       onNext();
       return;
     }
-    setPreviewStatus("loading");
-    try {
-      // กัน fetch ค้างตลอดไปฝั่ง browser ถ้า connection มีปัญหาแบบไม่ error ชัดเจน (10 นาที > เวลาที่ใช้จริงสูงสุด
-      // ~5 นาที ของ backend เผื่อไว้พอสมควร) — ให้จบด้วย error state แทนสปินเนอร์ค้างตลอดไปแบบไม่มีทางออก
+    await job.submit(async () => {
       const res = await fetch(`${API_BASE}/api/tryon/composite-preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,15 +59,11 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
           shape: { id: orderState.shape.id },
           perspective: "front",
         }),
-        signal: AbortSignal.timeout(600_000),
       });
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error ?? "preview failed");
-      setPreviewImage(json.previewImage as string);
-      setPreviewStatus("done");
-    } catch {
-      setPreviewStatus("error");
-    }
+      return { jobId: json.jobId as string };
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,8 +100,7 @@ export default function UploadFabricStep({ orderState, setOrderState, onNext }: 
   };
 
   const handleChangeFabric = () => {
-    setPreviewStatus("idle");
-    setPreviewImage(undefined);
+    job.reset();
     handleClickUpload();
   };
 

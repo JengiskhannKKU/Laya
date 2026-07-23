@@ -1,11 +1,27 @@
 import { Router, Request, Response } from "express";
+import { randomUUID } from "crypto";
 import { uploadBase64AsWebP, BUCKETS } from "../utils/imageUtils";
 import { supabaseAdminConfigured } from "../utils/supabaseAdmin";
 import { generateImage } from "../utils/kieImage";
 import { runTryOn } from "../utils/fashn";
 import { generateGarmentProductImage } from "../utils/garmentProduct";
+import { createJob, resolveJob, rejectJob, getJob } from "../utils/jobStore";
 
 const router = Router();
+
+/**
+ * GET /api/tryon/job/:jobId — เช็คสถานะงาน AI ที่ generate อยู่เบื้องหลัง (composite-preview, generate)
+ * frontend poll endpoint นี้แทนการรอ HTTP response ค้างตรงๆ — กันเคสสลับแท็บ/โหลดหน้าใหม่แล้วผลลัพธ์หาย
+ * (ดู useAsyncJob.ts ฝั่ง frontend — เก็บ jobId ไว้ใน sessionStorage แล้ว poll endpoint นี้จนกว่าจะเสร็จ)
+ */
+router.get("/job/:jobId", (req: Request, res: Response) => {
+  const job = getJob(req.params.jobId);
+  if (!job) {
+    res.status(404).json({ error: "ไม่พบงานนี้ (อาจหมดอายุแล้ว — เกิน 15 นาที)" });
+    return;
+  }
+  res.json({ status: job.status, result: job.result, error: job.error });
+});
 
 /**
  * POST /api/tryon/upload — body: { imageBase64 } → { url }
@@ -40,30 +56,39 @@ router.post("/upload", async (req: Request, res: Response) => {
  * UploadFabricStep เสมอ) ผสมกับลายผ้าที่เพิ่งอัปโหลด แล้วส่ง URL รูปตัวอย่างกลับ — ให้ลูกค้าเห็นภาพชุดจริง
  * ก่อนจะไปขั้นถ่ายรูปตัวเอง/สัดส่วน (เดิมใช้ sharp mask compositing ตรงๆ แต่ขอบภาพเบลอ/หยาบเกินไป)
  */
-router.post("/composite-preview", async (req: Request, res: Response) => {
-  try {
-    const { fabricImageBase64, shape, perspective } = req.body as {
-      fabricImageBase64?: string;
-      shape?: { id?: string };
-      perspective?: "front" | "back";
-    };
-    if (!fabricImageBase64) {
-      res.status(400).json({ error: "fabricImageBase64 is required" });
-      return;
-    }
-    if (!shape?.id) {
-      res.status(400).json({ error: "shape.id is required" });
-      return;
-    }
-
-    // AI generate ต้องการ URL อินเทอร์เน็ตของรูปผ้า ไม่รับ base64 ตรงๆ — อัปโหลดขึ้น Storage ก่อน
-    const fabricUpload = await uploadBase64AsWebP(fabricImageBase64, BUCKETS.tryonUploads, "fabric-previews");
-    const product = await generateGarmentProductImage(shape.id, perspective ?? "front", fabricUpload.url);
-    res.json({ success: true, previewImage: product.url, mock: product.mock });
-  } catch (err: any) {
-    console.error("[tryon/composite-preview] error:", err.message);
-    res.status(500).json({ error: err.message ?? "สร้างตัวอย่างชุดไม่สำเร็จ" });
+router.post("/composite-preview", (req: Request, res: Response) => {
+  const { fabricImageBase64, shape, perspective } = req.body as {
+    fabricImageBase64?: string;
+    shape?: { id?: string };
+    perspective?: "front" | "back";
+  };
+  if (!fabricImageBase64) {
+    res.status(400).json({ error: "fabricImageBase64 is required" });
+    return;
   }
+  if (!shape?.id) {
+    res.status(400).json({ error: "shape.id is required" });
+    return;
+  }
+
+  // ตอบ jobId กลับทันที ไม่รอ generate เสร็จ (ใช้เวลาได้ถึง ~5 นาที) — กันเคสสลับแท็บ/โหลดหน้าใหม่แล้ว
+  // ผลลัพธ์หายเพราะ HTTP request ถูกตัดขาดกลางทาง ส่วนงานจริงทำต่อเบื้องหลัง ผลลัพธ์เก็บไว้ใน jobStore
+  // ให้ frontend poll GET /job/:jobId เอาเอง (ดู useAsyncJob.ts)
+  const jobId = randomUUID();
+  createJob(jobId);
+  res.json({ jobId });
+
+  (async () => {
+    try {
+      // AI generate ต้องการ URL อินเทอร์เน็ตของรูปผ้า ไม่รับ base64 ตรงๆ — อัปโหลดขึ้น Storage ก่อน
+      const fabricUpload = await uploadBase64AsWebP(fabricImageBase64, BUCKETS.tryonUploads, "fabric-previews");
+      const product = await generateGarmentProductImage(shape.id!, perspective ?? "front", fabricUpload.url);
+      resolveJob(jobId, { success: true, previewImage: product.url, mock: product.mock });
+    } catch (err: any) {
+      console.error("[tryon/composite-preview] error:", err.message);
+      rejectJob(jobId, err.message ?? "สร้างตัวอย่างชุดไม่สำเร็จ");
+    }
+  })();
 });
 
 type Perspective = "front" | "back" | "side";
@@ -137,70 +162,79 @@ function describeGarmentShape(shape?: { id?: string; name?: string }): string {
  * shape: { id, name } ของเทมเพลตที่เลือกไว้ใน ChooseShapeStep — ใช้ระบุทรงเสื้อผ้าจริงในพรอมต์
  * (เดิมพรอมต์เขียนแค่ "outfit" กว้างๆ ไม่สนใจว่าลูกค้าเลือกทรงไหนไว้ — ทำให้ผลลัพธ์ไม่ตรงกับทรงที่เลือก)
  */
-router.post("/generate", async (req: Request, res: Response) => {
-  try {
-    const { bodyPhotoUrl, bodyMeasurements, fabricImageUrl, perspective, analysisResult, occasion, shape } = req.body as {
-      bodyPhotoUrl?: string;
-      bodyMeasurements?: BodyMeasurements;
-      fabricImageUrl?: string;
-      perspective?: Perspective;
-      analysisResult?: { type?: string; technique?: string; pattern?: string; tone?: string };
-      occasion?: string;
-      shape?: { id?: string; name?: string };
-    };
+router.post("/generate", (req: Request, res: Response) => {
+  const { bodyPhotoUrl, bodyMeasurements, fabricImageUrl, perspective, analysisResult, occasion, shape } = req.body as {
+    bodyPhotoUrl?: string;
+    bodyMeasurements?: BodyMeasurements;
+    fabricImageUrl?: string;
+    perspective?: Perspective;
+    analysisResult?: { type?: string; technique?: string; pattern?: string; tone?: string };
+    occasion?: string;
+    shape?: { id?: string; name?: string };
+  };
 
-    if (!bodyPhotoUrl && !bodyMeasurements) {
-      res.status(400).json({ error: "bodyPhotoUrl or bodyMeasurements is required" });
-      return;
-    }
-    if (!perspective || !PERSPECTIVE_DESC[perspective]) {
-      res.status(400).json({ error: "perspective must be one of: front, back, side" });
-      return;
-    }
-
-    // มีรูปตัวเองจริง + เลือกทรงเทมเพลตไว้แล้ว + มีรูปผ้า → ใช้ FASHN virtual try-on (ทำมาสำหรับใส่เสื้อผ้า
-    // ลงบนรูปคนจริงโดยเฉพาะ ผลลัพธ์แม่นกว่า image-editing ทั่วไปแบบ kie.ai) แทน
-    // ต้องสร้างรูป "ชุดจริง" จากทรงเทมเพลต + ผ้าก่อน (generateGarmentProductImage — ใช้ AI generate ไม่ใช่
-    // sharp mask compositing เพราะขอบภาพเบลอ/หยาบ) เพราะ FASHN ต้องการรูปเสื้อผ้าจริง ไม่ใช่ line art เปล่าๆ
-    // ถ้าไม่มีเงื่อนไขครบ (เช่น โหมด measurements หรือยังไม่เลือกทรง/ผ้า) fallback ไป kie.ai เดิม
-    if (bodyPhotoUrl && shape?.id && fabricImageUrl) {
-      try {
-        const product = await generateGarmentProductImage(shape.id, perspective, fabricImageUrl);
-        const result = await runTryOn({ modelImageUrl: bodyPhotoUrl, productImageUrl: product.url });
-        res.json({ success: true, perspective, ...result });
-        return;
-      } catch (fashnErr: any) {
-        console.error("[tryon/generate] FASHN path failed, falling back to kie.ai:", fashnErr.message);
-        // ตกไปใช้ kie.ai เดิมด้านล่างต่อ (ไม่ throw ทันที กันเคสไม่มี artwork ของทรงนี้ หรือ FASHN ล่มชั่วคราว)
-      }
-    }
-
-    const fabricDesc = analysisResult
-      ? `${analysisResult.type ?? "ผ้าไทย"} ลาย${analysisResult.pattern ?? "ทอมือ"} โทนสี${analysisResult.tone ?? ""} เทคนิค${analysisResult.technique ?? ""}`.trim()
-      : "the Thai fabric shown in the reference image";
-
-    const garmentDesc = describeGarmentShape(shape);
-
-    const subjectInstruction = bodyPhotoUrl
-      ? "Using the first reference image as the exact person — preserve their face, hair, skin tone, and body proportions exactly, do not change their identity —"
-      : `Generate ${describeBodyBuild(bodyMeasurements!)} as a photorealistic fashion model (not a real specific person, a newly generated model matching these proportions) —`;
-
-    const prompt = [
-      subjectInstruction,
-      fabricImageUrl ? `and the ${bodyPhotoUrl ? "second" : "first"} reference image as the fabric texture and color reference,` : "",
-      `generate a photorealistic full-body fashion photograph of this person wearing ${garmentDesc}, tailored Thai-style, made from ${fabricDesc}`,
-      occasion ? `, appropriate for the occasion: ${occasion}` : "",
-      `. Camera angle: ${PERSPECTIVE_DESC[perspective]}. Studio lighting, professional fashion photography, plain neutral background, natural standing pose.`,
-    ].filter(Boolean).join(" ");
-
-    const filesUrl = [bodyPhotoUrl, fabricImageUrl].filter(Boolean) as string[];
-
-    const result = await generateImage({ prompt, filesUrl, size: "2:3" });
-    res.json({ success: true, perspective, ...result });
-  } catch (err: any) {
-    console.error("[tryon/generate] error:", err.message);
-    res.status(500).json({ error: err.message ?? "Generation failed" });
+  if (!bodyPhotoUrl && !bodyMeasurements) {
+    res.status(400).json({ error: "bodyPhotoUrl or bodyMeasurements is required" });
+    return;
   }
+  if (!perspective || !PERSPECTIVE_DESC[perspective]) {
+    res.status(400).json({ error: "perspective must be one of: front, back, side" });
+    return;
+  }
+
+  // ตอบ jobId กลับทันที ไม่รอ generate เสร็จ (ใช้เวลาได้ถึง ~5 นาที) — กันเคสสลับแท็บ/โหลดหน้าใหม่แล้ว
+  // ผลลัพธ์หายเพราะ HTTP request ถูกตัดขาดกลางทาง ส่วนงานจริงทำต่อเบื้องหลัง ผลลัพธ์เก็บไว้ใน jobStore
+  // ให้ frontend poll GET /job/:jobId เอาเอง (ดู useAsyncJob.ts)
+  const jobId = randomUUID();
+  createJob(jobId);
+  res.json({ jobId });
+
+  (async () => {
+    try {
+      // มีรูปตัวเองจริง + เลือกทรงเทมเพลตไว้แล้ว + มีรูปผ้า → ใช้ FASHN virtual try-on (ทำมาสำหรับใส่เสื้อผ้า
+      // ลงบนรูปคนจริงโดยเฉพาะ ผลลัพธ์แม่นกว่า image-editing ทั่วไปแบบ kie.ai) แทน
+      // ต้องสร้างรูป "ชุดจริง" จากทรงเทมเพลต + ผ้าก่อน (generateGarmentProductImage — ใช้ AI generate ไม่ใช่
+      // sharp mask compositing เพราะขอบภาพเบลอ/หยาบ) เพราะ FASHN ต้องการรูปเสื้อผ้าจริง ไม่ใช่ line art เปล่าๆ
+      // ถ้าไม่มีเงื่อนไขครบ (เช่น โหมด measurements หรือยังไม่เลือกทรง/ผ้า) fallback ไป kie.ai เดิม
+      if (bodyPhotoUrl && shape?.id && fabricImageUrl) {
+        try {
+          const product = await generateGarmentProductImage(shape.id, perspective, fabricImageUrl);
+          const result = await runTryOn({ modelImageUrl: bodyPhotoUrl, productImageUrl: product.url });
+          resolveJob(jobId, { success: true, perspective, ...result });
+          return;
+        } catch (fashnErr: any) {
+          console.error("[tryon/generate] FASHN path failed, falling back to kie.ai:", fashnErr.message);
+          // ตกไปใช้ kie.ai เดิมด้านล่างต่อ (ไม่ throw ทันที กันเคสไม่มี artwork ของทรงนี้ หรือ FASHN ล่มชั่วคราว)
+        }
+      }
+
+      const fabricDesc = analysisResult
+        ? `${analysisResult.type ?? "ผ้าไทย"} ลาย${analysisResult.pattern ?? "ทอมือ"} โทนสี${analysisResult.tone ?? ""} เทคนิค${analysisResult.technique ?? ""}`.trim()
+        : "the Thai fabric shown in the reference image";
+
+      const garmentDesc = describeGarmentShape(shape);
+
+      const subjectInstruction = bodyPhotoUrl
+        ? "Using the first reference image as the exact person — preserve their face, hair, skin tone, and body proportions exactly, do not change their identity —"
+        : `Generate ${describeBodyBuild(bodyMeasurements!)} as a photorealistic fashion model (not a real specific person, a newly generated model matching these proportions) —`;
+
+      const prompt = [
+        subjectInstruction,
+        fabricImageUrl ? `and the ${bodyPhotoUrl ? "second" : "first"} reference image as the fabric texture and color reference,` : "",
+        `generate a photorealistic full-body fashion photograph of this person wearing ${garmentDesc}, tailored Thai-style, made from ${fabricDesc}`,
+        occasion ? `, appropriate for the occasion: ${occasion}` : "",
+        `. Camera angle: ${PERSPECTIVE_DESC[perspective]}. Studio lighting, professional fashion photography, plain neutral background, natural standing pose.`,
+      ].filter(Boolean).join(" ");
+
+      const filesUrl = [bodyPhotoUrl, fabricImageUrl].filter(Boolean) as string[];
+
+      const result = await generateImage({ prompt, filesUrl, size: "2:3" });
+      resolveJob(jobId, { success: true, perspective, ...result });
+    } catch (err: any) {
+      console.error("[tryon/generate] error:", err.message);
+      rejectJob(jobId, err.message ?? "Generation failed");
+    }
+  })();
 });
 
 export default router;
