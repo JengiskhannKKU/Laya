@@ -99,19 +99,33 @@ export default function HeroSearch() {
       >
         {bannerLayers}
 
-        {/* Scrim navy — ให้ตัวอักษรขาวอ่านชัดบนภาพ */}
+        {/* Scrim navy — ครอบคลุมทั้งภาพเพื่อให้ตัวอักษรขาวอ่านชัดในทุกตำแหน่ง */}
         <Box
           aria-hidden
           sx={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(15,26,48,0.85) 0%, rgba(15,26,48,0.42) 42%, rgba(15,26,48,0.08) 68%, transparent 100%)",
+              "linear-gradient(180deg, rgba(15,26,48,0.65) 0%, rgba(15,26,48,0.45) 40%, rgba(15,26,48,0.85) 100%)",
           }}
         />
 
-        {/* Overlay content — ชิดล่างซ้าย, เว้นที่ให้ FloatingSearch ลอยคาบ */}
-        <Box sx={{ position: "absolute", left: 0, right: 0, bottom: 0, px: 3, pb: 6.5 }}>
+        {/* Overlay content — ขยับขึ้นไปในพื้นที่ว่างด้านบน จัดวางตรงกลางในแนวตั้ง */}
+        <Box
+          sx={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            px: 3,
+            pt: 2,
+            pb: 6.5,
+          }}
+        >
           <Typography
             component="h1"
             sx={{

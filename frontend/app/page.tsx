@@ -6,6 +6,7 @@ import FloatingSearch from "@/components/home/FloatingSearch";
 import RecommendedSection from "@/components/home/RecommendedSection";
 import EditorialSection from "@/components/home/EditorialSection";
 import CommunitiesSection from "@/components/home/CommunitiesSection";
+import DemoPosterModal from "@/components/home/DemoPosterModal";
 
 // หมายเหตุ: ตัด NewArrivalsSection + ExploreSection ออกจากหน้าแรก (ธีม declutter)
 // ทั้งสองซ้ำซ้อนกับสิ่งที่มีอยู่แล้ว: NewArrivals โชว์กริดสินค้าเดิมซ้ำกับ Recommended,
@@ -32,6 +33,8 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <MobileLayout>
+      {/* ป๊อบอัพโฆษณาโปสเตอร์ต้อนรับเมื่อเปิดเว็บครั้งแรก (แสดงครั้งเดียว บันทึกใน localStorage) */}
+      <DemoPosterModal />
       {/* ลำดับตาม mockup: hero (ภาพชนขอบขวา) → ค้นหาลอย → Curated For You →
           Story + Royal Quote (การ์ดคู่) → ชุมชน → แรงบันดาลใจ
           หมายเหตุ: TrustBar ถอดออกตาม mockup ล่าสุด, คำคมพระราชปณิธานย้ายไปอยู่ใน EditorialSection */}
