@@ -17,7 +17,7 @@ export const BUCKETS = {
   tryonUploads:  "tryon-uploads",    // รูปสำหรับ Virtual Try-On
   patternImages: "pattern-images",   // รูปลายผ้า + รูปกระบวนการทอ
   chatAttachments: "chat-attachments", // ไฟล์/รูปที่แนบในแชท
-  paymentSlips:  "payment-slips",     // สลิปการโอนเงิน (สำหรับตรวจสอบผ่าน EasySlip)
+  paymentSlips:  "payment-slips",     // สลิปการโอนเงิน (สำหรับตรวจสอบผ่าน SlipOk)
 } as const;
 
 export type BucketName = (typeof BUCKETS)[keyof typeof BUCKETS];

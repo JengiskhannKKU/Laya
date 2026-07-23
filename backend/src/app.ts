@@ -31,6 +31,8 @@ import uploadRouter from "./routes/upload";
 import reviewsRouter from "./routes/reviews";
 import chatRouter from "./routes/chat";
 import adminRouter from "./routes/admin";
+import adminWithdrawalsRouter from "./routes/admin-withdrawals";
+import walletRouter from "./routes/wallet";
 import templatesRouter from "./routes/templates";
 import lineWebhookRouter from "./routes/line-webhook";
 
@@ -105,6 +107,8 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/admin/withdrawals", adminWithdrawalsRouter);
+app.use("/api/wallet", walletRouter);
 app.use("/api/templates", templatesRouter);
 app.use("/api/line", lineWebhookRouter);
 

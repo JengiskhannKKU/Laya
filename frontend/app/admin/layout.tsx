@@ -8,9 +8,11 @@ import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
+import Badge from "@mui/material/Badge";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminThemeProvider, useAdminTheme } from "@/lib/admin-theme-context";
+import { useNotifications } from "@/lib/notification-context";
 
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
@@ -26,11 +28,13 @@ import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 
 const navItems = [
   { label: "Dashboard", icon: <DashboardRoundedIcon />, path: "/admin" },
   { label: "Products", icon: <Inventory2RoundedIcon />, path: "/admin/products" },
   { label: "Orders", icon: <ShoppingCartRoundedIcon />, path: "/admin/orders" },
+  { label: "Withdrawals", icon: <PaymentsRoundedIcon />, path: "/admin/withdrawals" },
   { label: "Users", icon: <ManageAccountsRoundedIcon />, path: "/admin/users" },
   { label: "Weavers", icon: <PeopleRoundedIcon />, path: "/admin/weavers" },
   { label: "Analytics", icon: <DashboardRoundedIcon />, path: "/admin/analytics" },
@@ -44,6 +48,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { mode, toggleMode, c } = useAdminTheme();
+  const { unreadCount } = useNotifications();
   const t = "all 0.3s ease";
 
   // Determine which nav item is active (support nested routes like /admin/products/create)
@@ -190,8 +195,10 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                   {mode === "dark" ? <LightModeRoundedIcon sx={{ fontSize: 20 }} /> : <DarkModeRoundedIcon sx={{ fontSize: 20 }} />}
                 </IconButton>
               </Tooltip>
-              <IconButton sx={{ color: c.textSecondary }}>
-                <NotificationsRoundedIcon sx={{ fontSize: 22 }} />
+              <IconButton onClick={() => router.push("/admin/notifications")} sx={{ color: c.textSecondary }}>
+                <Badge badgeContent={unreadCount} color="error" max={99}>
+                  <NotificationsRoundedIcon sx={{ fontSize: 22 }} />
+                </Badge>
               </IconButton>
               <Avatar sx={{ width: 32, height: 32, bgcolor: c.gold, fontSize: "0.8rem", fontWeight: 700, color: c.textOnGold }}>A</Avatar>
             </Box>

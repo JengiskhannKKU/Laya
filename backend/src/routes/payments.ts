@@ -3,7 +3,7 @@ import { query } from "../db";
 import { requireAuth } from "../middleware/auth";
 import { generatePromptPayPayload } from "../utils/promptpay";
 import { createThaiDoc, drawDocHeader, drawKeyValueBlock, drawTable, formatDocNumber, streamPdf } from "../utils/pdf";
-import { verifySlip, easySlipConfigured } from "../utils/easyslip";
+import { verifySlip, slipOkConfigured } from "../utils/slipok";
 import { notifyShopNewOrder, notifyShopInfo, buildOrderItemsSummary } from "../utils/line";
 
 const router = Router();
@@ -25,19 +25,6 @@ async function resolveCustomerName(userId: string): Promise<string> {
 function calcFee(amount: number): { platformFee: number; shopPayout: number } {
   const platformFee = Math.round(amount * PLATFORM_FEE_PERCENT) / 100;
   return { platformFee, shopPayout: Math.round((amount - platformFee) * 100) / 100 };
-}
-
-/**
- * MVP: ลูกค้าจ่ายเงินเข้าร้านค้าโดยตรง — คืน PromptPay ของร้าน (shops.promptpay_id)
- * ถ้าร้านยังไม่ได้ตั้งค่า ให้ fallback ไปที่ PROMPTPAY_ID ของแพลตฟอร์ม (กันร้านเก่าใช้งานไม่ได้)
- */
-async function resolveShopPromptPay(shopId: string | null | undefined): Promise<string> {
-  if (!shopId) return PROMPTPAY_ID;
-  const rows = await query<{ promptpay_id: string | null }>(
-    "SELECT promptpay_id FROM shops WHERE id = $1",
-    [shopId]
-  );
-  return rows[0]?.promptpay_id || PROMPTPAY_ID;
 }
 
 async function notify(userId: string, type: string, title: string, body: string, data: unknown) {
@@ -72,10 +59,10 @@ router.get("/qr", (req: Request, res: Response) => {
 /**
  * POST /api/payments
  * ลูกค้าสร้างรายการชำระเงินสำหรับออเดอร์ตัด (orderId) หรือออเดอร์ทอ (weavingOrderId)
- * → คืน payment เดียว จ่ายตรงเข้า PromptPay ของร้านนั้น
+ * → คืน payment เดียว จ่ายเข้าบัญชี LAYA (PROMPTPAY_ID) ก่อน แล้วเข้า wallet ร้านหลังยืนยันสลิป
  *
  * ตะกร้าสินค้าพร้อมขาย (productOrderGroupId) อาจมีหลายร้านในตะกร้าเดียว
- * → แยกเป็นคนละ payment ต่อร้าน (คนละ QR) จ่ายตรงเข้าบัญชีร้านนั้นๆ โดยตรง — คืน { payments: [...] }
+ * → แยกเป็นคนละ payment ต่อร้าน แต่ QR ทุกใบจ่ายเข้าบัญชี LAYA เดียวกัน — คืน { payments: [...] }
  */
 router.post("/", requireAuth, async (req: Request, res: Response) => {
   try {
@@ -92,7 +79,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
       return;
     }
 
-    // ── ตะกร้าสินค้าพร้อมขาย: แยก payment ต่อร้าน จ่ายตรงเข้าบัญชีร้าน ──
+    // ── ตะกร้าสินค้าพร้อมขาย: แยก payment ต่อร้าน แต่จ่ายเข้าบัญชี LAYA ทุกใบ ──
     if (productOrderGroupId) {
       const groupRows = await query<{ customer_id: string }>(
         "SELECT customer_id FROM product_order_groups WHERE id = $1",
@@ -133,13 +120,12 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
           row = inserted[0];
         }
 
-        const promptpayId = await resolveShopPromptPay(so.shop_id);
         payments.push({
           ...mapPayment(row),
           shopId: so.shop_id,
           shopName: so.shop_name,
-          promptpayId,
-          qrPayload: method === "promptpay" ? generatePromptPayPayload(promptpayId, Number(row.amount)) : null,
+          promptpayId: PROMPTPAY_ID,
+          qrPayload: method === "promptpay" ? generatePromptPayPayload(PROMPTPAY_ID, Number(row.amount)) : null,
         });
       }
 
@@ -147,27 +133,24 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
       return;
     }
 
-    // ── ออเดอร์ตัด/ออเดอร์ทอ: payment เดียว จ่ายตรงเข้าบัญชีร้าน ──
+    // ── ออเดอร์ตัด/ออเดอร์ทอ: payment เดียว จ่ายเข้าบัญชี LAYA ──
     let amount: number | null = null;
-    let shopId: string | null = null;
     if (orderId) {
-      const rows = await query<{ customer_id: string; shop_id: string; final_price: string | null; estimated_price: string | null }>(
-        "SELECT customer_id, shop_id, final_price, estimated_price FROM orders WHERE id = $1",
+      const rows = await query<{ customer_id: string; final_price: string | null; estimated_price: string | null }>(
+        "SELECT customer_id, final_price, estimated_price FROM orders WHERE id = $1",
         [orderId]
       );
       if (!rows.length) { res.status(404).json({ error: "ไม่พบออเดอร์" }); return; }
       if (rows[0].customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
       amount = Number(rows[0].final_price ?? rows[0].estimated_price);
-      shopId = rows[0].shop_id;
     } else if (weavingOrderId) {
-      const rows = await query<{ customer_id: string; shop_id: string; final_price: string | null; estimated_price: string | null }>(
-        "SELECT customer_id, shop_id, final_price, estimated_price FROM weaving_orders WHERE id = $1",
+      const rows = await query<{ customer_id: string; final_price: string | null; estimated_price: string | null }>(
+        "SELECT customer_id, final_price, estimated_price FROM weaving_orders WHERE id = $1",
         [weavingOrderId]
       );
       if (!rows.length) { res.status(404).json({ error: "ไม่พบออเดอร์ทอผ้า" }); return; }
       if (rows[0].customer_id !== userId) { res.status(403).json({ error: "Forbidden" }); return; }
       amount = Number(rows[0].final_price ?? rows[0].estimated_price);
-      shopId = rows[0].shop_id;
     }
 
     if (!amount || !Number.isFinite(amount) || amount <= 0) {
@@ -175,7 +158,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
       return;
     }
 
-    const promptpayId = await resolveShopPromptPay(shopId);
+    const promptpayId = PROMPTPAY_ID;
 
     // ถ้ามี payment pending อยู่แล้ว ใช้รายการเดิม (กันสร้างซ้ำ)
     const existing = await query<Record<string, unknown>>(
@@ -218,7 +201,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
 
 /**
  * POST /api/payments/:id/confirm
- * ลูกค้าแนบสลิปเพื่อยืนยันการโอน — ระบบตรวจสลิปผ่าน EasySlip (ถ้าตั้งค่าไว้)
+ * ลูกค้าแนบสลิปเพื่อยืนยันการโอน — ระบบตรวจสลิปผ่าน SlipOk (ถ้าตั้งค่าไว้)
  * body: { slipUrl }
  * → mark paid, อัปเดตออเดอร์เป็น pending_confirm, แจ้งเตือนร้านค้า
  */
@@ -245,16 +228,16 @@ router.post("/:id/confirm", requireAuth, async (req: Request, res: Response) => 
       return;
     }
 
-    // ตรวจสลิปผ่าน EasySlip ถ้าตั้งค่าไว้ — ถ้ายังไม่ตั้งค่า เก็บสลิปไว้ให้ร้าน/แอดมินตรวจเอง
+    // ตรวจสลิปผ่าน SlipOk ถ้าตั้งค่าไว้ — ถ้ายังไม่ตั้งค่า เก็บสลิปไว้ให้ร้าน/แอดมินตรวจเอง
     let txRef: string;
     let slipVerified = false;
-    if (easySlipConfigured) {
+    if (slipOkConfigured) {
       const result = await verifySlip(slipUrl, Number(payment.amount));
       if (!result.ok) {
         res.status(400).json({ error: "ตรวจสอบสลิปไม่สำเร็จ กรุณาตรวจสอบสลิปแล้วลองใหม่ หากยังไม่สำเร็จ กรุณาติดต่อฝ่ายบริการลูกค้า" });
         return;
       }
-      txRef = result.transRef ?? `EASYSLIP-${Date.now()}`;
+      txRef = result.transRef ?? `SLIPOK-${Date.now()}`;
       slipVerified = true;
     } else {
       txRef = `SLIP-${Date.now()}`;
@@ -502,14 +485,11 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
       return;
     }
 
-    const resolvedShopId = (p.order_shop_id ?? p.weaving_shop_id ?? p.product_order_shop_id ?? null) as string | null;
-    const promptpayId = await resolveShopPromptPay(resolvedShopId);
-
     res.json({
       ...mapPayment(p),
-      promptpayId,
+      promptpayId: PROMPTPAY_ID,
       qrPayload: p.status === "pending" && p.method === "promptpay"
-        ? generatePromptPayPayload(promptpayId, Number(p.amount))
+        ? generatePromptPayPayload(PROMPTPAY_ID, Number(p.amount))
         : null,
     });
   } catch (err) {

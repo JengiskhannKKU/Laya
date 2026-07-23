@@ -194,7 +194,7 @@ test("checkout multi-SKU คิดเงินจากราคา SKU แล�
 test("สร้าง payment + confirm (แนบสลิป) → ออเดอร์เป็น pending_confirm", async () => {
   const pay = await api("/api/payments", { method: "POST", body: JSON.stringify({ productOrderGroupId: S.groupId }) }, S.custToken);
   assert.equal(pay.data.payments.length, 1);
-  // ต้องแนบสลิป (slipUrl) เสมอ — EasySlip ปิดอยู่ในเทส จึงเก็บสลิปไว้ให้ตรวจเอง (slip_verified=false)
+  // ต้องแนบสลิป (slipUrl) เสมอ — SlipOk ปิดอยู่ในเทส จึงเก็บสลิปไว้ให้ตรวจเอง (slip_verified=false)
   const noSlip = await api(`/api/payments/${pay.data.payments[0].id}/confirm`, { method: "POST" }, S.custToken);
   assert.equal(noSlip.status, 400);
   const confirm = await api(`/api/payments/${pay.data.payments[0].id}/confirm`, { method: "POST", body: JSON.stringify({ slipUrl: "https://example.com/slip.jpg" }) }, S.custToken);
