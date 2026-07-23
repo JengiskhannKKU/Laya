@@ -26,7 +26,6 @@ interface GalleryItem {
   title: string;
   tag: string;
   story: string;
-  aspectRatio: string;
 }
 
 const GALLERY_IMAGES: GalleryItem[] = [
@@ -36,7 +35,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "มหกรรมไหมไทยสู่เส้นทางโลก ครั้งที่ 15",
     tag: "Thai Silk Road 2026",
     story: "นิทรรศการยิ้มรับความภาคภูมิใจในงาน Celebration of Silk นำเสนอความประณีตของลวดลายผ้าไหมไทยสู่สายตาดีไซเนอร์ทั่วโลก",
-    aspectRatio: "3/4",
   },
   {
     id: "2",
@@ -44,7 +42,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "นิทรรศการผลงานการออกแบบผ้าไหมระดับโลก",
     tag: "International Contest",
     story: "หุ่นโชว์ชุดแฟชั่นผ้าไหมไทยที่ได้รับการออกแบบโดยนิสิตดีไซเนอร์จากหลากหลายประเทศ สะท้อนการตีความมรดกผ้าไทยในมุมมองอินเตอร์",
-    aspectRatio: "4/5",
   },
   {
     id: "3",
@@ -52,7 +49,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "บรรยากาศนิทรรศการจัดแสดงแฟชั่นผ้าไหมไทย",
     tag: "Fashion Showcase",
     story: "ภาพความประทับใจจากการเข้าชมการจัดแสดงชุดราตรีและชุดไทยประยุกต์ร่วมสมัย รวบรวมงานทอชั้นครูจากทั่วประเทศในงานมหกรรมแฟชั่นผ้าไหมไทย",
-    aspectRatio: "3/4",
   },
   {
     id: "4",
@@ -60,7 +56,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "พราวผ้า — ชุมชนทอผ้าไหมจังหวัดสุรินทร์",
     tag: "Surin Weaving Community",
     story: "บูธ展示งานผ้าไหมทอมือลายโบราณ เสื้อผ้าฝ้ายแต่งลูกไม้พาสเทล และผ้าสไบย้อมครามจากกลุ่มช่างฝีมือพราวผ้า จังหวัดสุรินทร์",
-    aspectRatio: "4/5",
   },
   {
     id: "5",
@@ -68,7 +63,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "คอลเลกชันเฉดสีธรรมชาติแห่งผ้าไหมไทย",
     tag: "Natural Colors Silk",
     story: "ชุดแฟชั่นผ้าไหมทอมือหลากสีสัน ทั้งสีกรมท่า สีทอง สีเขียวมรกต และสีม่วงดอกตะแบก สะท้อนเสน่ห์ของสีย้อมธรรมชาติ",
-    aspectRatio: "4/5",
   },
   {
     id: "6",
@@ -76,7 +70,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดครามนิล — Royal Navy Indigo Collection",
     tag: "Royal Navy Indigo",
     story: "คอลเลกชันเฉดสีกรมท่าและผ้ามัดหมี่ย้อมคราม ผสมผสานทรงเสื้อคลุมเคปและแจ็กเก็ตดีไซน์ลักชูรีใต้แสงไฟเวทีประกวด",
-    aspectRatio: "3/4",
   },
   {
     id: "7",
@@ -84,7 +77,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "เวทีประกวดการออกแบบแฟชั่นผ้าไทย",
     tag: "Grand Exhibition Hall",
     story: "บรรยากาศโถงจัดแสดงผลงานประกวดดีไซน์ชุดผ้าไหมไทยทรงคุณค่า เชื่อมโยงภูมิปัญญาดั้งเดิมเข้ากับรันเวย์ระดับสากล",
-    aspectRatio: "4/5",
   },
   {
     id: "8",
@@ -92,7 +84,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดคอลเลกชันเฉดสีแสดและน้ำเงินมงคล",
     tag: "Vibrant Contemporary",
     story: "การจับคู่โทนสีส้มทองแสดและสีน้ำเงินไพลิน ผสานงานทอบนผืนผ้าไหมไทยทรงทันสมัยเพื่อคนรุ่นใหม่",
-    aspectRatio: "3/4",
   },
   {
     id: "9",
@@ -100,7 +91,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ผ้ายกทองและผ้ามัดหมี่เกรดพรีเมียม",
     tag: "Gold Brocade Silk",
     story: "ผืนผ้าไหมยกดอกดิ้นทองและดิ้นเงิน ลวดลายประณีตทรงคุณค่า ถ่ายทอดมรดกงานทอชั้นครูอันทรงเกียรติ",
-    aspectRatio: "4/5",
   },
   {
     id: "10",
@@ -108,7 +98,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "อาจารย์บุญโรช ศรีละพันธ์ — ครูช่างผ้าไหมศรีสะเกษ",
     tag: "Master Artisan Story",
     story: "เรื่องราวของอาจารย์บุญโรช ศรีละพันธ์ ศิลปินนักออกแบบผ้าไหมผู้สืบสานเทคนิคการทอผ้าไหมลูกแก้วย้อมครามแห่ง อ.อุทุมพรพิสัย จ.ศรีสะเกษ",
-    aspectRatio: "3/4",
   },
   {
     id: "11",
@@ -116,7 +105,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "กระเป๋าผ้าไหมไทยดีไซน์ร่วมสมัย — SALETE",
     tag: "Silk Accessories",
     story: "งานออกแบบกระเป๋าถือทรงบักเก็ตและทรงพลีทจากผ้าไหมไทย ผสมผสานดีไซน์ทันสมัยเข้ากับความประณีตระดับลักชูรี",
-    aspectRatio: "3/4",
   },
   {
     id: "12",
@@ -124,7 +112,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ผ้ายกทองจันทร์โสมา — ชุมชนทอผ้าไหมสุรินทร์",
     tag: "Chansoma Masterpiece",
     story: "ช่างทอผ้าชั้นครูจากบ้านท่าสว่าง จังหวัดสุรินทร์ ถ่ายทอดความตั้งใจและอธิบายลวดลายผ้ายกทองโบราณให้แก่ผู้เยี่ยมชม",
-    aspectRatio: "4/5",
   },
   {
     id: "13",
@@ -132,7 +119,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "วัตถุดิบและเส้นไหมย้อมสีธรรมชาติ",
     tag: "Natural Dyes & Silk Yarn",
     story: "เส้นไหมรากแก้วย้อมสีธรรมชาติจากคราม เปลือกไม้ และวัตถุดิบอินทรีย์ ปราศจากสารเคมี ถ่ายทอดภูมิปัญญาการย้อมผ้าสีโบราณ",
-    aspectRatio: "1/1",
   },
   {
     id: "14",
@@ -140,7 +126,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "กล่องของขวัญผ้าพันคอไหมทอมือทรงคุณค่า",
     tag: "Premium Gift Set",
     story: "ผ้าพันคอไหมทอมือเกรดพรีเมียม บรรจุในกล่องของขวัญพรีเมียมตราจันทร์โสมา เหมาะสำหรับของขวัญทรงคุณค่าในวาระสำคัญ",
-    aspectRatio: "4/5",
   },
   {
     id: "15",
@@ -148,7 +133,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดไทยประยุกต์ร่วมสมัย — เสื้อลูกไม้คลุมไหล่",
     tag: "Modern Thai Elegance",
     story: "เสื้อเคปคลุมไหล่แต่งลูกไม้โทนสีพาสเทล แมตช์คู่ซิ่นผ้ายกดอกสีส้มทอง ถ่ายทอดความอ่อนหวานและหรูหรา",
-    aspectRatio: "3/4",
   },
   {
     id: "16",
@@ -156,7 +140,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "เสื้ออัดพลีทลูกไม้แมตช์ผ้ามัดหมี่อีสาน",
     tag: "Contemporary Look",
     story: "เสื้อสีพีชอัดพลีทแต่งลูกไม้ช่วงคอ นำมาสวมคู่กับผ้าไหมมัดหมี่อีสานสีม่วงเปลือกมังคุด ลายโบราณ",
-    aspectRatio: "3/4",
   },
   {
     id: "17",
@@ -164,7 +147,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ดีไซน์เรโทรแฟชั่น — แบรนด์ตระการตา (Trakanta)",
     tag: "Trakanta Brand",
     story: "เสื้อกั๊กแขนกุดผ้าไหมสีบานเย็น ปักปกคอลายเรขาคณิตสไตล์เรโทร 60s ผสมเสน่ห์ร่วมสมัย",
-    aspectRatio: "4/5",
   },
   {
     id: "18",
@@ -172,7 +154,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดเบลเซอร์ผ้ามัดหมี่ — แบรนด์ตระการตา",
     tag: "Trakanta Workwear",
     story: "เสื้อแจ็กเก็ตเบลเซอร์เข้ารูปตัดเย็บจากผ้ามัดหมี่โทนสีน้ำเงินม่วง มอบลุคสมาร์ตเวิร์กกิ้งวูแมนผู้หลงใหลในผ้าไทย",
-    aspectRatio: "4/5",
   },
   {
     id: "19",
@@ -180,7 +161,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดไทยประยุกต์เสื้อลูกไม้สีขาว & ซิ่นมัดหมี่ทอง",
     tag: "Lace & Silk Couture",
     story: "เสื้อลูกไม้ฝรั่งเศสสีขาวทรงเคปคลุมไหล่ จับคู่ผ้านุ่งไหมมัดหมี่สุรินทร์สีส้มอิฐ ลวดลายประณีตสง่างาม",
-    aspectRatio: "3/4",
   },
   {
     id: "20",
@@ -188,7 +168,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดแจ็กเก็ตผ้ามัดหมี่มัดสาย — แบรนด์ตระการตา",
     tag: "Trakanta High Fashion",
     story: "งานตัดเย็บสไตล์แฟชั่นระดับโอต์กูตูร์จากผ้ามัดหมี่ไทย สะท้อนความเชื่อมั่นและพลังของหญิงยุคใหม่",
-    aspectRatio: "4/5",
   },
   {
     id: "21",
@@ -196,7 +175,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดเดรสสั้นบานผ้าไหมบานเย็น — แบรนด์ตระการตา",
     tag: "Trakanta Chic",
     story: "เดรสผ้าไหมทรงเอสีสดใส ตกแต่งเชิงเอวและปกเสื้อด้วยลายปักมือเรขาคณิต โดดเด่นโฉบเฉี่ยว",
-    aspectRatio: "3/4",
   },
   {
     id: "22",
@@ -204,7 +182,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "งานดีไซน์ผ้าไทยสตรีทกูตูร์ — แบรนด์ตระการตา",
     tag: "Editorial Pose",
     story: "ภาพถ่ายแฟชั่นชุดผ้าไหมทรงย้อนยุค สื่อถึงความงดงามของลวดลายผ้าพื้นเมืองที่ถูกตีความใหม่ให้เข้ากับคนรุ่นใหม่",
-    aspectRatio: "3/4",
   },
   {
     id: "23",
@@ -212,7 +189,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดสูทผ้าไหมมัดหมี่ทองบรอนซ์พรีเมียม",
     tag: "Bronze Silk Blazer",
     story: "สูททรงคลาสสิกกระดุมคู่ ตัดเย็บจากผ้ามัดหมี่โทนสีทองบรอนซ์เงางาม กุ๊นขอบปีกปกด้วยด้ายส้มทอง เพิ่มเสน่ห์เฉียบคม",
-    aspectRatio: "3/4",
   },
   {
     id: "24",
@@ -220,7 +196,6 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดแจ็กเก็ตผ้ามัดหมี่สีม่วงดอกตะแบก",
     tag: "Royal Purple Mudmee",
     story: "เสื้อสูทตัดเย็บจากผ้ามัดหมี่ทอมือสีม่วงดอกตะแบก ลายนาคโบราณ สะท้อนเสน่ห์ของผ้าไหมอีสานระดับพรีเมียม",
-    aspectRatio: "4/5",
   },
   {
     id: "25",
@@ -228,7 +203,63 @@ const GALLERY_IMAGES: GalleryItem[] = [
     title: "ชุดสูทดับเบิลเบรสต์ผ้ามัดหมี่ทองบรอนซ์",
     tag: "Luxury Silk Suit",
     story: "ชุดสูทผ้าไหมมัดหมี่สีทองบรอนซ์ ลุคทางการสุดหรูที่สะท้อนถึงความประณีตและความพิถีพิถันของช่างทอและช่างตัดเย็บไทย",
-    aspectRatio: "3/4",
+  },
+  /* ─── ภาพเพิ่มใหม่ (NEW HACKATHON & ARTISAN FIELD WORK IMAGES) ─── */
+  {
+    id: "26",
+    src: "/images/Gallery/image.png",
+    title: "ทีม LAYA กับเมนเทอร์และคณะกรรมการ Hackathon",
+    tag: "Hackathon Mentor",
+    story: "ภาพบันทึกความประทับใจร่วมกับเมนเทอร์และคณะกรรมการในงานแข่งขัน AI Preneur Hackathon 2026",
+  },
+  {
+    id: "27",
+    src: "/images/Gallery/image copy.png",
+    title: "LAYA คว้าตำแหน่ง Finalists 3 ทีมสุดท้าย",
+    tag: "AI Preneur Finalist",
+    story: "ทีม LAYA : AI-driven Marketplace คว้ารางวัลผ่านเข้ารอบ Finalists 3 ทีมสุดท้ายในงาน AI Preneur Day 2026",
+  },
+  {
+    id: "28",
+    src: "/images/Gallery/image copy 2.png",
+    title: "พิธีมอบรางวัลและถ่ายภาพรวมทีมไฟนอลิสต์",
+    tag: "Finalist Celebration",
+    story: "ทีมพัฒนา LAYA ร่วมถ่ายภาพฉลองความสำเร็จบนเวทีกับคณะผู้จัดงาน เมนเทอร์ และพันธมิตรผู้สนับสนุน",
+  },
+  {
+    id: "29",
+    src: "/images/Gallery/image copy 3.png",
+    title: "LAYA — สรุปเซสชัน Pitching เวทีระดับประเทศ",
+    tag: "Startup Event Insight",
+    story: "สรุปบทความ Event Insight นำเสนอแนวคิด Startup AI ผ้าไทย เปลี่ยนโจทย์มรดกวัฒนธรรมสู่ธุรกิจมูลค่าหลายล้าน",
+  },
+  {
+    id: "30",
+    src: "/images/Gallery/image copy 4.png",
+    title: "ภาพเบื้องหลังความทุ่มเทของทีม LAYA",
+    tag: "Team Spirit",
+    story: "บรรยากาศรอยยิ้มและความมุ่งมั่นของทีมผู้ก่อตั้ง LAYA ในการพัฒนาแพลตฟอร์ม Fashion Tech ผ้าไทย",
+  },
+  {
+    id: "31",
+    src: "/images/Gallery/image copy 5.png",
+    title: "ลงพื้นที่พูดคุยและเรียนรู้จากคุณยายช่างทอผ้าไหม",
+    tag: "Artisan Field Work",
+    story: "ทีมงาน LAYA ลงพื้นที่สัมผัสภูมิปัญญาการทอผ้าไหมมัดหมี่โบราณ ร่วมพูดคุยและเก็บข้อมูลจากกลุ่มคุณยายช่างทอมืออาชีพ",
+  },
+  {
+    id: "32",
+    src: "/images/Gallery/image copy 6.png",
+    title: "ทีม LAYA ร่วมถ่ายภาพกับผู้ว่าฯ ชัชชาติ สิทธิพันธุ์",
+    tag: "Bangkok Governor",
+    story: "โอกาสอันทรงเกียรติของทีม LAYA ได้เข้าพบและถ่ายภาพร่วมกับคุณชัชชาติ สิทธิพันธุ์ ผู้ว่าราชการกรุงเทพมหานคร",
+  },
+  {
+    id: "33",
+    src: "/images/Gallery/image copy 7.png",
+    title: "เครื่องหมุนกวักเส้นไหมพื้นบ้านโบราณ",
+    tag: "Traditional Silk Spinning",
+    story: "อุปกรณ์กวักเส้นไหมไม้ยกโบราณ เครื่องมือพื้นบ้านทรงคุณค่าที่ใช้ในการเตรียมเส้นไหมก่อนเข้าสู่โฮงทอ",
   },
 ];
 
@@ -252,16 +283,16 @@ export default function GallerySection() {
     <Box
       component="section"
       sx={{
-        py: { xs: 6, md: 9 },
+        py: { xs: 5, md: 8 },
         bgcolor: "#FAF7F2",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      <Box sx={{ maxWidth: 1280, mx: "auto", px: { xs: 2.5, sm: 3, md: 5 } }}>
+      <Box sx={{ maxWidth: 1280, mx: "auto", px: { xs: 1.5, sm: 3, md: 5 } }}>
 
         {/* ─── Section Header ─── */}
-        <Box sx={{ textAlign: "center", mb: { xs: 4, md: 6 } }}>
+        <Box sx={{ textAlign: "center", mb: { xs: 3.5, md: 5.5 } }}>
           <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.75, mb: 1 }}>
             <SparklesIcon sx={{ fontSize: 16, color: GOLD }} />
             <Typography
@@ -284,7 +315,7 @@ export default function GallerySection() {
             sx={{
               fontFamily: FONT,
               fontWeight: 700,
-              fontSize: { xs: "1.75rem", sm: "2.2rem", md: "2.6rem" },
+              fontSize: { xs: "1.65rem", sm: "2.1rem", md: "2.5rem" },
               color: NAVY,
               letterSpacing: "-0.01em",
             }}
@@ -295,117 +326,98 @@ export default function GallerySection() {
           <Typography
             sx={{
               fontFamily: FONT,
-              fontSize: { xs: "0.9rem", md: "1.05rem" },
+              fontSize: { xs: "0.86rem", md: "1rem" },
               color: "#6B7280",
-              mt: 1.25,
+              mt: 1,
               maxWidth: 620,
               mx: "auto",
               lineHeight: 1.6,
             }}
           >
-            สัมผัสเรื่องราวทรงคุณค่า ภาพบรรยากาศบูธช่างฝีมือ เส้นไหมย้อมสีธรรมชาติ และแฟชั่นผ้าไหมไทยระดับ
+            สัมผัสเรื่องราวทรงคุณค่า ภาพบรรยากาศบูธช่างฝีมือ กิจกรรม Hackathon และแฟชั่นผ้าไหมไทยระดับโอต์กูตูร์
           </Typography>
         </Box>
 
-        {/* ─── Pinterest / Masonry Style Grid ─── */}
+        {/* ─── Mobile 4-Column Square Grid UI (ตรงตามรูปเรฟในโทรศัพท์) ─── */}
         <Box
           sx={{
-            columnCount: { xs: 2, sm: 3, md: 4 },
-            columnGap: { xs: "14px", md: "18px" },
+            display: "grid",
+            gridTemplateColumns: { xs: "repeat(4, 1fr)", sm: "repeat(5, 1fr)", md: "repeat(6, 1fr)" },
+            gap: { xs: "6px", sm: "10px", md: "14px" },
           }}
         >
           {GALLERY_IMAGES.map((item, index) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.4, delay: (index % 6) * 0.05 }}
+              initial={{ opacity: 0, scale: 0.92 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-20px" }}
+              transition={{ duration: 0.35, delay: (index % 8) * 0.03 }}
             >
               <Box
                 onClick={() => setSelectedIdx(index)}
                 sx={{
                   position: "relative",
-                  mb: { xs: "14px", md: "18px" },
-                  breakInside: "avoid",
-                  borderRadius: { xs: "16px", md: "20px" },
+                  width: "100%",
+                  aspectRatio: "1/1", // ทรงสี่เหลี่ยมจัตุรัสขอบมน ตามเรฟไอโฟน
+                  borderRadius: { xs: "12px", sm: "16px", md: "20px" },
                   overflow: "hidden",
                   bgcolor: "#EADFCB",
                   cursor: "pointer",
-                  boxShadow: "0 6px 20px rgba(27,42,74,0.08)",
-                  transition: "transform 0.35s ease, box-shadow 0.35s ease",
+                  boxShadow: "0 2px 8px rgba(27,42,74,0.06)",
+                  border: "1px solid rgba(197,165,90,0.15)",
+                  transition: "all 0.3s ease",
                   "&:hover": {
-                    transform: "translateY(-4px) scale(1.015)",
-                    boxShadow: "0 14px 36px rgba(27,42,74,0.2)",
+                    transform: "scale(1.06)",
+                    zIndex: 2,
+                    boxShadow: "0 8px 22px rgba(197,165,90,0.35)",
+                    borderColor: GOLD,
                     "& .gallery-overlay": { opacity: 1 },
-                    "& .gallery-img": { transform: "scale(1.05)" },
                   },
                 }}
               >
+                <Image
+                  src={item.src}
+                  alt={item.title}
+                  fill
+                  sizes="(max-width: 600px) 25vw, (max-width: 900px) 20vw, 16vw"
+                  style={{
+                    objectFit: "cover",
+                    transition: "transform 0.4s ease",
+                  }}
+                />
+
+                {/* Scrim Overlay on Hover */}
                 <Box
+                  className="gallery-overlay"
                   sx={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: item.aspectRatio,
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(180deg, rgba(15,26,48,0) 30%, rgba(15,26,48,0.85) 100%)",
+                    opacity: 0,
+                    transition: "opacity 0.25s ease",
+                    p: { xs: 0.75, md: 1.5 },
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
                   }}
                 >
-                  <Image
-                    src={item.src}
-                    alt={item.title}
-                    fill
-                    className="gallery-img"
-                    sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 25vw"
-                    style={{
-                      objectFit: "cover",
-                      transition: "transform 0.5s ease",
-                    }}
-                  />
-
-                  {/* Gradient Scrim Overlay on Hover */}
-                  <Box
-                    className="gallery-overlay"
+                  <Typography
                     sx={{
-                      position: "absolute",
-                      inset: 0,
-                      background:
-                        "linear-gradient(180deg, rgba(15,26,48,0) 35%, rgba(15,26,48,0.88) 100%)",
-                      opacity: 0,
-                      transition: "opacity 0.3s ease",
-                      p: 2,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "flex-end",
+                      fontFamily: FONT,
+                      fontWeight: 600,
+                      fontSize: { xs: "0.6rem", md: "0.8rem" },
+                      color: "#FFFFFF",
+                      lineHeight: 1.2,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: "inline-block",
-                        bgcolor: "rgba(197,165,90,0.95)",
-                        color: NAVY,
-                        fontFamily: FONT,
-                        fontSize: "0.68rem",
-                        fontWeight: 700,
-                        px: 1.25,
-                        py: 0.35,
-                        borderRadius: "999px",
-                        width: "fit-content",
-                        mb: 0.75,
-                      }}
-                    >
-                      {item.tag}
-                    </Box>
-                    <Typography
-                      sx={{
-                        fontFamily: FONT,
-                        fontWeight: 600,
-                        fontSize: "0.88rem",
-                        color: "#FFFFFF",
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
-                  </Box>
+                    {item.title}
+                  </Typography>
                 </Box>
               </Box>
             </motion.div>
