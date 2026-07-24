@@ -57,8 +57,8 @@ import {
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#13284B";
 const GOLD = "#C5A55A";
-// padding มาตรฐานให้เนื้อหาตรงแนวเดียวกับ TopNav — bar เต็มขอบ แต่คอนเทนต์ยังมีระยะขอบ
-const CONTENT_PX = { xs: 2.5, sm: 3, md: 4 };
+// padding มาตรฐานให้เนื้อหาตรงแนวเดียวกับ TopNav — เต็มขอบสวยงามบน iPhone 14 Pro
+const CONTENT_PX = { xs: 1.25, sm: 2.5, md: 4 };
 // อัตราส่วนปกหลายแบบ — สร้างความสูงไม่เท่ากันแบบ Pinterest/Lemon8 (masonry)
 const PIN_RATIOS = ["3 / 4", "1 / 1", "4 / 5", "2 / 3", "1 / 1.25", "4 / 3"];
 const PAGE_SIZE = 12;
@@ -519,10 +519,7 @@ function SearchContent() {
     return result;
   }, [moments, viewMode, followed, savedIds, selectedChip, query, sortBy]);
 
-  const visible = filtered.slice(0, visibleCount);
-
-  // เปลี่ยนตัวกรอง/โหมด → รีเซ็ตจำนวนที่แสดง
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [selectedChip, viewMode, query, sortBy]);
+  const visible = filtered; // แสดงผลทั้งหมดทีเดียว ไม่จำกัดจำนวน/ไม่มีปุ่มโหลดเพิ่มเติม
 
   const requireLogin = (): boolean => {
     if (!user) { router.push("/auth/login"); return false; }
@@ -531,22 +528,26 @@ function SearchContent() {
 
   const handleLike = (id: string) => {
     if (!requireLogin()) return;
-    setLikedIds(toggleLike(id));
+    toggleLike(id);
+    setLikedIds(loadLikedIds());
   };
 
   const handleSave = (id: string) => {
     if (!requireLogin()) return;
-    setSavedIds(toggleSave(id));
+    toggleSave(id);
+    setSavedIds(loadSavedIds());
   };
 
   const handleFollow = (name: string) => {
     if (!requireLogin()) return;
-    setFollowed(toggleFollow(name));
+    toggleFollow(name);
+    setFollowed(loadFollowedAuthors());
   };
 
   const handlePost = (input: { type: MomentType; title: string; body: string; cover: string; images: string[]; topic: string; rating?: number; taggedProduct?: string }) => {
     const authorName = user?.email ? user.email.split("@")[0] : "คุณ";
-    setMoments(saveUserMoment({ ...input, authorName }));
+    saveUserMoment({ ...input, authorName });
+    setMoments(getAllMoments());
     setComposeOpen(false);
   };
 
@@ -574,8 +575,7 @@ function SearchContent() {
 
   return (
     <MobileLayout>
-      {/* mx: calc(50% - 50vw) → bar เต็มขอบเหมือน top bar, คอนเทนต์จัดระยะขอบเองผ่าน CONTENT_PX */}
-      <Box sx={{ mx: "calc(50% - 50vw)", bgcolor: "#FAF6F0", minHeight: "100vh" }}>
+      <Box sx={{ width: "100%", bgcolor: "#FAF6F0", minHeight: "100vh", overflowX: "hidden" }}>
         {/* ── Sticky bar: ค้นหา + จัดเรียง + ชิปหัวข้อ ── */}
         <Box sx={{ bgcolor: "#FFFFFF", position: "sticky", top: 0, zIndex: 10, borderBottom: "1px solid #EFE9DD" }}>
           <Box sx={{ maxWidth: 1440, mx: "auto", px: CONTENT_PX, pt: 2.5, pb: 1.5 }}>
@@ -760,16 +760,6 @@ function SearchContent() {
                     ))}
                   </AnimatePresence>
                 </Box>
-                {filtered.length > visibleCount && (
-                  <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-                    <Button
-                      onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                      sx={{ borderRadius: "999px", border: "1px solid #D8CFC0", color: NAVY, px: 3.5, py: 1, fontFamily: FONT, fontWeight: 500, fontSize: "0.85rem", textTransform: "none", bgcolor: "#FFFFFF", "&:hover": { bgcolor: NAVY, color: "#FFFFFF", borderColor: NAVY } }}
-                    >
-                      {t("search.feed.loadMore")}
-                    </Button>
-                  </Box>
-                )}
               </>
             )}
           </Box>

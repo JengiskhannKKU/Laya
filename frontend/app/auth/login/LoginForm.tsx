@@ -33,6 +33,19 @@ function GoogleIcon() {
   );
 }
 
+// LINE brand mark — วงกลมเขียว #06C755 พร้อมไอคอนบับเบิลแชทสีขาวตรงกลาง (ตามแนวทาง LINE brand guideline)
+function LineIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="12" cy="12" r="12" fill="#06C755" />
+      <path
+        d="M19 11.2c0-3.16-3.17-5.73-7-5.73s-7 2.57-7 5.73c0 2.83 2.51 5.2 5.9 5.65.23.05.54.15.62.36.07.18.05.47.02.65l-.1.6c-.03.18-.14.7.62.38.75-.31 4.05-2.39 5.53-4.09C18.6 13.4 19 12.35 19 11.2z"
+        fill="#FFFFFF"
+      />
+    </svg>
+  );
+}
+
 // ── Styles ─────────────────────────────────────────────────────────────────────
 const fieldSx = {
   "& .MuiOutlinedInput-root": {
@@ -49,7 +62,7 @@ function LoginFormContent() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams ? searchParams.get("redirect") : null;
   const { t } = useLanguage();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, loginWithLine } = useAuth();
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -57,6 +70,7 @@ function LoginFormContent() {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [lineLoading, setLineLoading] = useState(false);
   const [error, setError]       = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,6 +110,21 @@ function LoginFormContent() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t("auth.login.googleError"));
       setGoogleLoading(false);
+    }
+  };
+
+  const handleLine = async () => {
+    setLineLoading(true);
+    setError("");
+    try {
+      if (redirectPath) {
+        localStorage.setItem("oauth_redirect", redirectPath);
+      }
+      await loginWithLine();
+      // Redirect handled by Supabase → /auth/callback
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("auth.login.lineError"));
+      setLineLoading(false);
     }
   };
 
@@ -148,6 +177,27 @@ function LoginFormContent() {
             ? <CircularProgress size={20} sx={{ color: "#6B7280" }} />
             : <GoogleIcon />}
           {t("auth.login.continueWithGoogle")}
+        </Button>
+
+        {/* ── LINE (Custom OIDC Provider ใน Supabase — ดู auth-context.tsx: loginWithLine) ── */}
+        <Button
+          fullWidth variant="outlined"
+          onClick={handleLine}
+          disabled={lineLoading || loading}
+          sx={{
+            py: 1.4, mb: 3,
+            bgcolor: "#FFFFFF", color: "#374151", borderColor: "#E5DFD6",
+            borderRadius: "12px", fontWeight: 600, fontFamily: '"Kanit", sans-serif',
+            textTransform: "none", fontSize: "0.95rem",
+            display: "flex", gap: 1.5, alignItems: "center",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+            "&:hover": { bgcolor: "#F9FAFB", borderColor: "#D1D5DB", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" },
+          }}
+        >
+          {lineLoading
+            ? <CircularProgress size={20} sx={{ color: "#6B7280" }} />
+            : <LineIcon />}
+          {t("auth.login.continueWithLine")}
         </Button>
 
         {/* ── Divider ── */}
