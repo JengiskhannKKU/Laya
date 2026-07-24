@@ -42,6 +42,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ role: UserRole }>;
   loginWithGoogle: () => Promise<void>;
+  /** eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  loginWithLine: () => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<{ needsEmailConfirm: boolean }>;
   openAuthModal: () => void;
@@ -187,6 +189,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: { access_type: "offline", prompt: "consent" },
+      },
+    });
+    if (error) throw new Error(error.message);
+  };
+
+  // LINE Login — ผูกเป็น Custom OIDC Provider ใน Supabase (ตัว LINE ไม่ใช่ provider มาตรฐานของ Supabase)
+  // ต้องตั้งค่า Custom Provider ชื่อ "line" ไว้ในดาชบอร์ด Supabase ก่อน (Issuer: https://access.line.me)
+  // แล้ว sign-in flow ที่เหลือ (callback, sync profile) ใช้ path เดียวกับ Google ทุกอย่าง
+  const loginWithLine = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "custom:line" as any,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     if (error) throw new Error(error.message);
