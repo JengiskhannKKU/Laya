@@ -54,7 +54,7 @@ export const COVER_PRESETS = [
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** seed: โพสต์เรื่องราวแฟชั่น & มรดกผ้าไทย ผสมผสานเรื่องราวการลงพื้นที่และรางวัล Hackathon อย่างลงตัว */
+/** seed: โพสต์เรื่องราวแฟชั่น & มรดกผ้าไทย ผสมผสานเรื่องราวการลงพื้นที่และภาพจริงในคอลเลกชันอย่างสมบูรณ์แบบ */
 export const SEED_MOMENTS: Moment[] = [
   {
     id: "story-hackathon-finalist",
@@ -67,6 +67,19 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA Team",
     official: true,
     likeCount: 142,
+    createdAt: Date.now() - 0.2 * DAY,
+  },
+  {
+    id: "story-trakanta-blazer",
+    type: "blog",
+    title: "สวมสูทผ้ามัดหมี่สตรีทกูตูร์จากแบรนด์ 'ตระการตา' (Trakanta) อุดรธานี 💖",
+    body: "เบลเซอร์เข้ารูปตัดเย็บจากผ้ามัดหมี่ทอมือสีน้ำเงินม่วง ลายเรขาคณิตสุดโฉบเฉี่ยวจากแบรนด์ตระการตา (Trakanta) จ.อุดรธานี เปลี่ยนภาพจำผ้าไทยทรงโบราณให้กลายเป็นลุคสมาร์ตเวิร์กกิ้งวูแมนสุดทันสมัย ใส่ไปทำงานทรงพลัง ใส่ไปงานปาร์ตี้ก็โดดเด่น!",
+    cover: "/images/Gallery/LINE_ALBUM_29669_260724_4.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_29669_260724_4.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_7.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_9.jpg"],
+    topic: "ชุดทำงาน",
+    authorName: "Trakanta Fashion",
+    official: true,
+    likeCount: 115,
     createdAt: Date.now() - 0.5 * DAY,
   },
   {
@@ -82,19 +95,6 @@ export const SEED_MOMENTS: Moment[] = [
     createdAt: Date.now() - 1 * DAY,
   },
   {
-    id: "story-trakanta-blazer",
-    type: "blog",
-    title: "สวมสูทผ้ามัดหมี่สตรีทกูตูร์จากแบรนด์ 'ตระการตา' (Trakanta) อุดรธานี 💖",
-    body: "เบลเซอร์เข้ารูปตัดเย็บจากผ้ามัดหมี่ทอมือสีน้ำเงินม่วง ลายเรขาคณิตสุดโฉบเฉี่ยวจากแบรนด์ตระการตา (Trakanta) จ.อุดรธานี เปลี่ยนภาพจำผ้าไทยทรงโบราณให้กลายเป็นลุคสมาร์ตเวิร์กกิ้งวูแมนสุดทันสมัย ใส่ไปทำงานทรงพลัง ใส่ไปงานปาร์ตี้ก็โดดเด่น!",
-    cover: "/images/Gallery/LINE_ALBUM_29669_260724_4.jpg",
-    images: ["/images/Gallery/LINE_ALBUM_29669_260724_4.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_7.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_9.jpg"],
-    topic: "ชุดทำงาน",
-    authorName: "Trakanta Fashion",
-    official: true,
-    likeCount: 115,
-    createdAt: Date.now() - 1.5 * DAY,
-  },
-  {
     id: "story-artisan-field-work",
     type: "blog",
     title: "ลงพื้นที่สัมผัสภูมิปัญญาช่างทอ ร่วมพูดคุยกับคุณยายใต้ถุนเรือนไทย 🧵👵",
@@ -104,7 +104,20 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA Storyteller",
     official: true,
     likeCount: 96,
-    createdAt: Date.now() - 2 * DAY,
+    createdAt: Date.now() - 1.2 * DAY,
+  },
+  {
+    id: "story-trakanta-magenta-dress",
+    type: "blog",
+    title: "เดรสผ้าไหมมัดหมี่สีบานเย็นร่วมสมัย สวยสง่าท้าทุกสายตา ✨💃",
+    body: "เดรสผ้าไหมทอมือโทนสีบานเย็นสดใส โดดเด่นด้วยลวดลายมัดหมี่เรขาคณิตประยุกต์ ตัดเย็บสไตล์มินิมอลโมเดิร์นจากช่างฝีมือจังหวัดอุดรธานี สวมใส่ออกงานเลี้ยงคืนสำคัญได้อย่างมั่นใจและทรงเสน่ห์",
+    cover: "/images/Gallery/LINE_ALBUM_29669_260724_2.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_29669_260724_2.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_5.jpg"],
+    topic: "แฟชั่น",
+    authorName: "Silk Lover Club",
+    official: true,
+    likeCount: 108,
+    createdAt: Date.now() - 1.5 * DAY,
   },
   {
     id: "seed-mixmatch-tee",
@@ -116,7 +129,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 64,
-    createdAt: Date.now() - 2.5 * DAY,
+    createdAt: Date.now() - 1.8 * DAY,
   },
   {
     id: "story-governor-chadchart",
@@ -128,7 +141,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA Team",
     official: true,
     likeCount: 156,
-    createdAt: Date.now() - 3 * DAY,
+    createdAt: Date.now() - 2 * DAY,
   },
   {
     id: "story-celebration-of-silk",
@@ -141,7 +154,20 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "Silk Fashion Critic",
     official: true,
     likeCount: 132,
-    createdAt: Date.now() - 3.5 * DAY,
+    createdAt: Date.now() - 2.5 * DAY,
+  },
+  {
+    id: "story-bronze-suit",
+    type: "review",
+    title: "ชุดสูทผ้าไหมมัดหมี่ทองบรอนซ์พรีเมียม ตัดเย็บสุดเนี๊ยบระดับไฮเอนด์ 🧥💫",
+    body: "รีวิวชุดสูทผ้าไหมมัดหมี่โทนสีทองบรอนซ์อันเลอค่า ทอลายประณีตระดับครูช่าง ผสมผสานคัตติ้งเนี้ยบกริบสไตล์อิตาเลียน ใส่ไปงานทางการแล้วดูทรงอำนาจและมีรสนิยมลึกล้ำมากๆ",
+    cover: "/images/Gallery/LINE_ALBUM_14669_260724_11.jpg",
+    topic: "ชุดทำงาน",
+    authorName: "Master Tailor Review",
+    official: true,
+    rating: 5,
+    likeCount: 124,
+    createdAt: Date.now() - 2.8 * DAY,
   },
   {
     id: "seed-detail-story",
@@ -153,7 +179,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 75,
-    createdAt: Date.now() - 4 * DAY,
+    createdAt: Date.now() - 3 * DAY,
   },
   {
     id: "story-master-artisan-sisaket",
@@ -161,11 +187,12 @@ export const SEED_MOMENTS: Moment[] = [
     title: "คุยกับอาจารย์บุญโรช ศรีละพันธ์ — ครูช่างผู้สืบสานมรดกผ้าไหมลูกแก้วย้อมครามแห่งศรีสะเกษ 💙",
     body: "เรื่องราวทรงคุณค่าของอาจารย์บุญโรช ศรีละพันธ์ ครูช่างผ้าไหมแห่ง อ.อุทุมพรพิสัย จ.ศรีสะเกษ ผู้ทุ่มเททั้งชีวิตรักษาเทคนิคการทอผ้าไหมลูกแก้วย้อมครามโบราณ ท่านถ่ายทอดให้ฟังว่า 'การทอผ้าคือการฝึกจิตสมาธิและส่งต่อความรักสู่ผู้สวมใส่'",
     cover: "/images/Gallery/LINE_ALBUM_14669_260724_10.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_14669_260724_10.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_9.jpg"],
     topic: "ชุดพื้นเมือง",
     authorName: "Heritage Collector",
     official: true,
     likeCount: 104,
-    createdAt: Date.now() - 4.5 * DAY,
+    createdAt: Date.now() - 3.5 * DAY,
   },
   {
     id: "seed-accessories",
@@ -178,7 +205,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA Stylist",
     official: true,
     likeCount: 59,
-    createdAt: Date.now() - 5 * DAY,
+    createdAt: Date.now() - 4 * DAY,
   },
   {
     id: "story-silk-spinning-wheel",
@@ -190,7 +217,20 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "Artisan Explorer",
     official: true,
     likeCount: 82,
-    createdAt: Date.now() - 5.5 * DAY,
+    createdAt: Date.now() - 4.5 * DAY,
+  },
+  {
+    id: "story-gold-couture-dress",
+    type: "blog",
+    title: "เดรสผ้ายกทองมัดหมี่ชั้นสูง หัตถศิลป์ทรงคุณค่าระดับพิพิธภัณฑ์ 👑✨",
+    body: "ตื่นตะลึงกับเดรสผ้ายกทองมัดหมี่สไตล์กูตูร์ การผสมสอดเส้นทองคำลงในลวดลายมัดหมี่โบราณ สะท้อนความวิจิตรบรรจงและคุณค่าอันประเมินค่าไม่ได้ของผ้าไทยชั้นครู",
+    cover: "/images/Gallery/LINE_ALBUM_14669_260724_12.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_14669_260724_12.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_14.jpg"],
+    topic: "ชุดพื้นเมือง",
+    authorName: "Haute Couture Asia",
+    official: true,
+    likeCount: 118,
+    createdAt: Date.now() - 5 * DAY,
   },
   {
     id: "story-surin-prowpha",
@@ -198,11 +238,12 @@ export const SEED_MOMENTS: Moment[] = [
     title: "พราวผ้า — กลุ่มทอผ้าไหมลายโบราณ จ.สุรินทร์ เสน่ห์สีย้อมธรรมชาติ 🌿",
     body: "พามาอุดหนุนผลงานผ้าไหมทอมือลายโบราณและเสื้อผ้าฝ้ายแต่งลูกไม้สีพาสเทลจากกลุ่มช่างฝีมือ 'พราวผ้า' จังหวัดสุรินทร์ สีย้อมจากเปลือกไม้และครามธรรมชาติ นุ่มนวล ปลอดภัย อบอุ่นหัวใจทุกครั้งที่ได้สวมใส่",
     cover: "/images/Gallery/LINE_ALBUM_14669_260724_4.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_14669_260724_4.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_6.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_8.jpg"],
     topic: "Mix & Match",
     authorName: "Surin Weaver",
     official: true,
     likeCount: 91,
-    createdAt: Date.now() - 6 * DAY,
+    createdAt: Date.now() - 5.5 * DAY,
   },
   {
     id: "seed-dress",
@@ -214,7 +255,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 68,
-    createdAt: Date.now() - 6.5 * DAY,
+    createdAt: Date.now() - 6 * DAY,
   },
   {
     id: "story-pitching-insight",
@@ -226,7 +267,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA Founder",
     official: true,
     likeCount: 128,
-    createdAt: Date.now() - 7 * DAY,
+    createdAt: Date.now() - 6.5 * DAY,
   },
   {
     id: "story-behind-the-scenes",
@@ -238,7 +279,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA Team",
     official: true,
     likeCount: 110,
-    createdAt: Date.now() - 7.5 * DAY,
+    createdAt: Date.now() - 7 * DAY,
   },
   {
     id: "seed-ootd-casual",
@@ -250,7 +291,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 54,
-    createdAt: Date.now() - 8 * DAY,
+    createdAt: Date.now() - 7.5 * DAY,
   },
   {
     id: "seed-silk-vintage",
@@ -262,7 +303,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 47,
-    createdAt: Date.now() - 8.5 * DAY,
+    createdAt: Date.now() - 8 * DAY,
   },
   {
     id: "seed-5-looks",
@@ -275,7 +316,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 92,
-    createdAt: Date.now() - 9 * DAY,
+    createdAt: Date.now() - 8.5 * DAY,
   },
   {
     id: "seed-linen-work",
@@ -287,7 +328,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 61,
-    createdAt: Date.now() - 9.5 * DAY,
+    createdAt: Date.now() - 9 * DAY,
   },
   {
     id: "seed-tone-trend",
@@ -300,7 +341,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 78,
-    createdAt: Date.now() - 10 * DAY,
+    createdAt: Date.now() - 9.5 * DAY,
   },
   {
     id: "seed-praewa",
@@ -312,7 +353,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 89,
-    createdAt: Date.now() - 11 * DAY,
+    createdAt: Date.now() - 10 * DAY,
   },
   {
     id: "seed-kram",
@@ -325,7 +366,7 @@ export const SEED_MOMENTS: Moment[] = [
     official: true,
     rating: 5,
     likeCount: 42,
-    createdAt: Date.now() - 12 * DAY,
+    createdAt: Date.now() - 11 * DAY,
   },
   {
     id: "seed-care",
@@ -337,7 +378,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 51,
-    createdAt: Date.now() - 13 * DAY,
+    createdAt: Date.now() - 12 * DAY,
   },
   {
     id: "seed-style",
@@ -349,7 +390,7 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     likeCount: 58,
-    createdAt: Date.now() - 15 * DAY,
+    createdAt: Date.now() - 13 * DAY,
   },
 ];
 
@@ -360,7 +401,6 @@ export function getAllMoments(): Moment[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const userMoments: Moment[] = raw ? JSON.parse(raw) : [];
-    // เอา official ขึ้นก่อน แล้วตามด้วยโพสต์จากผู้ใช้จริง
     const combined = [...SEED_MOMENTS, ...userMoments];
     return combined.sort((a, b) => b.createdAt - a.createdAt);
   } catch {
