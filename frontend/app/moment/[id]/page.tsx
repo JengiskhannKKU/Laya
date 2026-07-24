@@ -47,8 +47,7 @@ export default function MomentDetailPage() {
   const handleLike = () => {
     if (!moment) return;
     if (!user) { router.push("/auth/login"); return; }
-    const nextLiked = toggleLike(moment.id);
-    const nowLiked = nextLiked.includes(moment.id);
+    const nowLiked = toggleLike(moment.id);
     setLiked(nowLiked);
     setLikeCount((c) => Math.max(0, c + (nowLiked ? 1 : -1)));
   };

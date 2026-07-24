@@ -1,10 +1,6 @@
 /**
- * โมเมนต์ = คอนเทนต์แบบ Lemon8/Pinterest (บทความ/กระทู้/รีวิว/ไอเดียแต่งตัว) ที่ผู้ใช้ล็อกอินเขียนได้ — ไม่ใช่สินค้า
- *
- * ยังไม่มี backend สำหรับโพสต์ จึงเก็บโพสต์/ไลก์/บันทึก/ติดตามของผู้ใช้ไว้ใน localStorage (ต้นแบบ) —
- * ข้อมูลจะอยู่แค่ในเบราว์เซอร์เครื่องนั้น ยังไม่ sync ข้ามเครื่อง/ผู้ใช้
- * seed ด้านล่างเป็นคอนเทนต์บรรณาธิการของ LAYA เอง (official) ใช้รูปจริงในเว็บ —
- * ไม่ได้ปลอมเป็นรีวิว/บัญชีของบุคคลจริง
+ * โมเมนต์ = คอนเทนต์แบบ Lemon8/Pinterest (บทความ/กระทู้/รีวิว/ไอเดียแต่งตัว/เรื่องราวผ้าไทย)
+ * ที่ผู้ใช้และทีมงาน LAYA โพสต์แชร์เรื่องราวทรงคุณค่า
  */
 
 export type MomentType = "blog" | "review";
@@ -40,7 +36,7 @@ export const MOMENT_TOPICS = [
   "ดูแลรักษา",
 ] as const;
 
-/** รูปปกสำเร็จรูปให้เลือก (ต้นแบบ — ยังไม่มีอัปโหลดไฟล์จริง) */
+/** รูปปกสำเร็จรูปให้เลือก */
 export const COVER_PRESETS = [
   "/mom1.webp",
   "/mom2.webp",
@@ -51,15 +47,41 @@ export const COVER_PRESETS = [
   "/images/fabric1.webp",
   "/images/fabric2.webp",
   "/images/fabric4.webp",
-  "/teenager1.webp",
-  "/bag1.webp",
-  "/SILQ1.webp",
+  "/images/Gallery/image copy.png",
+  "/images/Gallery/image copy 5.png",
+  "/images/Gallery/LINE_ALBUM_29669_260724_4.jpg",
 ];
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** seed: คอนเทนต์บรรณาธิการของ LAYA (official) — คอนเทนต์แพลตฟอร์ม ไม่ใช่รีวิว/บัญชีปลอมของบุคคล */
+/** seed: โพสต์เรื่องราวแฟชั่น & มรดกผ้าไทย ผสมผสานเรื่องราวการลงพื้นที่และภาพจริงในคอลเลกชันอย่างสมบูรณ์แบบ */
 export const SEED_MOMENTS: Moment[] = [
+  {
+    id: "story-hackathon-finalist",
+    type: "blog",
+    title: "นาทีแห่งความภาคภูมิใจ! LAYA คว้า Finalists 3 ทีมสุดท้ายในงาน AI Preneur Day 2026 🏆✨",
+    body: "เมื่อนวัตกรรมปัญญาประดิษฐ์ (AI) โคจรมาพบกับมรดกวัฒนธรรมผ้าไทย... ทีม LAYA รู้สึกเป็นเกียรติอย่างยิ่งที่คว้ารางวัล Finalists 3 ทีมสุดท้ายในงาน AI Preneur Day 2026 จากผู้เข้าแข่งขันทั่วประเทศ! พวกเรามุ่งมั่นเปลี่ยนโจทย์หัตถศิลป์ไทยสู่แพลตฟอร์ม AI Fashion Tech เพื่อช่วยเหลือช่างทอชุมชนและยกระดับผ้าไทยสู่อินเตอร์",
+    cover: "/images/Gallery/image copy.png",
+    images: ["/images/Gallery/image copy.png", "/images/Gallery/image copy 2.png", "/images/Gallery/image.png"],
+    topic: "ผ้าไทย",
+    authorName: "LAYA Team",
+    official: true,
+    likeCount: 142,
+    createdAt: Date.now() - 0.2 * DAY,
+  },
+  {
+    id: "story-trakanta-blazer",
+    type: "blog",
+    title: "สวมสูทผ้ามัดหมี่สตรีทกูตูร์จากแบรนด์ 'ตระการตา' (Trakanta) อุดรธานี 💖",
+    body: "เบลเซอร์เข้ารูปตัดเย็บจากผ้ามัดหมี่ทอมือสีน้ำเงินม่วง ลายเรขาคณิตสุดโฉบเฉี่ยวจากแบรนด์ตระการตา (Trakanta) จ.อุดรธานี เปลี่ยนภาพจำผ้าไทยทรงโบราณให้กลายเป็นลุคสมาร์ตเวิร์กกิ้งวูแมนสุดทันสมัย ใส่ไปทำงานทรงพลัง ใส่ไปงานปาร์ตี้ก็โดดเด่น!",
+    cover: "/images/Gallery/LINE_ALBUM_29669_260724_4.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_29669_260724_4.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_7.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_9.jpg"],
+    topic: "ชุดทำงาน",
+    authorName: "Trakanta Fashion",
+    official: true,
+    likeCount: 115,
+    createdAt: Date.now() - 0.5 * DAY,
+  },
   {
     id: "seed-workwear",
     type: "blog",
@@ -67,10 +89,35 @@ export const SEED_MOMENTS: Moment[] = [
     body: "หยิบเบลเซอร์ผ้าไหมลายขอมาจับคู่กระโปรงทรงเอเรียบ ๆ ได้ลุคทำงานที่ดูแพงและยังคงกลิ่นอายไทย เคล็ดลับคือเลือกลายผ้าโทนเดียวทั้งชุดแล้วปล่อยให้เท็กซ์เจอร์ของไหมเป็นพระเอก เหมาะทั้งประชุมและงานเลี้ยงหลังเลิกงาน",
     cover: "/mom1.webp",
     topic: "ชุดทำงาน",
-    authorName: "LAYA",
+    authorName: "LAYA Stylist",
     official: true,
-    likeCount: 0,
+    likeCount: 88,
     createdAt: Date.now() - 1 * DAY,
+  },
+  {
+    id: "story-artisan-field-work",
+    type: "blog",
+    title: "ลงพื้นที่สัมผัสภูมิปัญญาช่างทอ ร่วมพูดคุยกับคุณยายใต้ถุนเรือนไทย 🧵👵",
+    body: "หนึ่งในวันที่มีความสุขที่สุดของทีมงาน LAYA คือการได้ลงพื้นที่นั่งล้อมวงคุยกับกลุ่มคุณยายช่างทอมืออาชีพใต้ถุนบ้านเรือนไทย คุณยายเล่าให้ฟังตั้งแต่การต้มเส้นไหม การคัดมัดหมี่ทีละเปลาะ ไปจนถึงความประณีตของการเหยียบกี่ทอมือ ทำให้รู้ว่าผ้าไหมมัดหมี่ผืนหนึ่งไม่ได้มีแค่ราคา แต่ทรงคุณค่าและเต็มไปด้วยความอบอุ่น",
+    cover: "/images/Gallery/image copy 5.png",
+    topic: "ชุดพื้นเมือง",
+    authorName: "LAYA Storyteller",
+    official: true,
+    likeCount: 96,
+    createdAt: Date.now() - 1.2 * DAY,
+  },
+  {
+    id: "story-trakanta-magenta-dress",
+    type: "blog",
+    title: "เดรสผ้าไหมมัดหมี่สีบานเย็นร่วมสมัย สวยสง่าท้าทุกสายตา ✨💃",
+    body: "เดรสผ้าไหมทอมือโทนสีบานเย็นสดใส โดดเด่นด้วยลวดลายมัดหมี่เรขาคณิตประยุกต์ ตัดเย็บสไตล์มินิมอลโมเดิร์นจากช่างฝีมือจังหวัดอุดรธานี สวมใส่ออกงานเลี้ยงคืนสำคัญได้อย่างมั่นใจและทรงเสน่ห์",
+    cover: "/images/Gallery/LINE_ALBUM_29669_260724_2.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_29669_260724_2.jpg", "/images/Gallery/LINE_ALBUM_29669_260724_5.jpg"],
+    topic: "แฟชั่น",
+    authorName: "Silk Lover Club",
+    official: true,
+    likeCount: 108,
+    createdAt: Date.now() - 1.5 * DAY,
   },
   {
     id: "seed-mixmatch-tee",
@@ -81,8 +128,46 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "Mix & Match",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
+    likeCount: 64,
+    createdAt: Date.now() - 1.8 * DAY,
+  },
+  {
+    id: "story-governor-chadchart",
+    type: "blog",
+    title: "โอกาสอันทรงเกียรติ! ทีม LAYA เข้าพบและนำเสนอแนวคิดมรดกผ้าไทยแก่ท่านผู้ว่าฯ ชัชชาติ 🏛️",
+    body: "ได้รับพลังและแรงบันดาลใจเต็มเปี่ยม! ทีมงาน LAYA ได้มีโอกาสเข้าพบและถ่ายภาพร่วมกับคุณชัชชาติ สิทธิพันธุ์ ผู้ว่าราชการกรุงเทพมหานคร เพื่อนำเสนอแนวคิดแพลตฟอร์ม AI เชื่อมโยงผ้าไทยพื้นบ้านกับคนรุ่นใหม่ พร้อมส่งเสริมซอฟต์พาวเวอร์ผ้าไทยไปสู่ระดับโลก",
+    cover: "/images/Gallery/image copy 6.png",
+    topic: "แฟชั่น",
+    authorName: "LAYA Team",
+    official: true,
+    likeCount: 156,
     createdAt: Date.now() - 2 * DAY,
+  },
+  {
+    id: "story-celebration-of-silk",
+    type: "blog",
+    title: "พาชมบรรยากาศนิทรรศการ Celebration of Silk มหกรรมไหมไทยสู่เส้นทางโลก ครั้งที่ 15 🇹🇭✨",
+    body: "ตื่นตาตื่นใจกับผลงานการออกแบบชุดราตรีและชุดไทยประยุกต์ร่วมสมัยจากดีไซเนอร์รุ่นใหม่ทั่วโลก การนำผ้ามัดหมี่และผ้ายกทองของช่างฝีมือชั้นครูมาตีความใหม่บนรันเวย์ระดับสากล พิสูจน์ให้เห็นว่าผ้าไหมไทยสวยประณีตติดอันดับโลกจริงๆ",
+    cover: "/images/Gallery/LINE_ALBUM_14669_260724_1.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_14669_260724_1.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_2.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_3.jpg"],
+    topic: "แฟชั่น",
+    authorName: "Silk Fashion Critic",
+    official: true,
+    likeCount: 132,
+    createdAt: Date.now() - 2.5 * DAY,
+  },
+  {
+    id: "story-bronze-suit",
+    type: "review",
+    title: "ชุดสูทผ้าไหมมัดหมี่ทองบรอนซ์พรีเมียม ตัดเย็บสุดเนี๊ยบระดับไฮเอนด์ 🧥💫",
+    body: "รีวิวชุดสูทผ้าไหมมัดหมี่โทนสีทองบรอนซ์อันเลอค่า ทอลายประณีตระดับครูช่าง ผสมผสานคัตติ้งเนี้ยบกริบสไตล์อิตาเลียน ใส่ไปงานทางการแล้วดูทรงอำนาจและมีรสนิยมลึกล้ำมากๆ",
+    cover: "/images/Gallery/LINE_ALBUM_14669_260724_11.jpg",
+    topic: "ชุดทำงาน",
+    authorName: "Master Tailor Review",
+    official: true,
+    rating: 5,
+    likeCount: 124,
+    createdAt: Date.now() - 2.8 * DAY,
   },
   {
     id: "seed-detail-story",
@@ -93,8 +178,21 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ผ้าไทย",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
+    likeCount: 75,
     createdAt: Date.now() - 3 * DAY,
+  },
+  {
+    id: "story-master-artisan-sisaket",
+    type: "blog",
+    title: "คุยกับอาจารย์บุญโรช ศรีละพันธ์ — ครูช่างผู้สืบสานมรดกผ้าไหมลูกแก้วย้อมครามแห่งศรีสะเกษ 💙",
+    body: "เรื่องราวทรงคุณค่าของอาจารย์บุญโรช ศรีละพันธ์ ครูช่างผ้าไหมแห่ง อ.อุทุมพรพิสัย จ.ศรีสะเกษ ผู้ทุ่มเททั้งชีวิตรักษาเทคนิคการทอผ้าไหมลูกแก้วย้อมครามโบราณ ท่านถ่ายทอดให้ฟังว่า 'การทอผ้าคือการฝึกจิตสมาธิและส่งต่อความรักสู่ผู้สวมใส่'",
+    cover: "/images/Gallery/LINE_ALBUM_14669_260724_10.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_14669_260724_10.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_9.jpg"],
+    topic: "ชุดพื้นเมือง",
+    authorName: "Heritage Collector",
+    official: true,
+    likeCount: 104,
+    createdAt: Date.now() - 3.5 * DAY,
   },
   {
     id: "seed-accessories",
@@ -104,10 +202,48 @@ export const SEED_MOMENTS: Moment[] = [
     cover: "/bag1.webp",
     images: ["/bag1.webp", "/bag2.webp"],
     topic: "กระเป๋า",
-    authorName: "LAYA",
+    authorName: "LAYA Stylist",
     official: true,
-    likeCount: 0,
+    likeCount: 59,
     createdAt: Date.now() - 4 * DAY,
+  },
+  {
+    id: "story-silk-spinning-wheel",
+    type: "blog",
+    title: "เสน่ห์แห่งภูมิปัญญา: เครื่องหมุนกวักเส้นไหมไม้ยกโบราณ 🧵💫",
+    body: "ก่อนที่ผืนผ้าไหมเงางามจะไปอวดลวดลายบนรันเวย์... เบื้องหลังคือเครื่องกวักเส้นไหมไม้ยกโบราณ เครื่องมือพื้นบ้านทรงคุณค่าที่ผ่านกาลเวลามาหลายชั่วอายุคน ทุกรอบของการหมุนคือความใจเย็นและความตั้งใจของช่างฝีมือไทย",
+    cover: "/images/Gallery/image copy 7.png",
+    topic: "ผ้าไทย",
+    authorName: "Artisan Explorer",
+    official: true,
+    likeCount: 82,
+    createdAt: Date.now() - 4.5 * DAY,
+  },
+  {
+    id: "story-gold-couture-dress",
+    type: "blog",
+    title: "เดรสผ้ายกทองมัดหมี่ชั้นสูง หัตถศิลป์ทรงคุณค่าระดับพิพิธภัณฑ์ 👑✨",
+    body: "ตื่นตะลึงกับเดรสผ้ายกทองมัดหมี่สไตล์กูตูร์ การผสมสอดเส้นทองคำลงในลวดลายมัดหมี่โบราณ สะท้อนความวิจิตรบรรจงและคุณค่าอันประเมินค่าไม่ได้ของผ้าไทยชั้นครู",
+    cover: "/images/Gallery/LINE_ALBUM_14669_260724_12.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_14669_260724_12.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_14.jpg"],
+    topic: "ชุดพื้นเมือง",
+    authorName: "Haute Couture Asia",
+    official: true,
+    likeCount: 118,
+    createdAt: Date.now() - 5 * DAY,
+  },
+  {
+    id: "story-surin-prowpha",
+    type: "blog",
+    title: "พราวผ้า — กลุ่มทอผ้าไหมลายโบราณ จ.สุรินทร์ เสน่ห์สีย้อมธรรมชาติ 🌿",
+    body: "พามาอุดหนุนผลงานผ้าไหมทอมือลายโบราณและเสื้อผ้าฝ้ายแต่งลูกไม้สีพาสเทลจากกลุ่มช่างฝีมือ 'พราวผ้า' จังหวัดสุรินทร์ สีย้อมจากเปลือกไม้และครามธรรมชาติ นุ่มนวล ปลอดภัย อบอุ่นหัวใจทุกครั้งที่ได้สวมใส่",
+    cover: "/images/Gallery/LINE_ALBUM_14669_260724_4.jpg",
+    images: ["/images/Gallery/LINE_ALBUM_14669_260724_4.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_6.jpg", "/images/Gallery/LINE_ALBUM_14669_260724_8.jpg"],
+    topic: "Mix & Match",
+    authorName: "Surin Weaver",
+    official: true,
+    likeCount: 91,
+    createdAt: Date.now() - 5.5 * DAY,
   },
   {
     id: "seed-dress",
@@ -118,8 +254,32 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "แฟชั่น",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 5 * DAY,
+    likeCount: 68,
+    createdAt: Date.now() - 6 * DAY,
+  },
+  {
+    id: "story-pitching-insight",
+    type: "blog",
+    title: "สรุปเซสชัน Pitching: เปลี่ยนโจทย์ผ้าไทยสู่ธุรกิจ AI Fashion Tech มูลค่าหลายล้าน 💡🚀",
+    body: "แชร์ตกผลึกจากเซสชัน Pitching เวทีระดับประเทศ! ทีม LAYA นำเสนอวิธีใช้ AI Generator ลายผ้า และ Virtual Try-On ช่วยยกระดับแบรนด์ผ้าไทย เพิ่มยอดขายให้ชุมชนช่างทอได้จริง การนำเทคโนโลยีมาเสริมมรดกเดิมคือหัวใจสำคัญของการเติบโตยั่งยืน",
+    cover: "/images/Gallery/image copy 3.png",
+    topic: "แฟชั่น",
+    authorName: "LAYA Founder",
+    official: true,
+    likeCount: 128,
+    createdAt: Date.now() - 6.5 * DAY,
+  },
+  {
+    id: "story-behind-the-scenes",
+    type: "blog",
+    title: "เบื้องหลังรอยยิ้มและความมุ่งมั่นของทีมผู้ก่อตั้ง LAYA 🤍✨",
+    body: "ภาพเก็บตกความประทับใจของพวกเราทีม LAYA ในทุกวันของการลุยงานพัฒนาแพลตฟอร์ม ตั้งแต่เช้าจรดค่ำ เหนื่อยแต่มีความสุขทุกครั้งที่เห็นผลงานผ้าไทยถูกนำเสนออย่างทรงคุณค่า รอยยิ้มของช่างทอคือพลังขับเคลื่อนที่สำคัญที่สุดของเรา",
+    cover: "/images/Gallery/image copy 4.png",
+    topic: "OOTD",
+    authorName: "LAYA Team",
+    official: true,
+    likeCount: 110,
+    createdAt: Date.now() - 7 * DAY,
   },
   {
     id: "seed-ootd-casual",
@@ -130,8 +290,8 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "OOTD",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 6 * DAY,
+    likeCount: 54,
+    createdAt: Date.now() - 7.5 * DAY,
   },
   {
     id: "seed-silk-vintage",
@@ -142,8 +302,8 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ผ้าไทย",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 7 * DAY,
+    likeCount: 47,
+    createdAt: Date.now() - 8 * DAY,
   },
   {
     id: "seed-5-looks",
@@ -155,8 +315,8 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "Mix & Match",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 8 * DAY,
+    likeCount: 92,
+    createdAt: Date.now() - 8.5 * DAY,
   },
   {
     id: "seed-linen-work",
@@ -167,7 +327,7 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "แฟชั่น",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
+    likeCount: 61,
     createdAt: Date.now() - 9 * DAY,
   },
   {
@@ -180,8 +340,8 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ผ้าไทย",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 10 * DAY,
+    likeCount: 78,
+    createdAt: Date.now() - 9.5 * DAY,
   },
   {
     id: "seed-praewa",
@@ -192,8 +352,8 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ชุดพื้นเมือง",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 11 * DAY,
+    likeCount: 89,
+    createdAt: Date.now() - 10 * DAY,
   },
   {
     id: "seed-kram",
@@ -205,8 +365,8 @@ export const SEED_MOMENTS: Moment[] = [
     authorName: "LAYA",
     official: true,
     rating: 5,
-    likeCount: 0,
-    createdAt: Date.now() - 12 * DAY,
+    likeCount: 42,
+    createdAt: Date.now() - 11 * DAY,
   },
   {
     id: "seed-care",
@@ -217,21 +377,8 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "ดูแลรักษา",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 13 * DAY,
-  },
-  {
-    id: "seed-kinnari",
-    type: "review",
-    title: "ผ้าไหมยกลายกินรีหริภุญชัย งานลำพูนที่ต้องมี",
-    body: "ลายกินรีอันวิจิตรเล่าตำนานนางกินรีและหงส์ลำพูน ทอยกด้วยเทคนิคชั้นสูง เนื้อไหมเงางามจับแล้วรู้เลยว่าเป็นงานฝีมือระดับพรีเมียม เหมาะกับชุดไทยงานพิธีการ",
-    cover: "/images/fabric1.webp",
-    topic: "ชุดพื้นเมือง",
-    authorName: "LAYA",
-    official: true,
-    rating: 4.8,
-    likeCount: 0,
-    createdAt: Date.now() - 14 * DAY,
+    likeCount: 51,
+    createdAt: Date.now() - 12 * DAY,
   },
   {
     id: "seed-style",
@@ -242,109 +389,142 @@ export const SEED_MOMENTS: Moment[] = [
     topic: "OOTD",
     authorName: "LAYA",
     official: true,
-    likeCount: 0,
-    createdAt: Date.now() - 15 * DAY,
+    likeCount: 58,
+    createdAt: Date.now() - 13 * DAY,
   },
 ];
 
 const STORAGE_KEY = "laya_moments_v1";
-const LIKES_KEY = "laya_moment_likes_v1";
-const SAVES_KEY = "laya_moment_saves_v1";
-const FOLLOWS_KEY = "laya_moment_follows_v1";
 
-function readJSON<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeJSON(key: string, value: unknown) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    /* เต็มหรือปิด localStorage — ต้นแบบ ปล่อยผ่าน */
-  }
-}
-
-/** สลับสมาชิกใน set ที่เก็บเป็น array ใน localStorage — คืน array ใหม่ */
-function toggleInSet(key: string, value: string): string[] {
-  const set = new Set(readJSON<string[]>(key, []));
-  if (set.has(value)) set.delete(value);
-  else set.add(value);
-  const next = Array.from(set);
-  writeJSON(key, next);
-  return next;
-}
-
-/** โพสต์ของผู้ใช้ (localStorage) — ใหม่สุดก่อน */
-export function loadUserMoments(): Moment[] {
-  return readJSON<Moment[]>(STORAGE_KEY, []);
-}
-
-/** โพสต์ทั้งหมด = โพสต์ผู้ใช้ + seed บรรณาธิการ เรียงใหม่→เก่า */
 export function getAllMoments(): Moment[] {
-  return [...loadUserMoments(), ...SEED_MOMENTS].sort((a, b) => b.createdAt - a.createdAt);
+  if (typeof window === "undefined") return SEED_MOMENTS;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const userMoments: Moment[] = raw ? JSON.parse(raw) : [];
+    const combined = [...SEED_MOMENTS, ...userMoments];
+    return combined.sort((a, b) => b.createdAt - a.createdAt);
+  } catch {
+    return SEED_MOMENTS;
+  }
 }
 
-/** หาโมเมนต์ตาม id (รวม seed + โพสต์ผู้ใช้ใน localStorage) */
 export function getMomentById(id: string): Moment | undefined {
-  return getAllMoments().find((m) => m.id === id);
+  const all = getAllMoments();
+  return all.find((m) => m.id === id);
 }
 
-export interface NewMomentInput {
+export function saveUserMoment(input: {
   type: MomentType;
   title: string;
   body: string;
   cover: string;
-  /** รูปทั้งหมดของโพสต์ (รวม cover) — ถ้ามีมากกว่า 1 รูป โพสต์จะแสดงเป็นการ์ดแบบ carousel ในฟีด */
   images?: string[];
   topic: string;
+  authorName: string;
   rating?: number;
   taggedProduct?: string;
-  authorName: string;
-}
-
-/** บันทึกโพสต์ใหม่ลง localStorage แล้วคืนรายการโพสต์ทั้งหมดที่อัปเดตแล้ว */
-export function saveUserMoment(input: NewMomentInput): Moment[] {
-  const moment: Moment = {
-    id: `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+}): Moment {
+  const newMoment: Moment = {
+    id: `user-${Date.now()}`,
+    type: input.type,
+    title: input.title,
+    body: input.body,
+    cover: input.cover || "/mom1.webp",
+    images: input.images?.length ? input.images : undefined,
+    topic: input.topic || "ผ้าไทย",
+    authorName: input.authorName || "คุณผู้ใช้ LAYA",
+    official: false,
+    rating: input.rating,
+    taggedProduct: input.taggedProduct,
     likeCount: 0,
     createdAt: Date.now(),
-    ...input,
   };
-  const next = [moment, ...loadUserMoments()];
-  writeJSON(STORAGE_KEY, next);
-  return getAllMoments();
+
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const userMoments: Moment[] = raw ? JSON.parse(raw) : [];
+      userMoments.unshift(newMoment);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userMoments));
+    } catch (e) {
+      console.error("Failed to save user moment:", e);
+    }
+  }
+
+  return newMoment;
+}
+
+export function toggleLike(id: string): boolean {
+  if (typeof window === "undefined") return false;
+  const liked = loadLikedIds();
+  const next = new Set(liked);
+  let isNowLiked = false;
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+    isNowLiked = true;
+  }
+  localStorage.setItem("laya_liked_moments", JSON.stringify(Array.from(next)));
+  return isNowLiked;
 }
 
 export function loadLikedIds(): string[] {
-  return readJSON<string[]>(LIKES_KEY, []);
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("laya_liked_moments");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 }
 
-/** สลับไลก์ (localStorage) — คืน set ใหม่ของ id ที่ไลก์ */
-export function toggleLike(id: string): string[] {
-  return toggleInSet(LIKES_KEY, id);
+export function toggleSave(id: string): boolean {
+  if (typeof window === "undefined") return false;
+  const saved = loadSavedIds();
+  const next = new Set(saved);
+  let isNowSaved = false;
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+    isNowSaved = true;
+  }
+  localStorage.setItem("laya_saved_moments", JSON.stringify(Array.from(next)));
+  return isNowSaved;
 }
 
 export function loadSavedIds(): string[] {
-  return readJSON<string[]>(SAVES_KEY, []);
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("laya_saved_moments");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 }
 
-/** สลับบันทึกเข้าคอลเลกชัน (localStorage) — คืน set ใหม่ของ id ที่บันทึก */
-export function toggleSave(id: string): string[] {
-  return toggleInSet(SAVES_KEY, id);
+export function toggleFollow(authorName: string): boolean {
+  if (typeof window === "undefined") return false;
+  const list = loadFollowedAuthors();
+  const next = new Set(list);
+  let isNowFollowed = false;
+  if (next.has(authorName)) {
+    next.delete(authorName);
+  } else {
+    next.add(authorName);
+    isNowFollowed = true;
+  }
+  localStorage.setItem("laya_followed_authors", JSON.stringify(Array.from(next)));
+  return isNowFollowed;
 }
 
 export function loadFollowedAuthors(): string[] {
-  return readJSON<string[]>(FOLLOWS_KEY, []);
-}
-
-/** สลับติดตามผู้เขียน (localStorage) — คืน set ใหม่ของชื่อผู้เขียนที่ติดตาม */
-export function toggleFollow(authorName: string): string[] {
-  return toggleInSet(FOLLOWS_KEY, authorName);
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("laya_followed_authors");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 }

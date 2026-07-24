@@ -34,13 +34,6 @@ const STEP_ORDER = [
   "order_summary",
 ] as const;
 
-/** 3 กลุ่มขั้นตอนหลักสำหรับ Chevron Step Bar (สไตล์รูป Reference ของผู้ใช้) */
-const MACRO_STEPS = [
-  { id: 1, label: "Step 1", title: "เลือกร้าน & ทรงชุด", targetStep: "select_shop" },
-  { id: 2, label: "Step 2", title: "อัปโหลด & AI ลองชุด", targetStep: "upload" },
-  { id: 3, label: "Step 3", title: "สรุปสั่งซื้อ", targetStep: "order_summary" },
-];
-
 export default function TailorStepper({
   currentStep,
   onStepClick,
@@ -52,35 +45,34 @@ export default function TailorStepper({
   const TAILOR_STEPS = t<string[]>("tailorFlow.stepLabels");
   const activeIdx = STEP_INDEX[currentStep] ?? 0;
 
-  // คำนวณว่าสเต็ปปัจจุบันอยู่ใน Macro Phase ไหน (1, 2, หรือ 3)
-  const currentMacroPhase = activeIdx <= 1 ? 1 : activeIdx <= 7 ? 2 : 3;
-
   return (
-    <Box sx={{ py: { xs: 1.5, md: 2.5 }, px: { xs: 1, sm: 2 } }}>
+    <Box sx={{ py: { xs: 1.25, md: 2.5 }, px: { xs: 0.5, sm: 2 } }}>
       
-      {/* ─── 1. Modern Chevron Arrow Stepper (สไตล์รูป Ref ของผู้ใช้) ─── */}
+      {/* ─── 1. Modern 9-Chevron Arrow Stepper Bar (แสดงผลครบทั้ง 9 ช่องบนหน้าจอ) ─── */}
       <Box
         sx={{
           display: "flex",
+          alignItems: "center",
           width: "100%",
-          maxWidth: 680,
+          maxWidth: 980,
           mx: "auto",
-          height: { xs: 44, md: 48 },
-          borderRadius: "14px",
+          height: { xs: 38, sm: 44, md: 48 },
+          borderRadius: "12px",
           overflow: "hidden",
           boxShadow: "0 4px 16px rgba(27,42,74,0.08)",
           bgcolor: "#FFFFFF",
           border: "1px solid #E6DAC8",
-          p: "3px",
+          p: "2px",
         }}
       >
-        {MACRO_STEPS.map((macro, idx) => {
-          const isActive = currentMacroPhase === macro.id;
-          const isDone = currentMacroPhase > macro.id;
+        {TAILOR_STEPS.map((label, idx) => {
+          const isActive = activeIdx === idx;
+          const isDone = activeIdx > idx;
           const isFirst = idx === 0;
-          const isLast = idx === MACRO_STEPS.length - 1;
+          const isLast = idx === TAILOR_STEPS.length - 1;
+          const stepKey = STEP_ORDER[idx];
 
-          // โทนสี Chevron ตามสถานะ (Active = Navy, Done = Gold, Upcoming = Soft White/Gray)
+          // โทนสี Chevron ตามสถานะ (Active = Navy, Done = Gold, Upcoming = Soft White)
           const bgColor = isActive
             ? NAVY
             : isDone
@@ -91,10 +83,12 @@ export default function TailorStepper({
 
           return (
             <Box
-              key={macro.id}
-              onClick={() => onStepClick?.(macro.targetStep)}
+              key={stepKey}
+              onClick={() => onStepClick?.(stepKey)}
               sx={{
                 flex: 1,
+                minWidth: 0, // กระจายตัวครบทั้ง 9 ช่องตามความกว้างจอโดยไม่ดันล้น
+                height: "100%",
                 position: "relative",
                 display: "flex",
                 alignItems: "center",
@@ -102,53 +96,63 @@ export default function TailorStepper({
                 bgcolor: bgColor,
                 color: textColor,
                 cursor: onStepClick ? "pointer" : "default",
-                transition: "all 0.3s ease",
+                transition: "all 0.25s ease",
                 // มุมลูกศรแหลมชี้ขวา Chevron Arrow Cutout สไตล์รูป Ref ของผู้ใช้
                 clipPath: isLast
                   ? isFirst
                     ? "none"
-                    : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 12px 50%)"
+                    : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 6px 50%)"
                   : isFirst
-                  ? "polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%)"
-                  : "polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 12px 50%)",
+                  ? "polygon(0% 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 0% 100%)"
+                  : "polygon(0% 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 0% 100%, 6px 50%)",
                 borderRadius: isFirst
-                  ? "10px 0 0 10px"
+                  ? "9px 0 0 9px"
                   : isLast
-                  ? "0 10px 10px 0"
+                  ? "0 9px 9px 0"
                   : "0",
-                mr: isLast ? 0 : "-4px",
-                zIndex: MACRO_STEPS.length - idx,
-                px: { xs: 1, sm: 2 },
+                mr: isLast ? 0 : "-2px",
+                zIndex: TAILOR_STEPS.length - idx,
+                px: { xs: 0.2, sm: 0.5, md: 1 },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.3, width: "100%" }}>
                 {isDone ? (
-                  <CheckRoundedIcon sx={{ fontSize: { xs: 15, md: 17 }, color: "#FFFFFF" }} />
+                  <CheckRoundedIcon sx={{ fontSize: { xs: 13, sm: 15, md: 17 }, color: "#FFFFFF" }} />
                 ) : (
                   <Typography
                     sx={{
                       fontFamily: FONT,
                       fontWeight: 700,
-                      fontSize: { xs: "0.82rem", md: "0.92rem" },
-                      letterSpacing: "0.02em",
+                      fontSize: { xs: "0.68rem", sm: "0.78rem", md: "0.88rem" },
+                      whiteSpace: "nowrap",
+                      lineHeight: 1,
                     }}
                   >
-                    {macro.label}
+                    {/* บนจอมือถือเล็ก แสดงตัวเลข 1, 2, 3... 9 ชัดเจนครบ 9 ช่อง */}
+                    <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                      {idx + 1}
+                    </Box>
+                    <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                      Step {idx + 1}
+                    </Box>
                   </Typography>
                 )}
 
-                {/* ชื่อกลุ่มขั้นตอน */}
+                {/* ชื่อขั้นตอนบนหน้าจอใหญ่ */}
                 <Typography
                   sx={{
-                    display: { xs: "none", sm: "inline-block" },
+                    display: { xs: "none", md: "inline-block" },
                     fontFamily: FONT,
                     fontWeight: isActive ? 600 : 400,
-                    fontSize: { xs: "0.72rem", md: "0.78rem" },
+                    fontSize: "0.72rem",
                     opacity: isActive || isDone ? 0.95 : 0.75,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
+                    maxWidth: { md: 60, lg: 85 },
                   }}
                 >
-                  · {macro.title}
+                  · {label}
                 </Typography>
               </Box>
             </Box>
@@ -163,14 +167,14 @@ export default function TailorStepper({
           alignItems: "center",
           justifyContent: "center",
           gap: 1,
-          mt: 1.5,
+          mt: 1.25,
         }}
       >
         <SparklesIcon sx={{ fontSize: 14, color: GOLD }} />
         <Typography
           sx={{
             fontFamily: FONT,
-            fontSize: { xs: "0.78rem", md: "0.86rem" },
+            fontSize: { xs: "0.82rem", md: "0.9rem" },
             fontWeight: 600,
             color: NAVY,
             textAlign: "center",
