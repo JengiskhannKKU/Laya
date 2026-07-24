@@ -81,7 +81,7 @@ export default function VideoShowcaseSection() {
               letterSpacing: "-0.01em",
             }}
           >
-            วิดีโอแนะนำ & เรื่องราว LAYA
+            เรื่องราว LAYA
           </Typography>
 
           <Typography
