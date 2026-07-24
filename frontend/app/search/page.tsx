@@ -531,22 +531,26 @@ function SearchContent() {
 
   const handleLike = (id: string) => {
     if (!requireLogin()) return;
-    setLikedIds(toggleLike(id));
+    toggleLike(id);
+    setLikedIds(loadLikedIds());
   };
 
   const handleSave = (id: string) => {
     if (!requireLogin()) return;
-    setSavedIds(toggleSave(id));
+    toggleSave(id);
+    setSavedIds(loadSavedIds());
   };
 
   const handleFollow = (name: string) => {
     if (!requireLogin()) return;
-    setFollowed(toggleFollow(name));
+    toggleFollow(name);
+    setFollowed(loadFollowedAuthors());
   };
 
   const handlePost = (input: { type: MomentType; title: string; body: string; cover: string; images: string[]; topic: string; rating?: number; taggedProduct?: string }) => {
     const authorName = user?.email ? user.email.split("@")[0] : "คุณ";
-    setMoments(saveUserMoment({ ...input, authorName }));
+    saveUserMoment({ ...input, authorName });
+    setMoments(getAllMoments());
     setComposeOpen(false);
   };
 
