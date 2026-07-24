@@ -381,6 +381,11 @@ export function getAllMoments(): Moment[] {
   }
 }
 
+export function getMomentById(id: string): Moment | undefined {
+  const all = getAllMoments();
+  return all.find((m) => m.id === id);
+}
+
 export function saveUserMoment(input: {
   type: MomentType;
   title: string;
