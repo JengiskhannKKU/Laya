@@ -14,9 +14,24 @@ export default function AuthCallbackPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // ถ้า OAuth handshake ล้มเหลวฝั่ง Supabase/provider (เช่น LINE ไม่คืน email ตามที่ scope ขอ, หรือ
+    // token exchange ผิดพลาด) Supabase จะ redirect กลับมาที่นี่พร้อม ?error=...&error_description=...
+    // (บางเคสอยู่ใน query string บางเคสอยู่ใน hash fragment) — เดิมโค้ดนี้ไม่เคยอ่านค่านี้เลย ทำให้เห็นแต่
+    // ข้อความ fallback ทั่วไป "เข้าสู่ระบบไม่สำเร็จ" โดยไม่รู้สาเหตุจริงเลย
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const oauthError = params.get("error_description") ?? hashParams.get("error_description")
+      ?? params.get("error") ?? hashParams.get("error");
+    if (oauthError) {
+      console.error("[auth/callback] OAuth provider error:", oauthError);
+      setError(decodeURIComponent(oauthError));
+      setTimeout(() => router.replace("/auth/login"), 4000);
+      return;
+    }
+
     supabase.auth.getSession().then(async ({ data: { session }, error: sessionError }) => {
       if (sessionError || !session) {
-        setError("การเข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่");
+        setError(sessionError?.message || "การเข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่");
         setTimeout(() => router.replace("/auth/login"), 2500);
         return;
       }

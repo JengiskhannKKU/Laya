@@ -33,6 +33,16 @@ declare global {
 }
 
 /**
+ * บาง OAuth provider ไม่คืน email มาเลย (เช่น LINE Login — ต้องขอสิทธิ์ email scope เพิ่มจาก LINE
+ * ต่างหาก ซึ่งยังไม่ได้รับอนุมัติ) แต่ตาราง users.email เป็น UNIQUE NOT NULL — ถ้าปล่อย "" (empty string)
+ * ผ่านไปเฉยๆ ผู้ใช้ไร้ email คนที่สองจะชนกับคนแรกที่ email ว่างเหมือนกัน (unique constraint violation)
+ * ต้องสร้าง placeholder email ที่ unique ต่อคน (ผูกกับ user id ที่คงที่) แทนค่าว่างเปล่าเสมอ
+ */
+function ensureEmail(userId: string, email: string): string {
+  return email || `line-${userId}@no-email.laya.internal`;
+}
+
+/**
  * Resolve actual app role from DB (joins shops to detect merchant).
  * Called when we receive a Supabase JWT (which has no app-level role claim).
  */
@@ -79,7 +89,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     try {
       const { payload } = await jwtVerify(token, supabaseJwks);
       const sub = String(payload.sub ?? "");
-      const email = String((payload as { email?: string }).email ?? "");
+      const email = ensureEmail(sub, String((payload as { email?: string }).email ?? ""));
       if (sub) {
         try {
           req.user = await resolveUserPayload(sub, email);
@@ -100,10 +110,11 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   if (supabaseSecret) {
     try {
       const claims = jwt.verify(token, supabaseSecret) as SupabaseClaims;
+      const email = ensureEmail(claims.sub, claims.email ?? "");
       try {
-        req.user = await resolveUserPayload(claims.sub, claims.email ?? "");
+        req.user = await resolveUserPayload(claims.sub, email);
       } catch {
-        req.user = { userId: claims.sub, email: claims.email ?? "", role: "customer" };
+        req.user = { userId: claims.sub, email, role: "customer" };
       }
       next();
       return;
