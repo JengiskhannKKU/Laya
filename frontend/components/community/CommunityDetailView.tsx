@@ -64,9 +64,10 @@ function ProductCard({ p }: { p: Product }) {
   const { locale } = useLanguage();
   const displayName = productDisplayName(p, locale);
   return (
-    <Link href={`/product/${p.id}`} style={{ textDecoration: "none" }}>
+    <Link href={`/product/${p.id}`} style={{ textDecoration: "none", minWidth: 0 }}>
       <Box
         sx={{
+          minWidth: 0,
           bgcolor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5DFD6", overflow: "hidden",
           transition: "transform 0.25s ease, box-shadow 0.25s ease",
           "&:hover": { transform: "translateY(-3px)", boxShadow: "0 12px 26px rgba(27,42,74,0.12)" },
@@ -264,7 +265,10 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         </Box>
       </Box>
 
-      {/* เนื้อหา 2 คอลัมน์ (desktop) — ซ้าย: ชุมชน / ขวา: สินค้า */}
+      {/* เนื้อหา 2 คอลัมน์ (desktop) — ซ้าย: ชุมชน / ขวา: สินค้า
+          minWidth: 0 บน grid item ทั้งสองฝั่ง — ไม่งั้น grid track (1fr) จะขยายตามความกว้าง
+          intrinsic ของเนื้อหาข้างใน (เช่น Typography noWrap ของชื่อสินค้า) แทนที่จะยอมให้ ellipsis
+          ตัดคำทำงาน ทำให้ทั้งหน้าล้นขอบจอมือถือ (min-width: auto คือ default ของ grid item) */}
       <Box
         sx={{
           maxWidth: 1200, mx: "auto", px: { xs: 2.5, md: 4 }, pt: { xs: 3, md: 4 },
@@ -273,7 +277,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         }}
       >
         {/* ── คอลัมน์ซ้าย: ชุมชน ── */}
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           {/* เรื่องราวชุมชน */}
           <Box sx={{ mb: 4 }}>
             <SectionTitle>เรื่องราวชุมชน</SectionTitle>
@@ -347,7 +351,7 @@ export default function CommunityDetailView({ community }: CommunityDetailViewPr
         </Box>
 
         {/* ── คอลัมน์ขวา: สลับดูระหว่างสินค้า / ผลงานลายผ้า ── */}
-        <Box id="community-products" sx={{ scrollMarginTop: "80px" }}>
+        <Box id="community-products" sx={{ scrollMarginTop: "80px", minWidth: 0 }}>
           {/* แถบสลับมุมมอง */}
           <Box sx={{ display: "flex", gap: 0.5, p: 0.5, mb: 2.5, bgcolor: "#F0EBE3", borderRadius: "999px" }}>
             {([
