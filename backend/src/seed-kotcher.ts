@@ -18,7 +18,7 @@ export const kotcherProducts = [
     stock: 12,
     fabric_type: "ผ้าไหมมัดหมี่",
     has_gi: true,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_1.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_1.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000002",
@@ -35,7 +35,7 @@ export const kotcherProducts = [
     stock: 8,
     fabric_type: "ผ้าไหมมัดหมี่",
     has_gi: false,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_2.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_2.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000003",
@@ -52,7 +52,7 @@ export const kotcherProducts = [
     stock: 15,
     fabric_type: "ผ้าไหมทอมือ",
     has_gi: true,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_3.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_3.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000004",
@@ -69,7 +69,7 @@ export const kotcherProducts = [
     stock: 10,
     fabric_type: "ผ้าไหมทอมือ",
     has_gi: true,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_4.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_4.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000005",
@@ -86,7 +86,7 @@ export const kotcherProducts = [
     stock: 20,
     fabric_type: "ผ้าไหมมัดหมี่",
     has_gi: false,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_5.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_5.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000006",
@@ -103,7 +103,7 @@ export const kotcherProducts = [
     stock: 14,
     fabric_type: "ผ้าไหมทอมือ",
     has_gi: false,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_6.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_6.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000007",
@@ -120,7 +120,7 @@ export const kotcherProducts = [
     stock: 18,
     fabric_type: "ผ้าไหมมัดหมี่",
     has_gi: true,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_7.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_7.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000008",
@@ -137,7 +137,7 @@ export const kotcherProducts = [
     stock: 25,
     fabric_type: "ผ้าฝ้ายผสมไหม",
     has_gi: false,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_8.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_8.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000009",
@@ -154,7 +154,7 @@ export const kotcherProducts = [
     stock: 16,
     fabric_type: "ผ้าไหมมัดหมี่",
     has_gi: true,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_9.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_9.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000010",
@@ -171,7 +171,7 @@ export const kotcherProducts = [
     stock: 11,
     fabric_type: "ผ้าไหมมัดหมี่",
     has_gi: true,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_10.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_10.webp"],
   },
   {
     id: "10000000-0000-4000-8000-000000000011",
@@ -188,7 +188,7 @@ export const kotcherProducts = [
     stock: 14,
     fabric_type: "ผ้าไหมมัดหมี่",
     has_gi: true,
-    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_11.jpg"],
+    images: ["/images/photo/LINE_ALBUM_ภาพสินค้า_260723_11.webp"],
   },
 ];
 

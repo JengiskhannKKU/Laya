@@ -11,7 +11,7 @@ async function addTrakanta() {
   }
   const userId = userRows[0].id;
 
-  const imageUrl = "/images/Gallery/LINE_ALBUM_29669_260724_3.jpg";
+  const imageUrl = "/images/Gallery/LINE_ALBUM_29669_260724_3.webp";
 
   const existing = await query<Record<string, unknown>>("SELECT id FROM shops WHERE name = 'ตระการตา' OR name = 'Trakanta'");
   if (existing.length > 0) {

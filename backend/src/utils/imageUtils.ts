@@ -194,7 +194,7 @@ export async function getTemplateArtworkUrl(templateId: string, perspective: "fr
   const key = `${templateId}-${perspective}`;
   if (!_templateArtworkUrlCache.has(key)) {
     const p = (async () => {
-      const filePath = path.join(TEMPLATES_DIR, `${templateId}-${perspective}.png`);
+      const filePath = path.join(TEMPLATES_DIR, `${templateId}-${perspective}.webp`);
       const buffer = await fs.readFile(filePath);
       const upload = await uploadImageAsWebP(buffer, BUCKETS.tryonUploads, "template-artwork");
       return upload.url;

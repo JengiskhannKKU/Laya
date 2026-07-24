@@ -6,11 +6,11 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 const PARTNER_LOGOS = [
-  { name: "Freedom 250", src: "/images/Partners/flow_1.png" },
-  { name: "United States Mission Thailand", src: "/images/Partners/images.jpeg" },
-  { name: "TUSAA", src: "/images/Partners/images copy.jpeg" },
-  { name: "Microsoft", src: "/images/Partners/images.png" },
-  { name: "Krungthai Bank", src: "/images/Partners/ธนาคารกรุงไทย.png" },
+  { name: "Freedom 250", src: "/images/Partners/flow_1.webp" },
+  { name: "United States Mission Thailand", src: "/images/Partners/images-us-mission.webp" },
+  { name: "TUSAA", src: "/images/Partners/images copy.webp" },
+  { name: "Microsoft", src: "/images/Partners/images.webp" },
+  { name: "Krungthai Bank", src: "/images/Partners/ธนาคารกรุงไทย.webp" },
 ];
 
 export default function PartnersSection() {

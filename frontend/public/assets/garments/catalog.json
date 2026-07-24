@@ -601,64 +601,64 @@
       "id": "shirt",
       "name": "เชิ้ต",
       "category": "top",
-      "front": "/assets/garments/tops/templates/shirt-front.png",
-      "back": "/assets/garments/tops/templates/shirt-back.png",
+      "front": "/assets/garments/tops/templates/shirt-front.webp",
+      "back": "/assets/garments/tops/templates/shirt-back.webp",
       "basePrice": 990
     },
     {
       "id": "blazer",
       "name": "เบลเซอร์",
       "category": "top",
-      "front": "/assets/garments/tops/templates/blazer-front.png",
-      "back": "/assets/garments/tops/templates/blazer-back.png",
+      "front": "/assets/garments/tops/templates/blazer-front.webp",
+      "back": "/assets/garments/tops/templates/blazer-back.webp",
       "basePrice": 1890
     },
     {
       "id": "jacket",
       "name": "แจ็คเก็ต",
       "category": "top",
-      "front": "/assets/garments/tops/templates/jacket-front.png",
-      "back": "/assets/garments/tops/templates/jacket-back.png",
+      "front": "/assets/garments/tops/templates/jacket-front.webp",
+      "back": "/assets/garments/tops/templates/jacket-back.webp",
       "basePrice": 1690
     },
     {
       "id": "dress",
       "name": "เดรส",
       "category": "top",
-      "front": "/assets/garments/tops/templates/dress-front.png",
-      "back": "/assets/garments/tops/templates/dress-back.png",
+      "front": "/assets/garments/tops/templates/dress-front.webp",
+      "back": "/assets/garments/tops/templates/dress-back.webp",
       "basePrice": 1290
     },
     {
       "id": "polo",
       "name": "โปโล",
       "category": "top",
-      "front": "/assets/garments/tops/templates/polo-front.png",
-      "back": "/assets/garments/tops/templates/polo-back.png",
+      "front": "/assets/garments/tops/templates/polo-front.webp",
+      "back": "/assets/garments/tops/templates/polo-back.webp",
       "basePrice": 890
     },
     {
       "id": "crop",
       "name": "ครอปท็อป",
       "category": "top",
-      "front": "/assets/garments/tops/templates/crop-front.png",
-      "back": "/assets/garments/tops/templates/crop-back.png",
+      "front": "/assets/garments/tops/templates/crop-front.webp",
+      "back": "/assets/garments/tops/templates/crop-back.webp",
       "basePrice": 690
     },
     {
       "id": "vest",
       "name": "เวสต์ (เสื้อกั๊ก)",
       "category": "top",
-      "front": "/assets/garments/tops/templates/vest-front.png",
-      "back": "/assets/garments/tops/templates/vest-back.png",
+      "front": "/assets/garments/tops/templates/vest-front.webp",
+      "back": "/assets/garments/tops/templates/vest-back.webp",
       "basePrice": 790
     },
     {
       "id": "kimono",
       "name": "กิโมโน",
       "category": "top",
-      "front": "/assets/garments/tops/templates/kimono-front.png",
-      "back": "/assets/garments/tops/templates/kimono-back.png",
+      "front": "/assets/garments/tops/templates/kimono-front.webp",
+      "back": "/assets/garments/tops/templates/kimono-back.webp",
       "basePrice": 1490
     }
   ]

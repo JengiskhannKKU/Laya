@@ -48,7 +48,7 @@ export default function HeroSearch() {
 
   const bannerLayers = (
     <Image
-      src={activeBanner ? activeBanner.image : "/img_hero.png"}
+      src={activeBanner ? activeBanner.image : "/img_hero.webp"}
       alt={activeBanner ? activeBanner.title : "Thai silk heritage"}
       fill
       style={{ objectFit: "cover" }}

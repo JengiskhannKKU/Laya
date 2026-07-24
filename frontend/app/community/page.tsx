@@ -85,7 +85,7 @@ function CommunityGridCard({ community }: { community: LiveCommunity }) {
             className="shop-banner-img"
             style={{ objectFit: "cover", transition: "transform 0.5s ease" }}
             sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
-            onError={() => setImgSrc("/images/Gallery/LINE_ALBUM_29669_260724_3.jpg")}
+            onError={() => setImgSrc("/images/Gallery/LINE_ALBUM_29669_260724_3.webp")}
           />
 
           {/* Scrim Gradation */}

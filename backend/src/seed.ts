@@ -332,7 +332,7 @@ async function seed() {
           id, user_id, name, province, description, profile_image_url, cover_image_url, status, merchant_type, rating, review_count
         ) VALUES (
           gen_random_uuid(), $1, 'ตระการตา', 'อุดรธานี', 'แบรนด์เสื้อผ้าและแฟชั่นผ้าไหมไทยทรงทันสมัย ดีไซน์ร่วมสมัยระดับพรีเมียม (Trakanta)',
-          '/images/Gallery/LINE_ALBUM_29669_260724_3.jpg', '/images/Gallery/LINE_ALBUM_29669_260724_3.jpg', 'approved', 'designer', 5.0, 18
+          '/images/Gallery/LINE_ALBUM_29669_260724_3.webp', '/images/Gallery/LINE_ALBUM_29669_260724_3.webp', 'approved', 'designer', 5.0, 18
         ) ON CONFLICT (id) DO NOTHING`,
         [uId]
       );
