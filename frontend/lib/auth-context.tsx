@@ -193,17 +193,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw new Error(error.message);
   };
 
-  // LINE Login — ผูกเป็น Custom OIDC Provider ใน Supabase (ตัว LINE ไม่ใช่ provider มาตรฐานของ Supabase)
-  // ต้องตั้งค่า Custom Provider ชื่อ "line" ไว้ในดาชบอร์ด Supabase ก่อน (Issuer: https://access.line.me)
-  // แล้ว sign-in flow ที่เหลือ (callback, sync profile) ใช้ path เดียวกับ Google ทุกอย่าง
+  // LINE Login — ทำ OAuth flow เองทั้งหมดฝั่ง backend (ไม่ใช้ Supabase Custom OIDC Provider แล้ว)
+  // เพราะ LINE web login flow เซ็น ID token ด้วย HS256 เสมอ แต่ discovery document ของ LINE เองกลับ
+  // ประกาศว่ารองรับแค่ ES256 — ไม่ตรงกันจริงฝั่ง LINE ทำให้ Supabase (และ generic OIDC client อื่นๆ
+  // ที่เจอปัญหาเดียวกัน เช่น Ory Kratos) verify ID token ไม่ผ่านเสมอ ไม่มีทาง override จาก Dashboard เลย
+  // ดู backend/src/routes/line-auth.ts — backend verify HS256 เองแล้วออก Supabase session ให้ตอนจบ
+  // (magic link) ทำให้ path ที่เหลือ (/auth/callback, sync profile) เหมือน Google ทุกประการ
   const loginWithLine = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "custom:line" as any,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) throw new Error(error.message);
+    // full-page redirect ธรรมดา ไม่ใช่ fetch — ให้ backend พา browser ไปหน้า LINE authorize เอง
+    window.location.href = `${API_BASE}/api/auth/line/start`;
   };
 
   const register = async (name: string, email: string, password: string, phone?: string) => {

@@ -36,6 +36,7 @@ import adminWithdrawalsRouter from "./routes/admin-withdrawals";
 import walletRouter from "./routes/wallet";
 import templatesRouter from "./routes/templates";
 import lineWebhookRouter from "./routes/line-webhook";
+import lineAuthRouter from "./routes/line-auth";
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.get("/docs.json", (_req, res) => res.json(swaggerSpec));
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/health", healthRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/auth/line", lineAuthRouter);
 app.use("/api/shops", shopsRouter);
 app.use("/api/measurements", measurementsRouter);
 app.use("/api/addresses", addressesRouter);
