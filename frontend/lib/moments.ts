@@ -394,14 +394,17 @@ export const SEED_MOMENTS: Moment[] = [
   },
 ];
 
-const STORAGE_KEY = "laya_moments_v1";
+const STORAGE_KEY = "laya_moments_v3";
 
 export function getAllMoments(): Moment[] {
   if (typeof window === "undefined") return SEED_MOMENTS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const userMoments: Moment[] = raw ? JSON.parse(raw) : [];
-    const combined = [...SEED_MOMENTS, ...userMoments];
+    // กรองเอาเฉพาะโพสต์ที่ผู้ใช้สร้างเพิ่มจริงๆ (ไม่เอาโพสต์ seed เก่าที่ติดแคช browser)
+    const seedIds = new Set(SEED_MOMENTS.map((s) => s.id));
+    const customUserMoments = userMoments.filter((u) => u.id && !seedIds.has(u.id));
+    const combined = [...SEED_MOMENTS, ...customUserMoments];
     return combined.sort((a, b) => b.createdAt - a.createdAt);
   } catch {
     return SEED_MOMENTS;
