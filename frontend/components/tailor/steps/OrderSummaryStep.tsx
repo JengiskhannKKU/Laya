@@ -1,9 +1,11 @@
-import { Box, Typography, Button } from "@mui/material";
+import { useState } from "react";
+import { Box, Typography, Button, Alert, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useAuth } from "@/lib/auth-context";
+import { authFetch, SessionExpiredError } from "@/lib/api-auth";
 
 const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
@@ -40,14 +42,100 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function OrderSummaryStep({ orderState, onNext }: any) {
+export default function OrderSummaryStep({ orderState, setOrderState, onNext }: any) {
   const { t } = useLanguage();
   const { user, openAuthModal } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   // สั่งตัดต้องล็อกอินก่อน — ถ้ายังไม่ได้เข้าสู่ระบบ เปิด modal ล็อกอินแทนการยืนยันออเดอร์
-  const handleConfirmOrder = () => {
+  // กดยืนยันแล้ว: สร้าง order จริง (POST /api/orders) + payment พร้อมเพย์ (POST /api/payments)
+  // ก่อนพาไปหน้าชำระเงิน — เดิม flow นี้แค่เปลี่ยนหน้าจอเฉยๆ ไม่เคยสร้างออเดอร์ในระบบจริงเลย
+  const handleConfirmOrder = async () => {
     if (!user) { openAuthModal(); return; }
-    onNext();
+    if (!orderState.shop?.id) { setError("กรุณาเลือกร้านตัดเย็บก่อน"); return; }
+
+    setSubmitting(true);
+    setError("");
+    try {
+      // ผ้าที่ลูกค้าอัปโหลดเอง (fabricSource: "own") — chk_fabric_source ของ backend บังคับให้มี
+      // fabric_upload_id เสมอ ต้องเก็บรูปผ้าเป็นแถวจริงก่อนสร้างออเดอร์ (data URL ส่งเป็น imageBase64,
+      // asset path คงที่จากปุ่มข้ามขั้นทดสอบใน UploadFabricStep ส่งเป็น imageUrl ตรงๆ)
+      const fabricImage = orderState.fabricImage;
+      if (!fabricImage) { throw new Error("กรุณาอัปโหลดรูปผ้าก่อนยืนยันสั่งซื้อ"); }
+      const uploadRes = await authFetch("/api/fabric-uploads", {
+        method: "POST",
+        body: JSON.stringify(
+          fabricImage.startsWith("data:")
+            ? { imageBase64: fabricImage, name: `ผ้า — ${shape?.name ?? ""}` }
+            : { imageUrl: fabricImage, name: `ผ้า — ${shape?.name ?? ""}` }
+        ),
+      });
+      const fabricUpload = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(fabricUpload.error ?? "อัปโหลดรูปผ้าไม่สำเร็จ");
+
+      let measurementId: string | undefined;
+      const m = orderState.bodyMeasurements;
+      if (orderState.bodyInputMode === "measurements" && m) {
+        const measRes = await authFetch("/api/measurements", {
+          method: "POST",
+          body: JSON.stringify({
+            label: `สั่งตัด — ${shape?.name ?? "เสื้อผ้า"}`,
+            heightCm: m.height, weightKg: m.weight, chestCm: m.chest, waistCm: m.waist, hipCm: m.hip,
+            shoulderCm: m.shoulderWidth, notes: m.notes,
+          }),
+        });
+        const meas = await measRes.json();
+        if (!measRes.ok) throw new Error(meas.error ?? "บันทึกสัดส่วนไม่สำเร็จ");
+        measurementId = meas.id;
+      }
+
+      const noteParts: string[] = [];
+      if (orderState.occasion) noteParts.push(`โอกาส: ${orderState.occasion}`);
+      if (brief?.style) noteParts.push(`สไตล์: ${brief.style}`);
+      if (brief?.fit) noteParts.push(`ความพอดี: ${brief.fit}`);
+      detailRows.forEach((row) => noteParts.push(`${row.label}: ${row.value}`));
+      if (details.otherNotes) noteParts.push(details.otherNotes);
+      if (brief?.notes) noteParts.push(brief.notes);
+      if (measurementNotes) noteParts.push(`หมายเหตุสัดส่วน: ${measurementNotes}`);
+
+      const orderRes = await authFetch("/api/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          shopId: orderState.shop.id,
+          fabricSource: "own",
+          fabricUploadId: fabricUpload.id,
+          measurementId,
+          specialInstructions: noteParts.join(" | ") || undefined,
+          estimatedPrice: total,
+        }),
+      });
+      const order = await orderRes.json();
+      if (!orderRes.ok) throw new Error(order.error ?? "สร้างออเดอร์ไม่สำเร็จ");
+
+      const payRes = await authFetch("/api/payments", {
+        method: "POST",
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      const pay = await payRes.json();
+      if (!payRes.ok) throw new Error(pay.error ?? "สร้างรายการชำระเงินไม่สำเร็จ");
+
+      setOrderState({
+        ...orderState,
+        orderId: order.id,
+        payment: { id: pay.id, amount: pay.amount, qrPayload: pay.qrPayload, promptpayId: pay.promptpayId },
+      });
+      onNext();
+    } catch (err) {
+      if (err instanceof SessionExpiredError) {
+        setError("เซสชันหมดอายุ กำลังพาไปเข้าสู่ระบบใหม่...");
+        setTimeout(() => openAuthModal(), 1500);
+        return;
+      }
+      setError(err instanceof Error ? err.message : "สร้างออเดอร์ไม่สำเร็จ กรุณาลองใหม่");
+    } finally {
+      setSubmitting(false);
+    }
   };
   const shape = orderState.shape;
   const total = shape?.price ?? 990;
@@ -179,10 +267,16 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
         </Typography>
       </Box>
 
+      {error && (
+        <Alert severity="error" sx={{ borderRadius: '10px', fontFamily: FONT }} onClose={() => setError("")}>{error}</Alert>
+      )}
+
       <Button
         variant="contained"
         fullWidth
+        disabled={submitting}
         onClick={handleConfirmOrder}
+        startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : null}
         sx={{
           bgcolor: NAVY,
           color: 'white',
@@ -195,7 +289,7 @@ export default function OrderSummaryStep({ orderState, onNext }: any) {
           '&:hover': { bgcolor: '#0F1A30' },
         }}
       >
-        {t("tailorFlow.orderSummary.confirmOrderButton")}
+        {submitting ? "กำลังสร้างออเดอร์..." : t("tailorFlow.orderSummary.confirmOrderButton")}
       </Button>
 
     </Box>

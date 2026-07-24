@@ -16,6 +16,7 @@ import MeasurementsStep from "./steps/MeasurementsStep";
 import VirtualTryOnStep from "./steps/VirtualTryOnStep";
 import OrderSummaryStep from "./steps/OrderSummaryStep";
 import SelectTailorShopStep from "./steps/SelectTailorShopStep";
+import PaymentStep from "./steps/PaymentStep";
 import OrderSuccessStep from "./steps/OrderSuccessStep";
 import TailorStepper from "./TailorStepper";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -40,6 +41,7 @@ export type TailorStep =
   | "measurements"
   | "virtual_try_on"
   | "order_summary"
+  | "payment"
   | "success";
 
 export interface TailorOrderState {
@@ -80,6 +82,9 @@ export interface TailorOrderState {
   };
   tryOnResults?: { front?: string; back?: string; side?: string };
   shop?: any;
+  // สร้างจริงตอนกด "ยืนยันสั่งซื้อ" ใน OrderSummaryStep — orders row + payment (พร้อมเพย์) ของ backend
+  orderId?: string;
+  payment?: { id: string; amount: number; qrPayload: string; promptpayId: string } | null;
 }
 
 export default function TailorWithFabricFlow() {
@@ -114,6 +119,7 @@ export default function TailorWithFabricFlow() {
       case "measurements": return t("tailorFlow.headerTitles.measurements");
       case "virtual_try_on": return t("tailorFlow.headerTitles.virtualTryOn");
       case "order_summary": return t("tailorFlow.headerTitles.orderSummary");
+      case "payment": return "ชำระเงิน";
       case "success": return t("tailorFlow.headerTitles.success");
       default: return "";
     }
@@ -178,7 +184,10 @@ export default function TailorWithFabricFlow() {
             <VirtualTryOnStep key="virtual_try_on" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("order_summary")} />
           )}
           {currentStep === "order_summary" && (
-            <OrderSummaryStep key="order_summary" orderState={orderState} onNext={() => goNext("success")} />
+            <OrderSummaryStep key="order_summary" orderState={orderState} setOrderState={setOrderState} onNext={() => goNext("payment")} />
+          )}
+          {currentStep === "payment" && (
+            <PaymentStep key="payment" orderState={orderState} onNext={() => goNext("success")} />
           )}
           {currentStep === "success" && (
             <OrderSuccessStep key="success" orderState={orderState} />

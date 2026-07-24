@@ -241,6 +241,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     const {
       shopId,
       shopFabricId,
+      fabricUploadId,
       fabricMetersUsed,
       measurementId,
       fabricSource = "shop", // enum fabric_source: 'own' | 'shop'
@@ -249,6 +250,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
     } = req.body as {
       shopId: string;
       shopFabricId?: string;
+      fabricUploadId?: string;
       fabricMetersUsed?: number;
       measurementId?: string;
       fabricSource?: string;
@@ -260,16 +262,26 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
       res.status(400).json({ error: "shopId is required" });
       return;
     }
+    // chk_fabric_source: fabric_source='own' ต้องมี fabric_upload_id, ='shop' ต้องมี shop_fabric_id
+    if (fabricSource === "own" && !fabricUploadId) {
+      res.status(400).json({ error: "fabricUploadId is required when fabricSource is 'own'" });
+      return;
+    }
+    if (fabricSource === "shop" && !shopFabricId) {
+      res.status(400).json({ error: "shopFabricId is required when fabricSource is 'shop'" });
+      return;
+    }
 
     const rows = await query<Record<string, unknown>>(
       `INSERT INTO orders
-         (customer_id, shop_id, shop_fabric_id, fabric_meters_used,
+         (customer_id, shop_id, shop_fabric_id, fabric_upload_id, fabric_meters_used,
           measurement_id, fabric_source, special_instructions, estimated_price, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft')
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'draft')
        RETURNING id, customer_id, shop_id, status, estimated_price, created_at`,
       [
         userId, shopId,
         shopFabricId ?? null,
+        fabricUploadId ?? null,
         fabricMetersUsed ?? null,
         measurementId ?? null,
         fabricSource,

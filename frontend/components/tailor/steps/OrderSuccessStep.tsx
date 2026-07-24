@@ -49,7 +49,7 @@ export default function OrderSuccessStep({ orderState }: any) {
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.85rem' }}>{t("tailorFlow.success.price")}</Typography>
             <Typography sx={{ fontFamily: FONT, fontWeight: 600, color: NAVY, fontSize: '0.85rem' }}>
-              {orderState.shop?.price.toLocaleString() || "2,590"} {t("tailorFlow.orderSummary.baht")}
+              {(orderState.payment?.amount ?? orderState.shape?.price ?? 2590).toLocaleString()} {t("tailorFlow.orderSummary.baht")}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
