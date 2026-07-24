@@ -99,34 +99,59 @@ export function useImageUpload(options: UseImageUploadOptions): UseImageUploadRe
         );
         const token = sessionData?.session?.access_token ?? "";
 
-        const res = await fetch(`${API_BASE}/api/upload/image`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ imageBase64: base64, bucket, folder }),
-        });
+        // เจอ "Failed to fetch" เป็นระยะบน production ระหว่างอัปโหลดสลิป (คำขอ upload หนัก/ช้ากว่า
+        // API อื่นๆ ในหน้า checkout — น่าจะโดน backend คืนตัวจาก cold start แล้ว connection หลุดก่อนตอบ)
+        // ลองใหม่อัตโนมัติเฉพาะตอนเป็น network-level failure จริงๆ (fetch throw) ไม่ retry ถ้า
+        // backend ตอบกลับมาแล้วแต่เป็น error (เช่น 401/400/500) เพราะ retry ไปก็ได้ผลเดิม
+        const MAX_ATTEMPTS = 3;
+        let lastNetworkError: unknown = null;
 
-        const json = await res.json();
+        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+          let res: Response;
+          try {
+            res = await fetch(`${API_BASE}/api/upload/image`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({ imageBase64: base64, bucket, folder }),
+            });
+          } catch (networkErr) {
+            lastNetworkError = networkErr;
+            if (attempt < MAX_ATTEMPTS) {
+              await new Promise((r) => setTimeout(r, attempt * 1500));
+              continue;
+            }
+            const msg = "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง";
+            setError(msg);
+            onError?.(msg);
+            return null;
+          }
 
-        if (!res.ok) {
-          const msg = json.error ?? `Upload failed (${res.status})`;
-          setError(msg);
-          onError?.(msg);
-          return null;
+          const json = await res.json();
+
+          if (!res.ok) {
+            const msg = json.error ?? `Upload failed (${res.status})`;
+            setError(msg);
+            onError?.(msg);
+            return null;
+          }
+
+          const result: UploadResult = {
+            url: json.url,
+            width: json.width ?? 0,
+            height: json.height ?? 0,
+            sizeBytes: json.sizeBytes ?? 0,
+          };
+
+          setLastUrl(result.url);
+          onSuccess?.(result);
+          return result;
         }
 
-        const result: UploadResult = {
-          url: json.url,
-          width: json.width ?? 0,
-          height: json.height ?? 0,
-          sizeBytes: json.sizeBytes ?? 0,
-        };
-
-        setLastUrl(result.url);
-        onSuccess?.(result);
-        return result;
+        // ไม่ควรมาถึงจุดนี้ได้ (loop คืนค่าหรือ return ไปแล้วทุกทาง) — กันไว้เผื่อ TypeScript ต้องการ return
+        throw lastNetworkError ?? new Error("Upload failed");
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Network error";
         setError(msg);
