@@ -142,6 +142,9 @@ html {
   -moz-osx-font-smoothing: grayscale;
   /* clip ไม่ใช่ hidden — เหตุผลเดียวกับ body: กัน sticky header พัง */
   overflow-x: clip;
+  /* เพิ่มขนาดตัวอักษรทั้งเว็บขึ้นอีกนิด — component ส่วนใหญ่ใช้หน่วย rem ในการกำหนด fontSize (sx prop)
+     ปรับ root font-size ตัวเดียวจึงสเกลข้อความทั้งเว็บพร้อมกันโดยไม่ต้องไล่แก้ทีละที่ */
+  font-size: 106.25%; /* 16px -> 17px */
 }
 
 /* ============================================================
