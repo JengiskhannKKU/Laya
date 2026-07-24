@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import SparklesIcon from "@mui/icons-material/AutoAwesomeRounded";
@@ -34,13 +35,6 @@ const STEP_ORDER = [
   "order_summary",
 ] as const;
 
-/** 3 กลุ่มขั้นตอนหลักสำหรับ Chevron Step Bar (สไตล์รูป Reference ของผู้ใช้) */
-const MACRO_STEPS = [
-  { id: 1, label: "Step 1", title: "เลือกร้าน & ทรงชุด", targetStep: "select_shop" },
-  { id: 2, label: "Step 2", title: "อัปโหลด & AI ลองชุด", targetStep: "upload" },
-  { id: 3, label: "Step 3", title: "สรุปสั่งซื้อ", targetStep: "order_summary" },
-];
-
 export default function TailorStepper({
   currentStep,
   onStepClick,
@@ -51,50 +45,69 @@ export default function TailorStepper({
   const { t } = useLanguage();
   const TAILOR_STEPS = t<string[]>("tailorFlow.stepLabels");
   const activeIdx = STEP_INDEX[currentStep] ?? 0;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeItemRef = useRef<HTMLDivElement>(null);
 
-  // คำนวณว่าสเต็ปปัจจุบันอยู่ใน Macro Phase ไหน (1, 2, หรือ 3)
-  const currentMacroPhase = activeIdx <= 1 ? 1 : activeIdx <= 7 ? 2 : 3;
+  // เลื่อนตำแหน่ง Chevron Step ที่กำลังทำงานให้อยู่ตรงกลางหน้าจอมือถืออัตโนมัติ
+  useEffect(() => {
+    if (activeItemRef.current && containerRef.current) {
+      activeItemRef.current.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+  }, [activeIdx]);
 
   return (
     <Box sx={{ py: { xs: 1.5, md: 2.5 }, px: { xs: 1, sm: 2 } }}>
       
-      {/* ─── 1. Modern Chevron Arrow Stepper (สไตล์รูป Ref ของผู้ใช้) ─── */}
+      {/* ─── 1. Modern 9-Chevron Arrow Stepper Bar (สไตล์รูป Ref ของผู้ใช้ ครบทั้ง 9 ขั้นตอน) ─── */}
       <Box
+        ref={containerRef}
         sx={{
           display: "flex",
+          alignItems: "center",
           width: "100%",
-          maxWidth: 680,
+          maxWidth: 960,
           mx: "auto",
           height: { xs: 44, md: 48 },
           borderRadius: "14px",
-          overflow: "hidden",
+          overflowX: "auto",
+          scrollSnapType: "x mandatory",
           boxShadow: "0 4px 16px rgba(27,42,74,0.08)",
           bgcolor: "#FFFFFF",
           border: "1px solid #E6DAC8",
           p: "3px",
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {MACRO_STEPS.map((macro, idx) => {
-          const isActive = currentMacroPhase === macro.id;
-          const isDone = currentMacroPhase > macro.id;
+        {TAILOR_STEPS.map((label, idx) => {
+          const isActive = activeIdx === idx;
+          const isDone = activeIdx > idx;
           const isFirst = idx === 0;
-          const isLast = idx === MACRO_STEPS.length - 1;
+          const isLast = idx === TAILOR_STEPS.length - 1;
+          const stepKey = STEP_ORDER[idx];
 
-          // โทนสี Chevron ตามสถานะ (Active = Navy, Done = Gold, Upcoming = Soft White/Gray)
+          // โทนสี Chevron ตามสถานะ (Active = Navy, Done = Gold, Upcoming = Soft White)
           const bgColor = isActive
             ? NAVY
             : isDone
             ? GOLD
             : "#FAF6F0";
 
-          const textColor = isActive || isDone ? "#FFFFFF" : "#6B7280";
+          const textColor = isActive || isDone ? "#FFFFFF" : "#5C6470";
 
           return (
             <Box
-              key={macro.id}
-              onClick={() => onStepClick?.(macro.targetStep)}
+              key={stepKey}
+              ref={isActive ? activeItemRef : null}
+              onClick={() => onStepClick?.(stepKey)}
               sx={{
-                flex: 1,
+                flex: { xs: "0 0 auto", md: 1 },
+                minWidth: { xs: 110, sm: 120, md: "auto" },
+                height: "100%",
                 position: "relative",
                 display: "flex",
                 alignItems: "center",
@@ -103,52 +116,55 @@ export default function TailorStepper({
                 color: textColor,
                 cursor: onStepClick ? "pointer" : "default",
                 transition: "all 0.3s ease",
+                scrollSnapAlign: "center",
                 // มุมลูกศรแหลมชี้ขวา Chevron Arrow Cutout สไตล์รูป Ref ของผู้ใช้
                 clipPath: isLast
                   ? isFirst
                     ? "none"
-                    : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 12px 50%)"
+                    : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 10px 50%)"
                   : isFirst
-                  ? "polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%)"
-                  : "polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 12px 50%)",
+                  ? "polygon(0% 0%, calc(100% - 10px) 0%, 100% 50%, calc(100% - 10px) 100%, 0% 100%)"
+                  : "polygon(0% 0%, calc(100% - 10px) 0%, 100% 50%, calc(100% - 10px) 100%, 0% 100%, 10px 50%)",
                 borderRadius: isFirst
                   ? "10px 0 0 10px"
                   : isLast
                   ? "0 10px 10px 0"
                   : "0",
-                mr: isLast ? 0 : "-4px",
-                zIndex: MACRO_STEPS.length - idx,
-                px: { xs: 1, sm: 2 },
+                mr: isLast ? 0 : "-3px",
+                zIndex: TAILOR_STEPS.length - idx,
+                px: { xs: 1.25, sm: 1.75 },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, whiteSpace: "nowrap" }}>
                 {isDone ? (
-                  <CheckRoundedIcon sx={{ fontSize: { xs: 15, md: 17 }, color: "#FFFFFF" }} />
+                  <CheckRoundedIcon sx={{ fontSize: { xs: 14, md: 16 }, color: "#FFFFFF" }} />
                 ) : (
                   <Typography
                     sx={{
                       fontFamily: FONT,
                       fontWeight: 700,
-                      fontSize: { xs: "0.82rem", md: "0.92rem" },
-                      letterSpacing: "0.02em",
+                      fontSize: { xs: "0.78rem", md: "0.85rem" },
+                      letterSpacing: "0.01em",
                     }}
                   >
-                    {macro.label}
+                    Step {idx + 1}
                   </Typography>
                 )}
 
-                {/* ชื่อกลุ่มขั้นตอน */}
+                {/* ชื่อขั้นตอนแบบย่อบนจอใหญ่ */}
                 <Typography
                   sx={{
-                    display: { xs: "none", sm: "inline-block" },
+                    display: { xs: "none", lg: "inline-block" },
                     fontFamily: FONT,
                     fontWeight: isActive ? 600 : 400,
-                    fontSize: { xs: "0.72rem", md: "0.78rem" },
+                    fontSize: "0.72rem",
                     opacity: isActive || isDone ? 0.95 : 0.75,
-                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: 70,
                   }}
                 >
-                  · {macro.title}
+                  · {label}
                 </Typography>
               </Box>
             </Box>
@@ -170,7 +186,7 @@ export default function TailorStepper({
         <Typography
           sx={{
             fontFamily: FONT,
-            fontSize: { xs: "0.78rem", md: "0.86rem" },
+            fontSize: { xs: "0.82rem", md: "0.9rem" },
             fontWeight: 600,
             color: NAVY,
             textAlign: "center",
