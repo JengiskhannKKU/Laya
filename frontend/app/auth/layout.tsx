@@ -60,34 +60,38 @@ function BrandPanel() {
         sx={{
           fontFamily: '"Cormorant Garamond", "Kanit", serif',
           fontStyle: "italic",
-          fontSize: { md: "1.15rem", lg: "1.3rem" },
-          color: "rgba(255,255,255,0.72)",
+          fontSize: { md: "1.55rem", lg: "1.85rem" },
+          fontWeight: 600,
+          color: "#FFFFFF",
           textAlign: "center",
-          lineHeight: 1.65,
+          lineHeight: 1.5,
           mb: 4.5,
-          maxWidth: 280,
+          maxWidth: 380,
           position: "relative",
+          letterSpacing: "0.02em",
+          textShadow: "0 2px 10px rgba(0,0,0,0.3)",
         }}
       >
         A Curated Heritage Collection
       </Typography>
 
       {/* Brand promises */}
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.6, position: "relative" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2.2, position: "relative" }}>
         {[
           "ผ้าทอมือที่ได้รับการรับรองความแท้จริง",
           "ช่างทอฝีมือจากชุมชนทั่วไทย",
           "สินค้า GI มาตรฐานสากล",
         ].map((text) => (
-          <Box key={text} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: "#C5A55A", flexShrink: 0 }} />
+          <Box key={text} sx={{ display: "flex", alignItems: "center", gap: 1.75 }}>
+            <Box sx={{ width: 7, height: 7, borderRadius: "50%", bgcolor: "#C5A55A", flexShrink: 0, boxShadow: "0 0 8px rgba(197,165,90,0.6)" }} />
             <Typography
               sx={{
                 fontFamily: '"Kanit", sans-serif',
-                fontSize: "0.82rem",
-                color: "rgba(255,255,255,0.62)",
-                fontWeight: 400,
+                fontSize: { xs: "1.02rem", md: "1.1rem" },
+                color: "rgba(255,255,255,0.92)",
+                fontWeight: 500,
                 lineHeight: 1.5,
+                letterSpacing: "0.01em",
               }}
             >
               {text}

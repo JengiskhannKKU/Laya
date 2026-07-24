@@ -25,15 +25,15 @@ import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 
 const PROVINCES = [
-  "เชียงใหม่","เชียงราย","ลำพูน","ลำปาง","แพร่","น่าน","พะเยา","แม่ฮ่องสอน",
-  "ขอนแก่น","อุดรธานี","นครราชสีมา","บุรีรัมย์","สุรินทร์","ศรีสะเกษ","มหาสารคาม",
-  "กรุงเทพมหานคร","นนทบุรี","ปทุมธานี","สมุทรปราการ",
-  "สุโขทัย","อุตรดิตถ์","พิษณุโลก","เพชรบูรณ์",
+  "เชียงใหม่", "เชียงราย", "ลำพูน", "ลำปาง", "แพร่", "น่าน", "พะเยา", "แม่ฮ่องสอน",
+  "ขอนแก่น", "อุดรธานี", "นครราชสีมา", "บุรีรัมย์", "สุรินทร์", "ศรีสะเกษ", "มหาสารคาม",
+  "กรุงเทพมหานคร", "นนทบุรี", "ปทุมธานี", "สมุทรปราการ",
+  "สุโขทัย", "อุตรดิตถ์", "พิษณุโลก", "เพชรบูรณ์",
 ];
 
 const EXPERTISE_OPTIONS = [
-  "ผ้าไหมมัดหมี่","ผ้าขิด","ผ้าจก","ผ้าลายน้ำไหล","ผ้าทอมือ","ผ้าฝ้าย",
-  "ผ้าไหมพิมาย","ผ้าซิ่น","ผ้ายก","งานเย็บปักถักร้อย",
+  "ผ้าไหมมัดหมี่", "ผ้าขิด", "ผ้าจก", "ผ้าลายน้ำไหล", "ผ้าทอมือ", "ผ้าฝ้าย",
+  "ผ้าไหมพิมาย", "ผ้าซิ่น", "ผ้ายก", "งานเย็บปักถักร้อย",
 ];
 
 const textFieldSx = {
@@ -57,25 +57,25 @@ const MERCHANT_TYPE_OPTIONS: {
   titleEn: string;
   desc: string;
 }[] = [
-  {
-    value: "weaving_community",
-    title: "ชุมชนทอผ้า",
-    titleEn: "Weaving Community",
-    desc: "กลุ่มทอผ้า / ช่างทอ ขายผ้าและงานทอมือ",
-  },
-  {
-    value: "designer",
-    title: "ดีไซเนอร์",
-    titleEn: "Designer",
-    desc: "นักออกแบบ ตัดเย็บ / แปรรูปผ้าไทยเป็นสินค้า",
-  },
-  {
-    value: "retailer",
-    title: "ร้านค้าผ้าไทย",
-    titleEn: "Thai Fabric Retailer",
-    desc: "ร้านค้าที่จำหน่ายผลิตภัณฑ์จากผ้าไทย เช่น เสื้อผ้า กระเป๋า ของตกแต่ง",
-  },
-];
+    {
+      value: "weaving_community",
+      title: "ชุมชนทอผ้า",
+      titleEn: "Weaving Community",
+      desc: "กลุ่มทอผ้า / ช่างทอ ขายผ้าและงานทอมือ",
+    },
+    {
+      value: "designer",
+      title: "ดีไซเนอร์",
+      titleEn: "Designer",
+      desc: "นักออกแบบ ตัดเย็บ / แปรรูปผ้าไทยเป็นสินค้า",
+    },
+    {
+      value: "retailer",
+      title: "ร้านค้าผ้าไทย",
+      titleEn: "Thai Fabric Retailer",
+      desc: "ร้านค้าที่จำหน่ายผลิตภัณฑ์จากผ้าไทย เช่น เสื้อผ้า กระเป๋า ของตกแต่ง",
+    },
+  ];
 
 export default function MerchantRegisterPage() {
   const router = useRouter();
@@ -146,6 +146,7 @@ export default function MerchantRegisterPage() {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", bgcolor: "#FAF6F0" }}>
         <CircularProgress sx={{ color: "#C5A55A" }} />
+        <CheckCircleRoundedIcon>order_summary({{ display: "การแสดงออกของมนุษย์ กาทำให้มนุษย์เก่งขึ้นแล้วเข้าใจโลกมากขึ้น" }})</CheckCircleRoundedIcon>
       </Box>
     );
   }
@@ -242,7 +243,7 @@ export default function MerchantRegisterPage() {
                       }} />
                       <Box>
                         <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "0.92rem", color: active ? "#8E601C" : "#1B2A4A" }}>
+                          <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontWeight: 700, fontSize: "1.0rem", color: active ? "#8E601C" : "#1B2A4A" }}>
                             {opt.title}
                           </Typography>
                           <Typography sx={{ fontFamily: '"Kanit", sans-serif', fontSize: "0.72rem", color: "#9CA3AF" }}>
@@ -253,7 +254,7 @@ export default function MerchantRegisterPage() {
                           {opt.desc}
                         </Typography>
                         {/* คำอธิบายพิเศษสำหรับ retailer */}
-                       
+
                       </Box>
                     </Box>
                   );
@@ -332,7 +333,7 @@ export default function MerchantRegisterPage() {
             <FormControl fullWidth sx={textFieldSx}>
               <InputLabel sx={{ "&.Mui-focused": { color: "#C5A55A" } }}>ธนาคาร</InputLabel>
               <Select value={form.bankName} onChange={(e) => set("bankName", e.target.value)} label="ธนาคาร">
-                {["กสิกรไทย","กรุงเทพ","กรุงไทย","ไทยพาณิชย์","ทหารไทยธนชาต","ออมสิน","กรุงศรีอยุธยา"].map((b) => (
+                {["กสิกรไทย", "กรุงเทพ", "กรุงไทย", "ไทยพาณิชย์", "ทหารไทยธนชาต", "ออมสิน", "กรุงศรีอยุธยา"].map((b) => (
                   <MenuItem key={b} value={b} sx={{ fontFamily: '"Kanit", sans-serif' }}>{b}</MenuItem>
                 ))}
               </Select>
