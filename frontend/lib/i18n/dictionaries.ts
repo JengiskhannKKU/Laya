@@ -422,6 +422,7 @@ const th = {
       welcomeBack: "ยินดีต้อนรับกลับมา",
       subtitle: "เข้าสู่ระบบเพื่อดำเนินการต่อ",
       continueWithGoogle: "เข้าสู่ระบบด้วย Google",
+      continueWithLine: "เข้าสู่ระบบด้วย LINE",
       orUseEmail: "หรือใช้อีเมลและรหัสผ่าน",
       email: "อีเมล",
       password: "รหัสผ่าน",
@@ -433,6 +434,7 @@ const th = {
       signUpAsMerchant: "สมัครเป็นร้านค้า LAYA",
       genericError: "เกิดข้อผิดพลาดในการเข้าสู่ระบบ",
       googleError: "เข้าสู่ระบบด้วย Google ไม่สำเร็จ",
+      lineError: "เข้าสู่ระบบด้วย LINE ไม่สำเร็จ",
     },
     register: {
       createAccount: "สร้างบัญชีใหม่",
@@ -1165,6 +1167,7 @@ const en = {
       welcomeBack: "Welcome Back",
       subtitle: "Log in to continue",
       continueWithGoogle: "Continue with Google",
+      continueWithLine: "Continue with LINE",
       orUseEmail: "Or use email and password",
       email: "Email",
       password: "Password",
@@ -1176,6 +1179,7 @@ const en = {
       signUpAsMerchant: "Sign up as a LAYA merchant",
       genericError: "An error occurred while logging in",
       googleError: "Google login failed",
+      lineError: "LINE login failed",
     },
     register: {
       createAccount: "Create New Account",

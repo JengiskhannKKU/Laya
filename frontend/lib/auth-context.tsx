@@ -42,7 +42,6 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ role: UserRole }>;
   loginWithGoogle: () => Promise<void>;
-  /** eslint-disable-next-line @typescript-eslint/no-explicit-any */
   loginWithLine: () => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<{ needsEmailConfirm: boolean }>;
@@ -274,7 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, loading,
-      login, loginWithGoogle,
+      login, loginWithGoogle, loginWithLine,
       logout, register,
       openAuthModal, closeAuthModal,
       registerMerchant,
