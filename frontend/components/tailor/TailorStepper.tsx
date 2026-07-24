@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import SparklesIcon from "@mui/icons-material/AutoAwesomeRounded";
@@ -45,42 +44,25 @@ export default function TailorStepper({
   const { t } = useLanguage();
   const TAILOR_STEPS = t<string[]>("tailorFlow.stepLabels");
   const activeIdx = STEP_INDEX[currentStep] ?? 0;
-  const containerRef = useRef<HTMLDivElement>(null);
-  const activeItemRef = useRef<HTMLDivElement>(null);
-
-  // เลื่อนตำแหน่ง Chevron Step ที่กำลังทำงานให้อยู่ตรงกลางหน้าจอมือถืออัตโนมัติ
-  useEffect(() => {
-    if (activeItemRef.current && containerRef.current) {
-      activeItemRef.current.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
-    }
-  }, [activeIdx]);
 
   return (
-    <Box sx={{ py: { xs: 1.5, md: 2.5 }, px: { xs: 1, sm: 2 } }}>
+    <Box sx={{ py: { xs: 1.25, md: 2.5 }, px: { xs: 0.5, sm: 2 } }}>
       
-      {/* ─── 1. Modern 9-Chevron Arrow Stepper Bar (สไตล์รูป Ref ของผู้ใช้ ครบทั้ง 9 ขั้นตอน) ─── */}
+      {/* ─── 1. Modern 9-Chevron Arrow Stepper Bar (แสดงผลครบทั้ง 9 ช่องบนหน้าจอ) ─── */}
       <Box
-        ref={containerRef}
         sx={{
           display: "flex",
           alignItems: "center",
           width: "100%",
-          maxWidth: 960,
+          maxWidth: 980,
           mx: "auto",
-          height: { xs: 44, md: 48 },
-          borderRadius: "14px",
-          overflowX: "auto",
-          scrollSnapType: "x mandatory",
+          height: { xs: 38, sm: 44, md: 48 },
+          borderRadius: "12px",
+          overflow: "hidden",
           boxShadow: "0 4px 16px rgba(27,42,74,0.08)",
           bgcolor: "#FFFFFF",
           border: "1px solid #E6DAC8",
-          p: "3px",
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": { display: "none" },
+          p: "2px",
         }}
       >
         {TAILOR_STEPS.map((label, idx) => {
@@ -97,16 +79,15 @@ export default function TailorStepper({
             ? GOLD
             : "#FAF6F0";
 
-          const textColor = isActive || isDone ? "#FFFFFF" : "#5C6470";
+          const textColor = isActive || isDone ? "#FFFFFF" : "#6B7280";
 
           return (
             <Box
               key={stepKey}
-              ref={isActive ? activeItemRef : null}
               onClick={() => onStepClick?.(stepKey)}
               sx={{
-                flex: { xs: "0 0 auto", md: 1 },
-                minWidth: { xs: 110, sm: 120, md: "auto" },
+                flex: 1,
+                minWidth: 0, // กระจายตัวครบทั้ง 9 ช่องตามความกว้างจอโดยไม่ดันล้น
                 height: "100%",
                 position: "relative",
                 display: "flex",
@@ -115,53 +96,60 @@ export default function TailorStepper({
                 bgcolor: bgColor,
                 color: textColor,
                 cursor: onStepClick ? "pointer" : "default",
-                transition: "all 0.3s ease",
-                scrollSnapAlign: "center",
+                transition: "all 0.25s ease",
                 // มุมลูกศรแหลมชี้ขวา Chevron Arrow Cutout สไตล์รูป Ref ของผู้ใช้
                 clipPath: isLast
                   ? isFirst
                     ? "none"
-                    : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 10px 50%)"
+                    : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 6px 50%)"
                   : isFirst
-                  ? "polygon(0% 0%, calc(100% - 10px) 0%, 100% 50%, calc(100% - 10px) 100%, 0% 100%)"
-                  : "polygon(0% 0%, calc(100% - 10px) 0%, 100% 50%, calc(100% - 10px) 100%, 0% 100%, 10px 50%)",
+                  ? "polygon(0% 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 0% 100%)"
+                  : "polygon(0% 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 0% 100%, 6px 50%)",
                 borderRadius: isFirst
-                  ? "10px 0 0 10px"
+                  ? "9px 0 0 9px"
                   : isLast
-                  ? "0 10px 10px 0"
+                  ? "0 9px 9px 0"
                   : "0",
-                mr: isLast ? 0 : "-3px",
+                mr: isLast ? 0 : "-2px",
                 zIndex: TAILOR_STEPS.length - idx,
-                px: { xs: 1.25, sm: 1.75 },
+                px: { xs: 0.2, sm: 0.5, md: 1 },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, whiteSpace: "nowrap" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.3, width: "100%" }}>
                 {isDone ? (
-                  <CheckRoundedIcon sx={{ fontSize: { xs: 14, md: 16 }, color: "#FFFFFF" }} />
+                  <CheckRoundedIcon sx={{ fontSize: { xs: 13, sm: 15, md: 17 }, color: "#FFFFFF" }} />
                 ) : (
                   <Typography
                     sx={{
                       fontFamily: FONT,
                       fontWeight: 700,
-                      fontSize: { xs: "0.78rem", md: "0.85rem" },
-                      letterSpacing: "0.01em",
+                      fontSize: { xs: "0.68rem", sm: "0.78rem", md: "0.88rem" },
+                      whiteSpace: "nowrap",
+                      lineHeight: 1,
                     }}
                   >
-                    Step {idx + 1}
+                    {/* บนจอมือถือเล็ก แสดงตัวเลข 1, 2, 3... 9 ชัดเจนครบ 9 ช่อง */}
+                    <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+                      {idx + 1}
+                    </Box>
+                    <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                      Step {idx + 1}
+                    </Box>
                   </Typography>
                 )}
 
-                {/* ชื่อขั้นตอนแบบย่อบนจอใหญ่ */}
+                {/* ชื่อขั้นตอนบนหน้าจอใหญ่ */}
                 <Typography
                   sx={{
-                    display: { xs: "none", lg: "inline-block" },
+                    display: { xs: "none", md: "inline-block" },
                     fontFamily: FONT,
                     fontWeight: isActive ? 600 : 400,
                     fontSize: "0.72rem",
                     opacity: isActive || isDone ? 0.95 : 0.75,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    maxWidth: 70,
+                    whiteSpace: "nowrap",
+                    maxWidth: { md: 60, lg: 85 },
                   }}
                 >
                   · {label}
@@ -179,7 +167,7 @@ export default function TailorStepper({
           alignItems: "center",
           justifyContent: "center",
           gap: 1,
-          mt: 1.5,
+          mt: 1.25,
         }}
       >
         <SparklesIcon sx={{ fontSize: 14, color: GOLD }} />
