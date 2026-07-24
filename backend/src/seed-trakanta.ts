@@ -11,7 +11,8 @@ async function addTrakanta() {
   }
   const userId = userRows[0].id;
 
-  const imageUrl = "/images/Gallery/LINE_ALBUM_29669_260724_3.webp";
+  const logoUrl = "/images/trakanta.webp";
+  const coverUrl = "/images/Gallery/LINE_ALBUM_29669_260724_3.webp";
 
   const existing = await query<Record<string, unknown>>("SELECT id FROM shops WHERE name = 'ตระการตา' OR name = 'Trakanta'");
   if (existing.length > 0) {
@@ -22,13 +23,13 @@ async function addTrakanta() {
         province = 'อุดรธานี',
         description = 'แบรนด์เสื้อผ้าและแฟชั่นผ้าไหมไทยทรงทันสมัย ดีไซน์ร่วมสมัยระดับพรีเมียม (Trakanta)',
         profile_image_url = $1,
-        cover_image_url = $1,
+        cover_image_url = $2,
         status = 'approved',
         merchant_type = 'designer',
         rating = 5.0,
         review_count = 18
-       WHERE id = $2`,
-      [imageUrl, existing[0].id]
+       WHERE id = $3`,
+      [logoUrl, coverUrl, existing[0].id]
     );
     console.log("✅ Updated Trakanta shop!");
   } else {
@@ -37,10 +38,10 @@ async function addTrakanta() {
       `INSERT INTO shops (
         id, user_id, name, province, description, profile_image_url, cover_image_url, status, merchant_type, rating, review_count
       ) VALUES (
-        gen_random_uuid(), $1, 'ตระการตา', 'ขอนแก่น', 'แบรนด์เสื้อผ้าและแฟชั่นผ้าไหมไทยทรงทันสมัย ดีไซน์ร่วมสมัยระดับพรีเมียม (Trakanta)',
-        $2, $2, 'approved', 'designer', 5.0, 18
+        gen_random_uuid(), $1, 'ตระการตา', 'อุดรธานี', 'แบรนด์เสื้อผ้าและแฟชั่นผ้าไหมไทยทรงทันสมัย ดีไซน์ร่วมสมัยระดับพรีเมียม (Trakanta)',
+        $2, $3, 'approved', 'designer', 5.0, 18
       )`,
-      [userId, imageUrl]
+      [userId, logoUrl, coverUrl]
     );
     console.log("✅ Inserted Trakanta shop!");
   }

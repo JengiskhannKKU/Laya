@@ -23,10 +23,21 @@ const FONT = '"Kanit", sans-serif';
 const NAVY = "#1B2A4A";
 const GOLD = "#C5A55A";
 
+const SHOP_AVATARS: Record<string, string> = {
+  "ตระการตา": "/images/trakanta.webp",
+  "Trakanta": "/images/trakanta.webp",
+};
+
+const SHOP_COVERS: Record<string, string> = {
+  "ตระการตา": "/images/Gallery/LINE_ALBUM_29669_260724_3.webp",
+  "Trakanta": "/images/Gallery/LINE_ALBUM_29669_260724_3.webp",
+};
+
 /** การ์ดร้านค้าชุมชนทรงกะทัดรัด (Shopee Official Mall Style) */
 function CommunityGridCard({ community }: { community: LiveCommunity }) {
   const { t } = useLanguage();
-  const [imgSrc, setImgSrc] = useState(community.image || "/placeholder.webp");
+  const coverUrl = SHOP_COVERS[community.name] || community.image || "/images/Gallery/LINE_ALBUM_29669_260724_3.webp";
+  const [imgSrc, setImgSrc] = useState(coverUrl);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProd, setLoadingProd] = useState(true);
 
@@ -441,7 +452,7 @@ export default function CommunityDirectoryPage() {
                           }}
                         >
                           <Image
-                            src={c.image || "/placeholder.webp"}
+                            src={SHOP_AVATARS[c.name] || c.image || "/images/trakanta.webp"}
                             alt={c.name}
                             fill
                             style={{ objectFit: "cover" }}

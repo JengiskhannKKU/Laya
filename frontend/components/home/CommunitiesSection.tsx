@@ -10,12 +10,22 @@ import Link from "next/link";
 import SectionHeader from "./SectionHeader";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
+const SHOP_AVATARS: Record<string, string> = {
+  "ตระการตา": "/images/trakanta.webp",
+  "Trakanta": "/images/trakanta.webp",
+};
+
 /** 
  * ชุมชนและร้านค้า แบบ Shopee Mall Official Store Avatar (วงกลมร้านค้ากะทัดรัด)
  * ขนาดกระทัดรัดประหยัดพื้นที่ ขอบวงแหวนสีทอง + ชื่อร้านช่างทอจัดกลาง
  */
 function CommunityCircleCard({ community }: { community: LiveCommunity }) {
-  const [imgSrc, setImgSrc] = useState(community.image || "/placeholder.webp");
+  const avatarUrl = SHOP_AVATARS[community.name] || community.image || "/images/trakanta.webp";
+  const [imgSrc, setImgSrc] = useState(avatarUrl);
+
+  useEffect(() => {
+    setImgSrc(SHOP_AVATARS[community.name] || community.image || "/images/trakanta.webp");
+  }, [community]);
 
   return (
     <Link href={`/community/${community.id}`} style={{ textDecoration: "none" }}>
