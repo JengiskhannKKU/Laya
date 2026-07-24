@@ -74,7 +74,7 @@ function CommunityCircleCard({ community }: { community: LiveCommunity }) {
               className="shop-avatar-img"
               style={{ objectFit: "cover", transition: "transform 0.35s ease" }}
               sizes="(max-width: 900px) 80px, 100px"
-              onError={() => setImgSrc("/assets/province-fallback.jpg")}
+              onError={() => setImgSrc("/images/Gallery/LINE_ALBUM_29669_260724_3.jpg")}
             />
           </Box>
         </Box>
