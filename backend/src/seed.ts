@@ -323,6 +323,21 @@ async function seed() {
       );
     }
 
+    // Seeding Trakanta shop
+    const userRes = await client.query("SELECT id FROM users LIMIT 1");
+    if (userRes.rows.length > 0) {
+      const uId = userRes.rows[0].id;
+      await client.query(
+        `INSERT INTO shops (
+          id, user_id, name, province, description, profile_image_url, cover_image_url, status, merchant_type, rating, review_count
+        ) VALUES (
+          gen_random_uuid(), $1, 'ตระการตา', 'ขอนแก่น', 'แบรนด์เสื้อผ้าและแฟชั่นผ้าไหมไทยทรงทันสมัย ดีไซน์ร่วมสมัยระดับพรีเมียม (Trakanta)',
+          '/images/trakanta.jpg', '/images/trakanta.jpg', 'approved', 'designer', 5.0, 18
+        ) ON CONFLICT (id) DO NOTHING`,
+        [uId]
+      );
+    }
+
     await client.query("COMMIT");
     console.log("✅ Seed completed successfully!");
   } catch (err) {

@@ -174,45 +174,11 @@ export default function DemoPosterModal() {
             fontWeight: 400,
             fontSize: "0.8rem",
             color: "#6B7280",
-            mb: 1.5,
+            mb: 2,
           }}
         >
           สัมผัสอนาคตผ้าไทย เมื่อมรดกทรงคุณค่า เจอ AI ระดับโลก
         </Typography>
-
-        {/* จุดเด่น 3 ข้อ */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 0.85,
-            mb: 1.75,
-            textAlign: "left",
-            bgcolor: "#FFFFFF",
-            p: 1.5,
-            borderRadius: "14px",
-            border: "1px solid #EFE8DA",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography sx={{ fontSize: "0.9rem" }}>🎨</Typography>
-            <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: NAVY, fontWeight: 600 }}>
-              AI Design & Virtual Try-On ลองชุดเสมือนจริง
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography sx={{ fontSize: "0.9rem" }}>✨</Typography>
-            <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: NAVY, fontWeight: 600 }}>
-              AI Pattern Generator สร้างลายผ้าไทยไม่ซ้ำใคร
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography sx={{ fontSize: "0.9rem" }}>🧵</Typography>
-            <Typography sx={{ fontFamily: FONT, fontSize: "0.8rem", color: NAVY, fontWeight: 600 }}>
-              สั่งตัด & สั่งทอผ้าโดยตรงกับชุมชนช่างฝีมือ
-            </Typography>
-          </Box>
-        </Box>
 
         {/* ปุ่มเข้าสู่เว็บไซต์ */}
         <Button

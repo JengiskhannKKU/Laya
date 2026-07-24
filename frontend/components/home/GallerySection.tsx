@@ -111,7 +111,7 @@ const GALLERY_IMAGES: GalleryItem[] = [
   },
   {
     id: "4",
-    src: "/images/Gallery/LINE_ALBUM_14669_260724_4.jpg",
+    src: "/images/Gallery/LINE_ALBUM_14669_260724_5.jpg",
     title: "พราวผ้า — ชุมชนทอผ้าไหมจังหวัดสุรินทร์",
     tag: "Surin Weaving Community",
     story: "บูธ展示งานผ้าไหมทอมือลายโบราณ เสื้อผ้าฝ้ายแต่งลูกไม้พาสเทล และผ้าสไบย้อมครามจากกลุ่มช่างฝีมือพราวผ้า จังหวัดสุรินทร์",
@@ -244,7 +244,7 @@ const GALLERY_IMAGES: GalleryItem[] = [
   },
   {
     id: "23",
-    src: "/images/Gallery/LINE_ALBUM_29669_260724_9.jpg",
+    src: "/images/Gallery/LINE_ALBUM_29669_260724_11.jpg",
     title: "ชุดสูทผ้าไหมมัดหมี่ทองบรอนซ์พรีเมียม",
     tag: "Bronze Silk Blazer",
     story: "สูททรงคลาสสิกกระดุมคู่ ตัดเย็บจากผ้ามัดหมี่โทนสีทองบรอนซ์เงางาม กุ๊นขอบปีกปกด้วยด้ายส้มทอง เพิ่มเสน่ห์เฉียบคม",
