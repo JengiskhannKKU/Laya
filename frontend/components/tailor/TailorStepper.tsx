@@ -1,16 +1,8 @@
 "use client";
 
-/**
- * Stepper แนวนอนสำหรับ flow สั่งตัดด้วยผ้าที่มีอยู่แล้ว (8 ขั้น) — ดีไซน์เดียวกับ checkout
- * (วงกลมเลขลำดับ → เช็คถูกสีทองเมื่อผ่านแล้ว, เส้นเชื่อมระหว่างจุด, active = navy)
- *
- * บนมือถือซ่อน label รายจุด (label เต็มยาวเกินความกว้างจอ ทำให้ขั้นแรกๆ เลื่อนหลุดจอไปเอง
- * เจอบั๊กจริงตอนทดสอบ) เหลือแค่วงกลม+เส้น ให้พอดีความกว้างจอเสมอ แล้วโชว์ "ขั้นตอนที่ X จาก N"
- * เป็นบรรทัดเดียวด้านล่างแทน — เดสก์ท็อปมีที่พอถึงโชว์ label เต็มได้
- */
-
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import SparklesIcon from "@mui/icons-material/AutoAwesomeRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -30,65 +22,167 @@ const STEP_INDEX: Record<string, number> = {
   order_summary: 8,
 };
 
-// เรียงลำดับ key เดียวกับ STEP_INDEX/tailorFlow.stepLabels เป๊ะ — ใช้แปล index ที่คลิกกลับเป็นชื่อ step
-// ให้ TailorWithFabricFlow.tsx เรียก goNext ตรงๆ ได้ (คลิกจุดไหนในสเต็ปเปอร์ ไปหน้านั้นได้ทันที ไม่ต้องกด "ถัดไป" ไล่ทีละขั้น)
 const STEP_ORDER = [
-  "select_shop", "choose_shape", "upload", "ai_analysis", "customize_details",
-  "select_occasion", "measurements", "virtual_try_on", "order_summary",
+  "select_shop",
+  "choose_shape",
+  "upload",
+  "ai_analysis",
+  "customize_details",
+  "select_occasion",
+  "measurements",
+  "virtual_try_on",
+  "order_summary",
 ] as const;
 
-export default function TailorStepper({ currentStep, onStepClick }: { currentStep: string; onStepClick?: (step: string) => void }) {
+/** 3 กลุ่มขั้นตอนหลักสำหรับ Chevron Step Bar (สไตล์รูป Reference ของผู้ใช้) */
+const MACRO_STEPS = [
+  { id: 1, label: "Step 1", title: "เลือกร้าน & ทรงชุด", targetStep: "select_shop" },
+  { id: 2, label: "Step 2", title: "อัปโหลด & AI ลองชุด", targetStep: "upload" },
+  { id: 3, label: "Step 3", title: "สรุปสั่งซื้อ", targetStep: "order_summary" },
+];
+
+export default function TailorStepper({
+  currentStep,
+  onStepClick,
+}: {
+  currentStep: string;
+  onStepClick?: (step: string) => void;
+}) {
   const { t } = useLanguage();
   const TAILOR_STEPS = t<string[]>("tailorFlow.stepLabels");
   const activeIdx = STEP_INDEX[currentStep] ?? 0;
 
+  // คำนวณว่าสเต็ปปัจจุบันอยู่ใน Macro Phase ไหน (1, 2, หรือ 3)
+  const currentMacroPhase = activeIdx <= 1 ? 1 : activeIdx <= 7 ? 2 : 3;
+
   return (
-    <Box sx={{ py: { xs: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", px: { xs: 1, md: 0 } }}>
-        {TAILOR_STEPS.map((label, idx) => {
-          const done = activeIdx > idx;
-          const active = activeIdx === idx;
-          const handleClick = () => onStepClick?.(STEP_ORDER[idx]);
+    <Box sx={{ py: { xs: 1.5, md: 2.5 }, px: { xs: 1, sm: 2 } }}>
+      
+      {/* ─── 1. Modern Chevron Arrow Stepper (สไตล์รูป Ref ของผู้ใช้) ─── */}
+      <Box
+        sx={{
+          display: "flex",
+          width: "100%",
+          maxWidth: 680,
+          mx: "auto",
+          height: { xs: 44, md: 48 },
+          borderRadius: "14px",
+          overflow: "hidden",
+          boxShadow: "0 4px 16px rgba(27,42,74,0.08)",
+          bgcolor: "#FFFFFF",
+          border: "1px solid #E6DAC8",
+          p: "3px",
+        }}
+      >
+        {MACRO_STEPS.map((macro, idx) => {
+          const isActive = currentMacroPhase === macro.id;
+          const isDone = currentMacroPhase > macro.id;
+          const isFirst = idx === 0;
+          const isLast = idx === MACRO_STEPS.length - 1;
+
+          // โทนสี Chevron ตามสถานะ (Active = Navy, Done = Gold, Upcoming = Soft White/Gray)
+          const bgColor = isActive
+            ? NAVY
+            : isDone
+            ? GOLD
+            : "#FAF6F0";
+
+          const textColor = isActive || isDone ? "#FFFFFF" : "#6B7280";
+
           return (
-            <Box key={label} sx={{ display: "flex", alignItems: "center", flex: idx < TAILOR_STEPS.length - 1 ? { xs: 1, md: "0 0 auto" } : "0 0 auto" }}>
-              <Box onClick={handleClick} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5, minWidth: { xs: "auto", md: 64 }, cursor: onStepClick ? "pointer" : "default" }}>
-                <Box sx={{
-                  width: { xs: 24, md: 36 }, height: { xs: 24, md: 36 }, borderRadius: "50%", flexShrink: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  bgcolor: done ? GOLD : active ? NAVY : "#FFFFFF",
-                  border: done || active ? "none" : "1.5px solid #E5DFD6",
-                  color: done || active ? "#FFFFFF" : "#9CA3AF",
-                  fontWeight: 700, fontSize: { xs: "0.6rem", md: "0.8rem" }, fontFamily: FONT,
-                  boxShadow: active ? "0 3px 10px rgba(27,42,74,0.28)" : done ? "0 3px 10px rgba(197,165,90,0.3)" : "none",
-                  transition: "all 0.3s",
-                  "&:hover": onStepClick ? { boxShadow: "0 3px 10px rgba(27,42,74,0.35)", transform: "scale(1.08)" } : undefined,
-                }}>
-                  {done ? <CheckRoundedIcon sx={{ fontSize: { xs: 12, md: 17 } }} /> : idx + 1}
-                </Box>
-                <Typography sx={{
-                  display: { xs: "none", md: "block" },
-                  fontFamily: FONT, fontSize: "0.7rem", textAlign: "center", lineHeight: 1.15,
-                  fontWeight: active ? 700 : 400, color: active ? NAVY : done ? GOLD : "#9CA3AF", whiteSpace: "nowrap",
-                }}>
-                  {label}
+            <Box
+              key={macro.id}
+              onClick={() => onStepClick?.(macro.targetStep)}
+              sx={{
+                flex: 1,
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: bgColor,
+                color: textColor,
+                cursor: onStepClick ? "pointer" : "default",
+                transition: "all 0.3s ease",
+                // มุมลูกศรแหลมชี้ขวา Chevron Arrow Cutout สไตล์รูป Ref ของผู้ใช้
+                clipPath: isLast
+                  ? isFirst
+                    ? "none"
+                    : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 12px 50%)"
+                  : isFirst
+                  ? "polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%)"
+                  : "polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 12px 50%)",
+                borderRadius: isFirst
+                  ? "10px 0 0 10px"
+                  : isLast
+                  ? "0 10px 10px 0"
+                  : "0",
+                mr: isLast ? 0 : "-4px",
+                zIndex: MACRO_STEPS.length - idx,
+                px: { xs: 1, sm: 2 },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                {isDone ? (
+                  <CheckRoundedIcon sx={{ fontSize: { xs: 15, md: 17 }, color: "#FFFFFF" }} />
+                ) : (
+                  <Typography
+                    sx={{
+                      fontFamily: FONT,
+                      fontWeight: 700,
+                      fontSize: { xs: "0.82rem", md: "0.92rem" },
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    {macro.label}
+                  </Typography>
+                )}
+
+                {/* ชื่อกลุ่มขั้นตอน */}
+                <Typography
+                  sx={{
+                    display: { xs: "none", sm: "inline-block" },
+                    fontFamily: FONT,
+                    fontWeight: isActive ? 600 : 400,
+                    fontSize: { xs: "0.72rem", md: "0.78rem" },
+                    opacity: isActive || isDone ? 0.95 : 0.75,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  · {macro.title}
                 </Typography>
               </Box>
-              {idx < TAILOR_STEPS.length - 1 && (
-                <Box sx={{ flex: { xs: 1, md: "0 0 auto" }, width: { md: 32 }, height: 2, borderRadius: 1, bgcolor: activeIdx > idx ? GOLD : "#E5DFD6", mx: { xs: 0.75, md: 1 }, mb: { xs: 0, md: 2.5 }, transition: "all 0.3s" }} />
-              )}
             </Box>
           );
         })}
       </Box>
-      <Typography sx={{
-        display: { xs: "block", md: "none" },
-        fontFamily: FONT, fontSize: "0.78rem", fontWeight: 600, color: NAVY, textAlign: "center", mt: 1.25,
-      }}>
-        {t("tailorFlow.stepOfN")
-          .replace("{n}", String(activeIdx + 1))
-          .replace("{total}", String(TAILOR_STEPS.length))
-          .replace("{label}", TAILOR_STEPS[activeIdx])}
-      </Typography>
+
+      {/* ─── 2. Sub-step detail status line ─── */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
+          mt: 1.5,
+        }}
+      >
+        <SparklesIcon sx={{ fontSize: 14, color: GOLD }} />
+        <Typography
+          sx={{
+            fontFamily: FONT,
+            fontSize: { xs: "0.78rem", md: "0.86rem" },
+            fontWeight: 600,
+            color: NAVY,
+            textAlign: "center",
+          }}
+        >
+          {t("tailorFlow.stepOfN")
+            .replace("{n}", String(activeIdx + 1))
+            .replace("{total}", String(TAILOR_STEPS.length))
+            .replace("{label}", TAILOR_STEPS[activeIdx])}
+        </Typography>
+      </Box>
+
     </Box>
   );
 }

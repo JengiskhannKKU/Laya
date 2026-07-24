@@ -96,26 +96,26 @@ export default function SelectTailorShopStep({ orderState, setOrderState, onNext
     <Box component={motion.div} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
 
-      <Box sx={{ textAlign: "center" }}>
-        <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, fontSize: "0.95rem" }}>
+      <Box sx={{ textAlign: "center", mb: 0.5 }}>
+        <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NAVY, fontSize: { xs: "1.1rem", md: "1.3rem" } }}>
           {t("tailorFlow.selectShop.title")}
         </Typography>
-        <Typography sx={{ fontFamily: FONT, color: '#6B7280', fontSize: '0.8rem', mt: 0.3 }}>
+        <Typography sx={{ fontFamily: FONT, color: "#6B7280", fontSize: "0.82rem", mt: 0.4 }}>
           {t("tailorFlow.selectShop.subtitle")}
         </Typography>
       </Box>
 
-      {/* ช่องค้นหาร้าน — จำเป็นเมื่อตลาดมีร้านค้าเยอะ */}
+      {/* ช่องค้นหาร้าน */}
       <Box sx={{
-        display: "flex", alignItems: "center", gap: 1, bgcolor: "#FFFFFF", border: "1px solid #EFE9DD",
-        borderRadius: "14px", px: 1.75, py: 0.9,
+        display: "flex", alignItems: "center", gap: 1, bgcolor: "#FFFFFF", border: "1px solid #E6DAC8",
+        borderRadius: "999px", px: 2, py: 1, boxShadow: "0 2px 10px rgba(27,42,74,0.04)",
       }}>
-        <SearchRoundedIcon sx={{ fontSize: 20, color: "#9CA3AF" }} />
+        <SearchRoundedIcon sx={{ fontSize: 20, color: GOLD }} />
         <InputBase
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("tailorFlow.selectShop.searchPlaceholder")}
-          sx={{ flex: 1, fontFamily: FONT, fontSize: "0.85rem", color: NAVY }}
+          sx={{ flex: 1, fontFamily: FONT, fontSize: "0.88rem", color: NAVY }}
         />
       </Box>
 
